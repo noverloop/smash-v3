@@ -1,0 +1,15 @@
+{
+  "schematic": "G:/aft_end_board/datasheets/mpns.txt",
+  "last_sync": "2026-09-02T12:03:14.037329+00:00",
+  "parts": {
+    "DMN6075SQ-7": {
+      "manufacturer": "",
+      "description": "",
+      "value": "",
+      "references": [],
+      "status": "failed",
+      "error": "No datasheet URL or all download methods failed",
+      "last_attempt": "2026-09-02T12:03:12.730471+00:00"
+    }
+  }
+}

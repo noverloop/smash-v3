@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS259621DDAR
+D Texas Instruments 2.7 to 19 V, 0.13 to 2A, 85-m+? eFuse with accurate current monitor and fast overvoltage protection 8-SO PowerPAD -40 to 125
+K
+F http://www.ti.com/lit/ds/symlink/tps2596.pdf
+$ENDCMP
+#
+#End Doc Library

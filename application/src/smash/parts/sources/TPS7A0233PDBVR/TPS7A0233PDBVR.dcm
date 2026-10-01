@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS7A0233PDBVR
+D Low-Dropout Voltage Regulator
+K
+F https://www.ti.com/lit/gpn/TPS7A02
+$ENDCMP
+#
+#End Doc Library

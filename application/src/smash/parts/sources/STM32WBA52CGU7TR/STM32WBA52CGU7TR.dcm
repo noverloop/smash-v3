@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32WBA52CGU7TR
+D IC RF TxRx + MCU Bluetooth Bluetooth v5.3 2.4GHz 48-UFQFN Exposed Pad , 1.71V ~ 3.6V , 7.39mA ~ 8mA, -40C ~ 85C (TA)
+K
+F https://www.st.com/resource/en/datasheet/stm32wba52ce.pdf
+$ENDCMP
+#
+#End Doc Library

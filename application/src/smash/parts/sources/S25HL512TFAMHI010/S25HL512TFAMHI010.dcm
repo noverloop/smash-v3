@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP S25HL512TFAMHI010
+D FLASH - NOR Memory IC 512Mbit SPI - Quad I/O 166 MHz 16-SOIC
+K
+F https://www.infineon.com/dgdl/Infineon-S25HS256T_S25HS512T_S25HS01GT_S25HL256T_S25HL512T_S25HL01GT_256Mb_512Mb_1Gb_Semper_Flash_with_Quad_SPI-DataSheet-v02_00-JA-DataSheet-v07_00-JA.pdf?fileId=8ac78c8c8afe5bd0018b4c22841d79e7
+$ENDCMP
+#
+#End Doc Library

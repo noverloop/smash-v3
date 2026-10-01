@@ -1,0 +1,8 @@
+pin 1: COMP
+pin 2: FB
+pin 3: EN
+pin 4: PGND
+pin 5: SW
+pin 6: IN
+pin 7: FREQ
+pin 8: SS

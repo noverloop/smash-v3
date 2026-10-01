@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 744043100
+D WE-TPC SMT Shielded Tiny Power Inductor Size 4828; L = 10 H ; IR = 1.19 A; Isat = 1 A; RDC = 110 m
+K
+F https://www.we-online.com/catalog/datasheet/744043100.pdf
+$ENDCMP
+#
+#End Doc Library

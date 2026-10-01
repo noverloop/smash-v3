@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS259621DDAR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=9
+Version=2.2
+Released=2019-10-24 03:01:47
+Downloaded=2026-05-20 23:47:59
+3D=Y

@@ -1,0 +1,5 @@
+pin 1: SW
+pin 2: GND
+pin 3: FB
+pin 4: EN
+pin 5: VIN

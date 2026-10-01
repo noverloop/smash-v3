@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ISM330DHCXTR
+D iNEMO inertial module with embedded Machine Learning Core: always-on 3D accelerometer and 3D gyroscope with digital output for industrial applications
+K
+F https://www.st.com/resource/en/datasheet/ism330dhcx.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=LMR10510XMFE/NOPB
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=1.1
+Released=2021-04-10 07:19:37
+Downloaded=2026-05-20 21:04:05
+3D=Y

@@ -1,0 +1,692 @@
+(pcb "G:\bottom-tower1\spacer_aft_end_board_activation_interface\temp-freerouting.dsn"
+  (parser
+    (string_quote ")
+    (space_in_quoted_tokens on)
+    (host_cad "KiCad's Pcbnew")
+    (host_version "10.0.3")
+  )
+  (resolution um 10)
+  (unit um)
+  (structure
+    (layer F.Cu
+      (type signal)
+      (property
+        (index 0)
+      )
+    )
+    (layer In1.Cu
+      (type power)
+      (property
+        (index 1)
+      )
+    )
+    (layer In2.Cu
+      (type power)
+      (property
+        (index 2)
+      )
+    )
+    (layer B.Cu
+      (type signal)
+      (property
+        (index 3)
+      )
+    )
+    (boundary
+      (path pcb 0  821.447 16982.6  1640.98 16923.1  2456.67 16824.1  3266.63 16685.7
+            4068.96 16508.4  4861.79 16292.6  5643.26 16038.6  6411.55 15747.3
+            7164.86 15419.1  7901.45 15055  8619.58 14655.6  9317.57 14222.1
+            9993.81 13755.3  10646.7 13256.4  11274.7 12726.5  11876.4 12167
+            12450.4 11579  12995.3 10963.9  13509.8 10323.3  13992.8 9658.51
+            14443.1 8971.19  14859.6 8262.92  15241.5 7535.36  15587.7 6790.19
+            15897.6 6029.16  16170.3 5254.06  16405.3 4466.68  16601.9 3668.87
+            16759.8 2862.49  16878.5 2049.42  16957.8 1231.57  16997.5 410.844
+            17000 0  16997.5 -410.844  16957.8 -1231.57  16878.5 -2049.42
+            16759.8 -2862.49  16601.9 -3668.87  16405.3 -4466.68  16170.3 -5254.06
+            15897.6 -6029.16  15587.7 -6790.19  15241.5 -7535.36  14859.6 -8262.92
+            14443.1 -8971.19  13992.8 -9658.51  13509.8 -10323.3  12995.3 -10963.9
+            12450.4 -11579  11876.4 -12167  11274.7 -12726.5  10646.7 -13256.4
+            9993.81 -13755.3  9317.57 -14222.1  8619.58 -14655.6  7901.45 -15055
+            7164.86 -15419.1  6411.55 -15747.3  5643.26 -16038.6  4861.79 -16292.6
+            4068.96 -16508.4  3266.63 -16685.7  2456.67 -16824.1  1640.98 -16923.1
+            821.447 -16982.6  0 -17002.5  -821.447 -16982.6  -1640.98 -16923.1
+            -2456.67 -16824.1  -3266.63 -16685.7  -4068.96 -16508.4  -4861.79 -16292.6
+            -5643.26 -16038.6  -6411.55 -15747.3  -7164.86 -15419.1  -7901.45 -15055
+            -8619.58 -14655.6  -9317.57 -14222.1  -9993.81 -13755.3  -10646.7 -13256.4
+            -11274.7 -12726.5  -11876.4 -12167  -12450.4 -11579  -12995.3 -10963.9
+            -13509.8 -10323.3  -13992.8 -9658.51  -14443.1 -8971.19  -14859.6 -8262.92
+            -15241.5 -7535.36  -15587.7 -6790.19  -15897.6 -6029.16  -16170.3 -5254.06
+            -16405.3 -4466.68  -16601.9 -3668.87  -16759.8 -2862.49  -16878.5 -2049.42
+            -16957.8 -1231.57  -16997.5 -410.844  -16997.5 410.844  -16957.8 1231.57
+            -16878.5 2049.42  -16759.8 2862.49  -16601.9 3668.87  -16405.3 4466.68
+            -16170.3 5254.06  -15897.6 6029.16  -15587.7 6790.19  -15241.5 7535.36
+            -14859.6 8262.92  -14443.1 8971.19  -13992.8 9658.51  -13509.8 10323.3
+            -12995.3 10963.9  -12450.4 11579  -11876.4 12167  -11274.7 12726.5
+            -10646.7 13256.4  -9993.81 13755.3  -9317.57 14222.1  -8619.58 14655.6
+            -7901.45 15055  -7164.86 15419.1  -6411.55 15747.3  -5643.26 16038.6
+            -4861.79 16292.6  -4068.96 16508.4  -3266.63 16685.7  -2456.67 16824.1
+            -1640.98 16923.1  -821.447 16982.6  0 17002.5  821.447 16982.6)
+    )
+    (plane FLEX_GND (polygon In1.Cu 0  16500 0  16437.2 -1438.1  16249.3 -2865.2  15937.8 -4270.5
+            15504.9 -5643.3  14954.1 -6973.2  14289.4 -8250  13516 -9464
+            12639.7 -10606  11667.3 -11667.3  10606 -12639.7  9464 -13516
+            8250 -14289.4  6973.2 -14954.1  5643.3 -15504.9  4270.5 -15937.8
+            2865.2 -16249.3  1438.1 -16437.2  0 -16500  -1438.1 -16437.2
+            -2865.2 -16249.3  -4270.5 -15937.8  -5643.3 -15504.9  -6973.2 -14954.1
+            -8250 -14289.4  -9464 -13516  -10606 -12639.7  -11667.3 -11667.3
+            -12639.7 -10606  -13516 -9464  -14289.4 -8250  -14954.1 -6973.2
+            -15504.9 -5643.3  -15937.8 -4270.5  -16249.3 -2865.2  -16437.2 -1438.1
+            -16500 0  -16437.2 1438.1  -16249.3 2865.2  -15937.8 4270.5
+            -15504.9 5643.3  -14954.1 6973.2  -14289.4 8250  -13516 9464
+            -12639.7 10606  -11667.3 11667.3  -10606 12639.7  -9464 13516
+            -8250 14289.4  -6973.2 14954.1  -5643.3 15504.9  -4270.5 15937.8
+            -2865.2 16249.3  -1438.1 16437.2  0 16500  1438.1 16437.2  2865.2 16249.3
+            4270.5 15937.8  5643.3 15504.9  6973.2 14954.1  8250 14289.4
+            9464 13516  10606 12639.7  11667.3 11667.3  12639.7 10606  13516 9464
+            14289.4 8250  14954.1 6973.2  15504.9 5643.3  15937.8 4270.5
+            16249.3 2865.2  16437.2 1438.1  16500 0))
+    (plane GND (polygon In2.Cu 0  16500 0  16437.2 -1438.1  16249.3 -2865.2  15937.8 -4270.5
+            15504.9 -5643.3  14954.1 -6973.2  14289.4 -8250  13516 -9464
+            12639.7 -10606  11667.3 -11667.3  10606 -12639.7  9464 -13516
+            8250 -14289.4  6973.2 -14954.1  5643.3 -15504.9  4270.5 -15937.8
+            2865.2 -16249.3  1438.1 -16437.2  0 -16500  -1438.1 -16437.2
+            -2865.2 -16249.3  -4270.5 -15937.8  -5643.3 -15504.9  -6973.2 -14954.1
+            -8250 -14289.4  -9464 -13516  -10606 -12639.7  -11667.3 -11667.3
+            -12639.7 -10606  -13516 -9464  -14289.4 -8250  -14954.1 -6973.2
+            -15504.9 -5643.3  -15937.8 -4270.5  -16249.3 -2865.2  -16437.2 -1438.1
+            -16500 0  -16437.2 1438.1  -16249.3 2865.2  -15937.8 4270.5
+            -15504.9 5643.3  -14954.1 6973.2  -14289.4 8250  -13516 9464
+            -12639.7 10606  -11667.3 11667.3  -10606 12639.7  -9464 13516
+            -8250 14289.4  -6973.2 14954.1  -5643.3 15504.9  -4270.5 15937.8
+            -2865.2 16249.3  -1438.1 16437.2  0 16500  1438.1 16437.2  2865.2 16249.3
+            4270.5 15937.8  5643.3 15504.9  6973.2 14954.1  8250 14289.4
+            9464 13516  10606 12639.7  11667.3 11667.3  12639.7 10606  13516 9464
+            14289.4 8250  14954.1 6973.2  15504.9 5643.3  15937.8 4270.5
+            16249.3 2865.2  16437.2 1438.1  16500 0))
+    (keepout "" (polygon signal 0  3376 7603  3576 7603  3576 6001  2000 6001  2000 9502
+            -2000 9502  -2000 6001  -3576 6001  -3576 10852  -7576 10852
+            -7576 7351  -11726 7351  -11726 -1149  -9102 -1149  -9102 -5303
+            -9903 -5303  -9903 -8135.2  -10783.4 -9015.6  -9015.6 -10783.4
+            -7535.2 -9303  -6103 -9303  -6103 -9103  -2701 -9103  -2701 -12604
+            1299 -12604  1299 -11003  5701 -11003  5701 -7203  5151 -7203
+            5151 -5602  9002 -5602  9002 -1602  6202 -1602  6202 201  11000 201
+            11000 -950  12000 -950  12000 950  10877 950  10877 7902  9669.8 7902
+            10783.4 9015.6  9015.6 10783.4  7376 9143.8  7376 11403  3376 11403
+            3376 7603))
+    (via "Via[0-3]_450:200_um" "Via[0-3]_900:300_um")
+    (rule
+      (width 100)
+      (clearance 75)
+      (clearance 18.75 (type smd_smd))
+    )
+  )
+  (placement
+    (component SmashSpacerAftEndBoardActivationInterface:J_spacer_aft_end_board_activation_interface_top
+      (place J_spacer_aft_end_board_activation_interface_top 0 0 front 0 (PN LGA_lands))
+    )
+    (component SmashSpacerAftEndBoardActivationInterface:smash_mech_potting
+      (place MECH1 9899.5 9899.5 front 0)
+      (place MECH2 -9899.5 -9899.5 front 0)
+    )
+    (component SmashSpacerAftEndBoardActivationInterface:Spacer_Mechanical_34mm
+      (place SP_aft_end_board_activation_interface 0 0 front 0 (PN SP_aft_end_board_activation_interface))
+    )
+    (component SmashSpacerAftEndBoardActivationInterface:P_spacer_aft_end_board_activation_interface_bot
+      (place P_spacer_aft_end_board_activation_interface_bot 0 0 back 180 (PN LGA_lands))
+    )
+  )
+  (library
+    (image SmashSpacerAftEndBoardActivationInterface:J_spacer_aft_end_board_activation_interface_top
+      (pin Rect[T]Pad_900.000000x900.000000_um 1 -13950 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 2 -13950 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 3 -13950 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 4 -13950 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 5 -13950 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 6 -13950 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 7 -13950 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 8 -13950 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 9 -12350 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 10 -12350 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 11 -12350 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 12 -12350 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 13 -10750 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 14 -10750 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 15 -10750 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 16 -10750 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 17 -10750 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 18 -9150 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 19 -9150 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 20 -9150 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 21 -7550 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 22 -7550 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 23 -5950 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 24 -5950 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 25 -5950 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 26 -5950 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 27 -5950 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 28 -4350 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 29 -4350 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 30 -4350 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 31 -4350 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 32 -4350 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 33 -2750 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 34 -2750 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 35 -2750 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 36 -2750 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 37 -2750 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 38 -2750 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 39 -2750 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 40 -1150 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 41 -1150 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 42 -1150 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 43 -1150 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 44 450 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 45 450 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 46 450 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 47 450 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 48 2050 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 49 2050 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 50 2050 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 51 2050 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 52 2050 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 53 3650 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 54 3650 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 55 3650 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 56 3650 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 57 5250 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 58 5250 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 59 5250 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 60 6850 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 61 6850 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 62 6850 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 63 6850 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 64 6850 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 65 8450 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 66 8450 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 67 8450 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 68 8450 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 69 10050 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 70 10050 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 71 10050 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 72 10050 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 73 10050 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 74 10050 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 75 10050 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 76 11650 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 77 11650 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 78 11650 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 79 11650 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 80 11650 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 81 11650 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 82 11650 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 83 11650 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 84 13250 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 85 13250 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 86 13250 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 87 13250 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 88 13250 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 89 13250 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 90 13250 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 91 13250 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 92 13250 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 93 13250 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 94 14850 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 95 14850 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 96 14850 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 97 14850 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 98 14850 3650)
+    )
+    (image SmashSpacerAftEndBoardActivationInterface:smash_mech_potting
+      (keepout "" (circle F.Cu 3400))
+      (keepout "" (circle In1.Cu 3400))
+      (keepout "" (circle In2.Cu 3400))
+      (keepout "" (circle B.Cu 3400))
+    )
+    (image SmashSpacerAftEndBoardActivationInterface:Spacer_Mechanical_34mm
+      (outline (polygon signal 0  445 -445  -445 -445  -445 445  445 445))
+      (pin Round[T]Pad_800.000000_um 1 0 0)
+    )
+    (image SmashSpacerAftEndBoardActivationInterface:P_spacer_aft_end_board_activation_interface_bot
+      (pin Rect[T]Pad_900.000000x900.000000_um 1 -13950 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 2 -13950 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 3 -13950 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 4 -13950 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 5 -13950 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 6 -13950 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 7 -13950 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 8 -13950 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 9 -12350 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 10 -12350 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 11 -12350 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 12 -12350 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 13 -10750 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 14 -10750 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 15 -10750 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 16 -10750 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 17 -10750 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 18 -9150 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 19 -9150 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 20 -9150 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 21 -7550 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 22 -7550 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 23 -5950 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 24 -5950 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 25 -5950 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 26 -5950 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 27 -5950 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 28 -4350 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 29 -4350 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 30 -4350 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 31 -4350 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 32 -4350 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 33 -2750 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 34 -2750 -6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 35 -2750 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 36 -2750 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 37 -2750 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 38 -2750 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 39 -2750 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 40 -1150 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 41 -1150 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 42 -1150 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 43 -1150 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 44 450 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 45 450 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 46 450 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 47 450 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 48 2050 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 49 2050 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 50 2050 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 51 2050 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 52 2050 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 53 3650 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 54 3650 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 55 3650 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 56 3650 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 57 5250 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 58 5250 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 59 5250 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 60 6850 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 61 6850 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 62 6850 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 63 6850 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 64 6850 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 65 8450 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 66 8450 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 67 8450 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 68 8450 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 69 10050 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 70 10050 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 71 10050 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 72 10050 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 73 10050 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 74 10050 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 75 10050 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 76 11650 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 77 11650 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 78 11650 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 79 11650 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 80 11650 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 81 11650 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 82 11650 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 83 11650 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 84 13250 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 85 13250 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 86 13250 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 87 13250 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 88 13250 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 89 13250 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 90 13250 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 91 13250 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 92 13250 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 93 13250 -6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 94 14850 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 95 14850 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 96 14850 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 97 14850 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 98 14850 -3650)
+    )
+    (padstack Round[T]Pad_800.000000_um
+      (shape (circle F.Cu 800))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_900.000000x900.000000_um
+      (shape (rect F.Cu -450 -450 450 450))
+      (attach off)
+    )
+    (padstack "Via[0-3]_450:200_um"
+      (shape (circle F.Cu 450))
+      (shape (circle In1.Cu 450))
+      (shape (circle In2.Cu 450))
+      (shape (circle B.Cu 450))
+      (attach off)
+    )
+    (padstack "Via[0-3]_900:300_um"
+      (shape (circle F.Cu 900))
+      (shape (circle In1.Cu 900))
+      (shape (circle In2.Cu 900))
+      (shape (circle B.Cu 900))
+      (attach off)
+    )
+  )
+  (network
+    (net 3V3
+      (pins J_spacer_aft_end_board_activation_interface_top-1 J_spacer_aft_end_board_activation_interface_top-34
+        J_spacer_aft_end_board_activation_interface_top-40 P_spacer_aft_end_board_activation_interface_bot-1
+        P_spacer_aft_end_board_activation_interface_bot-34 P_spacer_aft_end_board_activation_interface_bot-40)
+    )
+    (net 3V3_AON
+      (pins J_spacer_aft_end_board_activation_interface_top-2 J_spacer_aft_end_board_activation_interface_top-35
+        P_spacer_aft_end_board_activation_interface_bot-2 P_spacer_aft_end_board_activation_interface_bot-35)
+    )
+    (net ACTIVATE_CONFIRM
+      (pins J_spacer_aft_end_board_activation_interface_top-3 P_spacer_aft_end_board_activation_interface_bot-3)
+    )
+    (net ACTIVATE_SET
+      (pins J_spacer_aft_end_board_activation_interface_top-4 P_spacer_aft_end_board_activation_interface_bot-4)
+    )
+    (net BAT_PROT
+      (pins J_spacer_aft_end_board_activation_interface_top-5 J_spacer_aft_end_board_activation_interface_top-36
+        P_spacer_aft_end_board_activation_interface_bot-5 P_spacer_aft_end_board_activation_interface_bot-36)
+    )
+    (net BAT_RAW
+      (pins J_spacer_aft_end_board_activation_interface_top-6 J_spacer_aft_end_board_activation_interface_top-37
+        P_spacer_aft_end_board_activation_interface_bot-6 P_spacer_aft_end_board_activation_interface_bot-37)
+    )
+    (net BOOT0
+      (pins J_spacer_aft_end_board_activation_interface_top-7 P_spacer_aft_end_board_activation_interface_bot-7)
+    )
+    (net COMP_5V
+      (pins J_spacer_aft_end_board_activation_interface_top-8 J_spacer_aft_end_board_activation_interface_top-38
+        P_spacer_aft_end_board_activation_interface_bot-8 P_spacer_aft_end_board_activation_interface_bot-38)
+    )
+    (net COMP_SWDCLK
+      (pins J_spacer_aft_end_board_activation_interface_top-9 P_spacer_aft_end_board_activation_interface_bot-9)
+    )
+    (net COMP_SWDIO
+      (pins J_spacer_aft_end_board_activation_interface_top-10 P_spacer_aft_end_board_activation_interface_bot-10)
+    )
+    (net EXT_CAN_RX
+      (pins J_spacer_aft_end_board_activation_interface_top-11 P_spacer_aft_end_board_activation_interface_bot-11)
+    )
+    (net EXT_CAN_TX
+      (pins J_spacer_aft_end_board_activation_interface_top-12 P_spacer_aft_end_board_activation_interface_bot-12)
+    )
+    (net FIN1_AOUT1
+      (pins J_spacer_aft_end_board_activation_interface_top-13 P_spacer_aft_end_board_activation_interface_bot-13)
+    )
+    (net FIN2_AOUT1
+      (pins J_spacer_aft_end_board_activation_interface_top-14 P_spacer_aft_end_board_activation_interface_bot-14)
+    )
+    (net FIN3_AOUT1
+      (pins J_spacer_aft_end_board_activation_interface_top-15 P_spacer_aft_end_board_activation_interface_bot-15)
+    )
+    (net FIN4_AOUT1
+      (pins J_spacer_aft_end_board_activation_interface_top-16 P_spacer_aft_end_board_activation_interface_bot-16)
+    )
+    (net FIN_HALL
+      (pins J_spacer_aft_end_board_activation_interface_top-17 P_spacer_aft_end_board_activation_interface_bot-17)
+    )
+    (net FIN_VREF
+      (pins J_spacer_aft_end_board_activation_interface_top-18 P_spacer_aft_end_board_activation_interface_bot-18)
+    )
+    (net FIRE_HV
+      (pins J_spacer_aft_end_board_activation_interface_top-19 J_spacer_aft_end_board_activation_interface_top-39
+        P_spacer_aft_end_board_activation_interface_bot-19 P_spacer_aft_end_board_activation_interface_bot-39)
+    )
+    (net FLEX_GND
+      (pins J_spacer_aft_end_board_activation_interface_top-20 J_spacer_aft_end_board_activation_interface_top-41
+        J_spacer_aft_end_board_activation_interface_top-42 J_spacer_aft_end_board_activation_interface_top-43
+        J_spacer_aft_end_board_activation_interface_top-44 J_spacer_aft_end_board_activation_interface_top-45
+        J_spacer_aft_end_board_activation_interface_top-46 J_spacer_aft_end_board_activation_interface_top-47
+        J_spacer_aft_end_board_activation_interface_top-48 J_spacer_aft_end_board_activation_interface_top-49
+        J_spacer_aft_end_board_activation_interface_top-50 J_spacer_aft_end_board_activation_interface_top-51
+        J_spacer_aft_end_board_activation_interface_top-52 J_spacer_aft_end_board_activation_interface_top-53
+        J_spacer_aft_end_board_activation_interface_top-54 J_spacer_aft_end_board_activation_interface_top-55
+        J_spacer_aft_end_board_activation_interface_top-56 J_spacer_aft_end_board_activation_interface_top-57
+        J_spacer_aft_end_board_activation_interface_top-58 J_spacer_aft_end_board_activation_interface_top-59
+        J_spacer_aft_end_board_activation_interface_top-60 J_spacer_aft_end_board_activation_interface_top-61
+        J_spacer_aft_end_board_activation_interface_top-62 J_spacer_aft_end_board_activation_interface_top-63
+        J_spacer_aft_end_board_activation_interface_top-64 J_spacer_aft_end_board_activation_interface_top-65
+        J_spacer_aft_end_board_activation_interface_top-66 J_spacer_aft_end_board_activation_interface_top-67
+        J_spacer_aft_end_board_activation_interface_top-68 J_spacer_aft_end_board_activation_interface_top-69
+        J_spacer_aft_end_board_activation_interface_top-70 J_spacer_aft_end_board_activation_interface_top-71
+        J_spacer_aft_end_board_activation_interface_top-72 J_spacer_aft_end_board_activation_interface_top-73
+        J_spacer_aft_end_board_activation_interface_top-74 J_spacer_aft_end_board_activation_interface_top-75
+        J_spacer_aft_end_board_activation_interface_top-76 J_spacer_aft_end_board_activation_interface_top-77
+        J_spacer_aft_end_board_activation_interface_top-78 J_spacer_aft_end_board_activation_interface_top-79
+        J_spacer_aft_end_board_activation_interface_top-80 J_spacer_aft_end_board_activation_interface_top-81
+        J_spacer_aft_end_board_activation_interface_top-82 J_spacer_aft_end_board_activation_interface_top-83
+        J_spacer_aft_end_board_activation_interface_top-84 J_spacer_aft_end_board_activation_interface_top-85
+        J_spacer_aft_end_board_activation_interface_top-86 J_spacer_aft_end_board_activation_interface_top-87
+        J_spacer_aft_end_board_activation_interface_top-88 J_spacer_aft_end_board_activation_interface_top-89
+        J_spacer_aft_end_board_activation_interface_top-90 J_spacer_aft_end_board_activation_interface_top-91
+        J_spacer_aft_end_board_activation_interface_top-92 J_spacer_aft_end_board_activation_interface_top-93
+        J_spacer_aft_end_board_activation_interface_top-94 J_spacer_aft_end_board_activation_interface_top-95
+        J_spacer_aft_end_board_activation_interface_top-96 J_spacer_aft_end_board_activation_interface_top-97
+        J_spacer_aft_end_board_activation_interface_top-98 SP_aft_end_board_activation_interface-1
+        P_spacer_aft_end_board_activation_interface_bot-20 P_spacer_aft_end_board_activation_interface_bot-41
+        P_spacer_aft_end_board_activation_interface_bot-42 P_spacer_aft_end_board_activation_interface_bot-43
+        P_spacer_aft_end_board_activation_interface_bot-44 P_spacer_aft_end_board_activation_interface_bot-45
+        P_spacer_aft_end_board_activation_interface_bot-46 P_spacer_aft_end_board_activation_interface_bot-47
+        P_spacer_aft_end_board_activation_interface_bot-48 P_spacer_aft_end_board_activation_interface_bot-49
+        P_spacer_aft_end_board_activation_interface_bot-50 P_spacer_aft_end_board_activation_interface_bot-51
+        P_spacer_aft_end_board_activation_interface_bot-52 P_spacer_aft_end_board_activation_interface_bot-53
+        P_spacer_aft_end_board_activation_interface_bot-54 P_spacer_aft_end_board_activation_interface_bot-55
+        P_spacer_aft_end_board_activation_interface_bot-56 P_spacer_aft_end_board_activation_interface_bot-57
+        P_spacer_aft_end_board_activation_interface_bot-58 P_spacer_aft_end_board_activation_interface_bot-59
+        P_spacer_aft_end_board_activation_interface_bot-60 P_spacer_aft_end_board_activation_interface_bot-61
+        P_spacer_aft_end_board_activation_interface_bot-62 P_spacer_aft_end_board_activation_interface_bot-63
+        P_spacer_aft_end_board_activation_interface_bot-64 P_spacer_aft_end_board_activation_interface_bot-65
+        P_spacer_aft_end_board_activation_interface_bot-66 P_spacer_aft_end_board_activation_interface_bot-67
+        P_spacer_aft_end_board_activation_interface_bot-68 P_spacer_aft_end_board_activation_interface_bot-69
+        P_spacer_aft_end_board_activation_interface_bot-70 P_spacer_aft_end_board_activation_interface_bot-71
+        P_spacer_aft_end_board_activation_interface_bot-72 P_spacer_aft_end_board_activation_interface_bot-73
+        P_spacer_aft_end_board_activation_interface_bot-74 P_spacer_aft_end_board_activation_interface_bot-75
+        P_spacer_aft_end_board_activation_interface_bot-76 P_spacer_aft_end_board_activation_interface_bot-77
+        P_spacer_aft_end_board_activation_interface_bot-78 P_spacer_aft_end_board_activation_interface_bot-79
+        P_spacer_aft_end_board_activation_interface_bot-80 P_spacer_aft_end_board_activation_interface_bot-81
+        P_spacer_aft_end_board_activation_interface_bot-82 P_spacer_aft_end_board_activation_interface_bot-83
+        P_spacer_aft_end_board_activation_interface_bot-84 P_spacer_aft_end_board_activation_interface_bot-85
+        P_spacer_aft_end_board_activation_interface_bot-86 P_spacer_aft_end_board_activation_interface_bot-87
+        P_spacer_aft_end_board_activation_interface_bot-88 P_spacer_aft_end_board_activation_interface_bot-89
+        P_spacer_aft_end_board_activation_interface_bot-90 P_spacer_aft_end_board_activation_interface_bot-91
+        P_spacer_aft_end_board_activation_interface_bot-92 P_spacer_aft_end_board_activation_interface_bot-93
+        P_spacer_aft_end_board_activation_interface_bot-94 P_spacer_aft_end_board_activation_interface_bot-95
+        P_spacer_aft_end_board_activation_interface_bot-96 P_spacer_aft_end_board_activation_interface_bot-97
+        P_spacer_aft_end_board_activation_interface_bot-98)
+    )
+    (net GPIO_EXT_0
+      (pins J_spacer_aft_end_board_activation_interface_top-21 P_spacer_aft_end_board_activation_interface_bot-21)
+    )
+    (net GPIO_EXT_1
+      (pins J_spacer_aft_end_board_activation_interface_top-22 P_spacer_aft_end_board_activation_interface_bot-22)
+    )
+    (net GPIO_EXT_2
+      (pins J_spacer_aft_end_board_activation_interface_top-23 P_spacer_aft_end_board_activation_interface_bot-23)
+    )
+    (net GPIO_EXT_3
+      (pins J_spacer_aft_end_board_activation_interface_top-24 P_spacer_aft_end_board_activation_interface_bot-24)
+    )
+    (net JUMP_WAKE
+      (pins J_spacer_aft_end_board_activation_interface_top-25 P_spacer_aft_end_board_activation_interface_bot-25)
+    )
+    (net NRST
+      (pins J_spacer_aft_end_board_activation_interface_top-26 P_spacer_aft_end_board_activation_interface_bot-26)
+    )
+    (net SWO
+      (pins J_spacer_aft_end_board_activation_interface_top-27 P_spacer_aft_end_board_activation_interface_bot-27)
+    )
+    (net SYS_I2C_SCL
+      (pins J_spacer_aft_end_board_activation_interface_top-28 P_spacer_aft_end_board_activation_interface_bot-28)
+    )
+    (net SYS_I2C_SDA
+      (pins J_spacer_aft_end_board_activation_interface_top-29 P_spacer_aft_end_board_activation_interface_bot-29)
+    )
+    (net SYS_SPI_CS_FIN
+      (pins J_spacer_aft_end_board_activation_interface_top-30 P_spacer_aft_end_board_activation_interface_bot-30)
+    )
+    (net SYS_SPI_MISO
+      (pins J_spacer_aft_end_board_activation_interface_top-31 P_spacer_aft_end_board_activation_interface_bot-31)
+    )
+    (net SYS_SPI_MOSI
+      (pins J_spacer_aft_end_board_activation_interface_top-32 P_spacer_aft_end_board_activation_interface_bot-32)
+    )
+    (net SYS_SPI_SCLK
+      (pins J_spacer_aft_end_board_activation_interface_top-33 P_spacer_aft_end_board_activation_interface_bot-33)
+    )
+    (class kicad_default 3V3 3V3_AON ACTIVATE_CONFIRM ACTIVATE_SET BAT_PROT
+      BAT_RAW BOOT0 COMP_5V COMP_SWDCLK COMP_SWDIO EXT_CAN_RX EXT_CAN_TX FIN1_AOUT1
+      FIN2_AOUT1 FIN3_AOUT1 FIN4_AOUT1 FIN_HALL FIN_VREF FIRE_HV FLEX_GND
+      GND GPIO_EXT_0 GPIO_EXT_1 GPIO_EXT_2 GPIO_EXT_3 JUMP_WAKE NRST SWO SYS_I2C_SCL
+      SYS_I2C_SDA SYS_SPI_CS_FIN SYS_SPI_MISO SYS_SPI_MOSI SYS_SPI_SCLK
+      (circuit
+        (use_via "Via[0-3]_450:200_um")
+      )
+      (rule
+        (width 100)
+        (clearance 75)
+      )
+    )
+  )
+  (wiring
+    (wire (path B.Cu 100  -1726.7 -13950  -1726.7 -13877.8)(net 3V3)(type route))
+    (wire (path B.Cu 100  -9031.5 -13373.3  -13950 -8454.8  -13950 -5950)(net 3V3)(type route))
+    (wire (path B.Cu 100  -2231.2 -13373.3  -9031.5 -13373.3)(net 3V3)(type route))
+    (wire (path B.Cu 100  -1150 -13950  -1726.7 -13950)(net 3V3)(type route))
+    (wire (path B.Cu 100  -1726.7 -13877.8  -2231.2 -13373.3)(net 3V3)(type route))
+    (wire (path F.Cu 100  -4250 15660  -4270 15680  -4820 15130)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -2750 10050  -2580 10050)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -2070 15510  -2220 15660)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -10080 12320  -13210 9190  -13210 1260  -14080 390)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -8370 12990  -9040 12320)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -2580 10050  -2070 10560  -2070 15510)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -8010 14050  -8370 13690)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -4820 15130  -6160 15130)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -8370 13690  -8370 12990)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -7990 14030  -8010 14050)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -6160 15130  -7260 14030)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -9040 12320  -10080 12320)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -2220 15660  -4250 15660)(net BAT_PROT)(type route))
+    (wire (path F.Cu 100  -7260 14030  -7990 14030)(net BAT_PROT)(type route))
+    (wire (path B.Cu 100  -7580.4 11073.3  -8573.3 10080.4)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -8843.9 7676.9  -11663.2 7676.9)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -13877.8 2626.7  -13950 2626.7)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -13950 2050  -13950 2626.7)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -13373.3 3131.2  -13877.8 2626.7)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -3831.2 11073.3  -7580.4 11073.3)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -8573.3 10080.4  -8573.3 7947.5)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -11663.2 7676.9  -13373.3 5966.8  -13373.3 3131.2)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -8573.3 7947.5  -8843.9 7676.9)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -2750 11650  -3326.7 11650  -3326.7 11577.8  -3831.2 11073.3)(net BAT_RAW)(type route))
+    (wire (path B.Cu 100  -3326.7 13177.8  -3326.7 13250)(net COMP_5V)(type route))
+    (wire (path B.Cu 100  -9515.4 12441.2  -4063.3 12441.2)(net COMP_5V)(type route))
+    (wire (path B.Cu 100  -2750 13250  -3326.7 13250)(net COMP_5V)(type route))
+    (wire (path B.Cu 100  -13950 5250  -13950 8006.6  -9515.4 12441.2)(net COMP_5V)(type route))
+    (wire (path B.Cu 100  -4063.3 12441.2  -3326.7 13177.8)(net COMP_5V)(type route))
+    (wire (path F.Cu 100  -8350 12310  -8220 12440  -6890 12440)(net FIRE_HV)(type route))
+    (wire (path F.Cu 100  -9150 10050  -9150 10470)(net FIRE_HV)(type route))
+    (wire (path F.Cu 100  -8350 11270  -8350 12310)(net FIRE_HV)(type route))
+    (wire (path F.Cu 100  -6760 14220  -6090 14890  -2720 14890)(net FIRE_HV)(type route))
+    (wire (path F.Cu 100  -9150 10470  -8350 11270)(net FIRE_HV)(type route))
+    (wire (path F.Cu 100  -6890 12440  -6760 12570  -6760 14220)(net FIRE_HV)(type route))
+    (via "Via[0-3]_900:300_um"  -1150 -13950 (net 3V3)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 -5950 (net 3V3)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 6850 (net 3V3)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 8450 (net 3V3_AON)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 -4350 (net 3V3_AON)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 -2750 (net ACTIVATE_CONFIRM)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 -1150 (net ACTIVATE_SET)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 450 (net BAT_PROT)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 10050 (net BAT_PROT)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 2050 (net BAT_RAW)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 11650 (net BAT_RAW)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 3650 (net BOOT0)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 13250 (net COMP_5V)(type route))
+    (via "Via[0-3]_900:300_um"  -13950 5250 (net COMP_5V)(type route))
+    (via "Via[0-3]_900:300_um"  -12350 -5950 (net COMP_SWDCLK)(type route))
+    (via "Via[0-3]_900:300_um"  -12350 -4350 (net COMP_SWDIO)(type route))
+    (via "Via[0-3]_900:300_um"  -12350 -2750 (net EXT_CAN_RX)(type route))
+    (via "Via[0-3]_900:300_um"  -12350 8450 (net EXT_CAN_TX)(type route))
+    (via "Via[0-3]_900:300_um"  -10750 -5950 (net FIN1_AOUT1)(type route))
+    (via "Via[0-3]_900:300_um"  -10750 -4350 (net FIN2_AOUT1)(type route))
+    (via "Via[0-3]_900:300_um"  -10750 -2750 (net FIN3_AOUT1)(type route))
+    (via "Via[0-3]_900:300_um"  -10750 8450 (net FIN4_AOUT1)(type route))
+    (via "Via[0-3]_900:300_um"  -10750 10050 (net FIN_HALL)(type route))
+    (via "Via[0-3]_900:300_um"  -9150 8450 (net FIN_VREF)(type route))
+    (via "Via[0-3]_900:300_um"  -9150 10050 (net FIRE_HV)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 14850 (net FIRE_HV)(type route))
+    (via "Via[0-3]_900:300_um"  13250 2050 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -10750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  3650 14850 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  450 14850 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 -5950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  2050 14850 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 -5950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  8450 -7550 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  6850 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -4350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 -4350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  8450 -10750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 3650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  14850 -1150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 -2750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  450 11650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 -4350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  -9150 11650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 -1150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -2750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -5950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  -1150 11650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  6850 -12350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -7550 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  5250 -12350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 3650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 -2750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 450 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  2050 -13950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  14850 450 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -9150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  3650 -13950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  3650 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  14850 3650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 6850 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  14850 -2750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  8450 -9150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  6850 -10750 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  450 -13950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  2050 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  -1150 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  6850 -7550 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  450 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  6850 -9150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  5250 13250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  -1150 14850 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  2050 11650 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  5250 -13950 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 -7550 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  14850 2050 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  2050 -12350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 2050 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 -7550 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  10050 -1150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  3650 -12350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 -9150 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  11650 5250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  8450 -12350 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  13250 5250 (net FLEX_GND)(type route))
+    (via "Via[0-3]_900:300_um"  -7550 11650 (net GPIO_EXT_0)(type route))
+    (via "Via[0-3]_900:300_um"  -7550 13250 (net GPIO_EXT_1)(type route))
+    (via "Via[0-3]_900:300_um"  -5950 -13950 (net GPIO_EXT_2)(type route))
+    (via "Via[0-3]_900:300_um"  -5950 -12350 (net GPIO_EXT_3)(type route))
+    (via "Via[0-3]_900:300_um"  -5950 -10750 (net JUMP_WAKE)(type route))
+    (via "Via[0-3]_900:300_um"  -5950 11650 (net NRST)(type route))
+    (via "Via[0-3]_900:300_um"  -5950 13250 (net SWO)(type route))
+    (via "Via[0-3]_900:300_um"  -4350 -13950 (net SYS_I2C_SCL)(type route))
+    (via "Via[0-3]_900:300_um"  -4350 -12350 (net SYS_I2C_SDA)(type route))
+    (via "Via[0-3]_900:300_um"  -4350 -10750 (net SYS_SPI_CS_FIN)(type route))
+    (via "Via[0-3]_900:300_um"  -4350 11650 (net SYS_SPI_MISO)(type route))
+    (via "Via[0-3]_900:300_um"  -4350 13250 (net SYS_SPI_MOSI)(type route))
+    (via "Via[0-3]_900:300_um"  -2750 -13950 (net SYS_SPI_SCLK)(type route))
+  )
+)

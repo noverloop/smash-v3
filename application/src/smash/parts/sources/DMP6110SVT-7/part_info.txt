@@ -1,0 +1,9 @@
+Manufacturer=Diodes Incorporated
+PartNumber=DMP6110SVT-7
+PartCategory=MOSFET (P-Channel)
+PackageCategory=SOT23 (6-Pin)
+PinCount=6
+Version=1.1
+Released=2020-02-11 14:53:28
+Downloaded=2026-06-11 15:08:32
+3D=Y

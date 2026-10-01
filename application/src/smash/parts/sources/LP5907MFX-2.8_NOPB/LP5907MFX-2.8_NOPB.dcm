@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LP5907MFX-2.8_NOPB
+D 250-mA ultra-low-noise low-IQ low-dropout (LDO) linear regulator
+K
+F http://www.ti.com/lit/gpn/lp5907
+$ENDCMP
+#
+#End Doc Library

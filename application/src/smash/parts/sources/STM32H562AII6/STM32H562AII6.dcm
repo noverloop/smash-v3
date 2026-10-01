@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32H562AII6
+D Arm Cortex-M33 32-bit MCU + TrustZone + FPU, 375 DMIPS, 250 MHz, 2-Mbyte flash, 640-Kbyte RAM, math accelerators
+K
+F https://www.st.com/resource/en/datasheet/stm32h562ag.pdf
+$ENDCMP
+#
+#End Doc Library

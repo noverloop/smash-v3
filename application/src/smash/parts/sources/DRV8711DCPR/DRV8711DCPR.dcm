@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DRV8711DCPR
+D Stepper Motor Gate Driver with On-Chip 1/256 Micro-Stepping Indexer and Stall Detect
+K
+F http://www.ti.com/lit/gpn/drv8711
+$ENDCMP
+#
+#End Doc Library

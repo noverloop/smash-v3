@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LMR10510XMFE_NOPB
+D Texas Instruments LMR10510XMFE/NOPB, Buck Converter, 1A, 5.5 V, Step Down, 1.95 MHz, 5-Pin, SOT-23
+K
+F http://www.ti.com/lit/gpn/lmr10510
+$ENDCMP
+#
+#End Doc Library

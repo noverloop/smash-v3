@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=LDL112PV18R
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=7
+Version=3.1
+Released=2022-09-24 09:06:14
+Downloaded=2026-05-20 21:03:54
+3D=Y

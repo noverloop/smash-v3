@@ -1,0 +1,7 @@
+pin 1: SCL
+pin 2: GND
+pin 3: ALERT
+pin 4: ADD0
+pin 5: VP
+pin 6: SDA
+pin 7: EP

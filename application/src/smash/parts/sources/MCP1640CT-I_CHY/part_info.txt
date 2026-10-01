@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=MCP1640CT-I/CHY
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (6-Pin)
+PinCount=6
+Version=6.1
+Released=2020-12-29 06:41:11
+Downloaded=2026-05-19 18:26:23
+3D=Y

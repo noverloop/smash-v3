@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 25SVPF330M
+D Capacitor SMD SVPFseries 25V 330uF Panasonic 330uF 25 V Polymer Aluminium Electrolytic Capacitor F12, OS-CON Series 5000h 10 x 12.6mm
+K
+F http://industrial.panasonic.com/cdbs/www-data/pdf/AAB8000/AAB8000C177.pdf
+$ENDCMP
+#
+#End Doc Library

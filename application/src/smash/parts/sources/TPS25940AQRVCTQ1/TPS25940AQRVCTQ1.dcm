@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS25940AQRVCTQ1
+D 2.7V-18V Automotive Current-Limited Load Switch with Current Sense & Short-to-Battery Protection
+K
+F http://www.ti.com/lit/gpn/TPS25940-Q1
+$ENDCMP
+#
+#End Doc Library

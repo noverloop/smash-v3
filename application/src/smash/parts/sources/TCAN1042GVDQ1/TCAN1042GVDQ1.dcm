@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TCAN1042GVDQ1
+D Automotive Fault Protected CAN Transceiver With Flexible Data-Rate
+K
+F http://www.ti.com/lit/gpn/tcan1042gv-q1
+$ENDCMP
+#
+#End Doc Library

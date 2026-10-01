@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PMEG040V050EPE-QZ
+PartCategory=Schottky Diode
+PackageCategory=Other
+PinCount=3
+Version=2.5
+Released=2022-09-04 09:09:44
+Downloaded=2026-09-02 21:08:02
+3D=Y

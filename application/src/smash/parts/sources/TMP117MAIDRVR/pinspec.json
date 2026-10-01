@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "manf_pn": "TMP117MAIDRVR",
+    "datasheet": "TI SNOSD82D (June 2018, revised Sept 2022)",
+    "datasheet_section": "Figure 5-1 (DRV Package 6-Pin WSON Top View) + Table 5-1 (Pin Functions)",
+    "package": "WSON-6 (DRV, 2.00 × 2.00 mm)",
+    "verified_by": "Anthropic 2026-05-27",
+    "verified_from_pdf": "application/src/smash/parts/sources/TMP117MAIDRVR/TMP117MAIDRVR.pdf",
+    "notes": "Two package variants in datasheet: WSON-6 (DRV, used here) and DSBGA-6 (YBG). This pinspec is for the DRV (WSON) variant only."
+  },
+  "pins": [
+    { "num": "1", "name": "SCL",   "type": "input",
+      "note": "Serial clock (I²C). Datasheet Table 5-1 type=I." },
+    { "num": "2", "name": "GND",   "type": "ground" },
+    { "num": "3", "name": "ALERT", "type": "output",
+      "note": "Over-temperature alert / data-ready signal. Open-drain — requires pullup." },
+    { "num": "4", "name": "ADD0",  "type": "input",
+      "note": "Address select. Connect to GND, V+, SDA, or SCL to pick I²C addr 0x48-0x4B." },
+    { "num": "5", "name": "V+",    "type": "power",
+      "voltage_range_v": [1.8, 5.5],
+      "note": "Supply voltage. Datasheet §6 Power Supply: 1.8 V to 5.5 V over -55 to +150 °C (1.7 V minimum allowed for -55 to +70 °C only). Typical 3.3 V." },
+    { "num": "6", "name": "SDA",   "type": "io",
+      "note": "Serial data, open-drain bidirectional. Requires pullup." },
+    { "num": "7", "name": "EP", "aliases": ["ThermalPad"], "type": "ground",
+      "note": "Exposed thermal pad — connect to GND for thermal dissipation." }
+  ]
+}

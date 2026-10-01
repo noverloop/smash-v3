@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MCP1640CT-I_CHY
+D Synchronous Boost Regulator
+K
+F http://ww1.microchip.com/downloads/en/DeviceDoc/20002234D.pdf
+$ENDCMP
+#
+#End Doc Library

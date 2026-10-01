@@ -1,0 +1,558 @@
+{
+ "_source": "/Users/nicolas/Documents/1306companion_compute.kicad_pcb",
+ "_note": "COPPER REMOVED 2026-09-03. This drop's routing is not manufacturable and companion_compute is being re-routed, so its 1121 tracks / 234 vias / 8 zones were dropped rather than shipped in every regeneration (they also carried no filled_polygon fills, so the plane layers plotted empty). The full capture is in git before this commit. PLACEMENTS ARE KEPT \u2014 documentation/ee_companion_compute_review.md accepted them and the re-route will be drawn against them. For a new drop, re-run tools/import_ee_layout.py (it now captures zone fills) and re-add the copper attach in _apply_companion_reference_layout.",
+ "placements": {
+  "U_DDR4": {
+   "pos": [
+    6.9,
+    2.3
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "J_FLEXL_companion_compute__qpd_module": {
+   "pos": [
+    0.0,
+    -0.0
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "J_FLEXL_companion_compute__camera_module": {
+   "pos": [
+    0.0,
+    -0.0
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "J_companion_compute_spacer_companion_compute_radar_module": {
+   "pos": [
+    0.0,
+    -0.0
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "U_MPU": {
+   "pos": [
+    -7.7,
+    -2.7
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "U_NAND_B": {
+   "pos": [
+    3.2745,
+    -8.5995
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "U_NAND_A": {
+   "pos": [
+    -3.2745,
+    8.5995
+   ],
+   "rot": 0.0,
+   "face": "top"
+  },
+  "P_companion_compute_spacer_power_board_companion_compute": {
+   "pos": [
+    0.0,
+    -0.0
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "Y_MPU_LSE": {
+   "pos": [
+    0.0,
+    5.375
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V2": {
+   "pos": [
+    -1.5,
+    1.625
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK1_3": {
+   "pos": [
+    -4.275,
+    0.1
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_18A_2": {
+   "pos": [
+    0.0,
+    0.775
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V_1": {
+   "pos": [
+    4.2,
+    -0.0
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK1_2": {
+   "pos": [
+    -3.25,
+    -2.425
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_DDR_ZQ": {
+   "pos": [
+    -1.975,
+    2.225
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD4": {
+   "pos": [
+    -3.0,
+    1.625
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V_2": {
+   "pos": [
+    -1.7,
+    -1.95
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "R_MPU_BOOT0": {
+   "pos": [
+    3.475,
+    2.225
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "Y_MPU_HSE": {
+   "pos": [
+    0.0,
+    -7.375
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD3": {
+   "pos": [
+    -3.5,
+    0.1
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "R_DDR_RESETN_PD": {
+   "pos": [
+    1.975,
+    2.225
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD2": {
+   "pos": [
+    3.475,
+    4.775
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_33_2": {
+   "pos": [
+    2.45,
+    -4.3
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_NAND_A_BULK": {
+   "pos": [
+    -4.45,
+    -2.75
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V_4": {
+   "pos": [
+    -2.725,
+    0.1
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK1_1": {
+   "pos": [
+    2.025,
+    -0.0
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_LSE_VDD": {
+   "pos": [
+    5.925,
+    -2.3
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK2_1": {
+   "pos": [
+    0.0,
+    2.4
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD5": {
+   "pos": [
+    2.025,
+    -1.525
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VPP2": {
+   "pos": [
+    0.0,
+    1.625
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_33_1": {
+   "pos": [
+    0.0,
+    -2.15
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VREFCA": {
+   "pos": [
+    -3.475,
+    2.225
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "R_MPU_CSI_REXT": {
+   "pos": [
+    3.0,
+    1.625
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK2_3": {
+   "pos": [
+    3.25,
+    -2.45
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_QDDR_1": {
+   "pos": [
+    -2.025,
+    -5.275
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_HSE_VDD": {
+   "pos": [
+    -1.975,
+    -3.475
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK2_2": {
+   "pos": [
+    -3.375,
+    4.1
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V_3": {
+   "pos": [
+    4.6,
+    3.075
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "R_DDR_ZQ": {
+   "pos": [
+    -2.475,
+    -1.95
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_VPP1": {
+   "pos": [
+    3.1,
+    1.075
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_0V82_BULK": {
+   "pos": [
+    -2.775,
+    0.4
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_V08CAP": {
+   "pos": [
+    0.0,
+    -1.2
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "R_MPU_TXRTUNE": {
+   "pos": [
+    -4.35,
+    -2.325
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "R_USB_VBUS_PD": {
+   "pos": [
+    1.975,
+    -3.525
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "R_MPU_NRST": {
+   "pos": [
+    1.5,
+    1.625
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_NRST": {
+   "pos": [
+    1.975,
+    -2.15
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_USB_18": {
+   "pos": [
+    0.0,
+    1.025
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_5V_5": {
+   "pos": [
+    4.2,
+    -4.9
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "R_DDR_VREFCA_TOP": {
+   "pos": [
+    -1.5,
+    1.025
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_QDDR_2": {
+   "pos": [
+    5.125,
+    3.125
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_NAND_A_VCC": {
+   "pos": [
+    0.0,
+    -4.475
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_0V82_1": {
+   "pos": [
+    3.8,
+    -4.325
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK2_5": {
+   "pos": [
+    6.4,
+    3.025
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_USB_33": {
+   "pos": [
+    5.4,
+    -0.0
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_33_3": {
+   "pos": [
+    0.0,
+    -3.7
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "R_DDR_ALERTN_PU": {
+   "pos": [
+    -1.5,
+    -4.475
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_NAND_B_BULK": {
+   "pos": [
+    0.0,
+    -0.0
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_NAND_B_VCC": {
+   "pos": [
+    3.475,
+    3.275
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK1_5": {
+   "pos": [
+    -5.25,
+    3.625
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD1": {
+   "pos": [
+    1.5,
+    -2.925
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "R_DDR_VREFCA_BOT": {
+   "pos": [
+    0.0,
+    -2.925
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_VDD6": {
+   "pos": [
+    -4.325,
+    3.65
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK2_4": {
+   "pos": [
+    4.2,
+    -2.45
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_0V82_2": {
+   "pos": [
+    -3.65,
+    3.825
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_DDR_BULK1_4": {
+   "pos": [
+    3.25,
+    -0.0
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_33b": {
+   "pos": [
+    -3.425,
+    -4.4
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_33_4": {
+   "pos": [
+    -5.65,
+    -2.425
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  },
+  "C_MPU_18A_1": {
+   "pos": [
+    0.0,
+    -5.825
+   ],
+   "rot": 0.0,
+   "face": "bottom"
+  },
+  "C_MPU_33_5": {
+   "pos": [
+    5.15,
+    -2.775
+   ],
+   "rot": 90.0,
+   "face": "bottom"
+  }
+ }
+}

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SFH203FA
+D Photodiode PIN Chip 900nm 0.59A/W Sensitivity 2-Pin T-1 3/4 T/R
+K
+F https://www.osram.com/ecat/com/en/class_pim_web_catalog_103489/global/prd_pim_device_2219555/
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "description": "Per-board outline + holes + keepouts. Loaded by smash.state.board_geometry.load_board_geometry(name).",
+    "schema_version": 1,
+    "potting_holes_note": "When potting_holes=true, the loader synthesizes two NPTH Ø3.0 mm holes at (±9.90, ±9.90) mm (14 mm radial from centre, NW=135°, SE=315°) per cavities.potting_hole_positions_math_yup(), plus 4.0×4.0 mm component-placement keepouts around each.",
+    "spacer_potting_note": "Spacers carry NO fixed potting holes. attach_cavities_to_spacers() drills 2 Ø3.0 mm NPTH through-holes per spacer at the fold-projected positions of the neighbouring tiles' potting holes, so they always align with the PCB through the accordion fold (a fixed pair would land on the wrong diagonal after the mirror)."
+  },
+  "_spacer_default": {
+    "shape":          "circle",
+    "diameter_mm":    34.0
+  },
+  "boards": {
+    "power_board":          { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "wakeup_board":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "fin_ble_board":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "flight_board":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "radar_module":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "fins_module":          { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "companion_compute":    { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "companion_io":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "nose_cap":             { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "activation_interface": { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "aft_end_board":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
+    "cell_floor_board":     { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "camera_module":        { "shape": "circle", "diameter_mm": 15.0, "potting_holes": false },
+    "qpd_module":           { "shape": "circle", "diameter_mm": 20.0, "potting_holes": false },
+    "nfc_antenna_flex":     { "shape": "circle", "diameter_mm": 22.0, "potting_holes": false },
+    "yagi_ant_a_flex":      { "shape": "rect",   "rect_dimensions": [20.0, 40.0], "potting_holes": false },
+    "yagi_ant_b_flex":      { "shape": "rect",   "rect_dimensions": [20.0, 40.0], "potting_holes": false }
+  }
+}

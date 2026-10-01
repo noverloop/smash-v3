@@ -1,0 +1,9 @@
+Manufacturer=Lite-On
+PartNumber=LTST-C190GKT
+PartCategory=LED
+PackageCategory=LEDs Chip
+PinCount=2
+Version=1.1
+Released=2020-11-18 19:58:44
+Downloaded=2026-05-20 15:48:37
+3D=Y

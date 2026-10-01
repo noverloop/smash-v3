@@ -1,0 +1,8 @@
+pin 1: TXD
+pin 2: GND
+pin 3: VCC
+pin 4: RXD
+pin 5: VIO
+pin 6: CANL
+pin 7: CANH
+pin 8: STB

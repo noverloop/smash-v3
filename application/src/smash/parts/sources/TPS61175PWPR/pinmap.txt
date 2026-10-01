@@ -1,0 +1,15 @@
+pin 1: SW_1
+pin 2: SW_2
+pin 3: VIN
+pin 4: EN
+pin 5: SS
+pin 6: SYNC
+pin 7: AGND
+pin 8: COMP
+pin 9: FB
+pin 10: FREQ
+pin 11: NC
+pin 12: PGND_1
+pin 13: PGND_2
+pin 14: PGND_3
+pin 15: EP

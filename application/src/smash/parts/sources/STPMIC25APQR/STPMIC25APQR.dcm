@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STPMIC25APQR
+D Highly integrated power management IC for micro processor units
+K
+F https://www.st.com/resource/en/datasheet/stpmic25.pdf
+$ENDCMP
+#
+#End Doc Library

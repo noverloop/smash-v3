@@ -1,0 +1,9 @@
+Manufacturer=Analog Devices
+PartNumber=AD8603AUJZ-R2
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=5.1
+Released=2020-12-28 13:16:42
+Downloaded=2026-05-19 16:48:59
+3D=Y

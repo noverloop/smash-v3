@@ -1,0 +1,6 @@
+pin 1: RF2
+pin 2: GND
+pin 3: RF1
+pin 4: VDD
+pin 5: RFIN
+pin 6: CTRL

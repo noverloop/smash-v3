@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32MP255DAL3
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=361
+Version=3.1
+Released=2024-07-20 07:28:41
+Downloaded=2026-05-27 11:07:23
+3D=Y

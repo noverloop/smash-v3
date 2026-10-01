@@ -1,0 +1,9 @@
+Manufacturer=Diodes Incorporated
+PartNumber=DMN6075SQ-7
+PartCategory=MOSFET (N-Channel)
+PackageCategory=SOT23 (3-Pin)
+PinCount=3
+Version=5.1
+Released=2021-08-15 05:27:02
+Downloaded=2026-06-11 15:08:12
+3D=Y

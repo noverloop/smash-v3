@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TMUX1111PWR
+D 5-V low-leakage-current, 1:1 (SPST) 4-channel, precision switch (normally closed)
+K
+F http://www.ti.com/lit/gpn/TMUX1111
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,6 @@
+RR123-1H02-612 — Coto RedRock TMR nanopower magnetic switch.
+Omnipolar, ACTIVE-LOW push-pull, B_OP 0.7 mT / B_RP 0.3 mT, f_SW 1 Hz typ,
+I_DD 20 nA avg, VDD 1.0-3.6 V (abs max 3.6 — dedicated nano-LDO required),
+LGA-4 1.45x1.45x0.44 mm. Shelf-wake ear (2026-07-30): through-container
+wake at 7x the sensitivity of the DRV5032FC arming listener.
+Footprint/symbol/3D: SamacSys LIB_RR123-1H02-612.zip (real land pattern).

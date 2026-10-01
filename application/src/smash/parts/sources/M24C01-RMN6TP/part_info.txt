@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=M24C01-RMN6TP
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=3.1
+Released=2022-02-19 04:17:41
+Downloaded=2026-05-20 15:47:14
+3D=Y

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LDL112PV18R
+D 1.2 A low quiescent current LDO with reverse current protection
+K
+F https://www.st.com/resource/en/datasheet/ldl112.pdf
+$ENDCMP
+#
+#End Doc Library

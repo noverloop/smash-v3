@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashWakeupBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashWakeupBoard.pretty")(options "")(descr "Editable Smash wakeup-board footprints"))
+)

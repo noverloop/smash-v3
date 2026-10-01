@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "manf_pn": "LDL112PV33R",
+    "datasheet": "ST DS10321 rev 3 (Feb 2019), LDL112",
+    "datasheet_section": "Figure 3 (Pin connection DFN-6, fixed version, top view) + Table 1 (Pin description)",
+    "package": "DFN-6 (3x3)",
+    "verified_by": "Anthropic 2026-05-27",
+    "verified_from_pdf": "application/src/smash/parts/sources/LDL112PV33R/LDL112.pdf",
+    "notes": "Fixed-variant pinout per ST datasheet visual diagram. The SamacSys symbol carries 'ADJ' as the pin-3 label because it's shared across the adj + fixed family, but for fixed-output variants (PV33R, PV18R) the datasheet diagram explicitly labels pin 3 as NC. We follow the datasheet."
+  },
+  "pins": [
+    { "num": "1", "name": "EN",   "type": "input",
+      "voltage_range_v": [-0.3, 6.0],
+      "note": "Logic input: low=shutdown, high=active. DO NOT FLOAT (per Table 1). Abs-max per DS Table 5 EN pin." },
+    { "num": "2", "name": "GND",  "type": "ground" },
+    { "num": "3", "name": "NC",   "type": "nc",
+      "aliases": ["ADJ"],
+      "note": "On the adjustable variant this pin is ADJ; on the FIXED variants (PV33R) the datasheet diagram labels it NC. SamacSys family symbol exposes the adjustable label." },
+    { "num": "4", "name": "VOUT", "type": "power",
+      "voltage_v": 3.3,
+      "note": "3.3 V fixed output, 1.2 A max" },
+    { "num": "5", "name": "NC",   "type": "nc",
+      "note": "Not connected per datasheet Table 1." },
+    { "num": "6", "name": "VIN",  "type": "power",
+      "voltage_range_v": [1.6, 5.5],
+      "note": "1.6 V to 5.5 V input per datasheet Table 5 (operating range)." },
+    { "num": "7", "name": "EP",   "type": "ground",
+      "note": "Exposed pad — Table 1: 'Must be connected to GND'. Required for thermal." }
+  ]
+}

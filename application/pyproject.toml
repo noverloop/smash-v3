@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smash"
+version = "0.1.0"
+description = "Smash design data-model + tooling: chips, nets, boards, configurations, place/route — entirely native, no .kicad_pcb round-trips."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Nicolas O." },
+]
+license = { text = "Proprietary" }
+keywords = ["pcb", "electronics", "design-as-code"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+# Pure-Python data model — no runtime deps beyond stdlib. The legacy
+# top-level tools/ folder (which uses KiCad's pcbnew API) is being
+# progressively ported into this package so the native pipeline never
+# touches a .kicad_pcb until final export.
+dependencies = []
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7",
+    "pytest-cov",
+]
+
+[project.scripts]
+# CLI entry points will live here as the toolchain is ported in:
+#   "smash-build"    = "smash.build:main"   (configure + place + route)
+#   "smash-validate" = "smash.cli.validate:main"
+#   "smash-cost"     = "smash.cli.cost:main"
+#   "smash-bom"      = "smash.cli.bom:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+# Pytest config scoped to this directory. Run with:
+#     cd Export/application && pytest
+# `pythonpath = src` lets `import smash` work without `pip install -e .`
+# first.
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+pythonpath = ["src"]

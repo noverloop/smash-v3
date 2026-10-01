@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS7A0233PDBVR
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=1.1
+Released=2020-05-04 04:59:52
+Downloaded=2026-06-10 17:25:19
+3D=Y

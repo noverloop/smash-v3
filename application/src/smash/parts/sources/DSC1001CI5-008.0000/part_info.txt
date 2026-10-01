@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=DSC1001CI5-008.0000
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=4
+Version=1.2
+Released=2020-07-03 13:08:41
+Downloaded=2026-05-19 16:49:10
+3D=Y

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DMP6110SVT-7
+D MOSFET 60V P-Ch Enh FET 60Vds 20Vgs
+K
+F https://www.diodes.com/assets/Datasheets/DMP6110SVT.pdf
+$ENDCMP
+#
+#End Doc Library

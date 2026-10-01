@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashCellFloorBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashCellFloorBoard.pretty")(options "")(descr "Editable Smash cell-floor-board footprints"))
+)

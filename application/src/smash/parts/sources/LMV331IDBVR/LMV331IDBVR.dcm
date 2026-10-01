@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LMV331IDBVR
+D Texas Instruments LMV331IDBVR Comparator, Open Collector O/P, 3 V, 5 V 5-Pin SOT-23
+K
+F http://www.ti.com/lit/gpn/lmv331
+$ENDCMP
+#
+#End Doc Library

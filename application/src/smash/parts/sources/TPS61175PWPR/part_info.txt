@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS61175PWPR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=15
+Version=1.1
+Released=2022-01-25 07:05:08
+Downloaded=2026-05-19 18:24:54
+3D=Y

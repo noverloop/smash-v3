@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32MP255FAK3
+D MPU with Dual Arm Cortex-A35 @1.5GHz, Cortex-M33 @400MHz, 2xEthernet, 3xFD-CAN, LVDS/DSI, H.264, 3D GPU, AI/NN, Secure Boot, Cryptography, DRAM enc/dec, PKA
+K
+F https://www.st.com/resource/en/datasheet/stm32mp251c.pdf
+$ENDCMP
+#
+#End Doc Library

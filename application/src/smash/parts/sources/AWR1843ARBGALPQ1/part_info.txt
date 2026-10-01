@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=AWR1843ARBGALPQ1
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=180
+Version=1.1
+Released=2024-07-12 13:48:41
+Downloaded=2026-06-08 08:44:32
+3D=Y

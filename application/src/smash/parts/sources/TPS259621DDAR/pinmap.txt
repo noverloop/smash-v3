@@ -1,0 +1,9 @@
+pin 1: GND_1
+pin 2: DVDT
+pin 3: EN_UVLO
+pin 4: IN
+pin 5: OUT
+pin 6: F\L\T\
+pin 7: ILM
+pin 8: OVLO_OVCSEL
+pin 9: GND_2

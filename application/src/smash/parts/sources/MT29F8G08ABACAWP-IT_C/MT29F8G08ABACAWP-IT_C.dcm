@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MT29F8G08ABACAWP-IT_C
+D NAND Flash SLC 8Gbit 8 48/48 TSOP 1 IT
+K
+F https://www.mouser.com/catalog/specsheets/micron%20technology_micts03969-1.pdf
+$ENDCMP
+#
+#End Doc Library

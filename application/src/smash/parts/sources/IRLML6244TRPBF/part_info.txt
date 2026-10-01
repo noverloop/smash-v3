@@ -1,0 +1,9 @@
+Manufacturer=Infineon
+PartNumber=IRLML6244TRPBF
+PartCategory=Transistor
+PackageCategory=SOT23 (3-Pin)
+PinCount=3
+Version=2.1
+Released=2017-03-19 22:29:24
+Downloaded=2026-05-20 21:03:18
+3D=Y

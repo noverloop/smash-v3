@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=CD74HC4514MG4
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=24
+Version=1.1
+Released=2021-04-21 11:32:03
+Downloaded=2026-06-11 15:07:42
+3D=Y

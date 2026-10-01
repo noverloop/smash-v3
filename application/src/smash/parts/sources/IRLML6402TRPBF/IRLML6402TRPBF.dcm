@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP IRLML6402TRPBF
+D MOSFET MOSFT P-Ch -3.7A 65mOhm 8nC Log Lvl
+K
+F http://www.infineon.com/dgdl/irlml6402pbf.pdf?fileId=5546d462533600a401535668d5c2263c
+$ENDCMP
+#
+#End Doc Library

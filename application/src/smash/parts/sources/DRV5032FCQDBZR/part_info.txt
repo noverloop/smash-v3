@@ -1,0 +1,6 @@
+DRV5032FCQDBZR — TI nanopower Hall-effect switch, omnipolar, open-drain,
+BOP 4.8 mT max, 20 Hz sampling, ICC 1.6 uA typ @ 3 V, SOT-23 (DBZ).
+Pinout identical to DRV5023 DBZ (1=VCC, 2=OUT, 3=GND) — footprint/symbol
+reused from the SamacSys DRV5023AJQLPG sources (same package).
+Datasheet: drv5032.pdf (SLVSDC7H). Selected for the magnetic wake
+(dual IR+magnetic wakeup decision 2026-07-30).

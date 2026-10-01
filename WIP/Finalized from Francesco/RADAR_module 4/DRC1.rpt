@@ -1,0 +1,94 @@
+** Drc report for radar_module.kicad_pcb **
+** Created on 2026-07-10T14:26:30 **
+** Report includes: Errors **
+
+** Found 19 DRC violations **
+[shorting_items]: Elementi che cortocircuitano (coll AWR_VOUT_14SYNTH e FLEX_GND)
+    Local override; error
+    @(-1.0800 mm, -5.2900 mm): Via [AWR_VOUT_14SYNTH] on F.Cu - B.Cu
+    @(-1.8175 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll USB_DP e RADAR_EN)
+    Local override; error
+    @(-0.0700 mm, -6.6100 mm): Via [USB_DP] on F.Cu - B.Cu
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll AWR_1V2_FB e USB_DP)
+    Local override; error
+    @(-1.8175 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+    @(-1.1800 mm, -6.2000 mm): Via [USB_DP] on F.Cu - B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll USB_DP e RADAR_EN)
+    Local override; error
+    @(-0.0700 mm, -6.6100 mm): Track [USB_DP] on B.Cu, length 0.2800 mm
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll AWR_1V2_FB e USB_DP)
+    Local override; error
+    @(-1.8175 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+    @(-0.7600 mm, -6.2000 mm): Track [USB_DP] on B.Cu, length 0.4200 mm
+[shorting_items]: Elementi che cortocircuitano (coll FLEX_GND e AWR_1V2_SW)
+    Local override; error
+    @(-1.2400 mm, -4.1900 mm): Track [FLEX_GND] on B.Cu, length 0.6500 mm
+    @(-1.8175 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll FLEX_GND e AWR_1V2_SW)
+    Local override; error
+    @(0.6300 mm, -2.3200 mm): Track [FLEX_GND] on B.Cu, length 2.6446 mm
+    @(-1.8175 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll USB_DP e RADAR_EN)
+    Local override; error
+    @(-0.0700 mm, -6.8900 mm): Track [USB_DP] on B.Cu, length 0.2800 mm
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[hole_clearance]: Violazione clearance foro (vincoli impostazioni scheda fori clearance 0.1500 mm; reale 0.0000 mm)
+    Rule: vincoli impostazioni scheda fori; error
+    @(-1.8175 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+    @(-1.0800 mm, -5.2900 mm): Via [AWR_VOUT_14SYNTH] on F.Cu - B.Cu
+[hole_clearance]: Violazione clearance foro (vincoli impostazioni scheda fori clearance 0.1500 mm; reale 0.0000 mm)
+    Rule: vincoli impostazioni scheda fori; error
+    @(-1.8175 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+    @(-1.1800 mm, -6.2000 mm): Via [USB_DP] on F.Cu - B.Cu
+[hole_clearance]: Violazione clearance foro (vincoli impostazioni scheda fori clearance 0.1500 mm; reale 0.0000 mm)
+    Rule: vincoli impostazioni scheda fori; error
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+    @(-0.0700 mm, -6.6100 mm): Via [USB_DP] on F.Cu - B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-0.0700 mm, -6.8900 mm): Track [USB_DP] on B.Cu, length 0.2800 mm
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-1.0800 mm, -5.2900 mm): Via [AWR_VOUT_14SYNTH] on F.Cu - B.Cu
+    @(-1.8175 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-1.2400 mm, -4.1900 mm): Track [FLEX_GND] on B.Cu, length 0.6500 mm
+    @(-1.8175 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(0.6300 mm, -2.3200 mm): Track [FLEX_GND] on B.Cu, length 2.6446 mm
+    @(-1.8175 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-0.0700 mm, -6.6100 mm): Via [USB_DP] on F.Cu - B.Cu
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-1.1800 mm, -6.2000 mm): Via [USB_DP] on F.Cu - B.Cu
+    @(-1.8175 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-0.0700 mm, -6.6100 mm): Track [USB_DP] on B.Cu, length 0.2800 mm
+    @(0.4575 mm, -6.2300 mm): Pad 4 [RADAR_EN] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-0.7600 mm, -6.2000 mm): Track [USB_DP] on B.Cu, length 0.4200 mm
+    @(-1.8175 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

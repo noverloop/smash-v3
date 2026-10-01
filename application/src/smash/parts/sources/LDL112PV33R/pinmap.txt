@@ -1,0 +1,7 @@
+pin 1: EN
+pin 2: GND
+pin 3: ADJ
+pin 4: VOUT
+pin 5: NC
+pin 6: VIN
+pin 7: EP

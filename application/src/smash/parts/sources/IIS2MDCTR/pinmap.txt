@@ -1,0 +1,12 @@
+pin 1: SCL_SPC
+pin 2: NC_1
+pin 3: CS
+pin 4: SDA_SDI_SDO
+pin 5: C1
+pin 6: GND_1
+pin 7: INT_DRDY
+pin 8: GND_2
+pin 9: VDD
+pin 10: VDD_IO
+pin 11: NC_2
+pin 12: NC_3

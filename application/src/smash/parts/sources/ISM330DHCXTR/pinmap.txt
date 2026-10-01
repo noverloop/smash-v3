@@ -1,0 +1,14 @@
+pin 1: SDO_SA0
+pin 2: SDX
+pin 3: SCX
+pin 4: INT1
+pin 5: VDDIO
+pin 6: GND_1
+pin 7: GND_2
+pin 8: VDD
+pin 9: INT2
+pin 10: OCS_AUX
+pin 11: SDO_AUX
+pin 12: CS
+pin 13: SCL
+pin 14: SDA

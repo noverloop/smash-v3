@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AD8603AUJZ-R2
+D AD8603AUJZ-R2, Operational Amplifier 0.4MHz CMOS, Rail-Rail, 3 V, 5-Pin TSOT
+K
+F http://componentsearchengine.com/Datasheets/3/AD8603AUJZ-R2.pdf
+$ENDCMP
+#
+#End Doc Library

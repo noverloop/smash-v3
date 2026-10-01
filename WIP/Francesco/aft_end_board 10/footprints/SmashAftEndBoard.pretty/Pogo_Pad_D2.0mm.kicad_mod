@@ -1,0 +1,33 @@
+(footprint "Pogo_Pad_D2.0mm"
+	(version 20260206)
+	(generator "smash")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "2 mm Ø round pogo-pad TestPoint")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "Pogo_Pad_D2.0mm"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(fp_poly
+		(pts (xy -1.05 1.05) (xy 1.05 1.05) (xy 1.05 -1.05) (xy -1.05 -1.05) (xy -1.05 1.05))
+		(stroke (width 0.05) (type solid))
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "600a8d96-5d06-52ba-b9d9-3fac78db0748")
+	)
+	(pad "1" smd circle
+		(at 0 0)
+		(size 2 2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "b8c72ad2-a74d-5f03-a81e-ad1b511fe97e")
+	)
+	(embedded_fonts no)
+)

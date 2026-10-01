@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32WBA55HGF6TR
+D Multiprotocol wireless 32-bit MCU Arm-based Cortex-M33 with TrustZone, FPU, Bluetooth LE and IEEE 802.15.4 radio solution
+K
+F https://www.st.com/resource/en/datasheet/stm32wba52ce.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,4 @@
+pin A1: VIN
+pin A2: VOUT
+pin B1: EN
+pin B2: GND

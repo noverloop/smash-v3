@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP M24C01-RMN6TP
+D 1-Kbit and 2-Kbit serial IC bus EEPROMs
+K
+F https://www.st.com/resource/en/datasheet/m24c01-w.pdf
+$ENDCMP
+#
+#End Doc Library

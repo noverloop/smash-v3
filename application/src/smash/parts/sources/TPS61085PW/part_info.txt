@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS61085PW
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=1.1
+Released=2016-01-12 12:44:25
+Downloaded=2026-05-20 20:01:26
+3D=Y

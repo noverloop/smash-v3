@@ -1,0 +1,112 @@
+** Drc report for radar_module.kicad_pcb **
+** Created on 2026-07-10T14:01:33 **
+** Report includes: Errors **
+
+** Found 24 DRC violations **
+[annular_width]: Larghezza anello (vincoli impostazioni scheda larghezza anello min 0.0750 mm; reale 0.0716 mm)
+    Rule: vincoli impostazioni scheda; error
+    @(-5.7450 mm, -11.4500 mm): PTH pad SH3 [FLEX_GND] of J_USB_C
+[annular_width]: Larghezza anello (vincoli impostazioni scheda larghezza anello min 0.0750 mm; reale 0.0716 mm)
+    Rule: vincoli impostazioni scheda; error
+    @(5.7450 mm, -11.4500 mm): PTH pad SH1 [FLEX_GND] of J_USB_C
+[shorting_items]: Elementi che cortocircuitano (coll AWR_1V8 e AWR_SPI_CS)
+    Local override; error
+    @(6.1300 mm, -3.7300 mm): Via [AWR_1V8] on F.Cu - B.Cu
+    @(-6.7000 mm, -3.6700 mm): Track [AWR_SPI_CS] on In9.Cu, length 15.5400 mm
+[clearance]: Violazione clearance ( clearance 0.1000 mm; reale 0.0980 mm)
+    Local override; error
+    @(-5.7450 mm, -11.4500 mm): PTH pad SH3 [FLEX_GND] of J_USB_C
+    @(-6.5400 mm, -11.1200 mm): Pad 1 [AWR_VOUT_14APLL] of C_AWR_14APLL on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll AWR_1V2_SW e FLEX_GND)
+    Local override; error
+    @(-1.9300 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+    @(-1.9300 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+[shorting_items]: Elementi che cortocircuitano (coll FLEX_GND e AWR_1V2_FB)
+    Local override; error
+    @(-1.9300 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+    @(-1.9300 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.2450 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -14.7224 mm): Segment on Edge.Cuts
+    @(-5.7450 mm, -13.1500 mm): PTH pad SH4 [FLEX_GND] of J_USB_C
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.2450 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -14.7224 mm): Segment on Edge.Cuts
+    @(-5.7450 mm, -11.4500 mm): PTH pad SH3 [FLEX_GND] of J_USB_C
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.2450 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(5.7450 mm, -13.1500 mm): PTH pad SH2 [FLEX_GND] of J_USB_C
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.2450 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(5.7450 mm, -11.4500 mm): PTH pad SH1 [FLEX_GND] of J_USB_C
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(1.7500 mm, -7.8100 mm): Pad B8 [<no net>] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(0.7500 mm, -7.8100 mm): Pad B7 [USB_DM] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-0.7500 mm, -7.8100 mm): Pad B6 [USB_DP] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-1.7500 mm, -7.8100 mm): Pad B5 [USB_CC2] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-2.3650 mm, -7.8100 mm): Pad B4_A9 [USB_VBUS] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-3.1650 mm, -7.8100 mm): Pad B1_A12 [FLEX_GND] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-1.2500 mm, -7.8100 mm): Pad A8 [<no net>] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(-0.2500 mm, -7.8100 mm): Pad A7 [USB_DM] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(0.2500 mm, -7.8100 mm): Pad A6 [USB_DP] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(1.2500 mm, -7.8100 mm): Pad A5 [USB_CC1] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(2.3650 mm, -7.8100 mm): Pad A4_B9 [USB_VBUS] of J_USB_C on F.Cu
+[copper_edge_clearance]: Violazione clearance bordo scheda (vincoli impostazioni scheda bordi clearance 0.5000 mm; reale 0.0724 mm)
+    Rule: vincoli impostazioni scheda bordi; error
+    @(-5.1000 mm, -8.4224 mm): Segment on Edge.Cuts
+    @(3.1650 mm, -7.8100 mm): Pad A1_B12 [FLEX_GND] of J_USB_C on F.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-1.9300 mm, -4.3300 mm): Pad 1 [AWR_1V2_SW] of U_AWR_BUCK12 on B.Cu
+    @(-1.9300 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+[solder_mask_bridge]: L'apertura maschera di saldatura retro fa ponte tra elementi con collegamenti diversi
+    Rule: impostazioni scheda larghezza minima maschera di saldatura; error
+    @(-1.9300 mm, -5.2800 mm): Pad 2 [FLEX_GND] of U_AWR_BUCK12 on B.Cu
+    @(-1.9300 mm, -6.2300 mm): Pad 3 [AWR_1V2_FB] of U_AWR_BUCK12 on B.Cu
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

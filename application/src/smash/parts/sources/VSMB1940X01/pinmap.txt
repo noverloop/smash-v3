@@ -1,0 +1,8 @@
+K=1, A=2
+
+Pad 1 = cathode (footprint left, silk tick), pad 2 = anode — same K/A
+convention as the LTST-C190 LEDs and the VBPW34FAS. Unlike the
+photodiode's DS, DS 81933 labels the leads explicitly in the package
+top view (anode left / cathode right in the drawing's orientation) and
+the blister-tape drawing marks which terminal faces the sprocket row —
+transfer that orientation onto the assembly drawing.

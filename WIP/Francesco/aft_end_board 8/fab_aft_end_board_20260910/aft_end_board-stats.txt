@@ -1,0 +1,54 @@
+Rapporto statistico C.S.
+========================
+- Data: 10/09/2026 08:04:50
+- Progetto: aft_end_board
+- Nome scheda: aft_end_board
+
+Scheda
+-----
+- Larghezza: 33.9975 mm
+- Altezza: 34.0050 mm
+- Area: 907.833 mm²
+- Area rame fronte: 216.477 mm²
+- Area rame retro: 138.793 mm²
+- Clearance minima pista: 0.0762 mm
+- Larghezza minima pista: 0.1000 mm
+- Diametro min foro: 0.2000 mm
+- Spessore stackup scheda: 2.2250 mm
+
+- Area impronta fronte: 343.036 mm²
+- Area impronta retro: 201.897 mm²
+- Densità componenti fronte: 37.79 %
+- Densità componenti retro: 22.24 %
+Piazzole
+----
+- Fori passanti: 0
+- SMD: 248
+- Connettore: 0
+- NPTH: 0
+- Dentellati: 0
+- Press-fit: 0
+
+Via
+----
+- Via passanti: 156
+- Via ciechi: 0
+- Via sepolti: 0
+- Microvia: 0
+
+Componenti
+----------
+
+|              | Lato fronte | Lato retro | Totale |
+|--------------|-------------|------------|--------|
+|THT:          |           0 |          0 |      0 |
+|SMD:          |           0 |          0 |      0 |
+|Imprecisato:  |          29 |         48 |     77 |
+|Totale:       |          29 |         48 |     77 |
+
+Forature
+-----------
+
+| Conteggio | Forma |    Dim. X |    Dim. Y | Placcata | Via/Piaz | Strato iniziale | Strato finale |
+|-----------|-------|-----------|-----------|----------|----------|-----------------|---------------|
+|       156 | Tondo | 0.2000 mm | 0.2000 mm |      PTH |      Via |            F.Cu |          B.Cu |

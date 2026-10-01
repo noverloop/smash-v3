@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32WLE5JCI6
+D Multiprotocol LPWAN 32-bit Arm Cortex-M4 MCUs, LoRa, (G)FSK, (G)MSK, BPSK, up to 256KB flash, 64KB SRAM
+K
+F https://www.st.com/resource/en/datasheet/stm32wle5c8.pdf
+$ENDCMP
+#
+#End Doc Library

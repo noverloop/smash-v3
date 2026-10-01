@@ -1,0 +1,8 @@
+pin 1: E0
+pin 2: E1
+pin 3: E2
+pin 4: VSS
+pin 5: SDA
+pin 6: SCL
+pin 7: W\C\
+pin 8: VCC

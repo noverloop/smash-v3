@@ -1,0 +1,15 @@
+Vishay VSMB1940X01 — 940 nm high-speed IR emitting diode, GaAlAs
+double-hetero, clear untinted 0805 SMD (2.0 x 1.25 x 0.85 mm),
+AEC-Q101 qualified.
+
+Provenance: HAND-AUTHORED artifacts (no SamacSys archive) — the
+.kicad_mod / .kicad_sym were drawn from the official datasheet:
+  vsmb1940.pdf = Vishay DS 81933 Rev 1.6, 24-Mar-2025
+  package drawing 6.541-5064.01-4 (page 4), recommended solder pad
+  pattern: 2x (1.0 x 1.45 mm), inner gap 0.6 mm.
+No STEP model.
+
+Smash use: D_IR_TX on radar_module — the nose IR downlink emitter of
+the optical service link (pairs with the VBPW34FAS receiver; the
+receiver's daylight filter passband 780-1050 nm brackets this part's
+940 nm peak, so wand and round can use the same wavelength both ways).

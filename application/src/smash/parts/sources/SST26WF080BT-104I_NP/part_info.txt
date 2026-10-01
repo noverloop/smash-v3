@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=SST26WF080BT-104I/NP
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=9
+Version=2.3
+Released=2024-04-24 05:26:43
+Downloaded=2026-06-08 17:30:13
+3D=Y

@@ -1,0 +1,9 @@
+K=1, A=2
+
+Pad 1 = cathode (footprint left, silk tick), pad 2 = anode — same K/A
+convention as the LTST-C190 LEDs. DS 81127 gives only the schematic
+symbol row (anode left / cathode right); the PHYSICAL cathode lead is
+identified by the package polarity mark, not by the drawing.
+>>> VERIFY lead polarity against the physical mark at bring-up /
+assembly-drawing release. A reversed part forward-biases into the
+IR_WAKE pull-up (node stuck ~0.7 V, no wake, ~6 uA standing drain).

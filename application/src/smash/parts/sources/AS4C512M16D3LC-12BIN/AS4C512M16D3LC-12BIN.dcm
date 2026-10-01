@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AS4C512M16D3LC-12BIN
+D DRAM DDR3L, 8G, 512M X 16, 1.35V, 96-BALL FBGA, 800MHZ INDUSTRIAL TEMP C Die (MT41K512M16HA-125IT:A),
+K
+F https://www.alliancememory.com/wp-content/uploads/AllianceMemory_8Gb_DDR3L_AS4C512M16D3LC_June2022_Rev1.0.pdf
+$ENDCMP
+#
+#End Doc Library

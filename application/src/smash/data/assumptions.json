@@ -1,0 +1,665 @@
+{
+  "_meta": {
+    "source": "output/system_bom.csv (seed) + Octopart/Nexar API (gap fills)",
+    "generated": "2026-05-25 seed; 2026-06-05 Octopart gap-fill",
+    "note": "Sourcing overlay joined onto each Chip/Battery by canonical_id (price_1pc, price_20kpc, currency, fab_country, weight_g). TWO provenance tiers: (1) the BULK was seeded 2026-05-25 from output/system_bom.csv, whose prices trace to components.md / Octopart collected ~April 2026 - treat as STALE, re-collect before quoting. (2) Entries carrying a _source:'octopart/nexar API...' field were collected FRESH 2026-06-05 to fill gaps left by recent part swaps (AWR2E44P, STM32MP255DAL3, STM32WBA55, DRV8428E, TLV3691, DSC1001 freq-variants); the Kingston DDR4 was carried from its DDR3 predecessor (Octopart lacks the PN). Hand-maintained - build_assumptions.py OVERWRITES manual edits, so re-seed deliberately. Some entries are for swapped-away parts (no current BOM match); they are harmless dead weight kept as predecessor reference. (3) Entries with _source:'estimate...' are TYPE-BASED typical-market estimates for parts with no quote (passives, inductors, LEDs, USB-C, the QPD detector) \u2014 replace with real quotes before locking BOM cost."
+  },
+  "parts": {
+    "tlm_1530m_s": {
+      "manf_pn": "TLM-1530M/S",
+      "price_1pc": 61.52,
+      "price_20kpc": 39.99,
+      "currency": "USD",
+      "fab_country": "IL",
+      "_source": "Tadiran list price: $61.52 @1pc, tiered discount to 35% off ($39.99) at 1080+ qty (used for price_20kpc); lowprofile single-cell battery (TLM-1530M/S); collected 2026-06-08"
+    },
+    "ad8603aujz_r2": {
+      "manf_pn": "AD8603AUJZ-R2",
+      "price_1pc": 1.5,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "sst26wf080bt_104i_np": {
+      "manf_pn": "SST26WF080BT-104I/NP",
+      "price_1pc": 1.38,
+      "price_20kpc": 1.38,
+      "currency": "EUR",
+      "_source": "Mouser EUR cut-tape: 1.38 EUR @1pc and @3000-reel (+5 EUR MouseReel fee); 20k not quoted, placeholder = 1pc price; radar boot flash; collected 2026-06-08"
+    },
+    "adf4351bcpz": {
+      "manf_pn": "ADF4351BCPZ",
+      "price_1pc": 23.0,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "ar0234cssm00suka0_cp": {
+      "manf_pn": "AR0234CSSM00SUKA0-CP",
+      "price_1pc": 33.09,
+      "currency": "USD",
+      "fab_country": "IT/CN"
+    },
+    "as4c512m16d3lc_12bin": {
+      "manf_pn": "AS4C512M16D3LC-12BIN",
+      "price_1pc": 9.0,
+      "currency": "USD",
+      "fab_country": "TW"
+    },
+    "awr2944abgaltrq1": {
+      "manf_pn": "AWR2944ABGALTRQ1",
+      "price_1pc": 45.0,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "awr2e44pbgamxrq1": {
+      "manf_pn": "AWR2E44PBGAMXRQ1",
+      "price_1pc": 46.008,
+      "price_20kpc": 33.543,
+      "currency": "USD",
+      "fab_country": "USA/DE",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "bgs12wn6e6327xtsa1": {
+      "manf_pn": "BGS12WN6E6327XTSA1",
+      "price_1pc": 1.0,
+      "currency": "USD",
+      "fab_country": "AT/DE"
+    },
+    "bss138lt1g": {
+      "manf_pn": "BSS138LT1G",
+      "price_1pc": 0.2,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "c0402_x7r_0_1uf": {
+      "manf_pn": "C0402 X7R 0.1uF",
+      "price_1pc": 0.01,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "c0402_x7r_100nf": {
+      "manf_pn": "C0402 X7R 100nF",
+      "price_1pc": 0.01,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "c0402_x7r_10nf": {
+      "manf_pn": "C0402 X7R 10nF",
+      "price_1pc": 0.01,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "c0402_x7r_22nf": {
+      "manf_pn": "C0402 X7R 22nF",
+      "price_1pc": 0.01,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "c_series_mil_prf_32535_x7r_0603_2_2uf": {
+      "manf_pn": "C-Series MIL-PRF-32535 X7R 0603 2.2uF",
+      "price_1pc": 0.35,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "c_series_mil_prf_32535_x7r_0805_1uf": {
+      "manf_pn": "C-Series MIL-PRF-32535 X7R 0805 1uF",
+      "price_1pc": 0.35,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_100_1_e3": {
+      "manf_pn": "CRCW0402 100 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_100k_1_e3": {
+      "manf_pn": "CRCW0402 100k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_10k_1_e3": {
+      "manf_pn": "CRCW0402 10k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_120_1_e3": {
+      "manf_pn": "CRCW0402 120 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_12k_1_e3": {
+      "manf_pn": "CRCW0402 12k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_17_8k_1_e3": {
+      "manf_pn": "CRCW0402 17.8k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_1_5k_1_e3": {
+      "manf_pn": "CRCW0402 1.5k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_1k_1_e3": {
+      "manf_pn": "CRCW0402 1k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_1m_1_e3": {
+      "manf_pn": "CRCW0402 1M 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_200m_1_e3": {
+      "manf_pn": "CRCW0402 200m 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_220k_1_e3": {
+      "manf_pn": "CRCW0402 220k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_240_1_e3": {
+      "manf_pn": "CRCW0402 240 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_30k_1_e3": {
+      "manf_pn": "CRCW0402 30k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_330_1_e3": {
+      "manf_pn": "CRCW0402 330 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_330k_1_e3": {
+      "manf_pn": "CRCW0402 330k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_33k_1_e3": {
+      "manf_pn": "CRCW0402 33k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_47k_1_e3": {
+      "manf_pn": "CRCW0402 47k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_4_3k_1_e3": {
+      "manf_pn": "CRCW0402 4.3k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_4_7k_1_e3": {
+      "manf_pn": "CRCW0402 4.7k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_5_1k_1_e3": {
+      "manf_pn": "CRCW0402 5.1k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "crcw0402_909k_1_e3": {
+      "manf_pn": "CRCW0402 909k 1% e3",
+      "price_1pc": 0.02,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "drv8428epwpr": {
+      "manf_pn": "DRV8428EPWPR",
+      "price_1pc": 0.557,
+      "price_20kpc": 0.401,
+      "currency": "USD",
+      "fab_country": "USA",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "dsc1001ci5_008_0000": {
+      "manf_pn": "DSC1001CI5-008.0000",
+      "price_1pc": 1.7,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "dsc1001ci5_032_0000": {
+      "manf_pn": "DSC1001CI5-032.0000",
+      "price_1pc": 0.228,
+      "price_20kpc": 0.228,
+      "currency": "USD",
+      "fab_country": "USA",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "dsc1001ci5_040_0000": {
+      "manf_pn": "DSC1001CI5-040.0000",
+      "price_1pc": 1.1,
+      "price_20kpc": 0.96,
+      "currency": "USD",
+      "fab_country": "USA",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "h3lis331dltr": {
+      "manf_pn": "H3LIS331DLTR",
+      "price_1pc": 3.0,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "iis2mdctr": {
+      "manf_pn": "IIS2MDCTR",
+      "price_1pc": 2.0,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "irlml6402trpbf": {
+      "manf_pn": "IRLML6402TRPBF",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "fab_country": "AT/DE"
+    },
+    "ism330dhcxtr": {
+      "manf_pn": "ISM330DHCXTR",
+      "price_1pc": 3.5,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "ktdm4g4b626bgieat": {
+      "manf_pn": "KTDM4G4B626BGIEAT",
+      "price_1pc": 9.0,
+      "currency": "USD",
+      "fab_country": "TW",
+      "_source": "CARRIED from DDR3 predecessor AS4C512M16D3LC ($9); Octopart lacks the Kingston DDR4 PN - verify (a current 4Gb DDR4 is typically ~$4-5/1pc)"
+    },
+    "lbee5kl1yn": {
+      "manf_pn": "LBEE5KL1YN",
+      "price_1pc": 8.48,
+      "currency": "USD",
+      "fab_country": "JP"
+    },
+    "ldl112pv18r": {
+      "manf_pn": "LDL112PV18R",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "ldl112pv33r": {
+      "manf_pn": "LDL112PV33R",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "lmr10510xmfe_nopb": {
+      "manf_pn": "LMR10510XMFE/NOPB",
+      "price_1pc": 1.5,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "lmv331idbvr": {
+      "manf_pn": "LMV331IDBVR",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "lp5907mfx_1_2_nopb": {
+      "manf_pn": "LP5907MFX-1.2/NOPB",
+      "price_1pc": 0.55,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "lp5907mfx_2_8_nopb": {
+      "manf_pn": "LP5907MFX-2.8/NOPB",
+      "price_1pc": 0.55,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "ltst_c190gkt": {
+      "manf_pn": "LTST-C190GKT",
+      "price_1pc": 0.1,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "ltst_c190krkt": {
+      "manf_pn": "LTST-C190KRKT",
+      "price_1pc": 0.1,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "mbrs540t3g": {
+      "manf_pn": "MBRS540T3G",
+      "price_1pc": 0.35,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "mcp1640ct_i_chy": {
+      "manf_pn": "MCP1640CT-I/CHY",
+      "price_1pc": 1.5,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "mt03_092": {
+      "manf_pn": "MT03-092",
+      "price_1pc": 75.0,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "mt29f4g01abafdwb_it_f": {
+      "manf_pn": "MT29F4G01ABAFDWB-IT:F",
+      "price_1pc": 4.5,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "mt29f8g08abacah4_it_c": {
+      "manf_pn": "MT29F8G08ABACAH4-IT:C",
+      "price_1pc": 8.5,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "s25hl512tfamhi010": {
+      "manf_pn": "S25HL512TFAMHI010",
+      "price_1pc": 6.0,
+      "currency": "USD",
+      "fab_country": "AT/JP"
+    },
+    "sit1630ae_s6_dcc_32_768e": {
+      "manf_pn": "SiT1630AE-S6-DCC-32.768E",
+      "price_1pc": 1.3,
+      "currency": "USD",
+      "fab_country": "TW (TSMC ASIC)"
+    },
+    "sn74lvc1g08dckrg4": {
+      "manf_pn": "SN74LVC1G08DCKRG4",
+      "price_1pc": 0.1,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "sqcsva_0_5pf": {
+      "manf_pn": "SQCSVA 0.5pF",
+      "price_1pc": 0.25,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "sqcsva_1pf": {
+      "manf_pn": "SQCSVA 1pF",
+      "price_1pc": 0.25,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "sqcsva_30pf": {
+      "manf_pn": "SQCSVA 30pF",
+      "price_1pc": 0.25,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "st25dv16kc_ie8t3": {
+      "manf_pn": "ST25DV16KC-IE8T3",
+      "price_1pc": 1.26,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stlq020c33r": {
+      "manf_pn": "STLQ020C33R",
+      "price_1pc": 0.7,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stm32g0b1rei6n": {
+      "manf_pn": "STM32G0B1REI6N",
+      "price_1pc": 3.5,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stm32h562aii6": {
+      "manf_pn": "STM32H562AII6",
+      "price_1pc": 10.0,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stm32mp255dal3": {
+      "manf_pn": "STM32MP255DAL3",
+      "price_1pc": 10.647,
+      "price_20kpc": 10.647,
+      "currency": "USD",
+      "fab_country": "FR/IT",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "stm32mp255fak3": {
+      "manf_pn": "STM32MP255FAK3",
+      "price_1pc": 24.0,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stm32wba55hgf6tr": {
+      "manf_pn": "STM32WBA55HGF6TR",
+      "price_1pc": 2.823,
+      "price_20kpc": 2.598,
+      "currency": "USD",
+      "fab_country": "FR/IT",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "stm32wle5jci6": {
+      "manf_pn": "STM32WLE5JCI6",
+      "price_1pc": 7.0,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "stpmic25apqr": {
+      "manf_pn": "STPMIC25APQR",
+      "price_1pc": 3.5,
+      "currency": "USD",
+      "fab_country": "FR/IT"
+    },
+    "t491t_22uf_3528_12_thinnest_variant": {
+      "manf_pn": "T491T 22uF (3528-12 thinnest variant)",
+      "price_1pc": 0.45,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "t491t_case_b_3528_12_mno2": {
+      "manf_pn": "T491T (case-B 3528-12, MnO2)",
+      "price_1pc": 0.4,
+      "currency": "USD",
+      "fab_country": "USA/MX"
+    },
+    "t528w_100uf_7343_15_thinnest_variant": {
+      "manf_pn": "T528W 100uF (7343-15 thinnest variant)",
+      "price_1pc": 1.8,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "t528w_470uf_7343_15_thinnest_variant": {
+      "manf_pn": "T528W 470uF (7343-15 thinnest variant)",
+      "price_1pc": 4.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "t528w_47uf_7343_15_thinnest_variant": {
+      "manf_pn": "T528W 47uF (7343-15 thinnest variant)",
+      "price_1pc": 1.2,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "t528w_case_x_7343_15_polymer": {
+      "manf_pn": "T528W (case-X 7343-15, polymer)",
+      "price_1pc": 0.85,
+      "currency": "USD",
+      "fab_country": "USA/MX"
+    },
+    "tcan1042gvdq1": {
+      "manf_pn": "TCAN1042GVDQ1",
+      "price_1pc": 1.4,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "tlv3691idpfr": {
+      "manf_pn": "TLV3691IDPFR",
+      "price_1pc": 0.173,
+      "price_20kpc": 0.124,
+      "currency": "USD",
+      "fab_country": "USA",
+      "_source": "octopart/nexar API, collected 2026-06-05"
+    },
+    "tmp117maidrvr": {
+      "manf_pn": "TMP117MAIDRVR",
+      "price_1pc": 3.0,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "tms201210alm_1r0mtaa": {
+      "manf_pn": "TMS201210ALM-1R0MTAA",
+      "price_1pc": 0.25,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "tms201210alm_2r2mtaa": {
+      "manf_pn": "TMS201210ALM-2R2MTAA",
+      "price_1pc": 0.25,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "tps25940aqrvctq1": {
+      "manf_pn": "TPS25940AQRVCTQ1",
+      "price_1pc": 1.85,
+      "currency": "USD",
+      "fab_country": "USA"
+    },
+    "tps61085pw": {
+      "manf_pn": "TPS61085PW",
+      "price_1pc": 2.5,
+      "currency": "USD",
+      "fab_country": "USA/DE"
+    },
+    "uj20_c_h_g_msmt_1a_p16_tr_67": {
+      "manf_pn": "UJ20-C-H-G-MSMT-1A-P16-TR-67",
+      "price_1pc": 0.6,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "we_ki_0402_1uh_74479xxxxx_family": {
+      "manf_pn": "WE-KI 0402 1uH (74479xxxxx family)",
+      "price_1pc": 0.15,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "we_ki_0402_2_7nh_74479xxxxx_family": {
+      "manf_pn": "WE-KI 0402 2.7nH (74479xxxxx family)",
+      "price_1pc": 0.15,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "we_ki_0402_4_7uh_74479xxxxx_family": {
+      "manf_pn": "WE-KI 0402 4.7uH (74479xxxxx family)",
+      "price_1pc": 0.15,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-06-05"
+    },
+    "awr1843arbgalpq1": {
+      "manf_pn": "AWR1843ARBGALPQ1",
+      "price_1pc": 57.12,
+      "price_20kpc": 41.45,
+      "currency": "USD",
+      "fab_country": "USA/DE",
+      "_source": "digikey.com listed price 2026-08-07 (20kpc col = 126+ tray break, no deeper public break)"
+    },
+    "rr123_1h02_612": {
+      "manf_pn": "RR123-1H02-612",
+      "price_1pc": 3.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "tps61175pwpr": {
+      "manf_pn": "TPS61175PWPR",
+      "price_1pc": 2.6,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "sst26vf080a_104i_mf": {
+      "manf_pn": "SST26VF080A-104I/MF",
+      "price_1pc": 1.3,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "cd74hc4514pw": {
+      "manf_pn": "CD74HC4514PW",
+      "price_1pc": 1.4,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "744043100": {
+      "manf_pn": "744043100",
+      "price_1pc": 1.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "bat64_06_tp": {
+      "manf_pn": "BAT64-06-TP",
+      "price_1pc": 0.4,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "dmn6075sq_7": {
+      "manf_pn": "DMN6075SQ-7",
+      "price_1pc": 0.45,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "dmp6110svt_7": {
+      "manf_pn": "DMP6110SVT-7",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "drv5032fcqdbzr": {
+      "manf_pn": "DRV5032FCQDBZR",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "mbrs340t3g": {
+      "manf_pn": "MBRS340T3G",
+      "price_1pc": 0.55,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "tps7a0233pdbvr": {
+      "manf_pn": "TPS7A0233PDBVR",
+      "price_1pc": 0.5,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "vbpw34fas": {
+      "manf_pn": "VBPW34FAS",
+      "price_1pc": 1.3,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "vsmb1940x01": {
+      "manf_pn": "VSMB1940X01",
+      "price_1pc": 0.6,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    }
+  }
+}

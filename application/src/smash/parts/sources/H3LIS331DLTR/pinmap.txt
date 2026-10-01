@@ -1,0 +1,16 @@
+pin 1: VDD_IO
+pin 2: NC_1
+pin 3: NC_2
+pin 4: SCL_SPC
+pin 5: GND_1
+pin 6: SDA_SDI_SDO
+pin 7: SDO_SA0
+pin 8: CS
+pin 9: INT2
+pin 10: RESERVED_1
+pin 11: INT1
+pin 12: GND_2
+pin 13: GND_3
+pin 14: VDD
+pin 15: RESERVED_2
+pin 16: GND_4

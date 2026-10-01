@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=H3LIS331DLTR
+PartCategory=Accelerometer
+PackageCategory=Other
+PinCount=16
+Version=2.2
+Released=2015-11-16 07:45:09
+Downloaded=2026-05-19 17:31:48
+3D=Y

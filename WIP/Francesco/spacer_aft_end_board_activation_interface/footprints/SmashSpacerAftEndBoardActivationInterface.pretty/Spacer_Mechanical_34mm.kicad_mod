@@ -1,0 +1,33 @@
+(footprint "Spacer_Mechanical_34mm"
+	(version 20260206)
+	(generator "smash")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Mechanical spacer spacer_aft_end_board_activation_interface — Ø34 mm rigid interposer, cavities milled for chips on both adjacent tile faces. No signals.")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "Spacer_Mechanical_34mm"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(fp_poly
+		(pts (xy -0.45 0.45) (xy 0.45 0.45) (xy 0.45 -0.45) (xy -0.45 -0.45) (xy -0.45 0.45))
+		(stroke (width 0.05) (type solid))
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "f024b6f0-dbd3-53e0-9b57-657de4b0cfd4")
+	)
+	(pad "1" smd circle
+		(at 0 0)
+		(size 0.8 0.8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "9b51b763-6f8c-54a5-82b4-2221f39b765c")
+	)
+	(embedded_fonts no)
+)

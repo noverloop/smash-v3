@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashSpacerActivationInterfaceCellFloorBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerActivationInterfaceCellFloorBoard.pretty")(options "")(descr "Editable Smash spacer-activation-interface-cell-floor-board footprints"))
+)

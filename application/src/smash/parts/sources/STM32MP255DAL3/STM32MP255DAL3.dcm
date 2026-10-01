@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STM32MP255DAL3
+D Arm based dual Cortex-A35 1.5 GHz + Cortex-M33 MPU with AI, 3D GPU, videoencoder/decoder, TFT/DSI/LVDS, USB 3.0, PCIe
+K
+F https://www.st.com/resource/en/datasheet/stm32mp251a.pdf
+$ENDCMP
+#
+#End Doc Library

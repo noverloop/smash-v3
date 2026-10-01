@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STLQ020J30R
+D LDO Voltage Regulators POWER MANAGEMENT
+K
+F https://www.st.com/resource/en/datasheet/stlq020.pdf
+$ENDCMP
+#
+#End Doc Library

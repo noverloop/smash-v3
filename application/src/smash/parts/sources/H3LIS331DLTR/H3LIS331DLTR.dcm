@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP H3LIS331DLTR
+D Accelerometers Low Pwr Hi G 3-axis Digital Acceleromtr
+K
+F https://www.st.com/resource/en/datasheet/h3lis331dl.pdf
+$ENDCMP
+#
+#End Doc Library

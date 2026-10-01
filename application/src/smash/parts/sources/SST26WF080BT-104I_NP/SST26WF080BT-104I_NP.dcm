@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SST26WF080BT-104I_NP
+D NOR Flash 8Mb SQI Flash Memory 1.8V 8 USON
+K
+F https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20005283C.pdf
+$ENDCMP
+#
+#End Doc Library

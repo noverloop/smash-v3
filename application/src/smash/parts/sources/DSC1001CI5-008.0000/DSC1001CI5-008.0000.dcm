@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DSC1001CI5-008.0000
+D MEMS OSCILLATOR, LOW POWER, -4
+K
+F https://www.arrow.com/en/products/dsc1001ci5-008.0000/microchip-technology
+$ENDCMP
+#
+#End Doc Library

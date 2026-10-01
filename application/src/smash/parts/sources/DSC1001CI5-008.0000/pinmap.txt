@@ -1,0 +1,4 @@
+pin 1: STANDBY#
+pin 2: GND
+pin 3: OUT
+pin 4: VDD

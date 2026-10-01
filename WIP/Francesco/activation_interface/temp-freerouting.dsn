@@ -1,0 +1,930 @@
+(pcb "G:\activation_interface\temp-freerouting.dsn"
+  (parser
+    (string_quote ")
+    (space_in_quoted_tokens on)
+    (host_cad "KiCad's Pcbnew")
+    (host_version "10.0.3")
+  )
+  (resolution um 10)
+  (unit um)
+  (structure
+    (layer F.Cu
+      (type signal)
+      (property
+        (index 0)
+      )
+    )
+    (layer In1.Cu
+      (type power)
+      (property
+        (index 1)
+      )
+    )
+    (layer In2.Cu
+      (type power)
+      (property
+        (index 2)
+      )
+    )
+    (layer In3.Cu
+      (type signal)
+      (property
+        (index 3)
+      )
+    )
+    (layer In4.Cu
+      (type signal)
+      (property
+        (index 4)
+      )
+    )
+    (layer In5.Cu
+      (type signal)
+      (property
+        (index 5)
+      )
+    )
+    (layer In6.Cu
+      (type signal)
+      (property
+        (index 6)
+      )
+    )
+    (layer In7.Cu
+      (type signal)
+      (property
+        (index 7)
+      )
+    )
+    (layer In8.Cu
+      (type signal)
+      (property
+        (index 8)
+      )
+    )
+    (layer In9.Cu
+      (type signal)
+      (property
+        (index 9)
+      )
+    )
+    (layer In10.Cu
+      (type signal)
+      (property
+        (index 10)
+      )
+    )
+    (layer In11.Cu
+      (type power)
+      (property
+        (index 11)
+      )
+    )
+    (layer In12.Cu
+      (type power)
+      (property
+        (index 12)
+      )
+    )
+    (layer B.Cu
+      (type signal)
+      (property
+        (index 13)
+      )
+    )
+    (boundary
+      (path pcb 0  821.447 16982.6  1640.98 16923.1  2456.67 16824.1  3266.63 16685.7
+            4068.96 16508.4  4861.79 16292.6  5643.26 16038.6  6411.55 15747.3
+            7164.86 15419.1  7901.45 15055  8619.58 14655.6  9317.57 14222.1
+            9993.81 13755.3  10646.7 13256.4  11274.7 12726.5  11876.4 12167
+            12450.4 11579  12995.3 10963.9  13509.8 10323.3  13992.8 9658.51
+            14443.1 8971.19  14859.6 8262.92  15241.5 7535.36  15587.7 6790.19
+            15897.6 6029.16  16170.3 5254.06  16405.3 4466.68  16601.9 3668.87
+            16759.8 2862.49  16878.5 2049.42  16957.8 1231.57  16997.5 410.844
+            17000 0  16997.5 -410.844  16957.8 -1231.57  16878.5 -2049.42
+            16759.8 -2862.49  16601.9 -3668.87  16405.3 -4466.68  16170.3 -5254.06
+            15897.6 -6029.16  15587.7 -6790.19  15241.5 -7535.36  14859.6 -8262.92
+            14443.1 -8971.19  13992.8 -9658.51  13509.8 -10323.3  12995.3 -10963.9
+            12450.4 -11579  11876.4 -12167  11274.7 -12726.5  10646.7 -13256.4
+            9993.81 -13755.3  9317.57 -14222.1  8619.58 -14655.6  7901.45 -15055
+            7164.86 -15419.1  6411.55 -15747.3  5643.26 -16038.6  4861.79 -16292.6
+            4068.96 -16508.4  3266.63 -16685.7  2456.67 -16824.1  1640.98 -16923.1
+            821.447 -16982.6  0 -17002.5  -821.447 -16982.6  -1640.98 -16923.1
+            -2456.67 -16824.1  -3266.63 -16685.7  -4068.96 -16508.4  -4861.79 -16292.6
+            -5643.26 -16038.6  -6411.55 -15747.3  -7164.86 -15419.1  -7901.45 -15055
+            -8619.58 -14655.6  -9317.57 -14222.1  -9993.81 -13755.3  -10646.7 -13256.4
+            -11274.7 -12726.5  -11876.4 -12167  -12450.4 -11579  -12995.3 -10963.9
+            -13509.8 -10323.3  -13992.8 -9658.51  -14443.1 -8971.19  -14859.6 -8262.92
+            -15241.5 -7535.36  -15587.7 -6790.19  -15897.6 -6029.16  -16170.3 -5254.06
+            -16405.3 -4466.68  -16601.9 -3668.87  -16759.8 -2862.49  -16878.5 -2049.42
+            -16957.8 -1231.57  -16997.5 -410.844  -16997.5 410.844  -16957.8 1231.57
+            -16878.5 2049.42  -16759.8 2862.49  -16601.9 3668.87  -16405.3 4466.68
+            -16170.3 5254.06  -15897.6 6029.16  -15587.7 6790.19  -15241.5 7535.36
+            -14859.6 8262.92  -14443.1 8971.19  -13992.8 9658.51  -13509.8 10323.3
+            -12995.3 10963.9  -12450.4 11579  -11876.4 12167  -11274.7 12726.5
+            -10646.7 13256.4  -9993.81 13755.3  -9317.57 14222.1  -8619.58 14655.6
+            -7901.45 15055  -7164.86 15419.1  -6411.55 15747.3  -5643.26 16038.6
+            -4861.79 16292.6  -4068.96 16508.4  -3266.63 16685.7  -2456.67 16824.1
+            -1640.98 16923.1  -821.447 16982.6  0 17002.5  821.447 16982.6)
+    )
+    (plane FLEX_GND (polygon In1.Cu 0  16500 0  16464.7 -1079.2  16358.8 -2153.7  16183 -3219
+            15937.8 -4270.5  15624.3 -5303.8  15244 -6314.3  14798.4 -7297.8
+            14289.4 -8250  13719.2 -9166.9  13090.3 -10044.6  12405.4 -10879.2
+            11667.3 -11667.3  10879.2 -12405.4  10044.6 -13090.3  9166.9 -13719.2
+            8250 -14289.4  7297.8 -14798.4  6314.3 -15244  5303.8 -15624.3
+            4270.5 -15937.8  3219 -16183  2153.7 -16358.8  1079.2 -16464.7
+            0 -16500  -1079.2 -16464.7  -2153.7 -16358.8  -3219 -16183  -4270.5 -15937.8
+            -5303.8 -15624.3  -6314.3 -15244  -7297.8 -14798.4  -8250 -14289.4
+            -9166.9 -13719.2  -10044.6 -13090.3  -10879.2 -12405.4  -11667.3 -11667.3
+            -12405.4 -10879.2  -13090.3 -10044.6  -13719.2 -9166.9  -14289.4 -8250
+            -14798.4 -7297.8  -15244 -6314.3  -15624.3 -5303.8  -15937.8 -4270.5
+            -16183 -3219  -16358.8 -2153.7  -16464.7 -1079.2  -16500 0  -16464.7 1079.2
+            -16358.8 2153.7  -16183 3219  -15937.8 4270.5  -15624.3 5303.8
+            -15244 6314.3  -14798.4 7297.8  -14289.4 8250  -13719.2 9166.9
+            -13090.3 10044.6  -12405.4 10879.2  -11667.3 11667.3  -10879.2 12405.4
+            -10044.6 13090.3  -9166.9 13719.2  -8250 14289.4  -7297.8 14798.4
+            -6314.3 15244  -5303.8 15624.3  -4270.5 15937.8  -3219 16183
+            -2153.7 16358.8  -1079.2 16464.7  0 16500  1079.2 16464.7  2153.7 16358.8
+            3219 16183  4270.5 15937.8  5303.8 15624.3  6314.3 15244  7297.8 14798.4
+            8250 14289.4  9166.9 13719.2  10044.6 13090.3  10879.2 12405.4
+            11667.3 11667.3  12405.4 10879.2  13090.3 10044.6  13719.2 9166.9
+            14289.4 8250  14798.4 7297.8  15244 6314.3  15624.3 5303.8  15937.8 4270.5
+            16183 3219  16358.8 2153.7  16464.7 1079.2  16500 0))
+    (plane 3V3 (polygon In2.Cu 0  16500 0  16464.7 -1079.2  16358.8 -2153.7  16183 -3219
+            15937.8 -4270.5  15624.3 -5303.8  15244 -6314.3  14798.4 -7297.8
+            14289.4 -8250  13719.2 -9166.9  13090.3 -10044.6  12405.4 -10879.2
+            11667.3 -11667.3  10879.2 -12405.4  10044.6 -13090.3  9166.9 -13719.2
+            8250 -14289.4  7297.8 -14798.4  6314.3 -15244  5303.8 -15624.3
+            4270.5 -15937.8  3219 -16183  2153.7 -16358.8  1079.2 -16464.7
+            0 -16500  -1079.2 -16464.7  -2153.7 -16358.8  -3219 -16183  -4270.5 -15937.8
+            -5303.8 -15624.3  -6314.3 -15244  -7297.8 -14798.4  -8250 -14289.4
+            -9166.9 -13719.2  -10044.6 -13090.3  -10879.2 -12405.4  -11667.3 -11667.3
+            -12405.4 -10879.2  -13090.3 -10044.6  -13719.2 -9166.9  -14289.4 -8250
+            -14798.4 -7297.8  -15244 -6314.3  -15624.3 -5303.8  -15937.8 -4270.5
+            -16183 -3219  -16358.8 -2153.7  -16464.7 -1079.2  -16500 0  -16464.7 1079.2
+            -16358.8 2153.7  -16183 3219  -15937.8 4270.5  -15624.3 5303.8
+            -15244 6314.3  -14798.4 7297.8  -14289.4 8250  -13719.2 9166.9
+            -13090.3 10044.6  -12405.4 10879.2  -11667.3 11667.3  -10879.2 12405.4
+            -10044.6 13090.3  -9166.9 13719.2  -8250 14289.4  -7297.8 14798.4
+            -6314.3 15244  -5303.8 15624.3  -4270.5 15937.8  -3219 16183
+            -2153.7 16358.8  -1079.2 16464.7  0 16500  1079.2 16464.7  2153.7 16358.8
+            3219 16183  4270.5 15937.8  5303.8 15624.3  6314.3 15244  7297.8 14798.4
+            8250 14289.4  9166.9 13719.2  10044.6 13090.3  10879.2 12405.4
+            11667.3 11667.3  12405.4 10879.2  13090.3 10044.6  13719.2 9166.9
+            14289.4 8250  14798.4 7297.8  15244 6314.3  15624.3 5303.8  15937.8 4270.5
+            16183 3219  16358.8 2153.7  16464.7 1079.2  16500 0))
+    (plane COMP_5V (polygon In11.Cu 0  16500 0  16464.7 -1079.2  16358.8 -2153.7  16183 -3219
+            15937.8 -4270.5  15624.3 -5303.8  15244 -6314.3  14798.4 -7297.8
+            14289.4 -8250  13719.2 -9166.9  13090.3 -10044.6  12405.4 -10879.2
+            11667.3 -11667.3  10879.2 -12405.4  10044.6 -13090.3  9166.9 -13719.2
+            8250 -14289.4  7297.8 -14798.4  6314.3 -15244  5303.8 -15624.3
+            4270.5 -15937.8  3219 -16183  2153.7 -16358.8  1079.2 -16464.7
+            0 -16500  -1079.2 -16464.7  -2153.7 -16358.8  -3219 -16183  -4270.5 -15937.8
+            -5303.8 -15624.3  -6314.3 -15244  -7297.8 -14798.4  -8250 -14289.4
+            -9166.9 -13719.2  -10044.6 -13090.3  -10879.2 -12405.4  -11667.3 -11667.3
+            -12405.4 -10879.2  -13090.3 -10044.6  -13719.2 -9166.9  -14289.4 -8250
+            -14798.4 -7297.8  -15244 -6314.3  -15624.3 -5303.8  -15937.8 -4270.5
+            -16183 -3219  -16358.8 -2153.7  -16464.7 -1079.2  -16500 0  -16464.7 1079.2
+            -16358.8 2153.7  -16183 3219  -15937.8 4270.5  -15624.3 5303.8
+            -15244 6314.3  -14798.4 7297.8  -14289.4 8250  -13719.2 9166.9
+            -13090.3 10044.6  -12405.4 10879.2  -11667.3 11667.3  -10879.2 12405.4
+            -10044.6 13090.3  -9166.9 13719.2  -8250 14289.4  -7297.8 14798.4
+            -6314.3 15244  -5303.8 15624.3  -4270.5 15937.8  -3219 16183
+            -2153.7 16358.8  -1079.2 16464.7  0 16500  1079.2 16464.7  2153.7 16358.8
+            3219 16183  4270.5 15937.8  5303.8 15624.3  6314.3 15244  7297.8 14798.4
+            8250 14289.4  9166.9 13719.2  10044.6 13090.3  10879.2 12405.4
+            11667.3 11667.3  12405.4 10879.2  13090.3 10044.6  13719.2 9166.9
+            14289.4 8250  14798.4 7297.8  15244 6314.3  15624.3 5303.8  15937.8 4270.5
+            16183 3219  16358.8 2153.7  16464.7 1079.2  16500 0))
+    (plane FLEX_GND (polygon In12.Cu 0  16500 0  16464.7 -1079.2  16358.8 -2153.7  16183 -3219
+            15937.8 -4270.5  15624.3 -5303.8  15244 -6314.3  14798.4 -7297.8
+            14289.4 -8250  13719.2 -9166.9  13090.3 -10044.6  12405.4 -10879.2
+            11667.3 -11667.3  10879.2 -12405.4  10044.6 -13090.3  9166.9 -13719.2
+            8250 -14289.4  7297.8 -14798.4  6314.3 -15244  5303.8 -15624.3
+            4270.5 -15937.8  3219 -16183  2153.7 -16358.8  1079.2 -16464.7
+            0 -16500  -1079.2 -16464.7  -2153.7 -16358.8  -3219 -16183  -4270.5 -15937.8
+            -5303.8 -15624.3  -6314.3 -15244  -7297.8 -14798.4  -8250 -14289.4
+            -9166.9 -13719.2  -10044.6 -13090.3  -10879.2 -12405.4  -11667.3 -11667.3
+            -12405.4 -10879.2  -13090.3 -10044.6  -13719.2 -9166.9  -14289.4 -8250
+            -14798.4 -7297.8  -15244 -6314.3  -15624.3 -5303.8  -15937.8 -4270.5
+            -16183 -3219  -16358.8 -2153.7  -16464.7 -1079.2  -16500 0  -16464.7 1079.2
+            -16358.8 2153.7  -16183 3219  -15937.8 4270.5  -15624.3 5303.8
+            -15244 6314.3  -14798.4 7297.8  -14289.4 8250  -13719.2 9166.9
+            -13090.3 10044.6  -12405.4 10879.2  -11667.3 11667.3  -10879.2 12405.4
+            -10044.6 13090.3  -9166.9 13719.2  -8250 14289.4  -7297.8 14798.4
+            -6314.3 15244  -5303.8 15624.3  -4270.5 15937.8  -3219 16183
+            -2153.7 16358.8  -1079.2 16464.7  0 16500  1079.2 16464.7  2153.7 16358.8
+            3219 16183  4270.5 15937.8  5303.8 15624.3  6314.3 15244  7297.8 14798.4
+            8250 14289.4  9166.9 13719.2  10044.6 13090.3  10879.2 12405.4
+            11667.3 11667.3  12405.4 10879.2  13090.3 10044.6  13719.2 9166.9
+            14289.4 8250  14798.4 7297.8  15244 6314.3  15624.3 5303.8  15937.8 4270.5
+            16183 3219  16358.8 2153.7  16464.7 1079.2  16500 0))
+    (keepout "" (polygon In1.Cu 0  -700 2700  2700 2700  2700 -700  -700 -700  -700 2700))
+    (via "Via[0-13]_450:200_um")
+    (rule
+      (width 100)
+      (clearance 75)
+      (clearance 18.75 (type smd_smd))
+    )
+  )
+  (placement
+    (component Capacitor_SMD:C_0603_1608Metric
+      (place C_FIRE_OUT_1 625 -1326 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_IN_1 -2226 -3428 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_HACC2_5 -4329 0 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_HACC2_2 625 -2377 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_IN_2 -2226 -2377 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_HACC2_1 -2226 -1326 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_COMP -2226 1326 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 220nF"))
+      (place C_HACC2_4 625 -3428 front 0 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+    )
+    (component "LIS3DHTR (LGA-16)"
+      (place U_HACC 1000 1000 front 0 (PN H3LIS331DLTR))
+    )
+    (component Resistor_SMD:R_0402_1005Metric
+      (place R_FIRE_FB2 -1601 2450 front 0 (PN "CRCW0402 10k 1% e3"))
+      (place R_FIRE_COMP -3202 2450 front 0 (PN "CRCW0402 1.6k 1% e3"))
+    )
+    (component Capacitor_SMD:C_0402_1005Metric
+      (place C_FIRE_SS -1852 0 front 90 (PN "C0402 X7R 47nF"))
+      (place C_HACC1 -1151 0 front 90 (PN "C0402 X7R 100nF"))
+      (place R_FIRE_FB1 3501 -1601 front 90 (PN "CRCW0402 261k 1% e3"))
+      (place R_FIRE_FREQ -2553 0 front 90 (PN "CRCW0402 176k 1% e3"))
+    )
+    (component "SOP65P640X120-15N"
+      (place U_FIRE_BOOST 625 -6754 front 0 (PN TPS61175PWPR))
+    )
+    (component smash_mech:potting
+      (place MECH1 9899.5 -9899.5 front 0)
+      (place MECH2 -9899.5 9899.5 front 0)
+    )
+    (component Capacitor_SMD:C_0603_1608Metric::1
+      (place C_FIRE_OUT_2 4377 625 front 90 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_IN_5 -4528 2450 front 90 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_HACC2_3 2576 -2377 front 90 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_IN_3 3326 625 front 90 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+      (place C_FIRE_IN_4 4377 -2226 front 90 (PN "C-Series MIL-PRF-32535 X7R 0603 2.2uF"))
+    )
+    (component DIOM7958X256N
+      (place D_FIRE 1000 6101 front 0 (PN MBRS540T3G))
+    )
+    (component INDPM4848X280N
+      (place L_FIRE -7500 -4000 front 0 (PN 744043100))
+    )
+    (component J_activation_interface_spacer_activation_interface_cell_floor_board
+      (place J_activation_interface_spacer_activation_interface_cell_floor_board 0 0 front 0 (PN LGA_lands))
+    )
+    (component P_activation_interface_spacer_aft_end_board_activation_interface
+      (place P_activation_interface_spacer_aft_end_board_activation_interface 0 0 back 180 (PN LGA_lands))
+    )
+  )
+  (library
+    (image Capacitor_SMD:C_0603_1608Metric
+      (outline (polygon signal 0  1420 -520  -1420 -520  -1420 520  1420 520))
+      (pin Rect[T]Pad_850.000000x950.000000_um 1 -800 0)
+      (pin Rect[T]Pad_850.000000x950.000000_um 2 800 0)
+    )
+    (image "LIS3DHTR (LGA-16)"
+      (outline (polygon signal 0  1795 -1795  -1795 -1795  -1795 1795  1795 1795))
+      (pin Rect[T]Pad_300.000000x600.000000_um 1 -1200 -1000)
+      (pin Rect[T]Pad_300.000000x600.000000_um 2 -1200 -500)
+      (pin Rect[T]Pad_300.000000x600.000000_um 3 -1200 0)
+      (pin Rect[T]Pad_300.000000x600.000000_um 4 -1200 500)
+      (pin Rect[T]Pad_300.000000x600.000000_um 5 -1200 1000)
+      (pin Rect[T]Pad_300.000000x600.000000_um 6 -500 1200)
+      (pin Rect[T]Pad_300.000000x600.000000_um 7 0 1200)
+      (pin Rect[T]Pad_300.000000x600.000000_um 8 500 1200)
+      (pin Rect[T]Pad_300.000000x600.000000_um 9 1200 1000)
+      (pin Rect[T]Pad_300.000000x600.000000_um 10 1200 500)
+      (pin Rect[T]Pad_300.000000x600.000000_um 11 1200 0)
+      (pin Rect[T]Pad_300.000000x600.000000_um 12 1200 -500)
+      (pin Rect[T]Pad_300.000000x600.000000_um 13 1200 -1000)
+      (pin Rect[T]Pad_300.000000x600.000000_um 14 500 -1200)
+      (pin Rect[T]Pad_300.000000x600.000000_um 15 0 -1200)
+      (pin Rect[T]Pad_300.000000x600.000000_um 16 -500 -1200)
+    )
+    (image Resistor_SMD:R_0402_1005Metric
+      (outline (polygon signal 0  795 -345  -795 -345  -795 345  795 345))
+      (pin Rect[T]Pad_550.000000x600.000000_um 1 -475 0)
+      (pin Rect[T]Pad_550.000000x600.000000_um 2 475 0)
+    )
+    (image Capacitor_SMD:C_0402_1005Metric
+      (outline (polygon signal 0  -795 -345  -795 345  795 345  795 -345))
+      (pin Rect[T]Pad_550.000000x600.000000_um (rotate 270) 1 -475 0)
+      (pin Rect[T]Pad_550.000000x600.000000_um (rotate 270) 2 475 0)
+    )
+    (image "SOP65P640X120-15N"
+      (outline (polygon signal 0  3920 -2795  -3920 -2795  -3920 2795  3920 2795))
+      (pin Rect[T]Pad_450.000000x1475.000000_um 1 -2938 -1950)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 2 -2938 -1300)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 3 -2938 -650)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 4 -2938 0)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 5 -2938 650)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 6 -2938 1300)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 7 -2938 1950)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 8 2938 1950)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 9 2938 1300)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 10 2938 650)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 11 2938 0)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 12 2938 -650)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 13 2938 -1300)
+      (pin Rect[T]Pad_450.000000x1475.000000_um 14 2938 -1950)
+      (pin Rect[T]Pad_2310.000000x2460.000000_um 15 0 0)
+    )
+    (image smash_mech:potting
+      (keepout "" (circle F.Cu 3400))
+      (keepout "" (circle In1.Cu 3400))
+      (keepout "" (circle In2.Cu 3400))
+      (keepout "" (circle In3.Cu 3400))
+      (keepout "" (circle In4.Cu 3400))
+      (keepout "" (circle In5.Cu 3400))
+      (keepout "" (circle In6.Cu 3400))
+      (keepout "" (circle In7.Cu 3400))
+      (keepout "" (circle In8.Cu 3400))
+      (keepout "" (circle In9.Cu 3400))
+      (keepout "" (circle In10.Cu 3400))
+      (keepout "" (circle In11.Cu 3400))
+      (keepout "" (circle In12.Cu 3400))
+      (keepout "" (circle B.Cu 3400))
+    )
+    (image Capacitor_SMD:C_0603_1608Metric::1
+      (outline (polygon signal 0  -1420 -520  -1420 520  1420 520  1420 -520))
+      (pin Rect[T]Pad_850.000000x950.000000_um (rotate 270) 1 -800 0)
+      (pin Rect[T]Pad_850.000000x950.000000_um (rotate 270) 2 800 0)
+    )
+    (image DIOM7958X256N
+      (outline (polygon signal 0  4845 -3295  -4845 -3295  -4845 3295  4845 3295))
+      (pin Rect[T]Pad_2000.000000x3050.000000_um 1 -3600 0)
+      (pin Rect[T]Pad_2000.000000x3050.000000_um 2 3600 0)
+    )
+    (image INDPM4848X280N
+      (outline (polygon signal 0  3270 -2745  -3270 -2745  -3270 2745  3270 2745))
+      (pin Rect[T]Pad_2450.000000x4900.000000_um 1 -1800 0)
+      (pin Rect[T]Pad_2450.000000x4900.000000_um 2 1800 0)
+    )
+    (image J_activation_interface_spacer_activation_interface_cell_floor_board
+      (pin Rect[T]Pad_900.000000x900.000000_um 1 13950 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 2 13950 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 3 13950 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 4 13950 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 5 13950 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 6 13950 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 7 13950 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 8 13950 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 9 12350 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 10 12350 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 11 12350 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 12 12350 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 13 12350 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 14 12350 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 15 12350 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 16 12350 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 17 12350 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 18 12350 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 19 10750 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 20 10750 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 21 10750 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 22 10750 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 23 10750 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 24 10750 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 25 10750 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 26 10750 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 27 10750 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 28 10750 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 29 10750 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 30 9150 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 31 9150 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 32 9150 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 33 9150 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 34 9150 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 35 9150 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 36 9150 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 37 9150 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 38 9150 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 39 9150 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 40 9150 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 41 9150 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 42 7550 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 43 7550 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 44 7550 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 45 7550 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 46 7550 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 47 7550 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 48 7550 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 49 7550 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 50 7550 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 51 7550 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 52 7550 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 53 7550 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 54 5950 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 55 5950 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 56 5950 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 57 5950 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 58 5950 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 59 5950 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 60 5950 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 61 5950 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 62 5950 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 63 4350 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 64 4350 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 65 4350 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 66 4350 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 67 4350 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 68 2750 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 69 2750 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 70 2750 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 71 2750 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 72 2750 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 73 2750 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 74 1150 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 75 1150 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 76 1150 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 77 1150 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 78 1150 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 79 1150 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 80 -450 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 81 -450 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 82 -450 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 83 -450 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 84 -450 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 85 -450 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 86 -2050 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 87 -2050 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 88 -2050 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 89 -2050 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 90 -2050 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 91 -2050 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 92 -3650 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 93 -3650 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 94 -3650 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 95 -3650 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 96 -3650 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 97 -3650 14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 98 -5250 -13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 99 -5250 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 100 -5250 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 101 -5250 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 102 -5250 8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 103 -5250 10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 104 -5250 11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 105 -5250 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 106 -6850 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 107 -6850 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 108 -6850 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 109 -6850 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 110 -6850 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 111 -6850 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 112 -6850 13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 113 -8450 -12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 114 -8450 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 115 -8450 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 116 -8450 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 117 -8450 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 118 -8450 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 119 -8450 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 120 -10050 -10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 121 -10050 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 122 -10050 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 123 -10050 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 124 -10050 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 125 -10050 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 126 -11650 -9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 127 -11650 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 128 -11650 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 129 -11650 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 130 -11650 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 131 -11650 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 132 -13250 -7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 133 -13250 -5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 134 -13250 -4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 135 -13250 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 136 -13250 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 137 -13250 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 138 -13250 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 139 -13250 3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 140 -13250 5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 141 -13250 6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 142 -14850 -2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 143 -14850 -1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 144 -14850 450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 145 -14850 2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 146 -14850 3650)
+    )
+    (image P_activation_interface_spacer_aft_end_board_activation_interface
+      (pin Rect[T]Pad_900.000000x900.000000_um 1 13950 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 2 13950 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 3 13950 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 4 13950 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 5 13950 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 6 13950 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 7 13950 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 8 13950 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 9 12350 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 10 12350 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 11 12350 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 12 12350 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 13 10750 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 14 10750 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 15 10750 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 16 10750 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 17 10750 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 18 9150 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 19 9150 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 20 9150 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 21 7550 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 22 5950 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 23 5950 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 24 5950 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 25 5950 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 26 4350 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 27 4350 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 28 4350 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 29 4350 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 30 2750 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 31 2750 -6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 32 2750 -8450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 33 2750 -10050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 34 2750 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 35 2750 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 36 2750 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 37 1150 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 38 1150 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 39 1150 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 40 1150 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 41 -450 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 42 -450 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 43 -450 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 44 -450 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 45 -2050 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 46 -2050 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 47 -2050 -11650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 48 -2050 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 49 -2050 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 50 -3650 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 51 -3650 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 52 -3650 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 53 -3650 -14850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 54 -5250 13950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 55 -5250 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 56 -5250 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 57 -6850 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 58 -6850 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 59 -6850 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 60 -6850 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 61 -6850 -13250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 62 -8450 12350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 63 -8450 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 64 -8450 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 65 -8450 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 66 -10050 10750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 67 -10050 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 68 -10050 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 69 -10050 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 70 -10050 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 71 -10050 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 72 -10050 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 73 -11650 9150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 74 -11650 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 75 -11650 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 76 -11650 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 77 -11650 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 78 -11650 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 79 -11650 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 80 -11650 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 81 -13250 7550)
+      (pin Rect[T]Pad_900.000000x900.000000_um 82 -13250 5950)
+      (pin Rect[T]Pad_900.000000x900.000000_um 83 -13250 4350)
+      (pin Rect[T]Pad_900.000000x900.000000_um 84 -13250 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 85 -13250 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 86 -13250 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 87 -13250 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 88 -13250 -3650)
+      (pin Rect[T]Pad_900.000000x900.000000_um 89 -13250 -5250)
+      (pin Rect[T]Pad_900.000000x900.000000_um 90 -13250 -6850)
+      (pin Rect[T]Pad_900.000000x900.000000_um 91 -14850 2750)
+      (pin Rect[T]Pad_900.000000x900.000000_um 92 -14850 1150)
+      (pin Rect[T]Pad_900.000000x900.000000_um 93 -14850 -450)
+      (pin Rect[T]Pad_900.000000x900.000000_um 94 -14850 -2050)
+      (pin Rect[T]Pad_900.000000x900.000000_um 95 -14850 -3650)
+    )
+    (padstack Rect[T]Pad_2000.000000x3050.000000_um
+      (shape (rect F.Cu -1000 -1525 1000 1525))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_2310.000000x2460.000000_um
+      (shape (rect F.Cu -1155 -1230 1155 1230))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_2450.000000x4900.000000_um
+      (shape (rect F.Cu -1225 -2450 1225 2450))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_300.000000x600.000000_um
+      (shape (rect F.Cu -150 -300 150 300))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_450.000000x1475.000000_um
+      (shape (rect F.Cu -225 -737.5 225 737.5))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_550.000000x600.000000_um
+      (shape (rect F.Cu -275 -300 275 300))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_850.000000x950.000000_um
+      (shape (rect F.Cu -425 -475 425 475))
+      (attach off)
+    )
+    (padstack Rect[T]Pad_900.000000x900.000000_um
+      (shape (rect F.Cu -450 -450 450 450))
+      (attach off)
+    )
+    (padstack "Via[0-13]_450:200_um"
+      (shape (circle F.Cu 450))
+      (shape (circle In1.Cu 450))
+      (shape (circle In2.Cu 450))
+      (shape (circle In3.Cu 450))
+      (shape (circle In4.Cu 450))
+      (shape (circle In5.Cu 450))
+      (shape (circle In6.Cu 450))
+      (shape (circle In7.Cu 450))
+      (shape (circle In8.Cu 450))
+      (shape (circle In9.Cu 450))
+      (shape (circle In10.Cu 450))
+      (shape (circle In11.Cu 450))
+      (shape (circle In12.Cu 450))
+      (shape (circle B.Cu 450))
+      (attach off)
+    )
+  )
+  (network
+    (net FIRE_HV
+      (pins C_FIRE_OUT_1-1 C_FIRE_OUT_2-1 D_FIRE-1 R_FIRE_FB1-1 P_activation_interface_spacer_aft_end_board_activation_interface-19
+        P_activation_interface_spacer_aft_end_board_activation_interface-39)
+    )
+    (net FLEX_GND
+      (pins C_FIRE_OUT_1-2 U_HACC-5 U_HACC-7 U_HACC-10 U_HACC-12 U_HACC-13 U_HACC-16
+        C_FIRE_IN_1-2 C_HACC2_5-2 R_FIRE_FB2-2 C_HACC2_2-2 C_FIRE_SS-2 C_HACC1-2 U_FIRE_BOOST-6
+        U_FIRE_BOOST-7 U_FIRE_BOOST-11 U_FIRE_BOOST-12 U_FIRE_BOOST-13 U_FIRE_BOOST-14
+        U_FIRE_BOOST-15 C_FIRE_IN_2-2 C_HACC2_1-2 C_FIRE_OUT_2-2 C_FIRE_IN_5-2 J_activation_interface_spacer_activation_interface_cell_floor_board-19
+        J_activation_interface_spacer_activation_interface_cell_floor_board-42 J_activation_interface_spacer_activation_interface_cell_floor_board-43
+        J_activation_interface_spacer_activation_interface_cell_floor_board-44 J_activation_interface_spacer_activation_interface_cell_floor_board-45
+        J_activation_interface_spacer_activation_interface_cell_floor_board-46 J_activation_interface_spacer_activation_interface_cell_floor_board-47
+        J_activation_interface_spacer_activation_interface_cell_floor_board-48 J_activation_interface_spacer_activation_interface_cell_floor_board-49
+        J_activation_interface_spacer_activation_interface_cell_floor_board-50 J_activation_interface_spacer_activation_interface_cell_floor_board-51
+        J_activation_interface_spacer_activation_interface_cell_floor_board-52 J_activation_interface_spacer_activation_interface_cell_floor_board-53
+        J_activation_interface_spacer_activation_interface_cell_floor_board-54 J_activation_interface_spacer_activation_interface_cell_floor_board-55
+        J_activation_interface_spacer_activation_interface_cell_floor_board-56 J_activation_interface_spacer_activation_interface_cell_floor_board-57
+        J_activation_interface_spacer_activation_interface_cell_floor_board-58 J_activation_interface_spacer_activation_interface_cell_floor_board-59
+        J_activation_interface_spacer_activation_interface_cell_floor_board-60 J_activation_interface_spacer_activation_interface_cell_floor_board-61
+        J_activation_interface_spacer_activation_interface_cell_floor_board-62 J_activation_interface_spacer_activation_interface_cell_floor_board-63
+        J_activation_interface_spacer_activation_interface_cell_floor_board-64 J_activation_interface_spacer_activation_interface_cell_floor_board-65
+        J_activation_interface_spacer_activation_interface_cell_floor_board-66 J_activation_interface_spacer_activation_interface_cell_floor_board-67
+        J_activation_interface_spacer_activation_interface_cell_floor_board-68 J_activation_interface_spacer_activation_interface_cell_floor_board-69
+        J_activation_interface_spacer_activation_interface_cell_floor_board-70 J_activation_interface_spacer_activation_interface_cell_floor_board-71
+        J_activation_interface_spacer_activation_interface_cell_floor_board-72 J_activation_interface_spacer_activation_interface_cell_floor_board-73
+        J_activation_interface_spacer_activation_interface_cell_floor_board-74 J_activation_interface_spacer_activation_interface_cell_floor_board-75
+        J_activation_interface_spacer_activation_interface_cell_floor_board-76 J_activation_interface_spacer_activation_interface_cell_floor_board-77
+        J_activation_interface_spacer_activation_interface_cell_floor_board-78 J_activation_interface_spacer_activation_interface_cell_floor_board-79
+        J_activation_interface_spacer_activation_interface_cell_floor_board-80 J_activation_interface_spacer_activation_interface_cell_floor_board-81
+        J_activation_interface_spacer_activation_interface_cell_floor_board-82 J_activation_interface_spacer_activation_interface_cell_floor_board-83
+        J_activation_interface_spacer_activation_interface_cell_floor_board-84 J_activation_interface_spacer_activation_interface_cell_floor_board-85
+        J_activation_interface_spacer_activation_interface_cell_floor_board-86 J_activation_interface_spacer_activation_interface_cell_floor_board-87
+        J_activation_interface_spacer_activation_interface_cell_floor_board-88 J_activation_interface_spacer_activation_interface_cell_floor_board-89
+        J_activation_interface_spacer_activation_interface_cell_floor_board-90 J_activation_interface_spacer_activation_interface_cell_floor_board-91
+        J_activation_interface_spacer_activation_interface_cell_floor_board-92 J_activation_interface_spacer_activation_interface_cell_floor_board-93
+        J_activation_interface_spacer_activation_interface_cell_floor_board-94 J_activation_interface_spacer_activation_interface_cell_floor_board-95
+        J_activation_interface_spacer_activation_interface_cell_floor_board-96 J_activation_interface_spacer_activation_interface_cell_floor_board-97
+        J_activation_interface_spacer_activation_interface_cell_floor_board-98 J_activation_interface_spacer_activation_interface_cell_floor_board-99
+        J_activation_interface_spacer_activation_interface_cell_floor_board-100 J_activation_interface_spacer_activation_interface_cell_floor_board-101
+        J_activation_interface_spacer_activation_interface_cell_floor_board-102 J_activation_interface_spacer_activation_interface_cell_floor_board-103
+        J_activation_interface_spacer_activation_interface_cell_floor_board-104 J_activation_interface_spacer_activation_interface_cell_floor_board-105
+        J_activation_interface_spacer_activation_interface_cell_floor_board-106 J_activation_interface_spacer_activation_interface_cell_floor_board-107
+        J_activation_interface_spacer_activation_interface_cell_floor_board-108 J_activation_interface_spacer_activation_interface_cell_floor_board-109
+        J_activation_interface_spacer_activation_interface_cell_floor_board-110 J_activation_interface_spacer_activation_interface_cell_floor_board-111
+        J_activation_interface_spacer_activation_interface_cell_floor_board-112 J_activation_interface_spacer_activation_interface_cell_floor_board-113
+        J_activation_interface_spacer_activation_interface_cell_floor_board-114 J_activation_interface_spacer_activation_interface_cell_floor_board-115
+        J_activation_interface_spacer_activation_interface_cell_floor_board-116 J_activation_interface_spacer_activation_interface_cell_floor_board-117
+        J_activation_interface_spacer_activation_interface_cell_floor_board-118 J_activation_interface_spacer_activation_interface_cell_floor_board-119
+        J_activation_interface_spacer_activation_interface_cell_floor_board-120 J_activation_interface_spacer_activation_interface_cell_floor_board-121
+        J_activation_interface_spacer_activation_interface_cell_floor_board-122 J_activation_interface_spacer_activation_interface_cell_floor_board-123
+        J_activation_interface_spacer_activation_interface_cell_floor_board-124 J_activation_interface_spacer_activation_interface_cell_floor_board-125
+        J_activation_interface_spacer_activation_interface_cell_floor_board-126 J_activation_interface_spacer_activation_interface_cell_floor_board-127
+        J_activation_interface_spacer_activation_interface_cell_floor_board-128 J_activation_interface_spacer_activation_interface_cell_floor_board-129
+        J_activation_interface_spacer_activation_interface_cell_floor_board-130 J_activation_interface_spacer_activation_interface_cell_floor_board-131
+        J_activation_interface_spacer_activation_interface_cell_floor_board-132 J_activation_interface_spacer_activation_interface_cell_floor_board-133
+        J_activation_interface_spacer_activation_interface_cell_floor_board-134 J_activation_interface_spacer_activation_interface_cell_floor_board-135
+        J_activation_interface_spacer_activation_interface_cell_floor_board-136 J_activation_interface_spacer_activation_interface_cell_floor_board-137
+        J_activation_interface_spacer_activation_interface_cell_floor_board-138 J_activation_interface_spacer_activation_interface_cell_floor_board-139
+        J_activation_interface_spacer_activation_interface_cell_floor_board-140 J_activation_interface_spacer_activation_interface_cell_floor_board-141
+        J_activation_interface_spacer_activation_interface_cell_floor_board-142 J_activation_interface_spacer_activation_interface_cell_floor_board-143
+        J_activation_interface_spacer_activation_interface_cell_floor_board-144 J_activation_interface_spacer_activation_interface_cell_floor_board-145
+        J_activation_interface_spacer_activation_interface_cell_floor_board-146 R_FIRE_FREQ-2
+        C_HACC2_3-2 C_FIRE_IN_3-2 C_FIRE_COMP-2 C_FIRE_IN_4-2 C_HACC2_4-2 P_activation_interface_spacer_aft_end_board_activation_interface-20
+        P_activation_interface_spacer_aft_end_board_activation_interface-41 P_activation_interface_spacer_aft_end_board_activation_interface-42
+        P_activation_interface_spacer_aft_end_board_activation_interface-43 P_activation_interface_spacer_aft_end_board_activation_interface-44
+        P_activation_interface_spacer_aft_end_board_activation_interface-45 P_activation_interface_spacer_aft_end_board_activation_interface-46
+        P_activation_interface_spacer_aft_end_board_activation_interface-47 P_activation_interface_spacer_aft_end_board_activation_interface-48
+        P_activation_interface_spacer_aft_end_board_activation_interface-49 P_activation_interface_spacer_aft_end_board_activation_interface-50
+        P_activation_interface_spacer_aft_end_board_activation_interface-51 P_activation_interface_spacer_aft_end_board_activation_interface-52
+        P_activation_interface_spacer_aft_end_board_activation_interface-53 P_activation_interface_spacer_aft_end_board_activation_interface-54
+        P_activation_interface_spacer_aft_end_board_activation_interface-55 P_activation_interface_spacer_aft_end_board_activation_interface-56
+        P_activation_interface_spacer_aft_end_board_activation_interface-57 P_activation_interface_spacer_aft_end_board_activation_interface-58
+        P_activation_interface_spacer_aft_end_board_activation_interface-59 P_activation_interface_spacer_aft_end_board_activation_interface-60
+        P_activation_interface_spacer_aft_end_board_activation_interface-61 P_activation_interface_spacer_aft_end_board_activation_interface-62
+        P_activation_interface_spacer_aft_end_board_activation_interface-63 P_activation_interface_spacer_aft_end_board_activation_interface-64
+        P_activation_interface_spacer_aft_end_board_activation_interface-65 P_activation_interface_spacer_aft_end_board_activation_interface-66
+        P_activation_interface_spacer_aft_end_board_activation_interface-67 P_activation_interface_spacer_aft_end_board_activation_interface-68
+        P_activation_interface_spacer_aft_end_board_activation_interface-69 P_activation_interface_spacer_aft_end_board_activation_interface-70
+        P_activation_interface_spacer_aft_end_board_activation_interface-71 P_activation_interface_spacer_aft_end_board_activation_interface-72
+        P_activation_interface_spacer_aft_end_board_activation_interface-73 P_activation_interface_spacer_aft_end_board_activation_interface-74
+        P_activation_interface_spacer_aft_end_board_activation_interface-75 P_activation_interface_spacer_aft_end_board_activation_interface-76
+        P_activation_interface_spacer_aft_end_board_activation_interface-77 P_activation_interface_spacer_aft_end_board_activation_interface-78
+        P_activation_interface_spacer_aft_end_board_activation_interface-79 P_activation_interface_spacer_aft_end_board_activation_interface-80
+        P_activation_interface_spacer_aft_end_board_activation_interface-81 P_activation_interface_spacer_aft_end_board_activation_interface-82
+        P_activation_interface_spacer_aft_end_board_activation_interface-83 P_activation_interface_spacer_aft_end_board_activation_interface-84
+        P_activation_interface_spacer_aft_end_board_activation_interface-85 P_activation_interface_spacer_aft_end_board_activation_interface-86
+        P_activation_interface_spacer_aft_end_board_activation_interface-87 P_activation_interface_spacer_aft_end_board_activation_interface-88
+        P_activation_interface_spacer_aft_end_board_activation_interface-89 P_activation_interface_spacer_aft_end_board_activation_interface-90
+        P_activation_interface_spacer_aft_end_board_activation_interface-91 P_activation_interface_spacer_aft_end_board_activation_interface-92
+        P_activation_interface_spacer_aft_end_board_activation_interface-93 P_activation_interface_spacer_aft_end_board_activation_interface-94
+        P_activation_interface_spacer_aft_end_board_activation_interface-95)
+    )
+    (net 3V3
+      (pins U_HACC-1 U_HACC-8 U_HACC-14 U_HACC-15 C_HACC2_5-1 C_HACC2_2-1 C_HACC1-1
+        C_HACC2_1-1 J_activation_interface_spacer_activation_interface_cell_floor_board-1
+        J_activation_interface_spacer_activation_interface_cell_floor_board-36 J_activation_interface_spacer_activation_interface_cell_floor_board-41
+        C_HACC2_3-1 C_HACC2_4-1 P_activation_interface_spacer_aft_end_board_activation_interface-1
+        P_activation_interface_spacer_aft_end_board_activation_interface-34 P_activation_interface_spacer_aft_end_board_activation_interface-40)
+    )
+    (net I2C3_SCL
+      (pins U_HACC-4 J_activation_interface_spacer_activation_interface_cell_floor_board-25)
+    )
+    (net I2C3_SDA
+      (pins U_HACC-6 J_activation_interface_spacer_activation_interface_cell_floor_board-26)
+    )
+    (net H3LIS_INT1
+      (pins U_HACC-11 J_activation_interface_spacer_activation_interface_cell_floor_board-24)
+    )
+    (net COMP_5V
+      (pins C_FIRE_IN_1-1 U_FIRE_BOOST-3 U_FIRE_BOOST-4 C_FIRE_IN_2-1 C_FIRE_IN_5-1
+        L_FIRE-1 J_activation_interface_spacer_activation_interface_cell_floor_board-8
+        J_activation_interface_spacer_activation_interface_cell_floor_board-40 C_FIRE_IN_3-1
+        C_FIRE_IN_4-1 P_activation_interface_spacer_aft_end_board_activation_interface-8
+        P_activation_interface_spacer_aft_end_board_activation_interface-38)
+    )
+    (net FIRE_FB
+      (pins R_FIRE_FB2-1 U_FIRE_BOOST-9 R_FIRE_FB1-2)
+    )
+    (net FIRE_SS
+      (pins C_FIRE_SS-1 U_FIRE_BOOST-5)
+    )
+    (net FIRE_COMP
+      (pins R_FIRE_COMP-1 U_FIRE_BOOST-8)
+    )
+    (net FIRE_COMP_C
+      (pins R_FIRE_COMP-2 C_FIRE_COMP-1)
+    )
+    (net FIRE_SW
+      (pins U_FIRE_BOOST-1 U_FIRE_BOOST-2 D_FIRE-2 L_FIRE-2)
+    )
+    (net FIRE_FREQ
+      (pins U_FIRE_BOOST-10 R_FIRE_FREQ-1)
+    )
+    (net 3V3_AON
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-2
+        J_activation_interface_spacer_activation_interface_cell_floor_board-37 P_activation_interface_spacer_aft_end_board_activation_interface-2
+        P_activation_interface_spacer_aft_end_board_activation_interface-35)
+    )
+    (net ACTIVATE_CONFIRM
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-3
+        P_activation_interface_spacer_aft_end_board_activation_interface-3)
+    )
+    (net ACTIVATE_SET
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-4
+        P_activation_interface_spacer_aft_end_board_activation_interface-4)
+    )
+    (net BAT_PROT
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-5
+        J_activation_interface_spacer_activation_interface_cell_floor_board-38 P_activation_interface_spacer_aft_end_board_activation_interface-5
+        P_activation_interface_spacer_aft_end_board_activation_interface-36)
+    )
+    (net BAT_RAW
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-6
+        J_activation_interface_spacer_activation_interface_cell_floor_board-39 P_activation_interface_spacer_aft_end_board_activation_interface-6
+        P_activation_interface_spacer_aft_end_board_activation_interface-37)
+    )
+    (net BOOT0
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-7
+        P_activation_interface_spacer_aft_end_board_activation_interface-7)
+    )
+    (net COMP_SWDCLK
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-9
+        P_activation_interface_spacer_aft_end_board_activation_interface-9)
+    )
+    (net COMP_SWDIO
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-10
+        P_activation_interface_spacer_aft_end_board_activation_interface-10)
+    )
+    (net EXT_CAN_RX
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-11
+        P_activation_interface_spacer_aft_end_board_activation_interface-11)
+    )
+    (net EXT_CAN_TX
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-12
+        P_activation_interface_spacer_aft_end_board_activation_interface-12)
+    )
+    (net FIN1_AOUT1
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-13
+        P_activation_interface_spacer_aft_end_board_activation_interface-13)
+    )
+    (net FIN2_AOUT1
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-14
+        P_activation_interface_spacer_aft_end_board_activation_interface-14)
+    )
+    (net FIN3_AOUT1
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-15
+        P_activation_interface_spacer_aft_end_board_activation_interface-15)
+    )
+    (net FIN4_AOUT1
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-16
+        P_activation_interface_spacer_aft_end_board_activation_interface-16)
+    )
+    (net FIN_HALL
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-17
+        P_activation_interface_spacer_aft_end_board_activation_interface-17)
+    )
+    (net FIN_VREF
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-18
+        P_activation_interface_spacer_aft_end_board_activation_interface-18)
+    )
+    (net GPIO_EXT_0
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-20
+        P_activation_interface_spacer_aft_end_board_activation_interface-21)
+    )
+    (net GPIO_EXT_1
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-21
+        P_activation_interface_spacer_aft_end_board_activation_interface-22)
+    )
+    (net GPIO_EXT_2
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-22
+        P_activation_interface_spacer_aft_end_board_activation_interface-23)
+    )
+    (net GPIO_EXT_3
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-23
+        P_activation_interface_spacer_aft_end_board_activation_interface-24)
+    )
+    (net JUMP_WAKE
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-27
+        P_activation_interface_spacer_aft_end_board_activation_interface-25)
+    )
+    (net NRST
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-28
+        P_activation_interface_spacer_aft_end_board_activation_interface-26)
+    )
+    (net SWO
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-29
+        P_activation_interface_spacer_aft_end_board_activation_interface-27)
+    )
+    (net SYS_I2C_SCL
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-30
+        P_activation_interface_spacer_aft_end_board_activation_interface-28)
+    )
+    (net SYS_I2C_SDA
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-31
+        P_activation_interface_spacer_aft_end_board_activation_interface-29)
+    )
+    (net SYS_SPI_CS_FIN
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-32
+        P_activation_interface_spacer_aft_end_board_activation_interface-30)
+    )
+    (net SYS_SPI_MISO
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-33
+        P_activation_interface_spacer_aft_end_board_activation_interface-31)
+    )
+    (net SYS_SPI_MOSI
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-34
+        P_activation_interface_spacer_aft_end_board_activation_interface-32)
+    )
+    (net SYS_SPI_SCLK
+      (pins J_activation_interface_spacer_activation_interface_cell_floor_board-35
+        P_activation_interface_spacer_aft_end_board_activation_interface-33)
+    )
+    (class kicad_default 3V3 3V3_AON ACTIVATE_CONFIRM ACTIVATE_SET BAT_PROT
+      BAT_RAW BOOT0 COMP_5V COMP_SWDCLK COMP_SWDIO EXT_CAN_RX EXT_CAN_TX FIN1_AOUT1
+      FIN2_AOUT1 FIN3_AOUT1 FIN4_AOUT1 FIN_HALL FIN_VREF FIRE_COMP FIRE_COMP_C
+      FIRE_FB FIRE_FREQ FIRE_HV FIRE_SS FIRE_SW FLEX_GND GPIO_EXT_0 GPIO_EXT_1
+      GPIO_EXT_2 GPIO_EXT_3 H3LIS_INT1 I2C3_SCL I2C3_SDA JUMP_WAKE NRST SWO
+      SYS_I2C_SCL SYS_I2C_SDA SYS_SPI_CS_FIN SYS_SPI_MISO SYS_SPI_MOSI SYS_SPI_SCLK
+      (circuit
+        (use_via "Via[0-13]_450:200_um")
+      )
+      (rule
+        (width 100)
+        (clearance 75)
+      )
+    )
+  )
+  (wiring
+  )
+)

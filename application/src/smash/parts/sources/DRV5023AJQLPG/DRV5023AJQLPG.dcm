@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DRV5023AJQLPG
+D Digital Switch Unipolar Switch Open Drain Hall Effect TO-92-3,2.5V ~ 38V,2.7mA (Typ),30mA -40C ~ 125C
+K
+F https://www.ti.com/lit/ds/symlink/drv5023.pdf
+$ENDCMP
+#
+#End Doc Library

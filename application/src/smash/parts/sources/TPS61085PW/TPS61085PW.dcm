@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS61085PW
+D Conv DC-DC Single-OUT Step Up TPS61085PW, Boost Converter, Step Up 2A Adjustable, 2.8  18.5 V, 1200 kHz, 8-Pin TSSOP
+K
+F https://datasheet.datasheetarchive.com/originals/distributors/Datasheets-45/DSA-2073.pdf
+$ENDCMP
+#
+#End Doc Library

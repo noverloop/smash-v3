@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DMN6075SQ-7
+D MOSFET MOSFET BVDSS: 41V 60V SOT23 T&R 3K
+K
+F https://www.diodes.com//assets/Datasheets/DMN6075SQ.pdf
+$ENDCMP
+#
+#End Doc Library

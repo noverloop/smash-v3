@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STLQ020J30R
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=4
+Version=5.1
+Released=2019-07-17 08:49:01
+Downloaded=2026-05-20 20:03:43
+3D=Y

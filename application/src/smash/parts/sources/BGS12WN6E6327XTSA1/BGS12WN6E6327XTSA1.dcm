@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BGS12WN6E6327XTSA1
+D IC RF SWITCH SPDT 9GHZ TSNP6-10
+K
+F https://www.infineon.com/dgdl/Infineon-BGS12WN6-DataSheet-v01_00-EN.pdf?fileId=5546d4626b2d8e69016b89d2b3334727
+$ENDCMP
+#
+#End Doc Library

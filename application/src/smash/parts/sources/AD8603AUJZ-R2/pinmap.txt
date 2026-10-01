@@ -1,0 +1,5 @@
+pin 1: OUT
+pin 2: V-
+pin 3: PIN
+pin 4: -IN
+pin 5: VP

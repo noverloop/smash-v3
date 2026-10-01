@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP STLQ020C33R
+D LDO Voltage Regulators 200 mA ultra-low quiescent current LDO
+K
+F https://www.st.com/resource/en/datasheet/stlq020.pdf
+$ENDCMP
+#
+#End Doc Library

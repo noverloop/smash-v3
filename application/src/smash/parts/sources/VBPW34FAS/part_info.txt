@@ -1,0 +1,14 @@
+Vishay VBPW34FAS — silicon PIN photodiode, SMD gullwing (GW),
+daylight-blocking filter (780-1050 nm passband, peak 950 nm).
+
+Provenance: HAND-AUTHORED artifacts (no SamacSys archive) — the
+.kicad_mod / .kicad_sym were drawn from the official datasheet:
+  vbpw34fa.pdf  = Vishay DS 81127 Rev 1.3, 21-Feb-2025
+  package drawing 6.541-5086.01-4 (page 4), recommended solder pad
+  pattern: 2x (1.75 x 1.8 mm), outer span 8.9 mm, inner gap 5.4 mm.
+No STEP model (none published in a free archive); body is
+4.4 x 3.9 x 1.2 mm, lead-tip span 6.4 mm.
+
+Ordering: VBPW34FAS (gullwing, tape&reel, MOQ 1000).
+VBPW34FASR is the reverse-gullwing variant (leads bent under) — NOT
+interchangeable on this footprint orientation; do not substitute.

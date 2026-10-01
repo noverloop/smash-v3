@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=LMV331IDBVR
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=3.1
+Released=2019-10-03 13:13:32
+Downloaded=2026-05-20 21:03:31
+3D=Y

@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=LDL112PV33R
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=7
+Version=2.1
+Released=2019-10-03 10:34:58
+Downloaded=2026-05-20 20:02:08
+3D=Y

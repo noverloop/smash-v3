@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=SST26VF080A-104I/MF
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=9
+Version=1.1
+Released=2020-12-28 11:30:52
+Downloaded=2026-06-10 14:49:48
+3D=Y

@@ -1,0 +1,22 @@
+(footprint "smash_mech_potting"
+	(version 20260206)
+	(generator "smash")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(attr exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "c70a0ff2-e995-50fe-84eb-0d61e86c9f16")
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(pad "" np_thru_hole circle
+		(at 0 0)
+		(size 3 3)
+		(drill 3)
+		(layers "*.Cu" "*.Mask")
+		(uuid "4ae5f18a-2aab-54f0-bc05-b46351dd51e0")
+	)
+	(embedded_fonts no)
+)

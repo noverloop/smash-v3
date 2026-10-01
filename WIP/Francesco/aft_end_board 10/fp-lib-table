@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashAftEndBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashAftEndBoard.pretty")(options "")(descr "Editable Smash aft-end-board footprints"))
+)
