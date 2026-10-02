@@ -738,9 +738,66 @@ def _emit_land_field(design, board_obj, ref, foot_pts, net_list, face, *,
     return chip
 
 
+def _pack_joint_nets(Q, free, crossing, kind_of, name) -> tuple:
+    """Assign `crossing` nets to the raster-packed lands `Q` of joint `name`,
+    densifying from `free` if they overflow and re-seating differential
+    pairs. Returns ``(Q, net_list)`` — Q may be the denser re-pack."""
+    import sys
+    net_list, overflow = _assign_gap_lands(crossing, len(Q), kind_of)
+    if overflow and free is not None:
+        # Crowded joint: densify (finer pitch) until every crossing net
+        # lands. Keep the densest pack tried even if a step still
+        # overflows. (Battery-column joints densify from the column's
+        # SHARED free region + shared gap crossing set, so all of them
+        # refine to the same denser pattern and stay pad-matched.)
+        for fine in _LAND_PITCH_LADDER:
+            Qf = _grid_pack(free, pitch=fine)
+            if len(Qf) <= len(Q):
+                continue
+            nl, ov = _assign_gap_lands(crossing, len(Qf), kind_of)
+            Q, net_list, overflow = Qf, nl, ov
+            if not ov:
+                break
+    if overflow:
+        print(f"  WARNING: LGA joint {name}: {len(overflow)} crossing "
+              f"net(s) exceed {len(Q)} lands, NOT carried: "
+              f"{', '.join(sorted(overflow))}", file=sys.stderr)
+
+    # Differential coil pairs onto adjacent lands before anything is
+    # emitted — the four mating faces all index the same net_list, so
+    # fixing it here fixes the spacer, both tiles and the through-vias.
+    _pair_adjacent_lands(Q, net_list)
+    return Q, net_list
+
+
+def _check_pinned_joint(name, Q, net_list, free, crossing) -> None:
+    """Warn (never fix) where an EE-pinned land field disagrees with the
+    stackup: a land not wholly inside the joint's free region (it would sit
+    over a cavity, potting hole or flex mouth), or a crossing net the field
+    doesn't carry."""
+    import sys
+    from shapely.geometry import box
+    h = LAND_SIZE_MM / 2.0
+    if free is not None:
+        bad = [(i + 1, x, y, net_list[i]) for i, (x, y) in enumerate(Q)
+               if not free.contains(box(x - h, y - h, x + h, y + h))]
+        for n, x, y, net in bad:
+            print(f"  WARNING: LGA joint {name}: pinned land {n} ({net}) at "
+                  f"spacer ({x:.3f}, {y:.3f}) is outside the joint free "
+                  f"region", file=sys.stderr)
+    carried = set(net_list)
+    missing = sorted(n for n in crossing
+                     if n != GND_NET and not is_off_backbone(n)
+                     and n not in carried)
+    if missing:
+        print(f"  WARNING: LGA joint {name}: pinned field does not carry "
+              f"crossing net(s): {', '.join(missing)}", file=sys.stderr)
+
+
 def place_lga_lands(design, panel, boards, *, connect,
                     reference: dict | None = None,
-                    capture: dict | None = None) -> dict:
+                    capture: dict | None = None,
+                    pinned: dict | None = None) -> dict:
     """Adaptive board-to-board LGA lands — POST-PROCESSING after place_design.
 
     The land pattern is computed ONCE per spacer, in the SPACER's local frame,
@@ -777,7 +834,17 @@ def place_lga_lands(design, panel, boards, *, connect,
     this config's crossing census, so every config fabs the same joint.
     Config crossing nets absent from the replayed field are warned about,
     not silently dropped. `capture`, when a dict, is filled with those
-    records for freshly computed joints."""
+    records for freshly computed joints.
+
+    EE-pinned joints: `pinned` maps spacer name → {"tile", "pts", "nets"} —
+    a land field an EE routed by hand on one neighbour tile (`pts` in that
+    tile's board-local frame, land i carrying nets[i]). The joint adopts it
+    INSTEAD of the raster pack: Q is the fold of `pts` into the spacer frame,
+    and the spacer faces, through-vias and the OTHER neighbour all follow, so
+    the routed board mates unchanged. Nets are kept verbatim (no densify, no
+    pair re-seating — the copper was drawn on them); lands outside the joint's
+    free region and crossing nets the field doesn't carry are warned about,
+    never silently fixed."""
     import sys
     from smash.state.topology.placement import Placement
     from smash.layout.placer.flex_sizing import compute_link_widths
@@ -912,30 +979,17 @@ def place_lga_lands(design, panel, boards, *, connect,
         # mating faces → index i carries the same net everywhere).
         gap = gap_of_spacer.get(name)
         crossing = crossing_by_gap.get(gap, set()) if gap is not None else set()
-        net_list, overflow = _assign_gap_lands(crossing, len(Q), kind_of)
-        if overflow and free is not None:
-            # Crowded joint: densify (finer pitch) until every crossing net
-            # lands. Keep the densest pack tried even if a step still
-            # overflows. (Battery-column joints densify from the column's
-            # SHARED free region + shared gap crossing set, so all of them
-            # refine to the same denser pattern and stay pad-matched.)
-            for fine in _LAND_PITCH_LADDER:
-                Qf = _grid_pack(free, pitch=fine)
-                if len(Qf) <= len(Q):
-                    continue
-                nl, ov = _assign_gap_lands(crossing, len(Qf), kind_of)
-                Q, net_list, overflow = Qf, nl, ov
-                if not ov:
-                    break
-        if overflow:
-            print(f"  WARNING: LGA joint {name}: {len(overflow)} crossing "
-                  f"net(s) exceed {len(Q)} lands, NOT carried: "
-                  f"{', '.join(sorted(overflow))}", file=sys.stderr)
-
-        # Differential coil pairs onto adjacent lands before anything is
-        # emitted — the four mating faces all index the same net_list, so
-        # fixing it here fixes the spacer, both tiles and the through-vias.
-        _pair_adjacent_lands(Q, net_list)
+        pin = (pinned or {}).get(name)
+        if pin is not None:
+            # EE-pinned joint: the routed tile's field, folded into the spacer
+            # frame (fold is its own inverse). Verbatim — see docstring.
+            nb_sr = {before.name if before is not None else None: sr_before,
+                     after.name if after is not None else None: sr_after}
+            Q = _fold([tuple(p) for p in pin["pts"]], nb_sr[pin["tile"]])
+            net_list = list(pin["nets"])
+            _check_pinned_joint(name, Q, net_list, free, crossing)
+        else:
+            Q, net_list = _pack_joint_nets(Q, free, crossing, kind_of, name)
 
         _emit(spacer, f"J_{name}_top", Q, net_list, "top")
         _emit(spacer, f"P_{name}_bot", Q, net_list, "bottom")

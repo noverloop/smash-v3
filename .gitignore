@@ -8,6 +8,7 @@ archive/**/Smash-backups/
 archive/**/~$*
 archive/**/*.tmp
 downloads/
+dist/*
 dist/kicad_pcbs_smash/*/.history/
 dist/kicad_pcbs_smash/*
 dist/kicad_pcbs_smash/*/*.lck

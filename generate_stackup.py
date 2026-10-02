@@ -4515,6 +4515,29 @@ _EE_LAYOUT_JSON = (pathlib.Path(__file__).parent
 _ACTIVATION_EE_JSON = (pathlib.Path(__file__).parent
                        / "application/src/smash/data/"
                          "activation_interface_ee_layout.json")
+_POWER_LANDS_EE_JSON = (pathlib.Path(__file__).parent
+                        / "application/src/smash/data/"
+                          "power_board_ee_lands.json")
+
+
+def _power_board_pinned_lands() -> dict:
+    """EE-pinned LGA field for power_board's companion-side joint (Sjoert's
+    routed power_board, WIP/Sjoert/power_board/; his part placements are
+    pinned in locked_placements.json). Its top field came from an earlier
+    land placer — two extra lands (USB_VBUS, WBA_BOOT0) shift the net order
+    against today's pack — so rather than re-route the board, the spacer and
+    companion_compute's bottom face adopt it; see
+    `place_lga_lands(pinned=...)`, which warns if a pinned land leaves the
+    joint's free region or a crossing net goes uncarried. Configs inherit
+    it through the maximalist joint capture.
+
+    The wakeup-side (bottom) field is NOT pinned: it was packed around the
+    old wrong-diagonal potting holes, so 24 lands fall on the spacer's real
+    holes/channel and 5 cut into the Ø3 potting holes of the board itself.
+    That joint packs fresh; the board's bottom field must be redone."""
+    if not _POWER_LANDS_EE_JSON.exists():
+        return {}
+    return json.loads(_POWER_LANDS_EE_JSON.read_text())["joints"]
 
 
 def _apply_activation_reference_layout(d, boards: dict) -> None:
@@ -5642,7 +5665,8 @@ def main() -> int:
     _joint_capture: dict = {}
     _lands = place_lga_lands(d, panel, boards,
                              connect=lambda net, pin: _net(d, net).connect(pin),
-                             capture=_joint_capture)
+                             capture=_joint_capture,
+                             pinned=_power_board_pinned_lands())
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))
