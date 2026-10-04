@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashFinBleBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashFinBleBoard.pretty")(options "")(descr "Editable Smash fin-ble-board footprints"))
+)
