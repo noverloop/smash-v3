@@ -125,6 +125,9 @@ Finalized/**/temp-freerouting.dsn
 Finalized/**/*.kicad_prl
 Finalized/**/fp-info-cache
 
+# Sjoert addition
+/WIP/Sjoert/WIP_Compute_Module/companion_compute/documentation/
+
 # KiCad editor lock files, repo-wide. KiCad writes ~<name>.lck next to a board
 # or project while it is open and removes it on close; a committed one is a
 # stale lock from someone else's machine. They carry no design intent and

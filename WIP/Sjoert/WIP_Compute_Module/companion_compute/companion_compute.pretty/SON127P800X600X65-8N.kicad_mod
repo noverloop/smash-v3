@@ -1,0 +1,77 @@
+(footprint "SON127P800X600X65-8N"
+	(version 20260206)
+	(generator "build_project_library")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "4 Gbit Serial NAND flash, SPI interface, WSON-8")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "SON127P800X600X65-8N"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(fp_poly
+		(pts (xy -4 -3) (xy 4 -3) (xy 4 3) (xy -4 3) (xy -4 -3) (xy -4 -1))
+		(stroke (width 0.1) (type solid))
+		(fill no)
+		(layer "F.Fab")
+	)
+	(fp_poly
+		(pts (xy -4.625 -3.3) (xy 4.625 -3.3) (xy 4.625 3.3) (xy -4.625 3.3))
+		(stroke (width 0.05) (type solid))
+		(fill no)
+		(layer "F.CrtYd")
+	)
+	(pad "1" smd rect
+		(at -3.95 -1.905)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "2" smd rect
+		(at -3.95 -0.635)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "3" smd rect
+		(at -3.95 0.635)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "4" smd rect
+		(at -3.95 1.905)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "5" smd rect
+		(at 3.95 1.905)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "6" smd rect
+		(at 3.95 0.635)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "7" smd rect
+		(at 3.95 -0.635)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "8" smd rect
+		(at 3.95 -1.905)
+		(size 0.85 0.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/companion_compute.3dshapes/MT29F4G01ABAFDWB-IT_F.stp"
+		(offset (xyz 0 0 0))
+		(scale (xyz 1 1 1))
+		(rotate (xyz -90 0 0))
+	)
+)

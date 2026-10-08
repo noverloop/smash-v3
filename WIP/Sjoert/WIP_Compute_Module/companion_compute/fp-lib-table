@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "SmashCompute")(type "KiCad")(uri "${KIPRJMOD}/companion_compute.pretty")(options "")(descr "Companion Compute project footprints"))
+)

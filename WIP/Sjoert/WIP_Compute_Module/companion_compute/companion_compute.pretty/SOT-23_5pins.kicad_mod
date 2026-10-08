@@ -1,0 +1,62 @@
+(footprint "SOT-23_5pins"
+	(version 20260206)
+	(generator "build_project_library")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "32.768 kHz MEMS oscillator, 1.0 µA typ, ±20 ppm initial / ±100 ppm over -40..+85 °C, Vdd=1.8..3.63 V, SOT23-5")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "SOT-23_5pins"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(fp_poly
+		(pts (xy -0.8 -1.45) (xy 0.8 -1.45) (xy 0.8 1.45) (xy -0.8 1.45) (xy -0.8 -1.45) (xy -0.8 -0.5))
+		(stroke (width 0.1) (type solid))
+		(fill no)
+		(layer "F.Fab")
+	)
+	(fp_poly
+		(pts (xy -2.9 -2.5) (xy 2.9 -2.5) (xy 2.9 2.45) (xy -2.9 2.45))
+		(stroke (width 0.05) (type solid))
+		(fill no)
+		(layer "F.CrtYd")
+	)
+	(pad "1" smd rect
+		(at -1.25 -0.95)
+		(size 1.3 0.55)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "2" smd rect
+		(at -1.25 0)
+		(size 1.3 0.55)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "3" smd rect
+		(at -1.25 0.95)
+		(size 1.3 0.55)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "4" smd rect
+		(at 1.25 0.95)
+		(size 1.3 0.55)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(pad "5" smd rect
+		(at 1.25 -0.95)
+		(size 1.3 0.5)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/companion_compute.3dshapes/SiT1630AE-S6-DCC-32.768.stp"
+		(offset (xyz 0 0 0))
+		(scale (xyz 1 1 1))
+		(rotate (xyz 0 0 0))
+	)
+)
