@@ -1,0 +1,603 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2560 1580" width="2560" height="1580">
+<style>
+ text { font-family: 'Segoe UI', 'DejaVu Sans', sans-serif; fill:#1a1a1a; }
+ .h1 { font-size: 26px; font-weight: 700; }
+ .h2 { font-size: 13px; fill:#5a5751; }
+ .blk { font-size: 15px; font-weight: 700; fill:#0b5d8f; letter-spacing:.5px }
+ .ic { font-size: 13px; font-weight: 700; }
+ .sub { font-size: 10.5px; fill:#5a5751; }
+ .pin { font-size: 10px; fill:#333; }
+ .val { font-size: 10px; fill:#333; }
+ .calc { font-size: 11px; fill:#0b5d8f; font-weight:600 }
+ .net { font-size: 12px; font-weight:700; fill:#0b5d8f; }
+ .netsm { font-size: 10px; font-weight:600; fill:#0b5d8f; }
+ .rail { font-size: 10px; font-weight:700; fill:#a34700; }
+ .gnd { font-size: 9px; fill:#5a5751; }
+ .note { font-size: 11px; fill:#5a5751; }
+ .noteb { font-size: 11px; fill:#333; font-weight:700 }
+ .flag { font-size: 11.5px; fill:#c0392b; font-weight:600 }
+ .xend { font-size: 11px; fill:#c0392b; font-weight:700 }
+ .foot { font-size: 11px; fill:#8a8780; }
+ .w { stroke:#1a1a1a; stroke-width:1.8; fill:none; stroke-linecap:round }
+ .wx { stroke:#c0392b; stroke-width:1.8; fill:none; stroke-dasharray:5 4 }
+</style>
+<rect width="2560" height="1580" fill="#fbfbf9"/>
+<text x="30" y="40" class="h1">wakeup_board — schematico ricostruito dalla netlist del PCB</text>
+<text x="30" y="62" class="h2">G:\fin_ble and wakeup\wakeup_board\wakeup_board.kicad_pcb — 114 componenti, 92 net, 439 pin. Il progetto non ha .kicad_sch: la connettivita e ricavata dalle net assegnate ai pad.</text>
+<text x="30" y="110" class="blk">1 — SORGENTI DI RISVEGLIO</text>
+<rect x="24" y="122" width="600" height="360" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<rect x="60" y="150" width="130" height="66" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="125.0" y="166" class="ic" text-anchor="middle">U_MAG_SHELF</text>
+<text x="125.0" y="180" class="sub" text-anchor="middle">RR123-1H02-612</text>
+<text x="125.0" y="192" class="sub" text-anchor="middle">reed switch</text>
+<text x="55" y="175.5" class="pin" text-anchor="end">2</text>
+<text x="55" y="199.5" class="pin" text-anchor="end">3</text>
+<text x="195" y="175.5" class="pin" text-anchor="start"></text>
+<path d="M30,172 L60,172" class="w"/>
+<text x="30" y="168" class="netsm" text-anchor="start">TMR_VDD</text>
+<path d="M60,196 L40,196" class="w"/>
+<path d="M40,196 L40,208" class="w"/>
+<path d="M31,208 L49,208 M34.5,212 L45.5,212 M38,216 L42,216" class="w"/>
+<text x="40" y="228" class="gnd" text-anchor="middle">FLEX_GND</text>
+<path d="M190,172 L230,172" class="w"/>
+<rect x="244" y="165" width="32" height="14" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="260" y="160" class="val" text-anchor="middle">R_MAG_SHELF</text>
+<text x="260" y="193" class="val" text-anchor="middle">3.3k</text>
+<path d="M230,172 L244,172" class="w"/>
+<path d="M276,172 L330,172" class="w"/>
+<text x="232" y="160" class="netsm" text-anchor="start">MAG_SHELF_N</text>
+<text x="300" y="160" class="netsm" text-anchor="start">MAG_SHELF_K</text>
+<rect x="60" y="260" width="130" height="66" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="125.0" y="276" class="ic" text-anchor="middle">U_MAG_WAKE</text>
+<text x="125.0" y="290" class="sub" text-anchor="middle">DRV5032FCQDBZR</text>
+<text x="125.0" y="302" class="sub" text-anchor="middle">hall switch</text>
+<text x="55" y="285.5" class="pin" text-anchor="end">1 VCC</text>
+<text x="55" y="309.5" class="pin" text-anchor="end">3 OUT</text>
+<path d="M30,282 L60,282" class="w"/>
+<path d="M45,282 L45,270" class="w"/>
+<path d="M35,270 L55,270" class="w"/>
+<text x="45" y="264" class="rail" text-anchor="middle">3V3_AON</text>
+<path d="M60,306 L30,306 L30,340" class="w"/>
+<text x="24" y="356" class="netsm" text-anchor="start">MAG_WAKE_N</text>
+<rect x="23" y="234" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="42" y="247" class="val">RPU_MAG_WAKE</text>
+<text x="42" y="259" class="val">1M</text>
+<path d="M30,234 L30,218" class="w"/>
+<path d="M30,234 L30,222" class="w"/>
+<path d="M20,222 L40,222" class="w"/>
+<text x="30" y="216" class="rail" text-anchor="middle">3V3_AON</text>
+<path d="M30,266 L30,306" class="w"/>
+<circle cx="30" cy="306" r="3.4" fill="#1a1a1a"/>
+<rect x="60" y="380" width="130" height="56" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="125.0" y="396" class="ic" text-anchor="middle">JUMP_PAD</text>
+<text x="125.0" y="410" class="sub" text-anchor="middle">piazzola esterna</text>
+<text x="125.0" y="422" class="sub" text-anchor="middle">(risveglio a mano)</text>
+<path d="M190,408 L240,408" class="w"/>
+<rect x="254" y="401" width="32" height="14" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="270" y="396" class="val" text-anchor="middle">R_JUMP_WAKE</text>
+<text x="270" y="429" class="val" text-anchor="middle">3.3k</text>
+<path d="M240,408 L254,408" class="w"/>
+<path d="M286,408 L330,408" class="w"/>
+<text x="300" y="396" class="netsm" text-anchor="start">JUMP_WAKE_K</text>
+<path d="M330,150 L330,440" class="w"/>
+<circle cx="330" cy="172" r="3.4" fill="#1a1a1a"/>
+<circle cx="330" cy="408" r="3.4" fill="#1a1a1a"/>
+<path d="M400,188 L400,212 L428,200 Z" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<path d="M428,188 L428,212" class="w"/>
+<text x="414" y="180" class="val" text-anchor="middle">D_JUMP_WAKE</text>
+<text x="414" y="228" class="val" text-anchor="middle">BAT64-06</text>
+<path d="M330,200 L400,200" class="w"/>
+<circle cx="330" cy="200" r="3.4" fill="#1a1a1a"/>
+<path d="M428,200 L600,200" class="w"/>
+<text x="600" y="194" class="netsm" text-anchor="end">MAIN_SW_GATE</text>
+<path d="M400,318 L400,342 L428,330 Z" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<path d="M428,318 L428,342" class="w"/>
+<text x="414" y="310" class="val" text-anchor="middle">D_AON_WAKE</text>
+<text x="414" y="358" class="val" text-anchor="middle">BAT64-06</text>
+<path d="M330,330 L400,330" class="w"/>
+<circle cx="330" cy="330" r="3.4" fill="#1a1a1a"/>
+<path d="M428,330 L600,330" class="w"/>
+<text x="600" y="324" class="netsm" text-anchor="end">AON_EN_GATE</text>
+<text x="60" y="462" class="note">Reed e hall e jumper sono OR-ati con diodi a catodo comune: quando una sorgente va bassa scarica il gate.</text>
+<text x="670" y="110" class="blk">2 — CATENA DI POTENZA   BAT → QMAIN → BOOST → LDO → 3V3</text>
+<rect x="664" y="122" width="1180" height="360" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<text x="690" y="176" class="net" text-anchor="start">BAT_PROT</text>
+<path d="M690,190 L760,190" class="w"/>
+<rect x="760" y="160" width="96" height="60" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="808.0" y="176" class="ic" text-anchor="middle">QMAIN</text>
+<text x="808.0" y="190" class="sub" text-anchor="middle">IRLML6402</text>
+<text x="808.0" y="202" class="sub" text-anchor="middle">P-MOS</text>
+<path d="M856,190 L940,190" class="w"/>
+<text x="880" y="178" class="netsm" text-anchor="start">REG_IN_MAIN</text>
+<path d="M808,160 L808,120" class="w"/>
+<text x="812" y="116" class="netsm" text-anchor="start">MAIN_SW_GATE</text>
+<path d="M950,190 L950,224" class="w"/>
+<path d="M937,229 L963,229 M937,235 L963,235" class="w"/>
+<text x="932" y="229" class="val" text-anchor="end"></text>
+<text x="932" y="241" class="val" text-anchor="end"></text>
+<path d="M950,238 L950,258" class="w"/>
+<path d="M950,258 L950,270" class="w"/>
+<path d="M941,270 L959,270 M944.5,274 L955.5,274 M948,278 L952,278" class="w"/>
+<text x="950" y="290" class="gnd" text-anchor="middle"></text>
+<path d="M986,190 L986,224" class="w"/>
+<path d="M973,229 L999,229 M973,235 L999,235" class="w"/>
+<text x="968" y="229" class="val" text-anchor="end"></text>
+<text x="968" y="241" class="val" text-anchor="end"></text>
+<path d="M986,238 L986,258" class="w"/>
+<path d="M986,258 L986,270" class="w"/>
+<path d="M977,270 L995,270 M980.5,274 L991.5,274 M984,278 L988,278" class="w"/>
+<text x="986" y="290" class="gnd" text-anchor="middle"></text>
+<path d="M1022,190 L1022,224" class="w"/>
+<path d="M1009,229 L1035,229 M1009,235 L1035,235" class="w"/>
+<text x="1004" y="229" class="val" text-anchor="end"></text>
+<text x="1004" y="241" class="val" text-anchor="end"></text>
+<path d="M1022,238 L1022,258" class="w"/>
+<path d="M1022,258 L1022,270" class="w"/>
+<path d="M1013,270 L1031,270 M1016.5,274 L1027.5,274 M1020,278 L1024,278" class="w"/>
+<text x="1022" y="290" class="gnd" text-anchor="middle"></text>
+<path d="M1058,190 L1058,224" class="w"/>
+<path d="M1045,229 L1071,229 M1045,235 L1071,235" class="w"/>
+<text x="1040" y="229" class="val" text-anchor="end"></text>
+<text x="1040" y="241" class="val" text-anchor="end"></text>
+<path d="M1058,238 L1058,258" class="w"/>
+<path d="M1058,258 L1058,270" class="w"/>
+<path d="M1049,270 L1067,270 M1052.5,274 L1063.5,274 M1056,278 L1060,278" class="w"/>
+<text x="1058" y="290" class="gnd" text-anchor="middle"></text>
+<path d="M1094,190 L1094,224" class="w"/>
+<path d="M1081,229 L1107,229 M1081,235 L1107,235" class="w"/>
+<text x="1076" y="229" class="val" text-anchor="end"></text>
+<text x="1076" y="241" class="val" text-anchor="end"></text>
+<path d="M1094,238 L1094,258" class="w"/>
+<path d="M1094,258 L1094,270" class="w"/>
+<path d="M1085,270 L1103,270 M1088.5,274 L1099.5,274 M1092,278 L1096,278" class="w"/>
+<text x="1094" y="290" class="gnd" text-anchor="middle"></text>
+<text x="936" y="300" class="note">CBOOST_IN1_1..5  5x 2.2uF 0603 X7R MIL-PRF-32535</text>
+<text x="936" y="314" class="note">CBOOST_IN2 100nF 0402</text>
+<circle cx="950" cy="190" r="3.4" fill="#1a1a1a"/>
+<circle cx="986" cy="190" r="3.4" fill="#1a1a1a"/>
+<circle cx="1022" cy="190" r="3.4" fill="#1a1a1a"/>
+<circle cx="1058" cy="190" r="3.4" fill="#1a1a1a"/>
+<circle cx="1094" cy="190" r="3.4" fill="#1a1a1a"/>
+<rect x="1150" y="150" width="140" height="90" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="1220.0" y="166" class="ic" text-anchor="middle">U_BOOST</text>
+<text x="1220.0" y="180" class="sub" text-anchor="middle">MCP1640CT-I/CHY</text>
+<text x="1220.0" y="192" class="sub" text-anchor="middle">boost sincrono</text>
+<text x="1145" y="179.5" class="pin" text-anchor="end">3 VIN</text>
+<text x="1145" y="203.5" class="pin" text-anchor="end">6 EN</text>
+<text x="1145" y="227.5" class="pin" text-anchor="end">1 SW</text>
+<text x="1295" y="179.5" class="pin" text-anchor="start">5 VOUT</text>
+<text x="1295" y="215.5" class="pin" text-anchor="start">4 FB</text>
+<path d="M1120,190 L1150,190" class="w"/>
+<circle cx="1120" cy="190" r="3.4" fill="#1a1a1a"/>
+<path d="M1120,176 L1150,176" class="w"/>
+<path d="M1120,200 L1150,200" class="w"/>
+<path d="M1120,176 L1120,200" class="w"/>
+<path d="M1150,224 L1120,224 L1120,260" class="w"/>
+<path d="M1061,260 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0" class="w" fill="none"/>
+<text x="1085" y="246" class="val" text-anchor="middle">L_PWR</text>
+<text x="1085" y="280" class="val" text-anchor="middle">2.2uH</text>
+<path d="M1061,260 L1000,260 L1000,190" class="w"/>
+<circle cx="1000" cy="190" r="3.4" fill="#1a1a1a"/>
+<text x="1104" y="246" class="netsm" text-anchor="start">BOOST_SW</text>
+<path d="M1290,176 L1420,176" class="w"/>
+<text x="1330" y="164" class="netsm" text-anchor="start">BOOST_OUT</text>
+<path d="M1330,176 L1330,210" class="w"/>
+<circle cx="1330" cy="176" r="3.4" fill="#1a1a1a"/>
+<path d="M1317,215 L1343,215 M1317,221 L1343,221" class="w"/>
+<text x="1348" y="215" class="val" text-anchor="start">CBOOST_OUT1</text>
+<text x="1348" y="227" class="val" text-anchor="start">22uF tant</text>
+<path d="M1330,224 L1330,246" class="w"/>
+<path d="M1330,246 L1330,258" class="w"/>
+<path d="M1321,258 L1339,258 M1324.5,262 L1335.5,262 M1328,266 L1332,266" class="w"/>
+<text x="1330" y="278" class="gnd" text-anchor="middle"></text>
+<path d="M1382,176 L1382,210" class="w"/>
+<circle cx="1382" cy="176" r="3.4" fill="#1a1a1a"/>
+<path d="M1369,215 L1395,215 M1369,221 L1395,221" class="w"/>
+<text x="1400" y="215" class="val" text-anchor="start">CBOOST_OUT2</text>
+<text x="1400" y="227" class="val" text-anchor="start">100nF</text>
+<path d="M1382,224 L1382,246" class="w"/>
+<path d="M1382,246 L1382,258" class="w"/>
+<path d="M1373,258 L1391,258 M1376.5,262 L1387.5,262 M1380,266 L1384,266" class="w"/>
+<text x="1382" y="278" class="gnd" text-anchor="middle"></text>
+<path d="M1290,212 L1310,212 L1310,320" class="w"/>
+<rect x="1303" y="324" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="1322" y="337" class="val">R_BOOST_FB1</text>
+<text x="1322" y="349" class="val">220k</text>
+<path d="M1310,356 L1310,380" class="w"/>
+<rect x="1303" y="384" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="1322" y="397" class="val">R_BOOST_FB2</text>
+<text x="1322" y="409" class="val">100k</text>
+<path d="M1310,416 L1310,436" class="w"/>
+<path d="M1310,436 L1310,448" class="w"/>
+<path d="M1301,448 L1319,448 M1304.5,452 L1315.5,452 M1308,456 L1312,456" class="w"/>
+<text x="1310" y="468" class="gnd" text-anchor="middle"></text>
+<path d="M1310,320 L1250,320 L1250,176" class="w"/>
+<circle cx="1250" cy="176" r="3.4" fill="#1a1a1a"/>
+<text x="1240" y="372" class="val" text-anchor="end">BOOST_FB</text>
+<text x="1170" y="392" class="calc">Vout = 1.21 x (1 + 220/100) = 3.87 V</text>
+<rect x="1470" y="150" width="140" height="82" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="1540.0" y="166" class="ic" text-anchor="middle">U_PWR</text>
+<text x="1540.0" y="180" class="sub" text-anchor="middle">LDL112PV33R</text>
+<text x="1540.0" y="192" class="sub" text-anchor="middle">LDO 1.2A 3.3V</text>
+<text x="1465" y="179.5" class="pin" text-anchor="end">1,6 IN</text>
+<text x="1465" y="203.5" class="pin" text-anchor="end">3 EN</text>
+<text x="1465" y="227.5" class="pin" text-anchor="end">5 NC/ADJ</text>
+<text x="1615" y="179.5" class="pin" text-anchor="start">4 OUT</text>
+<path d="M1420,176 L1470,176" class="w"/>
+<path d="M1610,176 L1760,176" class="w"/>
+<text x="1640" y="164" class="net" text-anchor="start">3V3</text>
+<path d="M1660,176 L1660,214" class="w"/>
+<circle cx="1660" cy="176" r="3.4" fill="#1a1a1a"/>
+<path d="M1647,219 L1673,219 M1647,225 L1673,225" class="w"/>
+<text x="1642" y="219" class="val" text-anchor="end">COUT1</text>
+<text x="1642" y="231" class="val" text-anchor="end">22uF</text>
+<path d="M1660,228 L1660,250" class="w"/>
+<path d="M1660,250 L1660,262" class="w"/>
+<path d="M1651,262 L1669,262 M1654.5,266 L1665.5,266 M1658,270 L1662,270" class="w"/>
+<text x="1660" y="282" class="gnd" text-anchor="middle"></text>
+<path d="M1706,176 L1706,214" class="w"/>
+<circle cx="1706" cy="176" r="3.4" fill="#1a1a1a"/>
+<path d="M1693,219 L1719,219 M1693,225 L1719,225" class="w"/>
+<text x="1688" y="219" class="val" text-anchor="end">COUT2</text>
+<text x="1688" y="231" class="val" text-anchor="end">22uF</text>
+<path d="M1706,228 L1706,250" class="w"/>
+<path d="M1706,250 L1706,262" class="w"/>
+<path d="M1697,262 L1715,262 M1700.5,266 L1711.5,266 M1704,270 L1708,270" class="w"/>
+<text x="1706" y="282" class="gnd" text-anchor="middle"></text>
+<path d="M1752,176 L1752,214" class="w"/>
+<circle cx="1752" cy="176" r="3.4" fill="#1a1a1a"/>
+<path d="M1739,219 L1765,219 M1739,225 L1765,225" class="w"/>
+<text x="1770" y="219" class="val" text-anchor="start">COUT3</text>
+<text x="1770" y="231" class="val" text-anchor="start">100nF</text>
+<path d="M1752,228 L1752,250" class="w"/>
+<path d="M1752,250 L1752,262" class="w"/>
+<path d="M1743,262 L1761,262 M1746.5,266 L1757.5,266 M1750,270 L1754,270" class="w"/>
+<text x="1752" y="282" class="gnd" text-anchor="middle"></text>
+<rect x="1436" y="262" width="300" height="52" rx="4" fill="#fff5f5" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="1446" y="281" class="flag">U_PWR pin 3 (EN) e pin 5 NON CONNESSI</text>
+<text x="1446" y="296" class="flag">enable flottante: l'LDO puo non partire</text>
+<rect x="700" y="300" width="110" height="56" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="755.0" y="316" class="ic" text-anchor="middle">QHOLD</text>
+<text x="755.0" y="330" class="sub" text-anchor="middle">BSS138</text>
+<rect x="700" y="386" width="110" height="56" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="755.0" y="402" class="ic" text-anchor="middle">QHOLD2</text>
+<text x="755.0" y="416" class="sub" text-anchor="middle">BSS138</text>
+<path d="M755,300 L755,262 L808,262 L808,220" class="w"/>
+<path d="M755,386 L755,356" class="w"/>
+<circle cx="755" cy="356" r="3.4" fill="#1a1a1a"/>
+<path d="M755,442 L755,454" class="w"/>
+<path d="M746,454 L764,454 M749.5,458 L760.5,458 M753,462 L757,462" class="w"/>
+<text x="755" y="474" class="gnd" text-anchor="middle"></text>
+<text x="690" y="286" class="val" text-anchor="end">MAIN_SW_GATE</text>
+<rect x="653" y="312" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="672" y="325" class="val">RHOLD_G</text>
+<text x="672" y="337" class="val">100</text>
+<rect x="653" y="398" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="672" y="411" class="val">RHOLD2_G</text>
+<text x="672" y="423" class="val">100</text>
+<path d="M660,344 L660,356 L700,356" class="w"/>
+<path d="M700,328 L676,328" class="w"/>
+<path d="M700,414 L676,414" class="w"/>
+<text x="640" y="312" class="netsm" text-anchor="end">PWR_HOLD</text>
+<text x="640" y="398" class="netsm" text-anchor="end">WBA_WAKE</text>
+<text x="30" y="530" class="blk">3 — RAIL SEMPRE-ACCESO (AON) E LATCH DI AUTORITENUTA</text>
+<rect x="24" y="542" width="600" height="300" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<text x="46" y="590" class="net" text-anchor="start">BAT_RAW</text>
+<path d="M46,604 L200,604" class="w"/>
+<rect x="200" y="574" width="96" height="60" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="248.0" y="590" class="ic" text-anchor="middle">Q_AON_EN</text>
+<text x="248.0" y="604" class="sub" text-anchor="middle">IRLML6402</text>
+<text x="248.0" y="616" class="sub" text-anchor="middle">P-MOS</text>
+<path d="M296,604 L380,604" class="w"/>
+<path d="M248,574 L248,546" class="w"/>
+<text x="252" y="542" class="netsm" text-anchor="start">AON_EN_GATE</text>
+<rect x="113" y="544" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="132" y="557" class="val">RAON_PU</text>
+<text x="132" y="569" class="val">1M</text>
+<path d="M120,576 L120,604" class="w"/>
+<circle cx="120" cy="604" r="3.4" fill="#1a1a1a"/>
+<path d="M120,544 L120,534 L248,534" class="w"/>
+<rect x="380" y="574" width="150" height="82" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="455.0" y="590" class="ic" text-anchor="middle">U_AON_LDO</text>
+<text x="455.0" y="604" class="sub" text-anchor="middle">TPS7A0233PDBVR</text>
+<text x="455.0" y="616" class="sub" text-anchor="middle">LDO 25 nA Iq 3.3V</text>
+<text x="375" y="603.5" class="pin" text-anchor="end">1 IN</text>
+<text x="375" y="627.5" class="pin" text-anchor="end">3 EN</text>
+<text x="535" y="603.5" class="pin" text-anchor="start">5 OUT</text>
+<path d="M340,604 L380,604" class="w"/>
+<path d="M296,604 L340,604 L340,624 L380,624" class="w"/>
+<text x="330" y="648" class="val" text-anchor="end">AON_EN</text>
+<path d="M530,600 L596,600" class="w"/>
+<text x="548" y="588" class="net" text-anchor="start">3V3_AON</text>
+<rect x="341" y="674" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="360" y="687" class="val">RHOLD_AON</text>
+<text x="360" y="699" class="val">1k</text>
+<path d="M348,674 L348,624" class="w"/>
+<circle cx="348" cy="624" r="3.4" fill="#1a1a1a"/>
+<path d="M348,706 L348,760" class="w"/>
+<text x="348" y="778" class="netsm" text-anchor="middle">WBA_AON_HOLD  →  U_WBA.E4</text>
+<text x="60" y="800" class="note">Il micro tiene acceso il proprio rail: E4 alto → AON_EN alto anche quando la sorgente di risveglio si e gia rilasciata.</text>
+<rect x="60" y="690" width="130" height="60" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="125.0" y="706" class="ic" text-anchor="middle">U_TMR_LDO</text>
+<text x="125.0" y="720" class="sub" text-anchor="middle">TPS7A0233</text>
+<text x="125.0" y="732" class="sub" text-anchor="middle">IN+EN su BAT_RAW</text>
+<path d="M46,604 L46,720 L60,720" class="w"/>
+<circle cx="46" cy="604" r="3.4" fill="#1a1a1a"/>
+<path d="M190,720 L240,720" class="w"/>
+<text x="196" y="708" class="netsm" text-anchor="start">TMR_VDD</text>
+<text x="670" y="530" class="blk">4 — MCU BLE   STM32WBA55HGF6TR (BGA41)</text>
+<rect x="664" y="542" width="1180" height="740" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<rect x="1080" y="590" width="300" height="560" rx="3" fill="#fdfdff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="1230.0" y="606" class="ic" text-anchor="middle">U_WBA</text>
+<text x="1230.0" y="620" class="sub" text-anchor="middle">STM32WBA55HGF6TR</text>
+<text x="1230.0" y="632" class="sub" text-anchor="middle">BGA41 0.35 mm pitch</text>
+<text x="1075" y="633.5" class="pin" text-anchor="end">A6/A10/B5/B13</text>
+<path d="M1080,630 L1020,630" class="w"/>
+<text x="1014" y="634" class="netsm" text-anchor="end">3V3_AON</text>
+<text x="1075" y="675.5" class="pin" text-anchor="end">C4/C6/E12/G4</text>
+<path d="M1080,672 L1020,672" class="w"/>
+<text x="1014" y="676" class="netsm" text-anchor="end">3V3_AON</text>
+<text x="1075" y="717.5" class="pin" text-anchor="end">E2</text>
+<path d="M1080,714 L1020,714" class="w"/>
+<text x="1014" y="718" class="netsm" text-anchor="end">WBA_NRST</text>
+<text x="1075" y="759.5" class="pin" text-anchor="end">C8</text>
+<path d="M1080,756 L1020,756" class="w"/>
+<text x="1014" y="760" class="netsm" text-anchor="end">WBA_BOOT0</text>
+<text x="1075" y="801.5" class="pin" text-anchor="end">A8</text>
+<path d="M1080,798 L1020,798" class="w"/>
+<text x="1014" y="802" class="netsm" text-anchor="end">WBA_HSE_IN</text>
+<text x="1075" y="843.5" class="pin" text-anchor="end">E4</text>
+<path d="M1080,840 L1020,840" class="w"/>
+<text x="1014" y="844" class="netsm" text-anchor="end">WBA_AON_HOLD</text>
+<text x="1075" y="885.5" class="pin" text-anchor="end">F5</text>
+<path d="M1080,882 L1020,882" class="w"/>
+<text x="1014" y="886" class="netsm" text-anchor="end">WBA_WAKE</text>
+<text x="1075" y="927.5" class="pin" text-anchor="end">G8</text>
+<path d="M1080,924 L1020,924" class="w"/>
+<text x="1014" y="928" class="netsm" text-anchor="end">MAG_WAKE_N</text>
+<text x="1075" y="969.5" class="pin" text-anchor="end">E6</text>
+<path d="M1080,966 L1020,966" class="w"/>
+<text x="1014" y="970" class="netsm" text-anchor="end">IR_WAKE</text>
+<text x="1385" y="633.5" class="pin" text-anchor="start">F3</text>
+<path d="M1380,630 L1440,630" class="w"/>
+<text x="1446" y="634" class="netsm" text-anchor="start">I2C2_SCL</text>
+<text x="1385" y="675.5" class="pin" text-anchor="start">G2</text>
+<path d="M1380,672 L1440,672" class="w"/>
+<text x="1446" y="676" class="netsm" text-anchor="start">I2C2_SDA</text>
+<text x="1385" y="717.5" class="pin" text-anchor="start">F9</text>
+<path d="M1380,714 L1440,714" class="w"/>
+<text x="1446" y="718" class="netsm" text-anchor="start">WBA_HCI_MISO</text>
+<text x="1385" y="759.5" class="pin" text-anchor="start">G10</text>
+<path d="M1380,756 L1440,756" class="w"/>
+<text x="1446" y="760" class="netsm" text-anchor="start">WBA_HCI_MOSI</text>
+<text x="1385" y="801.5" class="pin" text-anchor="start">G12</text>
+<path d="M1380,798 L1440,798" class="w"/>
+<text x="1446" y="802" class="netsm" text-anchor="start">WBA_HCI_SCK</text>
+<text x="1385" y="843.5" class="pin" text-anchor="start">F13</text>
+<path d="M1380,840 L1440,840" class="w"/>
+<text x="1446" y="844" class="netsm" text-anchor="start">WBA_HCI_NSS</text>
+<text x="1385" y="885.5" class="pin" text-anchor="start">C10</text>
+<path d="M1380,882 L1440,882" class="w"/>
+<text x="1446" y="886" class="netsm" text-anchor="start">WBA_HCI_IRQ</text>
+<text x="1385" y="927.5" class="pin" text-anchor="start">E10</text>
+<path d="M1380,924 L1440,924" class="w"/>
+<text x="1446" y="928" class="netsm" text-anchor="start">WBA_UART_RX</text>
+<text x="1385" y="969.5" class="pin" text-anchor="start">F11</text>
+<path d="M1380,966 L1440,966" class="w"/>
+<text x="1446" y="970" class="netsm" text-anchor="start">WBA_UART_TX</text>
+<text x="1385" y="1011.5" class="pin" text-anchor="start">D9</text>
+<path d="M1380,1008 L1440,1008" class="w"/>
+<text x="1446" y="1012" class="netsm" text-anchor="start">IR_TX</text>
+<text x="1385" y="1067.5" class="pin" text-anchor="start">C12 VLX</text>
+<path d="M1380,1064 L1470,1064" class="w"/>
+<path d="M1476,1064 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0" class="w" fill="none"/>
+<text x="1500" y="1050" class="val" text-anchor="middle">L_WBA_SMPS</text>
+<text x="1500" y="1084" class="val" text-anchor="middle">2.2uH</text>
+<path d="M1524,1064 L1600,1064 L1600,1106 L1380,1106" class="w"/>
+<text x="1385" y="1109.5" class="pin" text-anchor="start">B11 VDD11</text>
+<path d="M1600,1064 L1660,1064" class="w"/>
+<circle cx="1600" cy="1064" r="3.4" fill="#1a1a1a"/>
+<path d="M1647,1061 L1673,1061 M1647,1067 L1673,1067" class="w"/>
+<text x="1678" y="1061" class="val" text-anchor="start"></text>
+<text x="1678" y="1073" class="val" text-anchor="start"></text>
+<text x="1682" y="1061" class="val">C_WBA_VDD11</text>
+<text x="1682" y="1073" class="val">2.2uF</text>
+<path d="M1660,1070 L1660,1094" class="w"/>
+<path d="M1660,1094 L1660,1106" class="w"/>
+<path d="M1651,1106 L1669,1106 M1654.5,1110 L1665.5,1110 M1658,1114 L1662,1114" class="w"/>
+<text x="1660" y="1126" class="gnd" text-anchor="middle"></text>
+<text x="1075" y="1067.5" class="pin" text-anchor="end">C2 RF1</text>
+<path d="M1080,1064 L960,1064" class="w"/>
+<text x="1050" y="1052" class="netsm" text-anchor="end">WBA_RF</text>
+<path d="M1000,1064 L1000,1100" class="w"/>
+<circle cx="1000" cy="1064" r="3.4" fill="#1a1a1a"/>
+<path d="M987,1105 L1013,1105 M987,1111 L1013,1111" class="w"/>
+<text x="982" y="1105" class="val" text-anchor="end">C_WBA_PI1</text>
+<text x="982" y="1117" class="val" text-anchor="end">0.5pF</text>
+<path d="M1000,1114 L1000,1136" class="w"/>
+<path d="M1000,1136 L1000,1148" class="w"/>
+<path d="M991,1148 L1009,1148 M994.5,1152 L1005.5,1152 M998,1156 L1002,1156" class="w"/>
+<text x="1000" y="1168" class="gnd" text-anchor="middle"></text>
+<path d="M906,1064 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0 a6,6 0 0 1 12,0" class="w" fill="none"/>
+<text x="930" y="1050" class="val" text-anchor="middle">L_WBA_PI</text>
+<text x="930" y="1084" class="val" text-anchor="middle">2.7nH</text>
+<path d="M906,1064 L860,1064" class="w"/>
+<path d="M860,1064 L860,1100" class="w"/>
+<path d="M847,1105 L873,1105 M847,1111 L873,1111" class="w"/>
+<text x="842" y="1105" class="val" text-anchor="end">C_WBA_PI2</text>
+<text x="842" y="1117" class="val" text-anchor="end">0.5pF</text>
+<path d="M860,1114 L860,1136" class="w"/>
+<path d="M860,1136 L860,1148" class="w"/>
+<path d="M851,1148 L869,1148 M854.5,1152 L865.5,1152 M858,1156 L862,1156" class="w"/>
+<text x="860" y="1168" class="gnd" text-anchor="middle"></text>
+<text x="856" y="1046" class="netsm" text-anchor="middle">WBA_RF_M</text>
+<path d="M860,1064 L800,1064" class="wx"/>
+<text x="796" y="1068" class="xend" text-anchor="end">✕ finisce qui</text>
+<rect x="700" y="1160" width="340" height="66" rx="4" fill="#fff5f5" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="710" y="1179" class="flag">La catena RF si interrompe: WBA_RF_M non</text>
+<text x="710" y="1194" class="flag">raggiunge nessuna antenna. YAGI_RF_A/B e</text>
+<text x="710" y="1209" class="flag">YAGI_WILK_A/B sono test point isolati.</text>
+<rect x="700" y="596" width="150" height="70" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="775.0" y="612" class="ic" text-anchor="middle">Y_WBA_HSE</text>
+<text x="775.0" y="626" class="sub" text-anchor="middle">DSC1001CI5-032.0000</text>
+<text x="775.0" y="638" class="sub" text-anchor="middle">oscillatore MEMS 32 MHz</text>
+<text x="855" y="623.5" class="pin" text-anchor="start">3 OUT</text>
+<path d="M850,620 L1020,620 L1020,798" class="w"/>
+<text x="695" y="623.5" class="pin" text-anchor="end">1,4 VDD</text>
+<path d="M700,620 L676,620" class="w"/>
+<path d="M676,620 L676,608" class="w"/>
+<path d="M666,608 L686,608" class="w"/>
+<text x="676" y="602" class="rail" text-anchor="middle">3V3_AON</text>
+<path d="M775,666 L775,678" class="w"/>
+<path d="M766,678 L784,678 M769.5,682 L780.5,682 M773,686 L777,686" class="w"/>
+<text x="775" y="698" class="gnd" text-anchor="middle"></text>
+<text x="700" y="700" class="noteb">DECOUPLING SU 3V3_AON — uno per pin di alimentazione:</text>
+<text x="700" y="722" class="val">C_WBA_VDD1  100nF</text>
+<text x="700" y="737" class="val">C_WBA_VDD2  100nF</text>
+<text x="700" y="752" class="val">C_WBA_VDDA  100nF</text>
+<text x="700" y="767" class="val">C_WBA_VDDANA 100nF</text>
+<text x="700" y="782" class="val">C_WBA_VDDRF 100nF</text>
+<text x="700" y="797" class="val">C_WBA_VDDRFPA 100nF</text>
+<text x="700" y="812" class="val">C_WBA_VDDHPA 100nF</text>
+<text x="700" y="827" class="val">C_WBA_VDDSMPS 100nF</text>
+<text x="700" y="842" class="val">C_WBA_HSE_VDD 100nF</text>
+<text x="700" y="857" class="val">C_WBA_BULK_1 2.2uF</text>
+<text x="700" y="872" class="val">C_WBA_BULK_2 2.2uF</text>
+<rect x="943" y="884" width="14" height="32" fill="#fff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="962" y="897" class="val">R_WBA_NRST</text>
+<text x="962" y="909" class="val">10k</text>
+<path d="M950,884 L950,860" class="w"/>
+<path d="M950,884 L950,872" class="w"/>
+<path d="M940,872 L960,872" class="w"/>
+<text x="950" y="866" class="rail" text-anchor="middle">3V3_AON</text>
+<path d="M950,916 L950,966" class="w"/>
+<path d="M950,966 L1020,966" class="w"/>
+<path d="M889,963 L915,963 M889,969 L915,969" class="w"/>
+<text x="884" y="963" class="val" text-anchor="end">C_WBA_NRST</text>
+<text x="884" y="975" class="val" text-anchor="end">100nF</text>
+<path d="M902,966 L950,966" class="w"/>
+<circle cx="950" cy="966" r="3.4" fill="#1a1a1a"/>
+<path d="M902,972 L902,996" class="w"/>
+<path d="M902,996 L902,1008" class="w"/>
+<path d="M893,1008 L911,1008 M896.5,1012 L907.5,1012 M900,1016 L904,1016" class="w"/>
+<text x="902" y="1028" class="gnd" text-anchor="middle"></text>
+<rect x="860" y="1000" width="100" height="46" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="910.0" y="1016" class="ic" text-anchor="middle">Q_WBA_RST</text>
+<text x="910.0" y="1030" class="sub" text-anchor="middle">BSS138</text>
+<path d="M910,1000 L910,972" class="w"/>
+<text x="830" y="1024" class="netsm" text-anchor="end">WBA_RST_CMD</text>
+<path d="M830,1024 L860,1024" class="w"/>
+<rect x="1470" y="1160" width="340" height="66" rx="4" fill="#fff5f5" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="1480" y="1179" class="flag">WBA_SWCLK (F1) e WBA_SWDIO (E8) hanno</text>
+<text x="1480" y="1194" class="flag">UN SOLO NODO: i pin di debug non vanno</text>
+<text x="1480" y="1209" class="flag">da nessuna parte. Niente flash, niente debug.</text>
+<text x="1890" y="110" class="blk">5 — SENSORI</text>
+<rect x="1884" y="122" width="652" height="720" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<rect x="1930" y="150" width="180" height="96" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2020.0" y="166" class="ic" text-anchor="middle">U_IMU1</text>
+<text x="2020.0" y="180" class="sub" text-anchor="middle">ISM330DHCXTR</text>
+<text x="2020.0" y="192" class="sub" text-anchor="middle">IMU 6 assi  LGA-14</text>
+<text x="1925" y="187.5" class="pin" text-anchor="end">13 SCL</text>
+<text x="1925" y="209.5" class="pin" text-anchor="end">14 SDA</text>
+<text x="1925" y="231.5" class="pin" text-anchor="end">4 INT1</text>
+<text x="1924" y="188" class="netsm" text-anchor="end">I2C2_SCL</text>
+<text x="1924" y="210" class="netsm" text-anchor="end">I2C2_SDA</text>
+<text x="1924" y="232" class="netsm" text-anchor="end">IMU1_INT</text>
+<text x="2115" y="187.5" class="pin" text-anchor="start">5/8/12 VDD</text>
+<path d="M2110,184 L2150,184" class="w"/>
+<path d="M2150,184 L2150,172" class="w"/>
+<path d="M2140,172 L2160,172" class="w"/>
+<text x="2150" y="166" class="rail" text-anchor="middle">3V3</text>
+<text x="2115" y="215.5" class="pin" text-anchor="start">2/3 SDX,SCX</text>
+<path d="M2110,212 L2180,212" class="w"/>
+<text x="2186" y="216" class="val">2x 10k → 3V3</text>
+<text x="2186" y="228" class="val">R_IMU1_SDX/SCX_PU</text>
+<text x="1936" y="262" class="val">decoupling: 100nF + 2.2uF + 10nF</text>
+<rect x="1930" y="300" width="180" height="96" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2020.0" y="316" class="ic" text-anchor="middle">U_IMU2</text>
+<text x="2020.0" y="330" class="sub" text-anchor="middle">ISM330DHCXTR</text>
+<text x="2020.0" y="342" class="sub" text-anchor="middle">IMU 6 assi  LGA-14</text>
+<text x="1925" y="337.5" class="pin" text-anchor="end">13 SCL</text>
+<text x="1925" y="359.5" class="pin" text-anchor="end">14 SDA</text>
+<text x="1925" y="381.5" class="pin" text-anchor="end">4 INT1</text>
+<text x="1924" y="338" class="netsm" text-anchor="end">I2C3_SCL</text>
+<text x="1924" y="360" class="netsm" text-anchor="end">I2C3_SDA</text>
+<text x="1924" y="382" class="netsm" text-anchor="end">IMU2_INT</text>
+<text x="2115" y="337.5" class="pin" text-anchor="start">5/8/12 VDD</text>
+<path d="M2110,334 L2150,334" class="w"/>
+<path d="M2150,334 L2150,322" class="w"/>
+<path d="M2140,322 L2160,322" class="w"/>
+<text x="2150" y="316" class="rail" text-anchor="middle">3V3</text>
+<text x="2115" y="365.5" class="pin" text-anchor="start">2/3 SDX,SCX</text>
+<path d="M2110,362 L2180,362" class="w"/>
+<text x="2186" y="366" class="val">2x 10k → 3V3</text>
+<text x="2186" y="378" class="val">R_IMU2_SDX/SCX_PU</text>
+<text x="1936" y="412" class="val">decoupling: 100nF + 2.2uF + 10nF</text>
+<rect x="1930" y="450" width="180" height="96" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2020.0" y="466" class="ic" text-anchor="middle">U_IMU3</text>
+<text x="2020.0" y="480" class="sub" text-anchor="middle">ISM330DHCXTR</text>
+<text x="2020.0" y="492" class="sub" text-anchor="middle">IMU 6 assi  LGA-14</text>
+<text x="1925" y="487.5" class="pin" text-anchor="end">13 SCL</text>
+<text x="1925" y="509.5" class="pin" text-anchor="end">14 SDA</text>
+<text x="1925" y="531.5" class="pin" text-anchor="end">4 INT1</text>
+<text x="1924" y="488" class="netsm" text-anchor="end">I2C3_SCL</text>
+<text x="1924" y="510" class="netsm" text-anchor="end">I2C3_SDA</text>
+<text x="1924" y="532" class="netsm" text-anchor="end">IMU3_INT</text>
+<text x="2115" y="487.5" class="pin" text-anchor="start">5/8/12 VDD</text>
+<path d="M2110,484 L2150,484" class="w"/>
+<path d="M2150,484 L2150,472" class="w"/>
+<path d="M2140,472 L2160,472" class="w"/>
+<text x="2150" y="466" class="rail" text-anchor="middle">3V3</text>
+<text x="2115" y="515.5" class="pin" text-anchor="start">2/3 SDX,SCX</text>
+<path d="M2110,512 L2180,512" class="w"/>
+<text x="2186" y="516" class="val">2x 10k → 3V3</text>
+<text x="2186" y="528" class="val">R_IMU3_SDX/SCX_PU</text>
+<text x="1936" y="562" class="val">decoupling: 100nF + 2.2uF + 10nF</text>
+<rect x="1930" y="606" width="180" height="96" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2020.0" y="622" class="ic" text-anchor="middle">U_MAG</text>
+<text x="2020.0" y="636" class="sub" text-anchor="middle">IIS2MDCTR</text>
+<text x="2020.0" y="648" class="sub" text-anchor="middle">magnetometro  LGA-12</text>
+<text x="1925" y="643.5" class="pin" text-anchor="end">1 SCL</text>
+<text x="1925" y="665.5" class="pin" text-anchor="end">4 SDA</text>
+<text x="1925" y="687.5" class="pin" text-anchor="end">7 DRDY</text>
+<text x="1924" y="644" class="netsm" text-anchor="end">I2C2_SCL</text>
+<text x="1924" y="666" class="netsm" text-anchor="end">I2C2_SDA</text>
+<text x="1924" y="688" class="netsm" text-anchor="end">MAG_DRDY</text>
+<text x="2115" y="643.5" class="pin" text-anchor="start">3/9/10 VDD</text>
+<path d="M2110,640 L2150,640" class="w"/>
+<path d="M2150,640 L2150,628" class="w"/>
+<path d="M2140,628 L2160,628" class="w"/>
+<text x="2150" y="622" class="rail" text-anchor="middle">3V3</text>
+<text x="2115" y="671.5" class="pin" text-anchor="start">5 C1</text>
+<path d="M2110,668 L2170,668" class="w"/>
+<path d="M2183,665 L2209,665 M2183,671 L2209,671" class="w"/>
+<text x="2214" y="665" class="val" text-anchor="start">C_MAG_C1</text>
+<text x="2214" y="677" class="val" text-anchor="start">220nF</text>
+<path d="M2170,668 L2183,668" class="w"/>
+<path d="M2209,668 L2240,668" class="w"/>
+<path d="M2240,668 L2240,680" class="w"/>
+<path d="M2231,680 L2249,680 M2234.5,684 L2245.5,684 M2238,688 L2242,688" class="w"/>
+<text x="2240" y="700" class="gnd" text-anchor="middle"></text>
+<rect x="1908" y="726" width="600" height="84" rx="4" fill="#fff5f5" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="1918" y="745" class="flag">U_IMU3 pin 1 e su 3V3, mentre U_IMU1 e U_IMU2 hanno il pin 1 su FLEX_GND.</text>
+<text x="1918" y="760" class="flag">Stesso componente, stesso footprint, collegamento opposto: uno dei due e sbagliato.</text>
+<text x="1918" y="775" class="flag">Da verificare sul datasheet ISM330DHCX (pin 1 = GND o VDD?) prima di routare.</text>
+<text x="1890" y="880" class="blk">6 — BUS I2C E CONNETTORI DI STACK</text>
+<rect x="1884" y="892" width="652" height="390" rx="6" fill="#ffffff" stroke="#d6d3cc" stroke-width="1.5"/>
+<text x="1908" y="920" class="noteb">Pull-up 4.7k su 3V3 per ogni bus:</text>
+<text x="1908" y="942" class="val">RPU_I2C2_SCL / RPU_I2C2_SDA   → I2C2 (U_IMU1 + U_MAG + U_WBA)</text>
+<text x="1908" y="958" class="val">RPU_I2C3_SCL / RPU_I2C3_SDA   → I2C3 (U_IMU2 + U_IMU3)</text>
+<text x="1908" y="974" class="val">RPU_SCL_EXT / RPU_SDA_EXT     → SYS_I2C verso lo stack</text>
+<rect x="1930" y="1010" width="250" height="110" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2055.0" y="1026" class="ic" text-anchor="middle">J_wakeup_board_→_power_board</text>
+<text x="2055.0" y="1040" class="sub" text-anchor="middle">65 land LGA</text>
+<text x="2055.0" y="1052" class="sub" text-anchor="middle">BAT, COMP_*, HCI SPI, UART,</text>
+<text x="2055.0" y="1064" class="sub" text-anchor="middle">I2C, GPIO_EXT, SWD del companion</text>
+<rect x="2230" y="1010" width="250" height="110" rx="3" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="2355.0" y="1026" class="ic" text-anchor="middle">P_wakeup_board_→_fin_ble_board</text>
+<text x="2355.0" y="1040" class="sub" text-anchor="middle">69 land LGA</text>
+<text x="2355.0" y="1052" class="sub" text-anchor="middle">BAT, 3V3, I2C, SPI, NRST,</text>
+<text x="2355.0" y="1064" class="sub" text-anchor="middle">BOOT0, JUMP_WAKE</text>
+<text x="1908" y="1150" class="val">Le due connessioni di stack portano 62 delle 92 net. Il grosso del segnale attraversa la scheda, non nasce qui.</text>
+<text x="1908" y="1180" class="val">Net a un solo nodo (non connesse): WBA_SWCLK, WBA_SWDIO, YAGI_RF_A, YAGI_RF_B, IMU1_INT2, IMU2_INT2, IMU3_INT2.</text>
+<text x="30" y="1556" class="foot">Ricostruito il 10/09/2026 da wakeup_board.kicad_pcb — i riquadri rossi tratteggiati segnalano problemi trovati nella netlist, non elementi del progetto.</text></svg>

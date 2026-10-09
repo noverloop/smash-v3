@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1518 700" width="1518" height="700">
+<style>
+ text{font-family:'Segoe UI','DejaVu Sans',sans-serif;fill:#1a1a1a}
+ .h1{font-size:25px;font-weight:700}
+ .h2{font-size:13px;fill:#5a5751}
+ .pt{font-size:16px;font-weight:700}
+ .ps{font-size:11.5px;fill:#5a5751}
+ .pn{font-size:15px;font-weight:700;fill:#ffffff}
+ .nt{font-size:12px;fill:#3a3730}
+ .bad{font-size:12px;fill:#c0392b;font-weight:600}
+ .dim{font-size:11px;fill:#7a746a}
+ .foot{font-size:12px;fill:#6b665d}
+</style>
+<rect width="1518" height="700" fill="#fbfbf9"/>
+<text x="30" y="44" class="h1">U_MAG_WAKE — perche il footprint e sbagliato</text>
+<text x="30" y="68" class="h2">DRV5032FCQDBZR, package SOT-23 (DBZ). Tutti e tre i pannelli sono nella stessa scala: un quadretto della griglia = 1 mm. Il mirino rosso e l'origine del footprint.</text>
+<text x="30" y="88" class="h2">Il confronto decisivo e col terzo pannello: e un SOT-23 della STESSA board, disegnato correttamente.</text>
+<g transform="translate(30,110)">
+<rect x="0" y="0" width="470" height="520" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="235.0" y="30" class="pt" text-anchor="middle" fill="#c0392b">FOOTPRINT ATTUALE</text>
+<text x="235.0" y="50" class="ps" text-anchor="middle">SmashWakeupBoard:DRV5032FCQDBZR</text>
+<line x1="49.0" y1="110" x2="49.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="64.0" x2="395.0" y2="64.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="111.0" y1="110" x2="111.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="126.0" x2="395.0" y2="126.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="173.0" y1="110" x2="173.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="188.0" x2="395.0" y2="188.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="235.0" y1="110" x2="235.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="250.0" x2="395.0" y2="250.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="297.0" y1="110" x2="297.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="312.0" x2="395.0" y2="312.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="359.0" y1="110" x2="359.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="374.0" x2="395.0" y2="374.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="421.0" y1="110" x2="421.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="436.0" x2="395.0" y2="436.0" stroke="#f0ede7" stroke-width="1"/>
+<rect x="49.0" y="107.834" width="372.0" height="284.332" fill="none" stroke="#c000c0" stroke-width="1.6" stroke-dasharray="5 4"/>
+<rect x="116.39399999999999" y="169.834" width="79.732" height="79.732" rx="2" fill="#c0392b" fill-opacity="0.75" stroke="#c0392b" stroke-width="1.4"/>
+<text x="156.26" y="216.7" class="pn" text-anchor="middle">1</text>
+<rect x="195.13400000000001" y="250.43400000000003" width="79.732" height="79.732" rx="2" fill="#c0392b" fill-opacity="0.75" stroke="#c0392b" stroke-width="1.4"/>
+<text x="235.0" y="297.3" class="pn" text-anchor="middle">2</text>
+<rect x="273.874" y="169.834" width="79.732" height="79.732" rx="2" fill="#c0392b" fill-opacity="0.75" stroke="#c0392b" stroke-width="1.4"/>
+<text x="313.74" y="216.7" class="pn" text-anchor="middle">3</text>
+<circle cx="156.26" cy="209.7" r="4" fill="none" stroke="#c0392b" stroke-width="1.8"/>
+<path d="M147.26,209.7 h18 M156.26,200.7 v18" stroke="#c0392b" stroke-width="1.2"/>
+<text x="24" y="400" class="bad">pad quadrati 1.286 x 1.286</text>
+<text x="24" y="419" class="bad">passo 1.27 mm = 50 mil (griglia generica)</text>
+<text x="24" y="438" class="bad">pad 1 e 3 accoppiati, il 2 da solo</text>
+<text x="24" y="457" class="bad">origine sul pad 1, non al centro</text>
+<text x="24" y="476" class="bad">gap fra pad 1 e 2: 0.014 mm</text>
+<text x="24" y="495" class="bad">courtyard 6.00 x 4.586</text>
+</g>
+<g transform="translate(524,110)">
+<rect x="0" y="0" width="470" height="520" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="235.0" y="30" class="pt" text-anchor="middle" fill="#0e7c66">LAND PATTERN TI</text>
+<text x="235.0" y="50" class="ps" text-anchor="middle">DBZ0003A — datasheet DRV5032 pag. 32</text>
+<line x1="49.0" y1="110" x2="49.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="64.0" x2="395.0" y2="64.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="111.0" y1="110" x2="111.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="126.0" x2="395.0" y2="126.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="173.0" y1="110" x2="173.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="188.0" x2="395.0" y2="188.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="235.0" y1="110" x2="235.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="250.0" x2="395.0" y2="250.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="297.0" y1="110" x2="297.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="312.0" x2="395.0" y2="312.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="359.0" y1="110" x2="359.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="374.0" x2="395.0" y2="374.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="421.0" y1="110" x2="421.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="436.0" x2="395.0" y2="436.0" stroke="#f0ede7" stroke-width="1"/>
+<rect x="144.48000000000002" y="209.7" width="181.04" height="80.60000000000001" fill="#efece5" stroke="#9a948a" stroke-width="1.6"/>
+<text x="235.0" y="201.7" class="dim" text-anchor="middle">corpo 2.92 x 1.3</text>
+<rect x="157.5" y="274.8" width="37.199999999999996" height="80.60000000000001" rx="2" fill="#0e7c66" fill-opacity="0.75" stroke="#0e7c66" stroke-width="1.4"/>
+<text x="176.1" y="322.1" class="pn" text-anchor="middle">1</text>
+<rect x="275.29999999999995" y="274.8" width="37.199999999999996" height="80.60000000000001" rx="2" fill="#0e7c66" fill-opacity="0.75" stroke="#0e7c66" stroke-width="1.4"/>
+<text x="293.9" y="322.1" class="pn" text-anchor="middle">2</text>
+<rect x="216.4" y="144.59999999999997" width="37.199999999999996" height="80.60000000000001" rx="2" fill="#0e7c66" fill-opacity="0.75" stroke="#0e7c66" stroke-width="1.4"/>
+<text x="235.0" y="191.89999999999998" class="pn" text-anchor="middle">3</text>
+<circle cx="235.0" cy="250.0" r="4" fill="none" stroke="#c0392b" stroke-width="1.8"/>
+<path d="M226.0,250.0 h18 M235.0,241.0 v18" stroke="#c0392b" stroke-width="1.2"/>
+<text x="24" y="400" class="nt">pad 0.6 x 1.3</text>
+<text x="24" y="419" class="nt">passo 0.95, righe a 2.1</text>
+<text x="24" y="438" class="nt">pad 1 e 2 sullo stesso lato, il 3 opposto</text>
+<text x="24" y="457" class="nt">centrato sull'origine</text>
+<text x="24" y="476" class="nt">gap fra pad 1 e 2: 1.30 mm</text>
+<text x="24" y="495" class="nt">corpo SOT-23 2.80-3.04 x 1.2-1.4</text>
+</g>
+<g transform="translate(1018,110)">
+<rect x="0" y="0" width="470" height="520" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="235.0" y="30" class="pt" text-anchor="middle" fill="#1c3f94">GIA' CORRETTO SULLA BOARD</text>
+<text x="235.0" y="50" class="ps" text-anchor="middle">SmashWakeupBoard:SOT95P237X112-3N (QMAIN)</text>
+<line x1="49.0" y1="110" x2="49.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="64.0" x2="395.0" y2="64.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="111.0" y1="110" x2="111.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="126.0" x2="395.0" y2="126.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="173.0" y1="110" x2="173.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="188.0" x2="395.0" y2="188.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="235.0" y1="110" x2="235.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="250.0" x2="395.0" y2="250.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="297.0" y1="110" x2="297.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="312.0" x2="395.0" y2="312.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="359.0" y1="110" x2="359.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="374.0" x2="395.0" y2="374.0" stroke="#f0ede7" stroke-width="1"/>
+<line x1="421.0" y1="110" x2="421.0" y2="390" stroke="#f0ede7" stroke-width="1"/>
+<line x1="75.0" y1="436.0" x2="395.0" y2="436.0" stroke="#f0ede7" stroke-width="1"/>
+<rect x="194.7" y="159.48000000000002" width="80.60000000000001" height="181.04" fill="#efece5" stroke="#9a948a" stroke-width="1.6"/>
+<text x="235.0" y="151.48000000000002" class="dim" text-anchor="middle">corpo 1.3 x 2.92</text>
+<rect x="129.59999999999997" y="172.5" width="80.60000000000001" height="37.199999999999996" rx="2" fill="#1c3f94" fill-opacity="0.75" stroke="#1c3f94" stroke-width="1.4"/>
+<text x="169.89999999999998" y="198.1" class="pn" text-anchor="middle">1</text>
+<rect x="129.59999999999997" y="290.29999999999995" width="80.60000000000001" height="37.199999999999996" rx="2" fill="#1c3f94" fill-opacity="0.75" stroke="#1c3f94" stroke-width="1.4"/>
+<text x="169.89999999999998" y="315.9" class="pn" text-anchor="middle">2</text>
+<rect x="259.8" y="231.4" width="80.60000000000001" height="37.199999999999996" rx="2" fill="#1c3f94" fill-opacity="0.75" stroke="#1c3f94" stroke-width="1.4"/>
+<text x="300.1" y="257.0" class="pn" text-anchor="middle">3</text>
+<circle cx="235.0" cy="250.0" r="4" fill="none" stroke="#c0392b" stroke-width="1.8"/>
+<path d="M226.0,250.0 h18 M235.0,241.0 v18" stroke="#c0392b" stroke-width="1.2"/>
+<text x="24" y="400" class="nt">pad 1.3 x 0.6 — stesso land, ruotato 90 gradi</text>
+<text x="24" y="419" class="nt">passo 0.95, righe a 2.1</text>
+<text x="24" y="438" class="nt">pad 1 e 2 sullo stesso lato, il 3 opposto</text>
+<text x="24" y="457" class="nt">centrato sull'origine</text>
+<text x="24" y="476" class="nt">gap fra pad 1 e 2: 1.30 mm</text>
+<text x="24" y="495" class="nt">e' il land TI, disegnato bene</text>
+</g>
+<text x="30" y="674" class="foot">Il problema non e una quota da ritoccare: passo, forma dei pad, disposizione dei pin e origine sono tutti diversi. Il footprint va rifatto sul land TI.</text>
+</svg>

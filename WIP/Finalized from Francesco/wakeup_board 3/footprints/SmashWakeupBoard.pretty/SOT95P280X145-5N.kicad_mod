@@ -1,0 +1,120 @@
+(footprint "SOT95P280X145-5N"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Nanopower LDO 200 mA, IQ 25 nA, V_OUT=3.3 V fixed, VIN=1.5..6.0 V, dropout 270 mV max @ 200 mA, SOT-23-5 — the 3V3_AON standby-domain regulator")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "46f2fdc5-1f9f-4735-a8b4-cbc8bbee1b9d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SOT95P280X145-5N"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9ddd7921-0fe7-49cf-99ed-4825da761cfe")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "3eefa7f8-407e-48e8-bf9a-1a7fd34c9108")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e22016aa-eb13-4ecc-8479-d03554d4e5f7")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy -2.1 -1.775) (xy 2.1 -1.775) (xy 2.1 1.775) (xy -2.1 1.775)
+		)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "9a2fe1a7-888b-42c3-9226-d6e025880099")
+	)
+	(fp_poly
+		(pts
+			(xy -0.8 -1.45) (xy 0.8 -1.45) (xy 0.8 1.45) (xy -0.8 1.45) (xy -0.8 -1.45) (xy -0.8 -0.5)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "fad8f70d-a457-4e1c-a539-39b5f73ed6fb")
+	)
+	(pad "1" smd rect
+		(at -1.25 -0.95)
+		(size 1.2 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "cda1d35d-836a-422b-b14a-0a900c78d352")
+	)
+	(pad "2" smd rect
+		(at -1.25 0)
+		(size 1.2 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "0db8af4a-84e8-42b2-b35f-d4900be54413")
+	)
+	(pad "3" smd rect
+		(at -1.25 0.95)
+		(size 1.2 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "00279575-d1bf-4b60-9ca6-31064d415e8a")
+	)
+	(pad "4" smd rect
+		(at 1.25 0.95)
+		(size 1.2 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "8842c394-b93d-4e07-86e9-3b1e155dd79d")
+	)
+	(pad "5" smd rect
+		(at 1.25 -0.95)
+		(size 1.2 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "f0663d75-094f-4754-87d4-06cf4ddd9a52")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/3dmodels/Package_TO_SOT_SMD.3dshapes/SOT-23-5.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

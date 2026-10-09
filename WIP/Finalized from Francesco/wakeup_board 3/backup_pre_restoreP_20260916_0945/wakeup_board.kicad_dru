@@ -1,0 +1,114 @@
+(version 1)
+#
+# =============================================================================
+#  wakeup_board - regole di layout NCAB (14 layer HDI, stackup NCAB ~1.6 mm)
+#  Fonti:
+#    [DOC] G:\PCB Info Sheet.docx  (NCAB, 27-08-2026)
+#    [FAB] G:\smash-electronics\hdi_fab_rules.md (risposta del fab, 2026-07)
+#    [ASS] valore assunto (tipico HDI / IPC cl.3) -> DA CONFERMARE con NCAB
+#  Target: KiCad 10.x   (per KiCad 9: togliere la keyword "blind_via")
+#
+#  Rev. 11-09-2026 - rispetto alla versione precedente:
+#   - le condizioni A.Via_Type == 'Blind/buried' non scattavano mai in KiCad 10
+#     (i tipi ora sono Blind e Buried separati) -> sostituite con isMicroVia()
+#   - aggiunto anello minimo 0.125 mm per i via meccanici
+#   - aggiunte le regole microvia: U_WBA e un WLCSP41 passo 0.35 mm e le 14
+#     sfere interne escono solo con microvia nel pad (F.Cu -> In1.Cu)
+#   - stackup NCAB (~1.6 mm): punta minima 0.20 invece di 0.25
+#   - via-via 0.25 e via-pista 0.15 [FAB] limitate ai via meccanici: sotto il
+#     WLCSP i microvia nel pad distano 0.15 mm bordo-bordo per costruzione
+#   - clearance generale 0.10 nella net class Default (non qui), vedi sotto
+# -----------------------------------------------------------------------------
+#  Layer documento -> KiCad: 1=F.Cu 2=In1.Cu 3=In2.Cu ... 13=In12.Cu 14=B.Cu
+#  Via ammessi [DOC]: passante 1-14 (0.20/0.45); interrati 2-13, 3-12;
+#                     microvia 1-2, 2-3, 12-13, 13-14 (0.10/0.25), riempiti
+#                     e capped. [FAB] microvia SFALSATI, non impilati.
+#
+#  Board Setup > Constraints (minimi assoluti):
+#     clearance 0.08 | pista 0.08 | anello 0.075 | via 0.25 | rame-foro 0.10
+#     rame-bordo 0.30 | foro 0.20 | foro-foro 0.15 | uVia 0.25/0.10
+#  Net class Default: clearance 0.10, pista 0.10, via 0.45/0.20, uVia 0.25/0.10
+# =============================================================================
+
+
+# ----------------------------------------------------------------- piste
+# [DOC][FAB] 100 um
+(rule "NCAB piste: larghezza min 0.10 mm"
+  (constraint track_width (min 0.1mm)))
+
+# [DOC] fan-out BGA/WLCSP: 80 um pista e isolamento dentro le Rule Area "BGA*"
+#       ([FAB] ammette 70/70 solo dove indispensabile: qui si usa 80/80)
+(rule "NCAB BGA: pista min 0.08 mm"
+  (constraint track_width (min 0.08mm))
+  (condition "A.intersectsArea('BGA*')"))
+
+(rule "NCAB BGA: isolamento min 0.08 mm"
+  (constraint clearance (min 0.08mm))
+  (condition "A.intersectsArea('BGA*') && B.intersectsArea('BGA*')"))
+
+# [ASS] rame dal contorno fresato
+(rule "NCAB bordo: rame a min 0.30 mm"
+  (constraint edge_clearance (min 0.3mm)))
+
+
+# ----------------------------------------------------------------- fori
+# [DOC] punta meccanica minima 0.20 (stackup ~1.6 mm -> aspect ratio ~8:1)
+(rule "NCAB fori meccanici: diametro min 0.20 mm"
+  (constraint hole_size (min 0.2mm))
+  (condition "!A.isMicroVia()"))
+
+# [DOC] via meccanici (passanti, interrati): pad 0.45 -> anello 0.125
+(rule "NCAB via meccanici: pad min 0.45 / anello 0.125"
+  (constraint via_diameter (min 0.45mm))
+  (constraint annular_width (min 0.125mm))
+  (condition "A.Type == 'Via' && !A.isMicroVia()"))
+
+# [DOC] microvia laser 0.10 / 0.25 -> anello 0.075  ([ASS] max laser 0.15)
+(rule "NCAB microvia: foro 0.10 / pad 0.25"
+  (constraint hole_size (min 0.1mm) (max 0.15mm))
+  (constraint via_diameter (min 0.25mm))
+  (constraint annular_width (min 0.075mm))
+  (condition "A.isMicroVia()"))
+
+# [ASS] rame-foro: 0.20 per i fori meccanici
+(rule "NCAB rame-foro meccanico min 0.20 mm"
+  (constraint hole_clearance (min 0.2mm)))
+
+# [ASS] rame-foro microvia verso piste/zone: 0.10
+(rule "NCAB rame-foro microvia min 0.10 mm"
+  (constraint hole_clearance (min 0.1mm))
+  (condition "A.isMicroVia() && B.Type != 'Pad' && B.Type != 'Via'"))
+
+# [FAB] foro-foro 0.25 ; [ASS] 0.15 tra fori laser
+(rule "NCAB foro-foro meccanici min 0.25 mm"
+  (constraint hole_to_hole (min 0.25mm)))
+
+(rule "NCAB foro-foro microvia min 0.15 mm"
+  (constraint hole_to_hole (min 0.15mm))
+  (condition "A.isMicroVia() && B.isMicroVia()"))
+
+
+# ------------------------------------------- clearance via [FAB] (specifiche,
+#                                             DOPO le generali)
+(rule "FAB via-pista min 0.15 mm (via meccanici)"
+  (constraint clearance (min 0.15mm))
+  (condition "A.Type == 'Via' && !A.isMicroVia() && B.Type == 'Track'"))
+
+(rule "FAB via-via min 0.25 mm (via meccanici)"
+  (constraint clearance (min 0.25mm))
+  (condition "A.Type == 'Via' && B.Type == 'Via' && !A.isMicroVia() && !B.isMicroVia()"))
+
+
+# ------------------------------------------------------ struttura dei via
+# [DOC] microvia solo 1-2, 2-3, 12-13, 13-14
+(rule "NCAB microvia: span ammessi 1-2 / 2-3 / 12-13 / 13-14"
+  (constraint disallow via micro_via blind_via buried_via)
+  (condition "A.isMicroVia() && !((A.Layer_Top == 'F.Cu' && A.Layer_Bottom == 'In1.Cu') || (A.Layer_Top == 'In1.Cu' && A.Layer_Bottom == 'In2.Cu') || (A.Layer_Top == 'In11.Cu' && A.Layer_Bottom == 'In12.Cu') || (A.Layer_Top == 'In12.Cu' && A.Layer_Bottom == 'B.Cu'))"))
+
+# [DOC] via meccanici solo passanti 1-14 e interrati 2-13 / 3-12
+(rule "NCAB via meccanici: span ammessi 1-14 / 2-13 / 3-12"
+  (constraint disallow via micro_via blind_via buried_via)
+  (condition "A.Type == 'Via' && !A.isMicroVia() && !((A.Layer_Top == 'F.Cu' && A.Layer_Bottom == 'B.Cu') || (A.Layer_Top == 'In1.Cu' && A.Layer_Bottom == 'In12.Cu') || (A.Layer_Top == 'In2.Cu' && A.Layer_Bottom == 'In11.Cu'))"))
+
+# [FAB] microvia sfalsati, NON impilati: KiCad non lo verifica da solo.
+#       Controllo manuale: nessun microvia 2-3 sotto un microvia 1-2 (e 12-13 / 13-14).

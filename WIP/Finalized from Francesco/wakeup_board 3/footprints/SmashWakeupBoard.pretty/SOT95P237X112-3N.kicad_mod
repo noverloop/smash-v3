@@ -1,0 +1,108 @@
+(footprint "SOT95P237X112-3N"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "HEXFET Power MOSFET, P-Channel, V_DSS=-20 V, R_DS(on)=65 mOhm max @ V_GS=-4.5 V, I_D=-3.7 A, SOT-23 (Micro3)")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "ef36c927-856f-40dc-8222-70afadd6172b")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SOT95P237X112-3N"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "aba99035-b50b-466f-8d80-0badbc633ad2")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e7ed0308-3f32-4d9c-8482-41706b809209")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "2468d661-57c5-4ebb-92ae-117d4f3a5436")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy -1.95 1.77) (xy 1.95 1.77) (xy 1.95 -1.77) (xy -1.95 -1.77)
+		)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "8fbd0b8d-ebc9-48f3-8f67-fc059a32cdcd")
+	)
+	(fp_poly
+		(pts
+			(xy -0.65 1.46) (xy 0.65 1.46) (xy 0.65 -1.46) (xy -0.65 -1.46)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "0a0e0dbd-ef7b-4a94-beb2-04e91f1fe01e")
+	)
+	(pad "1" smd rect
+		(at -1.05 -0.95)
+		(size 1.3 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "a53e442d-a277-48ae-848a-4e635dabcb2b")
+	)
+	(pad "2" smd rect
+		(at -1.05 0.95)
+		(size 1.3 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "98f9f53b-7b06-4d35-8f1a-1552ba42b489")
+	)
+	(pad "3" smd rect
+		(at 1.05 0)
+		(size 1.3 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "6fa8ffbf-a1b8-4111-93fe-5a1483ab16ab")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/3dmodels/Package_TO_SOT_SMD.3dshapes/SOT-23.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

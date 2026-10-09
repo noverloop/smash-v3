@@ -1,0 +1,273 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 203.2 88.9)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "13cab432-58c4-4f0d-899d-0788d036c426")
+		(property "Sheetname" "Board-to-board connectors & pull-ups"
+			(at 203.2 88.1 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "connectors.kicad_sch"
+			(at 203.2 119.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 114.3 88.9)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "45a73434-c434-4acc-aeab-5ff4cae36cba")
+		(property "Sheetname" "IMU x3 & magnetometer"
+			(at 114.3 88.1 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "sensors.kicad_sch"
+			(at 114.3 119.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 203.2 30.48)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "687ecdbd-04fe-49be-9a6c-6be0216d3bc5")
+		(property "Sheetname" "STM32WBA55 BLE MCU"
+			(at 203.2 29.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 203.2 61.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 114.3 30.48)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "9a4b010b-d835-453c-8509-be0396e0e4ea")
+		(property "Sheetname" "Boost & 3V3 LDO"
+			(at 114.3 29.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "power_supply.kicad_sch"
+			(at 114.3 61.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 88.9)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a55124dd-b935-4fae-9dbb-f930b66096d9")
+		(property "Sheetname" "Wake sources & RF test"
+			(at 25.4 88.1 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "wake.kicad_sch"
+			(at 25.4 119.78 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 30.48)
+		(size 63.5 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "f9e842c9-567d-4314-a896-754656dd530a")
+		(property "Sheetname" "Power path & wake"
+			(at 25.4 29.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sheetfile" "power_path.kicad_sch"
+			(at 25.4 61.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "wakeup_board"
+				(path "/6c19cfc4-6be2-44f8-b8db-1e959cbcc4c8"
+					(page "2")
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
+)

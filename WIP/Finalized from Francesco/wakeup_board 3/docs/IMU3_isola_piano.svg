@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1422 952" width="1422" height="952">
+<style>
+ text{font-family:'Segoe UI','DejaVu Sans',sans-serif;fill:#1a1a1a}
+ .h1{font-size:25px;font-weight:700}
+ .h2{font-size:13px;fill:#5a5751}
+ .pn{font-size:10.5px;font-weight:700;fill:#ffffff}
+ .fn{font-size:10.5px;font-weight:600;fill:#8e2f27}
+ .cp{font-size:11.5px;font-weight:700;fill:#0b5d8f}
+ .cv{font-size:10.5px;fill:#0b5d8f}
+ .dim{font-size:11px;font-weight:700;fill:#a34700}
+ .ko{font-size:12px;font-weight:700;fill:#0e7c66}
+ .lg{font-size:12.5px}
+ .lgt{font-size:13px;font-weight:700;letter-spacing:.4px}
+ .nt{font-size:12px;fill:#4a463f}
+ .gd{font-size:10px;fill:#b9b3a8}
+</style>
+<rect width="1422" height="952" fill="#fbfbf9"/>
+<text x="30" y="44" class="h1">U_IMU3 — l'isola, in coordinate board</text>
+<text x="30" y="68" class="h2">Scala 1 mm = 150 px. Orientamento come in pcbnew. Le quote in arancione sono le distanze che contano.</text>
+<g transform="translate(45,100)">
+<rect x="0" y="0" width="862" height="802" rx="6" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<line x1="97.50000000000006" y1="0" x2="97.50000000000006" y2="802" stroke="#f2efe9" stroke-width="1"/>
+<text x="100.50000000000006" y="796" class="gd">x=5</text>
+<line x1="247.50000000000006" y1="0" x2="247.50000000000006" y2="802" stroke="#f2efe9" stroke-width="1"/>
+<text x="250.50000000000006" y="796" class="gd">x=6</text>
+<line x1="397.50000000000006" y1="0" x2="397.50000000000006" y2="802" stroke="#f2efe9" stroke-width="1"/>
+<text x="400.50000000000006" y="796" class="gd">x=7</text>
+<line x1="547.5" y1="0" x2="547.5" y2="802" stroke="#f2efe9" stroke-width="1"/>
+<text x="550.5" y="796" class="gd">x=8</text>
+<line x1="697.5" y1="0" x2="697.5" y2="802" stroke="#f2efe9" stroke-width="1"/>
+<text x="700.5" y="796" class="gd">x=9</text>
+<line x1="0" y1="97.50000000000006" x2="862" y2="97.50000000000006" stroke="#f2efe9" stroke-width="1"/>
+<text x="4" y="93.50000000000006" class="gd">y=-10</text>
+<line x1="0" y1="247.50000000000006" x2="862" y2="247.50000000000006" stroke="#f2efe9" stroke-width="1"/>
+<text x="4" y="243.50000000000006" class="gd">y=-9</text>
+<line x1="0" y1="397.50000000000006" x2="862" y2="397.50000000000006" stroke="#f2efe9" stroke-width="1"/>
+<text x="4" y="393.50000000000006" class="gd">y=-8</text>
+<line x1="0" y1="547.5" x2="862" y2="547.5" stroke="#f2efe9" stroke-width="1"/>
+<text x="4" y="543.5" class="gd">y=-7</text>
+<line x1="0" y1="697.5" x2="862" y2="697.5" stroke="#f2efe9" stroke-width="1"/>
+<text x="4" y="693.5" class="gd">y=-6</text>
+<rect x="85.50000000000004" y="310.95000000000005" width="450.0" height="375.0" fill="#eaf5f1" stroke="#0e7c66" stroke-width="2.2" stroke-dasharray="8 5"/>
+<text x="310.50000000000006" y="301.95000000000005" class="ko" text-anchor="middle">KEEPOUT F.Cu 3.0 x 2.5 — niente tracce ne via qui dentro</text>
+<rect x="190.50000000000006" y="81.44999999999989" width="90.0" height="195.0" rx="3" fill="#cfe3f5" fill-opacity="0.75" stroke="#0b5d8f" stroke-width="1.8" stroke-dasharray="5 3"/>
+<text x="235.50000000000006" y="176.94999999999993" class="cp" text-anchor="middle">3</text>
+<text x="235.50000000000006" y="191.94999999999993" class="cv" text-anchor="middle">10 nF</text>
+<rect x="570.0000000000001" y="340.94999999999993" width="195.0" height="90.0" rx="3" fill="#cfe3f5" fill-opacity="0.75" stroke="#0b5d8f" stroke-width="1.8" stroke-dasharray="5 3"/>
+<text x="667.5000000000001" y="383.95000000000005" class="cp" text-anchor="middle">1</text>
+<text x="667.5000000000001" y="398.95000000000005" class="cv" text-anchor="middle">100 nF</text>
+<rect x="276.7500000000001" y="10.95000000000006" width="142.5" height="255.0" rx="3" fill="#cfe3f5" fill-opacity="0.75" stroke="#0b5d8f" stroke-width="1.8" stroke-dasharray="5 3"/>
+<text x="348.00000000000006" y="136.45000000000002" class="cp" text-anchor="middle">2</text>
+<text x="348.00000000000006" y="151.45000000000002" class="cv" text-anchor="middle">2.2 uF</text>
+<line x1="235.50000000000006" y1="361.6499999999999" x2="235.50000000000006" y2="250.95000000000002" stroke="#c2453a" stroke-width="22.5" stroke-linecap="round"/>
+<line x1="310.50000000000006" y1="361.6499999999999" x2="310.50000000000006" y2="250.95000000000002" stroke="#c2453a" stroke-width="22.5" stroke-linecap="round"/>
+<line x1="385.50000000000006" y1="361.6499999999999" x2="385.50000000000006" y2="250.95000000000002" stroke="#c2453a" stroke-width="22.5" stroke-linecap="round"/>
+<line x1="484.9500000000001" y1="385.95000000000005" x2="595.5000000000001" y2="385.95000000000005" stroke="#c2453a" stroke-width="22.5" stroke-linecap="round"/>
+<line x1="136.05" y1="610.95" x2="53.55000000000003" y2="610.95" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="136.05" y1="535.95" x2="53.55000000000003" y2="535.95" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="136.05" y1="460.95000000000005" x2="53.55000000000003" y2="460.95000000000005" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="136.05" y1="385.95000000000005" x2="53.55000000000003" y2="385.95000000000005" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="484.9500000000001" y1="460.95000000000005" x2="567.4500000000002" y2="460.95000000000005" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="484.9500000000001" y1="535.95" x2="567.4500000000002" y2="535.95" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="484.9500000000001" y1="610.95" x2="567.4500000000002" y2="610.95" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="385.50000000000006" y1="635.25" x2="385.50000000000006" y2="552.7500000000001" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="310.50000000000006" y1="635.25" x2="310.50000000000006" y2="552.7500000000001" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="235.50000000000006" y1="635.25" x2="235.50000000000006" y2="552.7500000000001" stroke="#c2453a" stroke-width="15.0" stroke-linecap="round" stroke-opacity="0.5"/>
+<rect x="92.92500000000005" y="584.7" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="136.05" y="614.95" class="pn" text-anchor="middle">1</text>
+<text x="74.05000000000001" y="614.95" class="fn" text-anchor="end">SA0</text>
+<rect x="92.92500000000005" y="509.7000000000001" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="136.05" y="539.95" class="pn" text-anchor="middle">2</text>
+<text x="74.05000000000001" y="539.95" class="fn" text-anchor="end">SDx</text>
+<rect x="92.92500000000005" y="434.7000000000001" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="136.05" y="464.95000000000005" class="pn" text-anchor="middle">3</text>
+<text x="74.05000000000001" y="464.95000000000005" class="fn" text-anchor="end">SCx</text>
+<rect x="92.92500000000005" y="359.69999999999993" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="136.05" y="389.95000000000005" class="pn" text-anchor="middle">4</text>
+<text x="74.05000000000001" y="389.95000000000005" class="fn" text-anchor="end">INT1</text>
+<rect x="209.25000000000006" y="318.525" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="235.50000000000006" y="365.6499999999999" class="pn" text-anchor="middle">5</text>
+<rect x="284.25000000000006" y="318.525" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="310.50000000000006" y="365.6499999999999" class="pn" text-anchor="middle">6</text>
+<rect x="359.25000000000006" y="318.525" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="385.50000000000006" y="365.6499999999999" class="pn" text-anchor="middle">7</text>
+<rect x="441.82500000000016" y="359.69999999999993" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="484.9500000000001" y="389.95000000000005" class="pn" text-anchor="middle">8</text>
+<rect x="441.82500000000016" y="434.7000000000001" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="484.9500000000001" y="464.95000000000005" class="pn" text-anchor="middle">9</text>
+<text x="546.95" y="464.95000000000005" class="fn" text-anchor="start">INT2</text>
+<rect x="441.82500000000016" y="509.7000000000001" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="484.9500000000001" y="539.95" class="pn" text-anchor="middle">10</text>
+<text x="546.95" y="539.95" class="fn" text-anchor="start">nc</text>
+<rect x="441.82500000000016" y="584.7" width="86.25" height="52.5" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="484.9500000000001" y="614.95" class="pn" text-anchor="middle">11</text>
+<text x="546.95" y="614.95" class="fn" text-anchor="start">nc</text>
+<rect x="359.25000000000006" y="592.1250000000001" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="385.50000000000006" y="639.25" class="pn" text-anchor="middle">12</text>
+<text x="385.50000000000006" y="601.25" class="fn" text-anchor="middle">CS</text>
+<rect x="284.25000000000006" y="592.1250000000001" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="310.50000000000006" y="639.25" class="pn" text-anchor="middle">13</text>
+<text x="310.50000000000006" y="601.25" class="fn" text-anchor="middle">SCL</text>
+<rect x="209.25000000000006" y="592.1250000000001" width="52.5" height="86.25" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.2"/>
+<text x="235.50000000000006" y="639.25" class="pn" text-anchor="middle">14</text>
+<text x="235.50000000000006" y="601.25" class="fn" text-anchor="middle">SDA</text>
+<circle cx="235.50000000000006" cy="250.95000000000002" r="37.5" fill="#ffffff" stroke="#a34700" stroke-width="2.4"/>
+<circle cx="235.50000000000006" cy="250.95000000000002" r="18.75" fill="#a34700"/>
+<circle cx="310.50000000000006" cy="250.95000000000002" r="37.5" fill="#ffffff" stroke="#1c3f94" stroke-width="2.4"/>
+<circle cx="310.50000000000006" cy="250.95000000000002" r="18.75" fill="#1c3f94"/>
+<circle cx="385.50000000000006" cy="250.95000000000002" r="37.5" fill="#ffffff" stroke="#1c3f94" stroke-width="2.4"/>
+<circle cx="385.50000000000006" cy="250.95000000000002" r="18.75" fill="#1c3f94"/>
+<circle cx="595.5000000000001" cy="385.95000000000005" r="37.5" fill="#ffffff" stroke="#a34700" stroke-width="2.4"/>
+<circle cx="595.5000000000001" cy="385.95000000000005" r="18.75" fill="#a34700"/>
+<circle cx="235.50000000000006" cy="106.95000000000014" r="37.5" fill="#ffffff" stroke="#1c3f94" stroke-width="2.4"/>
+<circle cx="235.50000000000006" cy="106.95000000000014" r="18.75" fill="#1c3f94"/>
+<circle cx="739.5" cy="385.95000000000005" r="37.5" fill="#ffffff" stroke="#1c3f94" stroke-width="2.4"/>
+<circle cx="739.5" cy="385.95000000000005" r="18.75" fill="#1c3f94"/>
+<text x="310.50000000000006" y="304.50000000000017" class="dim" text-anchor="middle">0.50 mm dal bordo pad, uguale su tutti e 4</text>
+<text x="397.50000000000006" y="195.0000000000001" class="dim">loop pin -> condensatore: 0.74 mm  (era 9.4)</text>
+</g>
+<text x="941" y="130" class="lgt">LEGENDA</text>
+<rect x="941" y="146" width="26" height="16" rx="2" fill="#c2453a" stroke="#8e2f27" stroke-width="1.6"/>
+<text x="977" y="158" class="lg">pad e tracce su F.Cu (lato IMU)</text>
+<rect x="941" y="172" width="26" height="16" rx="2" fill="#cfe3f5" stroke="#0b5d8f" stroke-width="1.6"/>
+<text x="977" y="184" class="lg">condensatori su B.Cu (sotto)</text>
+<rect x="941" y="198" width="26" height="16" rx="2" fill="#ffffff" stroke="#a34700" stroke-width="1.6"/>
+<text x="977" y="210" class="lg">via a 3V3  (In6 / In11)</text>
+<rect x="941" y="224" width="26" height="16" rx="2" fill="#ffffff" stroke="#1c3f94" stroke-width="1.6"/>
+<text x="977" y="236" class="lg">via a FLEX_GND  (In1/4/7/10/12)</text>
+<rect x="941" y="250" width="26" height="16" rx="2" fill="#eaf5f1" stroke="#0e7c66" stroke-width="1.6"/>
+<text x="977" y="262" class="lg">keepout F.Cu</text>
+<text x="941" y="314" class="lgt">PERCHE' COSI'</text>
+<text x="941" y="332" class="nt"></text>
+<text x="941" y="350" class="nt">Le quattro via di alimentazione stanno tutte</text>
+<text x="941" y="368" class="nt">appena fuori dal perimetro del componente,</text>
+<text x="941" y="386" class="nt">a 0.50 mm dal bordo del pad. Identiche fra loro:</text>
+<text x="941" y="404" class="nt">la simmetria serve all'autoallineamento in reflow</text>
+<text x="941" y="422" class="nt">(TN0018 3.8), non e' estetica.</text>
+<text x="941" y="440" class="nt"></text>
+<text x="941" y="458" class="nt">I condensatori sono sul BOTTOM, dove il rame</text>
+<text x="941" y="476" class="nt">sotto il MEMS e' ammesso (3.10). Ognuno ha un</text>
+<text x="941" y="494" class="nt">pad che cade sulla via: loop pin-condensatore</text>
+<text x="941" y="512" class="nt">sotto il millimetro, contro i 9-10 mm di adesso.</text>
+<text x="941" y="530" class="nt"></text>
+<text x="941" y="548" class="nt">Dentro il keepout non passa niente: ne' tracce</text>
+<text x="941" y="566" class="nt">ne' via (3.9). E' il vincolo meccanico, non</text>
+<text x="941" y="584" class="nt">elettrico: rame sotto il sensore irrigidisce la</text>
+<text x="941" y="602" class="nt">zona e la flessione della board si legge come</text>
+<text x="941" y="620" class="nt">deriva dello zero-g.</text>
+<text x="941" y="638" class="nt"></text>
+<text x="941" y="656" class="nt">I pad sono disegnati alla misura raccomandata</text>
+<text x="941" y="674" class="nt">0.575 x 0.35 = pad LGA + 0.1 mm (3.7), che e'</text>
+<text x="941" y="692" class="nt">la correzione ancora da applicare.</text>
+<text x="941" y="710" class="nt"></text>
+<text x="941" y="728" class="nt">I pin 10 e 11 restano non connessi, come dice</text>
+<text x="941" y="746" class="nt">il datasheet. I pin 6 e 7 vanno saldati comunque:</text>
+<text x="941" y="764" class="nt">servono da appoggio meccanico.</text>
+<text x="45" y="930" class="nt">Verificato: nessun conflitto con i componenti gia' presenti sul bottom, e tutte e sei le via sono libere. Raggio dal centro board 11-12 mm, ben dentro il bordo.</text>
+</svg>

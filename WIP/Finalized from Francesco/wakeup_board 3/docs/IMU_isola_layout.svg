@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1964 986" width="1964" height="986">
+<style>
+ text{font-family:'Segoe UI','DejaVu Sans',sans-serif;fill:#1a1a1a}
+ .h1{font-size:26px;font-weight:700}
+ .h2{font-size:13px;fill:#5a5751}
+ .pt{font-size:17px;font-weight:700}
+ .ps{font-size:12px;fill:#5a5751}
+ .pl{font-size:11px;font-weight:600;fill:#5a5751}
+ .ko{font-size:12px;font-weight:700;fill:#0e7c66}
+ .ok{font-size:12.5px;fill:#0e7c66;font-weight:600}
+ .okb{font-size:12.5px;fill:#1c3f94;font-weight:700}
+ .bad{font-size:12.5px;fill:#c0392b;font-weight:600}
+ .nt{font-size:12px;fill:#4a463f}
+ .rk{font-size:12.5px;font-weight:700}
+ .rv{font-size:12.5px;font-weight:700;fill:#0e7c66}
+ .src{font-size:11px;fill:#9a948a}
+</style>
+<rect width="1964" height="986" fill="#fbfbf9"/>
+<text x="30" y="46" class="h1">L'isola attorno all'IMU — ISM330DHCX LGA-14</text>
+<text x="30" y="72" class="h2">Regole da TN0018 Rev 8 (ST, marzo 2025), sezioni 3.7-3.11. Scala: 1 mm = 105 px. Il corpo del componente e 3.0 x 2.5 mm.</text>
+<text x="30" y="92" class="h2">La nota cita esplicitamente i pin 6, 7 e 8 dell'LGA-14: e lo stesso package che abbiamo qui.</text>
+<g transform="translate(30,120)">
+<rect x="0" y="0" width="620" height="620" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="310.0" y="30" class="pt" text-anchor="middle" fill="#0e7c66">COME VA FATTA</text>
+<text x="310.0" y="50" class="ps" text-anchor="middle">vista dall'alto — F.Cu</text>
+<rect x="146.5" y="112.75" width="327.0" height="274.5" fill="#eaf5f1" stroke="#0e7c66" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="310.0" y="102.75" class="ko" text-anchor="middle">KEEPOUT F.Cu — niente tracce, niente via</text>
+<rect x="152.5" y="118.75" width="315.0" height="262.5" fill="none" stroke="#9a948a" stroke-width="1.8" />
+<path d="M163.7,171.2 L115.8,171.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="105.2" cy="171.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="105.2" cy="171.2" r="13.1" fill="#1c3f94"/>
+<path d="M163.7,223.8 L115.8,223.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="105.2" cy="223.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="105.2" cy="223.8" r="13.1" fill="#1c3f94"/>
+<path d="M163.7,276.2 L115.8,276.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="105.2" cy="276.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="105.2" cy="276.2" r="13.1" fill="#1c3f94"/>
+<path d="M163.7,328.8 L115.8,328.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="105.2" cy="328.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="105.2" cy="328.8" r="13.1" fill="#1c3f94"/>
+<path d="M257.5,369.9 L257.5,412.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="257.5" cy="423.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="257.5" cy="423.2" r="13.1" fill="#1c3f94"/>
+<path d="M310.0,369.9 L310.0,412.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="310.0" cy="423.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="310.0" cy="423.2" r="13.1" fill="#1c3f94"/>
+<path d="M362.5,369.9 L362.5,412.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="362.5" cy="423.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="362.5" cy="423.2" r="13.1" fill="#1c3f94"/>
+<path d="M456.3,328.8 L504.2,328.8" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="514.8" cy="328.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="514.8" cy="328.8" r="13.1" fill="#1c3f94"/>
+<path d="M456.3,276.2 L504.2,276.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="514.8" cy="276.2" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="514.8" cy="276.2" r="13.1" fill="#1c3f94"/>
+<path d="M362.5,130.1 L362.5,87.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="362.5" cy="76.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="362.5" cy="76.8" r="13.1" fill="#1c3f94"/>
+<path d="M310.0,130.1 L310.0,87.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="310.0" cy="76.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="310.0" cy="76.8" r="13.1" fill="#1c3f94"/>
+<path d="M257.5,130.1 L257.5,87.2" stroke="#c2453a" stroke-width="15.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="257.5" cy="76.8" r="26.2" fill="#ffffff" stroke="#1c3f94" stroke-width="2"/>
+<circle cx="257.5" cy="76.8" r="13.1" fill="#1c3f94"/>
+<rect x="162.9" y="158.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="154" y="174" class="pl" text-anchor="end">1 SA0</text>
+<rect x="162.9" y="210.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="154" y="227" class="pl" text-anchor="end">2 SDx</text>
+<rect x="162.9" y="263.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="154" y="279" class="pl" text-anchor="end">3 SCx</text>
+<rect x="162.9" y="315.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="154" y="332" class="pl" text-anchor="end">4 INT1</text>
+<rect x="244.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="258" y="364" class="pl" text-anchor="middle">5 VddIO</text>
+<rect x="296.9" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="310" y="364" class="pl" text-anchor="middle">6 GND</text>
+<rect x="349.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="362" y="364" class="pl" text-anchor="middle">7 GND</text>
+<rect x="407.2" y="315.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="466" y="332" class="pl" text-anchor="start">8 Vdd</text>
+<rect x="407.2" y="263.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="466" y="279" class="pl" text-anchor="start">9 INT2</text>
+<rect x="407.2" y="210.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="466" y="227" class="pl" text-anchor="start">10 nc</text>
+<rect x="407.2" y="158.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="466" y="174" class="pl" text-anchor="start">11 nc</text>
+<rect x="349.4" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="362" y="142" class="pl" text-anchor="middle">12 CS</text>
+<rect x="296.9" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="310" y="142" class="pl" text-anchor="middle">13 SCL</text>
+<rect x="244.4" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<text x="258" y="142" class="pl" text-anchor="middle">14 SDA</text>
+<text x="26" y="470" class="ok">tracce che escono RADIALI e SIMMETRICHE dal pad</text>
+<text x="26" y="490" class="ok">via tutte FUORI dal corpo del componente</text>
+<text x="26" y="510" class="ok">pin 6 e 7 (GND) saldati: se non lo sono,</text>
+<text x="26" y="530" class="ok">   stressano meccanicamente il sensore</text>
+<text x="26" y="550" class="ok">GND collegato con una TRACCIA, non attaccando</text>
+<text x="26" y="570" class="ok">   il pad direttamente al piano</text>
+</g>
+<g transform="translate(672,120)">
+<rect x="0" y="0" width="620" height="620" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="310.0" y="30" class="pt" text-anchor="middle" fill="#c0392b">COME NON VA FATTA</text>
+<text x="310.0" y="50" class="ps" text-anchor="middle">gli errori del caso reale in TN0018 §3.11</text>
+<rect x="152.5" y="118.75" width="315.0" height="262.5" fill="none" stroke="#9a948a" stroke-width="1.8" />
+<circle cx="187.9" cy="171.2" r="26.2" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+<circle cx="187.9" cy="171.2" r="13.1" fill="#c0392b"/>
+<circle cx="187.9" cy="223.8" r="26.2" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+<circle cx="187.9" cy="223.8" r="13.1" fill="#c0392b"/>
+<circle cx="187.9" cy="276.2" r="26.2" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+<circle cx="187.9" cy="276.2" r="13.1" fill="#c0392b"/>
+<circle cx="187.9" cy="328.8" r="26.2" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+<circle cx="187.9" cy="328.8" r="13.1" fill="#c0392b"/>
+<path d="M432.1,328.8 L352.0,328.8 L352.0,124.0 L310.0,124.0" stroke="#c0392b" stroke-width="16.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="296.9" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#ffffff" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+<path d="M301.0,336.76 l18,18 M319.0,336.76 l-18,18" stroke="#c0392b" stroke-width="2.4"/>
+<rect x="349.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#ffffff" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+<path d="M353.5,336.76 l18,18 M371.5,336.76 l-18,18" stroke="#c0392b" stroke-width="2.4"/>
+<rect x="162.9" y="158.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="162.9" y="210.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="162.9" y="263.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="162.9" y="315.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="244.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="296.9" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="349.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="407.2" y="315.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="407.2" y="263.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="407.2" y="210.6" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="407.2" y="158.1" width="49.9" height="26.2" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="349.4" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="296.9" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="244.4" y="129.3" width="26.2" height="49.9" rx="1.5" fill="#c2453a" stroke="#8e2f27" stroke-width="1"/>
+<rect x="296.9" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#ffffff" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+<path d="M301.0,336.76 l18,18 M319.0,336.76 l-18,18" stroke="#c0392b" stroke-width="2.4"/>
+<rect x="349.4" y="320.8" width="26.2" height="49.9" rx="1.5" fill="#ffffff" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+<path d="M353.5,336.76 l18,18 M371.5,336.76 l-18,18" stroke="#c0392b" stroke-width="2.4"/>
+<text x="26" y="470" class="bad">via sotto i pad — vanno spostate fuori</text>
+<text x="26" y="490" class="bad">traccia di rame che passa sotto il corpo</text>
+<text x="26" y="510" class="nt">   (quella del pin 8 deve uscire subito)</text>
+<text x="26" y="530" class="bad">pin 6 e 7 non saldati</text>
+<text x="26" y="550" class="nt"></text>
+<text x="26" y="570" class="nt">ST: questi tre errori insieme davano deriva</text>
+<text x="26" y="590" class="nt">   dello zero-g e dello zero-rate sul campo</text>
+</g>
+<g transform="translate(1314,120)">
+<rect x="0" y="0" width="620" height="620" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="310.0" y="30" class="pt" text-anchor="middle" fill="#1c3f94">SEZIONE</text>
+<text x="310.0" y="50" class="ps" text-anchor="middle">perche top e bottom hanno regole diverse</text>
+<rect x="70.0" y="190" width="480" height="150" fill="#f4f2ed" stroke="#1a1a1a" stroke-width="2"/>
+<text x="558.0" y="265.0" class="nt">PCB</text>
+<rect x="180.0" y="130" width="260" height="58" fill="#dfe8f7" stroke="#1c3f94" stroke-width="2"/>
+<text x="310.0" y="164" class="pl" text-anchor="middle" fill="#1c3f94">MEMS</text>
+<rect x="194.0" y="182" width="32" height="10" fill="#c2453a"/>
+<rect x="254.0" y="182" width="32" height="10" fill="#c2453a"/>
+<rect x="334.0" y="182" width="32" height="10" fill="#c2453a"/>
+<rect x="394.0" y="182" width="32" height="10" fill="#c2453a"/>
+<path d="M180.0,204 L440.0,204" stroke="#0e7c66" stroke-width="2.4" stroke-dasharray="7 5"/>
+<text x="450.0" y="208" class="ok">niente rame ne via qui sotto (F.Cu)</text>
+<path d="M110.0,322 L510.0,322" stroke="#1c3f94" stroke-width="5"/>
+<text x="110.0" y="358" class="okb">B.Cu: piano e routing SOTTO il componente sono AMMESSI</text>
+<text x="110.0" y="378" class="nt">(vale per accelerometri, giroscopi e sensori di pressione)</text>
+<text x="26" y="440" class="nt">Il vincolo del top non e elettrico: e meccanico.</text>
+<text x="26" y="460" class="nt">Rame e via sotto il componente irrigidiscono</text>
+<text x="26" y="480" class="nt">la zona in modo asimmetrico, e la flessione</text>
+<text x="26" y="500" class="nt">della board arriva alla struttura MEMS come</text>
+<text x="26" y="520" class="nt">stress — che si legge come offset.</text>
+<text x="26" y="540" class="nt"></text>
+<text x="26" y="560" class="nt">Sul bottom il rame e separato dal componente</text>
+<text x="26" y="580" class="nt">da tutto lo spessore della scheda, quindi non</text>
+<text x="26" y="600" class="nt">trasferisce stress: li puoi passare.</text>
+<text x="26" y="620" class="nt"></text>
+<text x="26" y="640" class="nt">Su questa board vuol dire: i condensatori di</text>
+<text x="26" y="660" class="nt">decoupling sul B.Cu sotto l'IMU sono OK,</text>
+<text x="26" y="680" class="nt">le via che li collegano devono stare fuori</text>
+<text x="26" y="700" class="nt">dal perimetro del componente.</text>
+</g>
+<rect x="30" y="764" width="1904" height="176" rx="8" fill="#ffffff" stroke="#d8d4cc" stroke-width="1.5"/>
+<text x="54" y="794" class="pt">LE REGOLE, COI NUMERI DELL'ISM330DHCX</text>
+<text x="54" y="820" class="rk">Land del PCB</text>
+<text x="230" y="820" class="nt">pad LGA + 0.1 mm per lato (spaziatura pad LGA 250 um > 200 um)</text>
+<text x="1330" y="820" class="rv">0.475 x 0.25  ->  0.575 x 0.35</text>
+<text x="1700" y="820" class="src">TN0018 3.7</text>
+<text x="54" y="837" class="rk">Apertura solder mask</text>
+<text x="230" y="837" class="nt">land + 0.1 mm, cioe NSMD: la maschera sta FUORI dal land</text>
+<text x="1330" y="837" class="rv">0.675 x 0.45</text>
+<text x="1700" y="837" class="src">TN0018 3.7</text>
+<text x="54" y="854" class="rk">Tutti i land uguali</text>
+<text x="230" y="854" class="nt">nessun land grande, nessuna piazzola termica</text>
+<text x="1330" y="854" class="rv">14 land identici</text>
+<text x="1700" y="854" class="src">TN0018 3.7</text>
+<text x="54" y="871" class="rk">Tracce</text>
+<text x="230" y="871" class="nt">simmetriche, uguali su tutti i pad: aiutano l'autoallineamento in reflow</text>
+<text x="1330" y="871" class="rv">0.10 mm su tutti i 14</text>
+<text x="1700" y="871" class="src">TN0018 3.8</text>
+<text x="54" y="888" class="rk">Massa</text>
+<text x="230" y="888" class="nt">il piano NON va attaccato direttamente ai pad: passare da una traccia</text>
+<text x="1330" y="888" class="rv">pad -> traccia -> via -> piano</text>
+<text x="1700" y="888" class="src">TN0018 3.8</text>
+<text x="54" y="905" class="rk">Sopra (F.Cu)</text>
+<text x="230" y="905" class="nt">mai routing ne via sotto il componente: keepout</text>
+<text x="1330" y="905" class="rv">3.0 x 2.5 mm + margine</text>
+<text x="1700" y="905" class="src">TN0018 3.9</text>
+<text x="54" y="922" class="rk">Sotto (B.Cu)</text>
+<text x="230" y="922" class="nt">piano e routing sotto il componente sono ammessi</text>
+<text x="1330" y="922" class="rv">decoupling qui: OK</text>
+<text x="1700" y="922" class="src">TN0018 3.10</text>
+</svg>
