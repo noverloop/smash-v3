@@ -126,6 +126,7 @@ Finalized/**/temp-freerouting.dsn
 Finalized/**/*.kicad_prl
 Finalized/**/fp-info-cache
 
+./**/.history
 # KiCad editor lock files, repo-wide. KiCad writes ~<name>.lck next to a board
 # or project while it is open and removes it on close; a committed one is a
 # stale lock from someone else's machine. They carry no design intent and
@@ -134,3 +135,5 @@ Finalized/**/fp-info-cache
 # Finalized/ rules above. Retroactive: the ones already committed are untracked
 # in the same commit that adds this rule.
 ~*.lck
+Reviewed/spacer_fin_ble_board_wakeup_board/.history/
+**/**/.history/
