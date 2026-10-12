@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+
+  (lib (name "wakeup_board") (type "KiCad") (uri "G:\civil_robot\fin_ble and wakeup\wakeup_board\wakeup_board.kicad_sym") (options "") (descr ""))
+)

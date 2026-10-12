@@ -1,0 +1,108 @@
+(footprint "SOT95P237X125-3N"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Dual Si Schottky diode, common anode, V_R=40 V, I_F=250 mA, AEC-Q101, SOT-23 (Tape & Pack)")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "d6a8938a-6535-4708-8b2e-70e506977b7e")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SOT95P237X125-3N"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "3586fd5d-1606-4057-aeef-e46e971b17df")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "2a56172d-9e0c-4d01-8a44-07132f23633c")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "19a96572-62e6-4196-92fc-f6460f92235c")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy -1.925 -1.77) (xy 1.925 -1.77) (xy 1.925 1.77) (xy -1.925 1.77)
+		)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "ccb1a753-40ed-46ac-b808-6785ee390cdb")
+	)
+	(fp_poly
+		(pts
+			(xy -0.65 -1.46) (xy 0.65 -1.46) (xy 0.65 1.46) (xy -0.65 1.46) (xy -0.65 -1.46) (xy -0.65 -0.51)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "14795687-1d60-490c-a40f-2d81a16f6236")
+	)
+	(pad "1" smd rect
+		(at -1.1 -0.95)
+		(size 1.15 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "03393a98-f1ee-436f-84fa-6f0837bcda0a")
+	)
+	(pad "2" smd rect
+		(at -1.1 0.95)
+		(size 1.15 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "cc22946d-6518-4f66-91d5-1b7a88917621")
+	)
+	(pad "3" smd rect
+		(at 1.1 0)
+		(size 1.15 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "36102582-c478-41e6-aae9-428aff33a9da")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/3dmodels/Package_TO_SOT_SMD.3dshapes/SOT-23.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

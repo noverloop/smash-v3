@@ -1,0 +1,52 @@
+Drill report for wakeup_board.kicad_pcb
+Created on 2026-09-18T11:00:02
+
+Copper Layer Stackup:
+    =============================================================
+    L1 :  F.Cu                      front
+    L2 :  In1.Cu                    in1
+    L3 :  In2.Cu                    in2
+    L4 :  In3.Cu                    in3
+    L5 :  In4.Cu                    in4
+    L6 :  In5.Cu                    in5
+    L7 :  In6.Cu                    in6
+    L8 :  In7.Cu                    in7
+    L9 :  In8.Cu                    in8
+    L10:  In9.Cu                    in9
+    L11:  In10.Cu                   in10
+    L12:  In11.Cu                   in11
+    L13:  In12.Cu                   in12
+    L14:  B.Cu                      back
+
+
+Drill file 'wakeup_board-PTH.drl' contains
+    plated through holes:
+    =============================================================
+    T1  0.200mm  0.0079"  (220 holes))
+    T2  0.250mm  0.0098"  (4 holes))
+
+    Total plated holes count 224
+
+
+Drill file 'wakeup_board-front-in1.drl' contains
+    holes connecting layer pair: 'F.Cu and In1.Cu' (blind vias):
+    =============================================================
+    T1  0.100mm  0.0039"  (47 holes))
+
+    Total plated holes count 47
+
+
+Drill file 'wakeup_board-back-in12.drl' contains
+    holes connecting layer pair: 'B.Cu and In12.Cu' (buried vias):
+    =============================================================
+    T1  0.100mm  0.0039"  (62 holes))
+
+    Total plated holes count 62
+
+
+Drill file 'wakeup_board-NPTH.drl' contains
+    unplated through holes:
+    =============================================================
+    T1  3.000mm  0.1181"  (2 holes))
+
+    Total unplated holes count 2
