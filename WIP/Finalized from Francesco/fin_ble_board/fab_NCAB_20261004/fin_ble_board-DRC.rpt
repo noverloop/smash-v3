@@ -1,0 +1,186 @@
+** Drc report for fin_ble_board.kicad_pcb **
+** Created on 2026-10-04T16:12:56 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 50 DRC violations **
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(1.8646 mm, 4.3300 mm): Footprint C_FIN4_DVDD
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(-3.3376 mm, -0.5979 mm): Footprint J_HALL_FIN_OUT
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(2.1800 mm, 6.0200 mm): Footprint C_FIN_VM_BULK_3
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error (excluded)
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(-7.0000 mm, -0.5000 mm): Footprint C_FIN3_DVDD
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(3.2000 mm, 0.1787 mm): Footprint J_HALL_FIN_VCC
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; error (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+    @(-0.9900 mm, 4.4000 mm): Footprint C_FIN_VM_BULK_2
+[lib_footprint_mismatch]: I'impronta 'BatteryContacts_3' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_CELL_CONTACTS
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-6.4280 mm, 7.7010 mm): Footprint C_G0B1_FIN_VDD2
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-10.8490 mm, -0.5490 mm): Footprint R_J_HALL_FIN_PU
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(12.5000 mm, 3.5250 mm): Footprint C_FIN1_DVDD
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(7.0290 mm, 7.7010 mm): Footprint C_FIN3_VM
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-5.9780 mm, 8.8520 mm): Footprint C_G0B1_FIN_VREF
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(1.8646 mm, 4.3300 mm): Footprint C_FIN4_DVDD
+[lib_footprint_mismatch]: I'impronta 'P_fin_ble_board_spacer_battery_6' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(0.0000 mm, 0.0000 mm): Footprint P_fin_ble_board_spacer_battery_6
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-10.0250 mm, 8.5000 mm): Footprint R_G0B1_FIN_NRST
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(2.1800 mm, 6.0200 mm): Footprint C_FIN_VM_BULK_3
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(10.8490 mm, 2.3020 mm): Footprint R_FIN4_DECAY
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(12.4771 mm, 6.4900 mm): Footprint C_G0B1_FIN_BULK
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-12.5000 mm, 2.2000 mm): Footprint C_FIN_VM_BULK_5
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(2.2260 mm, 7.7010 mm): Footprint R_FIN1_DECAY
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-7.0000 mm, -0.5000 mm): Footprint C_FIN3_DVDD
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(12.5000 mm, 0.5000 mm): Footprint R_FIN2_DECAY
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-10.8490 mm, 5.0000 mm): Footprint C_J_HALL_FIN_VCC
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(5.5000 mm, 10.3400 mm): Footprint C_FIN_VM_BULK_1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-12.4550 mm, 4.4000 mm): Footprint C_FIN1_VM
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(6.8300 mm, 8.9250 mm): Footprint C_G0B1_FIN_VDD1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-10.8490 mm, 2.6530 mm): Footprint C_FIN4_VM
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-8.5000 mm, 10.0000 mm): Footprint C_FIN2_DVDD
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(11.0240 mm, 0.0760 mm): Footprint C_FIN_VM_BULK_4
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(5.4280 mm, 7.7010 mm): Footprint C_FIN_VREF
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-10.8490 mm, 1.0520 mm): Footprint C_FIN2_VM
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-7.1290 mm, 8.4020 mm): Footprint R_FIN3_DECAY
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(3.8270 mm, 7.7010 mm): Footprint C_G0B1_FIN_NRST
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashFinBleBoard'
+    Local override; warning (excluded)
+    @(-0.9900 mm, 4.4000 mm): Footprint C_FIN_VM_BULK_2
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning (excluded)
+    @(1.1553 mm, -17.7700 mm): PCB text 'spacer_battery_6 cutout' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning (excluded)
+    @(1.1553 mm, -17.7700 mm): PCB text 'spacer_battery_6 cutout' on B.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: vincoli impostazioni scheda serigrafia; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+    @(9.5750 mm, -11.4500 mm): Segment on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-10.7834 mm, -9.0156 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-9.0156 mm, -10.7834 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-6.6370 mm, -8.4048 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(8.0130 mm, 9.7808 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(9.0156 mm, 10.7834 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(10.7834 mm, 9.0156 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+    @(-5.2500 mm, -12.1590 mm): Pad 36 [3V3_AON] of J_fin_ble_board_spacer_fin_ble_board_wakeup_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+    @(-3.6500 mm, -12.1590 mm): Pad 34 [SYS_SPI_SCLK] of J_fin_ble_board_spacer_fin_ble_board_wakeup_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+    @(-2.0500 mm, -12.1590 mm): Pad 33 [SYS_SPI_MOSI] of J_fin_ble_board_spacer_fin_ble_board_wakeup_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning (excluded)
+    @(-0.2868 mm, -11.7750 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on F.Silkscreen
+    @(-0.4500 mm, -12.1590 mm): Pad 32 [SYS_SPI_MISO] of J_fin_ble_board_spacer_fin_ble_board_wakeup_board on F.Cu
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

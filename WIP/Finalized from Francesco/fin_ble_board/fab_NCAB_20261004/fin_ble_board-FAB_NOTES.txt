@@ -1,0 +1,41 @@
+FABRICATION NOTES - fin_ble_board (14-layer HDI, 1+12+1)
+=========================================================
+Base material ....... FR4 high-Tg, 14 copper layers, 18 um base copper
+Board thickness ..... 1.60 mm (NCAB range 1.6-2.0 mm acceptable)
+Outline ............. ~Ø 34 mm (see Edge.Cuts). Routed edge tol. +/- 0.1 mm
+Surface finish ...... ENIG
+Solder mask ......... LPSM both sides
+Silkscreen .......... none (top and bottom)
+
+Stackup / planes .... In1, In4, In7, In10, In12 FLEX_GND planes
+                      In2 ...................... COMP_5V_RAW plane
+                      In6 ...................... 3V3 plane
+                      other inner layers ....... signal
+
+Track / space ....... 0.10 / 0.10 mm general
+                      0.08 / 0.08 mm ONLY inside the 0.5 mm pitch BGA
+                      escape area of U_G0B1_FIN (UFBGA64)
+
+Drilling (5 files, see drill report)
+  PTH  through F.Cu-B.Cu .......... 189 x 0.20 mm, pad 0.45 mm
+  Laser microvia F.Cu-In1.Cu ...... 37 x 0.10 mm, pad 0.25 mm
+  Laser microvia In12.Cu-B.Cu ..... 23 x 0.10 mm, pad 0.25 mm
+      (file "back-in12" is labelled "buried" by KiCad: it is a BLIND
+       laser microvia from the bottom side, In12-B.Cu)
+  Buried via In1.Cu-In12.Cu ....... 2 x 0.20 mm, pad 0.45 mm (core 2-13)
+  NPTH ............................ 2 x 3.00 mm
+  MICROVIA FILL ..... REQUIRED: copper filled and capped (IPC-4761 Type VII),
+                      several microvias are in/near BGA and LGA pads.
+
+Assembly ............ components on both sides (15 top, 31 bottom), UFBGA64
+                      0.5 mm pitch on top.
+
+Values to confirm by NCAB (assumed in design rules):
+  - copper to board edge 0.30 mm
+  - hole to copper clearance 0.20 mm (0.10 mm for laser microvias)
+  - hole to hole 0.25 mm (0.15 mm microvia)
+
+Files ............... Gerber X2 (14 Cu, F/B Mask, F/B Paste, Edge.Cuts),
+                      .gbrjob, Excellon (PTH, 2 microvia pairs, buried pair,
+                      NPTH) with PDF maps, drill report, IPC-D-356 netlist,
+                      DRC report.
