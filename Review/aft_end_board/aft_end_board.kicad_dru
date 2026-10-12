@@ -1,0 +1,196 @@
+(version 1)
+#
+# =============================================================================
+#  NCAB Group - Regole di layout per "Compute Module" (Smash Electronics)
+#  Fonte : PCB Info Sheet del 27-08-2026 (richiesta S. de Boer)
+#  Board : 14 layer HDI, spessore finito 1.6-2.0 mm, FR4 high-Tg (370HR/IT180A)
+#          rame 18 um (0.5 oz) esterni e interni, IPC-6012 Classe 3
+#  Target: KiCad 10.x   (per KiCad 9: togliere la keyword "blind_via")
+# -----------------------------------------------------------------------------
+#  Legenda nei commenti:
+#     [DOC] = valore preso dal PCB Info Sheet
+#     [ASS] = valore assunto (tipico HDI / IPC cl.3) -> DA CONFERMARE con NCAB
+# -----------------------------------------------------------------------------
+#  Mappatura layer documento -> KiCad
+#     1=F.Cu  2=In1.Cu  3=In2.Cu  4=In3.Cu ... 12=In11.Cu  13=In12.Cu  14=B.Cu
+#
+#  Via ammessi [DOC]
+#     Passante     1-14   (F.Cu   - B.Cu)    foro 0.20 / pad 0.45, resin filled
+#     Interrato    2-13   (In1.Cu - In12.Cu) foro 0.20 / pad 0.45  (preferito)
+#     Interrato    3-12   (In2.Cu - In11.Cu) foro 0.20 / pad 0.45
+#     Microvia     1-2, 2-3, 12-13, 13-14    foro 0.10 / pad 0.25, laser,
+#                  riempiti di rame e capped (impilabili)
+#
+#  Impostare ANCHE in Board Setup (le regole custom non scendono sotto
+#  i minimi di Board Setup > Design Rules > Constraints):
+#     Minimum clearance ................ 0.08  mm  [DOC] (solo BGA 0.5 mm)
+#     Minimum track width .............. 0.08  mm  [DOC] (colli di bottiglia)
+#     Minimum connection width ......... 0.08  mm
+#     Minimum annular width ............ 0.075 mm  (microvia 0.25/0.10)
+#     Minimum via diameter ............. 0.25  mm
+#     Copper to hole clearance ......... 0.10  mm
+#     Copper to edge clearance ......... 0.30  mm  [ASS]
+#     Minimum through hole ............. 0.20  mm  [DOC]
+#     Hole to hole clearance ........... 0.15  mm
+#     Minimum uVia diameter / hole ..... 0.25 / 0.10 mm [DOC]
+#  Net Classes > Default:
+#     Clearance 0.10 mm, Track 0.10 mm, Via 0.45/0.20 mm, uVia 0.25/0.10 mm
+#  (il clearance generale di 0.10 mm va nella net class e non qui, altrimenti
+#   una regola custom senza condizione annullerebbe i clearance maggiori
+#   delle altre net class)
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+#  1. PISTE E ISOLAMENTI
+# -----------------------------------------------------------------------------
+
+# [DOC] Larghezza minima pista 100 um
+(rule "NCAB piste: larghezza min 0.10 mm"
+  (constraint track_width (min 0.1mm)))
+
+# [DOC] Fan-out BGA passo 0.5 mm: pista e isolamento 80 um.
+# Disegnare una Rule Area (nessun keepout spuntato) sopra il BGA, su tutti
+# i layer rame, con nome che inizia per "BGA" (es. BGA_U1, BGA_U4 ...).
+(rule "NCAB BGA 0.5mm: pista min 0.08 mm"
+  (constraint track_width (min 0.08mm))
+  (condition "A.intersectsArea('BGA*')"))
+
+(rule "NCAB BGA 0.5mm: isolamento min 0.08 mm"
+  (constraint clearance (min 0.08mm))
+  (condition "A.intersectsArea('BGA*') && B.intersectsArea('BGA*')"))
+
+# [ASS] Rame dal contorno fresato (outline e fresature interne)
+(rule "NCAB bordo: rame a min 0.30 mm dal contorno"
+  (constraint edge_clearance (min 0.3mm)))
+
+
+# -----------------------------------------------------------------------------
+#  2. FORI
+# -----------------------------------------------------------------------------
+
+# [DOC] Foratura meccanica minima PTH/NPTH/via 200 um
+#       (aspect ratio: 0.20 mm su 2.0 mm = 10:1 -> non scendere sotto 0.20)
+(rule "NCAB fori meccanici: diametro min 0.20 mm"
+  (constraint hole_size (min 0.2mm))
+  (condition "!A.isMicroVia()"))
+
+# [DOC] Microvia laser 250 um / 100 um  -> anello 75 um
+# [ASS] max 0.15 mm: limite tipico della foratura laser
+(rule "NCAB microvia laser: foro 0.10 / pad 0.25 mm"
+  (constraint hole_size (min 0.1mm) (max 0.15mm))
+  (constraint via_diameter (min 0.25mm))
+  (constraint annular_width (min 0.075mm))
+  (condition "A.isMicroVia()"))
+
+# [DOC] Via passanti e interrati 0.20 / 0.45 mm -> anello 125 um
+(rule "NCAB via meccanici: foro 0.20 / pad 0.45 mm"
+  (constraint via_diameter (min 0.45mm))
+  (constraint annular_width (min 0.125mm))
+  (condition "A.Type == 'Via' && !A.isMicroVia()"))
+
+# [ASS] Pad PTH componenti: stesso anello dei via meccanici (IPC cl.3)
+(rule "NCAB pad PTH: anello min 0.125 mm"
+  (constraint annular_width (min 0.125mm))
+  (condition "A.Type == 'Pad'"))
+
+# [ASS] Rame-foro: 0.20 mm per fori meccanici (deriva della punta su 14 layer);
+#       compatibile con via 0.20/0.45 + isolamento 0.10 (-> 0.225 mm).
+(rule "NCAB rame-foro meccanico min 0.20 mm"
+  (constraint hole_clearance (min 0.2mm)))
+
+# [ASS] Rame-foro microvia verso piste/zone: 0.10 mm
+#       (pad 0.25 + isolamento 0.08 danno 0.155 mm dal bordo foro)
+(rule "NCAB rame-foro microvia min 0.10 mm"
+  (constraint hole_clearance (min 0.1mm))
+  (condition "A.isMicroVia() && B.Type != 'Pad' && B.Type != 'Via'"))
+
+# [ASS] Distanza bordo-bordo tra fori meccanici
+(rule "NCAB foro-foro meccanici min 0.25 mm"
+  (constraint hole_to_hole (min 0.25mm)))
+
+# [ASS] Distanza bordo-bordo tra fori laser
+(rule "NCAB foro-foro microvia min 0.15 mm"
+  (constraint hole_to_hole (min 0.15mm))
+  (condition "A.isMicroVia() && B.isMicroVia()"))
+
+
+# -----------------------------------------------------------------------------
+#  3. STRUTTURA DEI VIA (solo gli span del PCB Info Sheet)
+# -----------------------------------------------------------------------------
+
+# [DOC] Microvia ammessi solo 1-2, 2-3, 12-13, 13-14
+(rule "NCAB microvia: span ammessi 1-2 / 2-3 / 12-13 / 13-14"
+  (constraint disallow via micro_via blind_via buried_via)
+  (condition "A.isMicroVia() && !((A.Layer_Top == 'F.Cu' && A.Layer_Bottom == 'In1.Cu') || (A.Layer_Top == 'In1.Cu' && A.Layer_Bottom == 'In2.Cu') || (A.Layer_Top == 'In11.Cu' && A.Layer_Bottom == 'In12.Cu') || (A.Layer_Top == 'In12.Cu' && A.Layer_Bottom == 'B.Cu'))"))
+
+# [DOC] Via meccanici ammessi solo passanti 1-14 e interrati 2-13 / 3-12
+#       (nessun blind meccanico)
+(rule "NCAB via meccanici: span ammessi 1-14 / 2-13 / 3-12"
+  (constraint disallow via micro_via blind_via buried_via)
+  (condition "A.Type == 'Via' && !A.isMicroVia() && !((A.Layer_Top == 'F.Cu' && A.Layer_Bottom == 'B.Cu') || (A.Layer_Top == 'In1.Cu' && A.Layer_Bottom == 'In12.Cu') || (A.Layer_Top == 'In2.Cu' && A.Layer_Bottom == 'In11.Cu'))"))
+
+
+# -----------------------------------------------------------------------------
+#  4. IMPEDENZA CONTROLLATA (Appendix C) - MODELLI DA COMPLETARE
+# -----------------------------------------------------------------------------
+#  Larghezze e gap dipendono dallo stackup finale calcolato da NCAB
+#  (attenzione: il foglio indica rame 18 um, l'immagine dello stackup 35 um).
+#  Creare le net class indicate, poi togliere il '#' e inserire i valori.
+#
+#   55 ohm +/-10%  single ended microstrip / coplanare  - Top & Bottom
+#   90 ohm +/-10%  differenziale microstrip             - Top & Bottom
+#  100 ohm +/-10%  diff. microstrip (Top) / stripline (interni)
+#  120 ohm +/-10%  diff. microstrip (Top & Bottom) / stripline (interni)
+#
+# (rule "Z55 SE esterni"
+#   (layer outer)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (condition "A.NetClass == 'Z55_SE'"))
+#
+# (rule "Z90 DP esterni"
+#   (layer outer)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (constraint diff_pair_gap (min G_MIN) (opt G_OPT) (max G_MAX))
+#   (constraint diff_pair_uncoupled (max 5mm))
+#   (condition "A.NetClass == 'Z90_DP'"))
+#
+# (rule "Z100 DP esterni"
+#   (layer outer)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (constraint diff_pair_gap (min G_MIN) (opt G_OPT) (max G_MAX))
+#   (condition "A.NetClass == 'Z100_DP'"))
+#
+# (rule "Z100 DP interni"
+#   (layer inner)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (constraint diff_pair_gap (min G_MIN) (opt G_OPT) (max G_MAX))
+#   (condition "A.NetClass == 'Z100_DP'"))
+#
+# (rule "Z120 DP esterni"
+#   (layer outer)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (constraint diff_pair_gap (min G_MIN) (opt G_OPT) (max G_MAX))
+#   (condition "A.NetClass == 'Z120_DP'"))
+#
+# (rule "Z120 DP interni"
+#   (layer inner)
+#   (constraint track_width (min W_MIN) (opt W_OPT) (max W_MAX))
+#   (constraint diff_pair_gap (min G_MIN) (opt G_OPT) (max G_MAX))
+#   (condition "A.NetClass == 'Z120_DP'"))
+
+
+# -----------------------------------------------------------------------------
+#  5. NOTE DI FABBRICAZIONE (non verificabili dal DRC, da riportare nel
+#     disegno di fabbricazione)
+# -----------------------------------------------------------------------------
+#  - Via passanti resin filled; via-in-pad -> VIPPO (filled & overplated)
+#  - Microvia laser riempiti di rame e capped
+#  - Solder mask nero Top/Bottom; nessuna serigrafia Top/Bottom
+#  - Finitura: ENIG (alternativa HAL lead-free); oro galvanico full-surface: si
+#  - Contorno fresato, fresature interne si, no V-scoring, asole ammesse
+#  - UL + logo, date code, logo produttore, area marcatura predefinita
+#  - Test elettrico, RoHS, lead-free reflow, IPC-6012 / IPC-A-600 Classe 3
+#  - Stack-up interno secondo ST (Appendix D): L1 segnali dati, L2 GND unico,
+#    L3 indirizzi/comandi DDR, L4 GND, L5 VDD_DDR, Bottom disaccoppiamenti
+# =============================================================================

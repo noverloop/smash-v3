@@ -1,0 +1,150 @@
+** Drc report for aft_end_board.kicad_pcb **
+** Created on 2026-09-11T13:00:18 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 41 DRC violations **
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-7.5505 mm, -1.4750 mm): PCB text 'ARM' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-7.5505 mm, -1.4750 mm): PCB text 'ARM' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-6.7505 mm, 2.0150 mm): PCB text 'JUMPSTART' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-6.7505 mm, 2.0150 mm): PCB text 'JUMPSTART' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-4.7615 mm, -8.9650 mm): PCB text 'FIN 3' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-4.7615 mm, -8.9650 mm): PCB text 'FIN 3' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-4.7615 mm, -5.7750 mm): PCB text 'FIN 4' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-4.7615 mm, -5.7750 mm): PCB text 'FIN 4' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-3.5000 mm, -1.4750 mm): PCB text 'GROUND' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-3.5000 mm, -1.4750 mm): PCB text 'GROUND' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-0.3605 mm, 2.0150 mm): PCB text 'I2C' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-0.3605 mm, 2.0150 mm): PCB text 'I2C' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-0.1115 mm, -12.2850 mm): PCB text 'SPI' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-0.1115 mm, -12.2850 mm): PCB text 'SPI' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-0.1115 mm, 8.4950 mm): PCB text 'GPIO' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-0.1115 mm, 8.4950 mm): PCB text 'GPIO' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(-0.0435 mm, 5.3050 mm): PCB text 'PROGRAM_MP25' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-0.0435 mm, 5.3050 mm): PCB text 'PROGRAM_MP25' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(0.0000 mm, -1.4750 mm): PCB text 'FIRE' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(0.0000 mm, -1.4750 mm): PCB text 'FIRE' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(4.6085 mm, -8.9650 mm): PCB text 'FIN 1' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(4.6085 mm, -8.9650 mm): PCB text 'FIN 1' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(4.6085 mm, -5.7750 mm): PCB text 'FIN 2' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(4.6085 mm, -5.7750 mm): PCB text 'FIN 2' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(6.2595 mm, -1.4750 mm): PCB text 'BAT' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(6.2595 mm, -1.4750 mm): PCB text 'BAT' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(6.2595 mm, 2.0150 mm): PCB text 'HALL' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(6.2595 mm, 2.0150 mm): PCB text 'HALL' on B.Silkscreen
+[text_thickness]: Spessore testo fuori campo (vincoli impostazioni scheda spessore testo serigrafia spess. min 0.0800 mm; effettivo 0.0750 mm)
+    Rule: vincoli impostazioni scheda spessore testo serigrafia; warning
+    @(11.0200 mm, -1.4750 mm): PCB text 'CAN' on B.Silkscreen
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4500 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(11.0200 mm, -1.4750 mm): PCB text 'CAN' on B.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(-3.3760 mm, -11.4030 mm): Segment on F.Silkscreen
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(-2.0500 mm, -11.6500 mm): Pad 50 [FIRE_HV] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(5.9500 mm, -11.6500 mm): Pad 26 [FIN4_BOUT2] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(7.5500 mm, -11.6500 mm): Pad 21 [FIN3_AOUT1] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(-0.4500 mm, -11.6500 mm): Pad 45 [3V3] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(1.1500 mm, -11.6500 mm): Pad 41 [SYS_SPI_CS_FIN] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(2.7500 mm, -11.6500 mm): Pad 37 [NRST] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-1.1278 mm, -11.7280 mm): PCB text 'spacer_aft_end_board_activation_interface cutout' on F.Silkscreen
+    @(4.3500 mm, -11.6500 mm): Pad 31 [FLEX_GND] of J_aft_end_board_spacer_aft_end_board_activation_interface on F.Cu
+[silk_overlap]: Silkscreen clearance
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(8.4600 mm, 5.6300 mm): Segment on B.Silkscreen
+    @(-0.0435 mm, 5.3050 mm): PCB text 'PROGRAM_MP25' on B.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **
