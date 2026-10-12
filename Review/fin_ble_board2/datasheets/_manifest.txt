@@ -1,0 +1,12 @@
+STM32G0_RM0444.pdf|Reference manual STM32G0x1|https://www.st.com/resource/en/reference_manual/rm0444-stm32g0x1-advanced-armbased-32bit-mcus-stmicroelectronics.pdf|failed
+AN5096_STM32G0_hardware.pdf|AN5096 getting started hardware STM32G0|https://www.st.com/resource/en/application_note/an5096-getting-started-with-stm32g0-series-hardware-development-stmicroelectronics.pdf|failed
+AN4822_BGA_PCB_design.pdf|AN4822 PCB design with 0.5mm pitch UFBGA|https://www.st.com/resource/en/application_note/an4822-pcb-design-guidelines-for-reduced-pitch-bga-packages-stmicroelectronics.pdf|failed
+DRV8428_ds.pdf|DRV8428 STEP/DIR - NON e il chip montato, tenuto solo come riferimento|https://www.ti.com/lit/ds/symlink/drv8428.pdf|ok
+TLV3691_ds.pdf|Comparatore nanopower TLV3691IDPFR|https://www.ti.com/lit/ds/symlink/tlv3691.pdf|ok
+KEMET_X7R_commercial.pdf|Condensatori 0402 X7R commerciali|https://content.kemet.com/datasheets/KEM_C1002_X7R_SMD.pdf|ok
+Vishay_CRCW_e3.pdf|Resistenze CRCW0402 e3|https://www.vishay.com/docs/20035/dcrcwe3.pdf|ok
+Steminc_SMD10T04R111.pdf|Piezo SMD10T04R111|https://www.steminc.com/PZT/en/content/pdf/SMD10T04R111.pdf https://www.steminc.com/piezo/PDF/SMD10T04R111.pdf|failed
+KEMET_MIL-PRF-32535_C-Series.pdf|Condensatori MIL-PRF-32535 X7R|https://content.kemet.com/datasheets/KEM_C1096_MIL-PRF-32535_X7R.pdf|ok
+TI_SPRABB3_BGA_0.5mm_PCB_design.pdf|Linee guida PCB per BGA a passo 0.5 mm (TI SPRABB3)|https://www.ti.com/lit/an/sprabb3/sprabb3.pdf|ok
+DS_stm32g0b1re.pdf|MCU STM32G0B1REI6N (UFBGA64) - scaricato a mano da st.com|https://www.st.com/resource/en/datasheet/stm32g0b1re.pdf|ok (manuale)
+DRV8428E_ds.pdf|Stepper/dual H-bridge DRV8428E (PH/EN) - SLOSE51A, variante corretta|https://www.ti.com/lit/ds/symlink/drv8428e.pdf|ok
