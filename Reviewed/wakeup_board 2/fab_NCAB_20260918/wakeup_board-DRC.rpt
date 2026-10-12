@@ -1,0 +1,657 @@
+** Drc report for wakeup_board.kicad_pcb **
+** Created on 2026-09-18T11:00:07 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 192 DRC violations **
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(8.4279 mm, -2.8971 mm): Via [IMU2_SCX] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(8.0375 mm, 2.6883 mm): Via [I2C2_SDA] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(10.5800 mm, -3.2400 mm): Via [I2C3_SCL] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(5.9313 mm, 0.6583 mm): Via [WBA_NRST] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(8.2220 mm, 2.0650 mm): Via [WBA_AON_HOLD] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(7.4825 mm, -1.9084 mm): Via [WBA_UART_RX] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(10.2700 mm, -1.7100 mm): Via [WBA_HCI_MISO] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(9.2720 mm, -1.3350 mm): Via [WBA_UART_TX] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(9.4894 mm, -2.7094 mm): Via [WBA_HCI_MOSI] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(9.6400 mm, -1.8906 mm): Via [H3LIS_INT1] on F.Cu - B.Cu
+[via_diameter]: Diametro via (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' diametro min 0.4500 mm; effettivo 0.4000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error
+    @(-7.4648 mm, -2.8348 mm): Via [WBA_RST_CMD] on F.Cu - B.Cu
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(5.8700 mm, 10.7300 mm): Track [3V3] on B.Cu, length 1.3100 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(3.5500 mm, -7.8290 mm): Track [3V3] on B.Cu, length 0.9899 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(3.5500 mm, -7.8290 mm): Track [3V3] on B.Cu, length 0.9899 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(-8.1507 mm, -1.5493 mm): Track [3V3] on B.Cu, length 1.9319 mm
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(8.4279 mm, -2.8971 mm): Via [IMU2_SCX] on F.Cu - B.Cu
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(6.9900 mm, -2.7500 mm): Track [FLEX_GND] on F.Cu, length 0.0012 mm
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(3.4000 mm, 1.9500 mm): Micro via [FLEX_GND] on In12.Cu - B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(-0.3869 mm, 3.4063 mm): Micro via [FLEX_GND] on In12.Cu - B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(3.3800 mm, 3.7900 mm): Micro via [FLEX_GND] on In12.Cu - B.Cu
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(-5.9067 mm, -1.7565 mm): Track [I2C2_SDA] on In8.Cu, length 1.7565 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(7.8825 mm, -1.3125 mm): Track [3V3_AON] on In1.Cu, length 0.0035 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(9.5582 mm, 2.0182 mm): Track [AON_EN_GATE] on In8.Cu, length 0.3151 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(-1.7760 mm, 5.0020 mm): Track [WBA_RF_M] on F.Cu, length 0.4517 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(-0.7380 mm, 3.5918 mm): Track [IMU2_INT] on In8.Cu, length 0.0638 mm
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(6.6075 mm, -1.7000 mm): Micro via [WBA_VLX] on F.Cu - In1.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(8.9924 mm, -4.2522 mm): Via [QHOLD2_GATE] on F.Cu - B.Cu
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(2.7010 mm, 3.1540 mm): Track [IR_WAKE] on B.Cu, length 0.4267 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(7.8033 mm, 1.8400 mm): Track [WBA_SWCLK] on F.Cu, length 0.1633 mm
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; warning
+    @(9.3700 mm, -3.5400 mm): Micro via [WBA_HCI_NSS] on In12.Cu - B.Cu
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(-7.8500 mm, -3.0623 mm): Track [WBA_RST_CMD] on B.Cu, length 0.3217 mm
+[isolated_copper]: Isolated copper fill
+    Local override; warning
+    @(-2.3000 mm, 3.5000 mm): Zone 'PWRPATH_In9_BOOST_OUT' [BOOST_OUT] on In9.Cu, priority 0
+[connection_width]: Connessione rame troppo stretta (vincoli impostazioni scheda larghezza minima connessione 0.0800 mm; reale 0.0563 mm) (B.Cu)
+    Rule: vincoli impostazioni scheda; warning
+    @(-6.2700 mm, -7.3000 mm): Via [3V3] on F.Cu - B.Cu
+    @(-7.0900 mm, -8.0500 mm): Track [3V3] on B.Cu, length 1.0607 mm
+[connection_width]: Connessione rame troppo stretta (vincoli impostazioni scheda larghezza minima connessione 0.0800 mm; reale 0.0308 mm) (In9.Cu)
+    Rule: vincoli impostazioni scheda; warning
+    @(-5.1000 mm, -8.3000 mm): Zone 'PWRPATH_In9_REG_IN_MAIN' [REG_IN_MAIN] on In9.Cu, priority 0
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(-7.3550 mm, -4.1700 mm): Footprint C_WBA_NRST
+    @(-5.9600 mm, -2.8260 mm): Footprint Q_WBA_RST
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(-7.5000 mm, 6.3950 mm): Footprint R_IMU2_SCX_PU
+    @(-5.2100 mm, 7.7770 mm): Footprint U_IMU2
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(-8.9430 mm, 0.0000 mm): Footprint U_IMU1
+    @(-8.3750 mm, 2.4300 mm): Footprint R_IMU1_SDX_PU
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(7.5000 mm, 4.7700 mm): Footprint C_WBA_BULK_1
+    @(7.8450 mm, 3.9500 mm): Footprint C_WBA_HSE_VDD
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(6.1560 mm, 3.0260 mm): Footprint TP_GND
+    @(7.2900 mm, 2.7750 mm): Footprint RHOLD_AON
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(7.4120 mm, 4.0060 mm): Footprint QMAIN
+    @(6.3200 mm, 2.6150 mm): Footprint L_WBA_PI
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(3.8710 mm, 0.0000 mm): Footprint D_JUMP_WAKE
+    @(2.8010 mm, -3.1700 mm): Footprint L_WBA_SMPS
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(2.1500 mm, -4.3530 mm): Footprint TP_IMU2_INT
+    @(2.7650 mm, -3.2900 mm): Footprint RHOLD_G
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(-0.2100 mm, 2.6280 mm): Footprint C_WBA_BULK_2
+    @(-2.2260 mm, 3.6040 mm): Footprint TP_YAGI_RF_B
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(-7.8300 mm, 3.2500 mm): Footprint CBOOST_IN1_3
+    @(-7.1050 mm, 1.1510 mm): Footprint R_BOOST_FB1
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(6.3200 mm, 2.6150 mm): Footprint L_WBA_PI
+    @(7.5220 mm, 0.0650 mm): Footprint U_WBA
+[courtyards_overlap]: Courtyards overlap
+    Rule: vincoli impostazioni scheda ingombri; warning
+    @(5.9800 mm, 6.6150 mm): Footprint C_WBA_VDDRF
+    @(4.2900 mm, 7.3800 mm): Footprint CBOOST_IN1_4
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(-8.3606 mm, -14.8020 mm): Segment on Edge.Cuts
+    @(-0.0323 mm, -14.5780 mm): PCB text 'spacer_wakeup_board_power_board cutout' on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(-11.1105 mm, -12.8669 mm): Segment on Edge.Cuts
+    @(-0.2868 mm, -12.4500 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on B.Silkscreen
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.5000 mm, 6.3950 mm): Footprint R_IMU2_SCX_PU
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.5400 mm, 0.9950 mm): Footprint CBOOST_OUT2
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(1.1100 mm, 10.4550 mm): Footprint RPU_MAG_WAKE
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.3600 mm, 9.8500 mm): Footprint C_MAG_WAKE
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-8.3750 mm, 2.4300 mm): Footprint R_IMU1_SDX_PU
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.3550 mm, -4.1700 mm): Footprint C_WBA_NRST
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.4770 mm, 1.1510 mm): Footprint C_WBA_VDD1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.6050 mm, 8.0100 mm): Footprint C_IMU2_1
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(3.1260 mm, -6.5550 mm): Footprint R_JUMP_PU
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-10.9200 mm, 0.9350 mm): Footprint C_IMU1_1
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.3020 mm, -0.4500 mm): Footprint TP_IMU1_INT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-9.6800 mm, -4.1000 mm): Footprint RPU_I2C2_SDA
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.0750 mm, 5.6060 mm): Footprint R_BOOST_FB2
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(7.5000 mm, 4.7700 mm): Footprint C_WBA_BULK_1
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-1.6770 mm, -5.4040 mm): Footprint R_JUMP_WAKE
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-10.1800 mm, -2.1800 mm): Footprint C_IMU1_2
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.5000 mm, 3.3750 mm): Footprint C_AON_IN
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.5040 mm, -2.0510 mm): Footprint R_WILK_ISO
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(6.1560 mm, 3.0260 mm): Footprint TP_GND
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(7.2900 mm, 2.7750 mm): Footprint RHOLD_AON
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.5510 mm, 6.0310 mm): Footprint C_AON_OUT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-6.8250 mm, 7.6600 mm): Footprint R_IMU2_SDX_PU
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.1050 mm, -0.4500 mm): Footprint RPU_SDA_EXT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.6510 mm, -5.5000 mm): Footprint RHOLD2_PD
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.0000 mm, 0.0000 mm): Footprint R_WBARST_PD
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.6850 mm, 8.7100 mm): Footprint C_IMU2_3
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.0900 mm, -7.0750 mm): Footprint C_MAG2
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.0100 mm, 7.2850 mm): Footprint R_WBA_BOOT0
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.1500 mm, -4.3530 mm): Footprint TP_IMU2_INT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.3760 mm, -5.5040 mm): Footprint RHOLD2_G
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(8.7100 mm, -7.6450 mm): Footprint C_IMU3_1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-1.8520 mm, -2.0510 mm): Footprint C_IMU1_3
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-3.0030 mm, -4.6040 mm): Footprint RPU_SCL_EXT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-4.0550 mm, 0.7000 mm): Footprint RMAIN_PU
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.0760 mm, -3.1020 mm): Footprint TP_MAG_DRDY
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(7.3700 mm, 7.3000 mm): Footprint CBOOST_IN1_1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-11.2500 mm, -4.5250 mm): Footprint C_CAM_VDD
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.2100 mm, 2.6280 mm): Footprint C_WBA_BULK_2
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.7650 mm, -3.2900 mm): Footprint RHOLD_G
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-11.8000 mm, 3.8300 mm): Footprint CBOOST_IN2
+[lib_footprint_mismatch]: I'impronta 'P_wakeup_board_spacer_fin_ble_board_wakeup_board' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.0000 mm, 0.0000 mm): Footprint P_wakeup_board_spacer_fin_ble_board_wakeup_board
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.0000 mm, -0.7010 mm): Footprint C_WBA_VDDA
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.5530 mm, -2.0510 mm): Footprint R_IMU3_SDX_PU
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(6.6150 mm, -2.6200 mm): Footprint RPU_I2C3_SDA
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.0760 mm, -5.4040 mm): Footprint TP_WILK_B
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.9540 mm, 0.1750 mm): Footprint TP_3V3
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(7.8450 mm, 3.9500 mm): Footprint C_WBA_HSE_VDD
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.8300 mm, 3.2500 mm): Footprint CBOOST_IN1_3
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-1.6600 mm, 9.6700 mm): Footprint C_IMU2_2
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(9.8800 mm, 0.9450 mm): Footprint C_IR_WAKE
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.2260 mm, 2.4530 mm): Footprint CMAIN_HOLD
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-7.1050 mm, 1.1510 mm): Footprint R_BOOST_FB1
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.0650 mm, 8.2800 mm): Footprint C_WBA_VDDSMPS
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.2260 mm, 4.7550 mm): Footprint C_WBA_VDDANA
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.0000 mm, 1.7520 mm): Footprint COUT3
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-4.0350 mm, -0.1800 mm): Footprint RAON_PU
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(1.2450 mm, 4.7300 mm): Footprint RPU_I2C2_SCL
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.5100 mm, 10.0700 mm): Footprint C_MAG_C1
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-10.4550 mm, 2.5000 mm): Footprint R_IMU1_SCX_PU
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-6.1420 mm, 6.2010 mm): Footprint CBOOST_IN1_2
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(3.9400 mm, -3.9850 mm): Footprint RHOLD_PD
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(1.5250 mm, -6.5550 mm): Footprint R_WBA_NRST
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.2260 mm, 3.6040 mm): Footprint TP_YAGI_RF_B
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(5.9800 mm, 6.6150 mm): Footprint C_WBA_VDDRF
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.2900 mm, 7.3800 mm): Footprint CBOOST_IN1_4
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-0.1650 mm, -6.5550 mm): Footprint RPU_I2C3_SCL
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.8650 mm, 5.9400 mm): Footprint C_WBA_VDD2
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-1.7760 mm, 1.1510 mm): Footprint C_WBA_VDDHPA
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(4.4780 mm, 5.9540 mm): Footprint TP_BAT
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.2260 mm, 3.8550 mm): Footprint R_MAG_SHELF
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-8.9000 mm, 3.2100 mm): Footprint CBOOST_IN1_5
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(9.4450 mm, -0.4600 mm): Footprint RPU_IR_WAKE
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-4.9780 mm, 3.6040 mm): Footprint C_MAG_SHELF
+[lib_footprint_mismatch]: I'impronta 'SOT96P237X111-3N' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-5.9600 mm, -2.8260 mm): Footprint Q_WBA_RST
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0603_1608Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(5.8300 mm, -9.1900 mm): Footprint C_IMU3_2
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(6.4950 mm, -10.4600 mm): Footprint C_IMU3_3
+[lib_footprint_mismatch]: I'impronta 'TestPoint_TestPoint_Pad_D1.5mm' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(2.1500 mm, -2.0510 mm): Footprint TP_WILK_A
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0805_2012Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-5.9550 mm, 0.5000 mm): Footprint C_TMR_LDO
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.3750 mm, -7.3200 mm): Footprint C_WBA_VDDRFPA
+[lib_footprint_mismatch]: I'impronta 'Capacitor_SMD_C_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(0.5600 mm, 8.4600 mm): Footprint C_MAG1
+[lib_footprint_mismatch]: I'impronta 'Resistor_SMD_R_0402_1005Metric' non corrisponde alla copia nella libreria 'SmashWakeupBoard'
+    Local override; warning
+    @(-2.5200 mm, -0.4500 mm): Footprint R_IMU3_SCX_PU
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.5000 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(4.2100 mm, -10.3100 mm): Reference field of U_IMU3
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4000 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-1.3300 mm, 8.5000 mm): Reference field of U_IMU2
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.5000 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(-10.8000 mm, -6.9100 mm): Reference field of U_MAG
+[text_height]: Altezza testo fuori campo (vincoli impostazioni scheda altezza testo serigrafia alt. min 0.8000 mm; effettivo 0.4000 mm)
+    Rule: vincoli impostazioni scheda altezza testo serigrafia; warning
+    @(4.5200 mm, 12.0000 mm): Reference field of U_MAG_WAKE
+[silk_overlap]: Silkscreen clearance
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(4.0750 mm, -9.7270 mm): Segment on F.Silkscreen
+    @(4.2100 mm, -10.3100 mm): Reference field of U_IMU3
+[silk_overlap]: Silkscreen clearance
+    Rule: vincoli impostazioni scheda serigrafia; warning
+    @(-11.3430 mm, -2.8590 mm): Segment on F.Silkscreen
+    @(-13.8700 mm, 0.0000 mm): Reference field of U_IMU1
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-0.0323 mm, -14.5780 mm): PCB text 'spacer_wakeup_board_power_board cutout' on F.Silkscreen
+    @(5.9500 mm, -13.7590 mm): Pad 29 [IMU2_INT] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(4.2100 mm, -10.3100 mm): Reference field of U_IMU3
+    @(5.9500 mm, -10.5590 mm): Pad 27 [I2C3_SDA] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-4.0500 mm, 1.3700 mm): Reference field of U_BOOST
+    @(-3.9720 mm, 1.1000 mm): Pad 2 [MAG_SHELF_K] of D_AON_WAKE on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(6.7785 mm, 8.5463 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(9.0156 mm, 10.7834 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(10.7834 mm, 9.0156 mm): Segment on F.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-4.0500 mm, 1.3700 mm): Reference field of U_BOOST
+    @(-2.5400 mm, 1.4700 mm): Pad 1 [BOOST_OUT] of CBOOST_OUT2 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-4.0500 mm, 1.3700 mm): Reference field of U_BOOST
+    @(-2.5400 mm, 0.5200 mm): Pad 2 [FLEX_GND] of CBOOST_OUT2 on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-4.0500 mm, 1.3700 mm): Reference field of U_BOOST
+    @(-1.2500 mm, 0.9500 mm): Pad 3 [AON_EN] of U_AON_LDO on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-10.7834 mm, -9.0156 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-13.8700 mm, 0.0000 mm): Reference field of U_IMU1
+    @(-14.8500 mm, 0.6410 mm): Pad 62 [3V3] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-13.8700 mm, 0.0000 mm): Reference field of U_IMU1
+    @(-14.8500 mm, -0.9590 mm): Pad 63 [FLEX_GND] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-13.8700 mm, 0.0000 mm): Reference field of U_IMU1
+    @(-13.2500 mm, 0.6410 mm): Pad 54 [WBA_UART_TX] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-13.8700 mm, 0.0000 mm): Reference field of U_IMU1
+    @(-13.2500 mm, -0.9590 mm): Pad 55 [3V3] of J_wakeup_board_spacer_wakeup_board_power_board on F.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.6760 mm, -9.4438 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-9.0156 mm, -10.7834 mm): Segment on F.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-10.9800 mm, -2.1800 mm): Pad 1 [3V3] of C_IMU1_2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-11.2500 mm, -4.0500 mm): Pad 1 [COMP_1V8] of C_CAM_VDD on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-10.9200 mm, 1.4100 mm): Pad 1 [3V3] of C_IMU1_1 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-10.9200 mm, 0.4600 mm): Pad 2 [FLEX_GND] of C_IMU1_1 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-11.3250 mm, 3.8300 mm): Pad 1 [REG_IN_MAIN] of CBOOST_IN2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-10.9300 mm, 2.5000 mm): Pad 1 [3V3] of R_IMU1_SCX_PU on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, 4.0750 mm): Segment on B.Silkscreen
+    @(-11.3250 mm, 3.8300 mm): Pad 1 [REG_IN_MAIN] of CBOOST_IN2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, 4.0750 mm): Segment on B.Silkscreen
+    @(-7.8300 mm, 4.0500 mm): Pad 1 [REG_IN_MAIN] of CBOOST_IN1_3 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-11.0010 mm, 4.0750 mm): Segment on B.Silkscreen
+    @(-8.9000 mm, 4.0100 mm): Pad 1 [REG_IN_MAIN] of CBOOST_IN1_5 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-6.6370 mm, -11.2630 mm): Segment on B.Silkscreen
+    @(-7.0900 mm, -8.0500 mm): Pad 1 [3V3] of C_MAG2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-6.6370 mm, -8.4048 mm): Segment on B.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-6.6370 mm, -8.4048 mm): Segment on B.Silkscreen
+    @(-7.0900 mm, -8.0500 mm): Pad 1 [3V3] of C_MAG2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.4000 mm, 5.1000 mm): Segment on B.Silkscreen
+    @(-7.3000 mm, 7.6600 mm): Pad 2 [IMU2_SDX] of R_IMU2_SDX_PU on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.4000 mm, 5.1000 mm): Segment on B.Silkscreen
+    @(-6.9420 mm, 6.2010 mm): Pad 2 [FLEX_GND] of CBOOST_IN1_2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(8.0130 mm, 9.7808 mm): Segment on B.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(9.0000 mm, 6.2500 mm): Segment on B.Silkscreen
+    @(8.9700 mm, -0.4600 mm): Pad 2 [IR_WAKE] of RPU_IR_WAKE on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(9.0156 mm, 10.7834 mm): Segment on B.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(10.7834 mm, 9.0156 mm): Segment on B.Silkscreen
+    @(9.8995 mm, 9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-0.2868 mm, -12.4500 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on B.Silkscreen
+    @(-0.4500 mm, -12.1590 mm): Pad 32 [SYS_SPI_MISO] of P_wakeup_board_spacer_fin_ble_board_wakeup_board on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-0.2868 mm, -12.4500 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on B.Silkscreen
+    @(-2.0500 mm, -12.1590 mm): Pad 33 [SYS_SPI_MOSI] of P_wakeup_board_spacer_fin_ble_board_wakeup_board on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-10.7834 mm, -9.0156 mm): Segment on B.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-10.7834 mm, -9.0156 mm): Segment on B.Silkscreen
+    @(-7.0900 mm, -6.1000 mm): Pad 2 [FLEX_GND] of C_MAG2 on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.6050 mm, -4.5510 mm): Segment on B.Silkscreen
+    @(-7.8300 mm, -4.1700 mm): Pad 2 [FLEX_GND] of C_WBA_NRST on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.6050 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-7.8300 mm, -4.1700 mm): Pad 2 [FLEX_GND] of C_WBA_NRST on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-7.6050 mm, -4.0750 mm): Segment on B.Silkscreen
+    @(-11.2500 mm, -4.0500 mm): Pad 1 [COMP_1V8] of C_CAM_VDD on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-9.0156 mm, -10.7834 mm): Segment on B.Silkscreen
+    @(-9.8995 mm, -9.8995 mm): NPTH pad of 
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-0.2868 mm, -12.4500 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on B.Silkscreen
+    @(-3.6500 mm, -12.1590 mm): Pad 34 [SYS_SPI_SCLK] of P_wakeup_board_spacer_fin_ble_board_wakeup_board on B.Cu
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(-0.2868 mm, -12.4500 mm): PCB text 'spacer_fin_ble_board_wakeup_board cutout' on B.Silkscreen
+    @(-5.2500 mm, -12.1590 mm): Pad 36 [3V3_AON] of P_wakeup_board_spacer_fin_ble_board_wakeup_board on B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(8.4279 mm, -2.8971 mm): Via [IMU2_SCX] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(8.0375 mm, 2.6883 mm): Via [I2C2_SDA] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.0750 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(10.5800 mm, -3.2400 mm): Via [I2C3_SCL] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(5.9313 mm, 0.6583 mm): Via [WBA_NRST] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(8.2220 mm, 2.0650 mm): Via [WBA_AON_HOLD] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(7.4825 mm, -1.9084 mm): Via [WBA_UART_RX] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(10.2700 mm, -1.7100 mm): Via [WBA_HCI_MISO] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(9.2720 mm, -1.3350 mm): Via [WBA_UART_TX] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(9.4894 mm, -2.7094 mm): Via [WBA_HCI_MOSI] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(9.6400 mm, -1.8906 mm): Via [H3LIS_INT1] on F.Cu - B.Cu
+[annular_width]: Larghezza anello (regola 'NCAB via meccanici: pad min 0.45 / anello 0.125' larghezza anello min 0.1250 mm; reale 0.1000 mm)
+    Rule: NCAB via meccanici: pad min 0.45 / anello 0.125; error (excluded)
+    @(-7.4648 mm, -2.8348 mm): Via [WBA_RST_CMD] on F.Cu - B.Cu
+[clearance]: Violazione clearance (netclass "Default" clearance 0.1000 mm; reale 0.0910 mm)
+    Rule: netclass "Default"; error (excluded)
+    @(6.3800 mm, -3.0760 mm): Track [WBA_VLX] on F.Cu, length 0.5260 mm
+    @(5.9500 mm, -2.4600 mm): Pad 2 [FLEX_GND] of QHOLD on F.Cu
+[clearance]: Violazione clearance (netclass "Default" clearance 0.1000 mm; reale 0.0910 mm)
+    Rule: netclass "Default"; error (excluded)
+    @(5.8540 mm, -3.0760 mm): Track [WBA_VLX] on F.Cu, length 0.1329 mm
+    @(5.9500 mm, -2.4600 mm): Pad 2 [FLEX_GND] of QHOLD on F.Cu
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

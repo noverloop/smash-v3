@@ -79,6 +79,20 @@ def test_packed_only_overlap_is_warning_not_error():
     assert len(issues) == 1 and not issues[0].involves_locked
 
 
+def test_accepted_locked_overlap_is_dropped():
+    """An allow-listed pair (either ref order) passes; an unlisted locked
+    overlap on the same board still hard-fails."""
+    d = Design()
+    a = _chip(d, "C_A", "b", (0.0, 0.0), locked=True)
+    b = _chip(d, "C_B", "b", (2.0, 0.0), locked=True)
+    boards = {"b": _B("b", [a, b])}
+    assert assert_no_locked_overlaps(boards, accepted=[("b", "C_B", "C_A")]) == []
+    c = _chip(d, "C_C", "b", (0.0, 2.0), locked=True)
+    with pytest.raises(LockedOverlapError):
+        assert_no_locked_overlaps({"b": _B("b", [a, b, c])},
+                                  accepted=[("b", "C_A", "C_B")])
+
+
 def test_locked_pseudo_overlap_is_ignored():
     """`manf=='project'` pseudo-parts (spacer scaffold, LGA land arrays)
     coincide by design — a locked overlap between them must NOT fail."""

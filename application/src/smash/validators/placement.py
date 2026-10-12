@@ -122,7 +122,8 @@ class LockedOverlapError(RuntimeError):
     """A locked placement overlaps another placed component."""
 
 
-def assert_no_locked_overlaps(boards: dict, *, tol_mm: float = 0.05) -> list:
+def assert_no_locked_overlaps(boards: dict, *, tol_mm: float = 0.05,
+                              accepted=()) -> list:
     """Raise `LockedOverlapError` if any *locked* placement overlaps another
     component (locked or packed) on the same board + face; otherwise return
     the remaining packed-vs-packed overlaps (a soft signal the caller may
@@ -136,8 +137,16 @@ def assert_no_locked_overlaps(boards: dict, *, tol_mm: float = 0.05) -> list:
 
     Pseudo-parts (`manf == "project"`: spacer scaffolds, backbone land
     arrays) are excluded — their by-design coincidence is not a defect.
+
+    `accepted` is an explicit allow-list of `(board, ref_a, ref_b)` overlaps
+    (either ref order) signed off on a final routed board that is not ours
+    to move. Exactly those pairs are dropped; any other overlap on the same
+    board still fails.
     """
-    issues = check_chip_overlaps(boards, tol_mm=tol_mm, include_pseudo=False)
+    ok = {(b, frozenset((ra, rb))) for b, ra, rb in accepted}
+    issues = [i for i in check_chip_overlaps(boards, tol_mm=tol_mm,
+                                             include_pseudo=False)
+              if (i.board, frozenset((i.ref_a, i.ref_b))) not in ok]
     locked = [i for i in issues if i.involves_locked]
     if locked:
         body = "\n".join(f"  {i}" for i in locked)
@@ -193,7 +202,8 @@ def check_spacer_chip_clearance(panel, boards: dict, *,
     """
     from shapely.geometry import box, Polygon
     from shapely.ops import unary_union
-    from smash.layout.cavities import fold_project, rotated_bbox_mm
+    from smash.layout.cavities import (fold_project, fold_same_row,
+                                       rotated_bbox_mm)
     from smash.layout.placer.grid import footprint_bbox_mm
 
     issues: list = []
@@ -236,7 +246,7 @@ def check_spacer_chip_clearance(panel, boards: dict, *,
             nbr = boards.get(nbr_name) if nbr_name else None
             if nbr is None or nbr_name not in tiles:
                 continue
-            same_row = (tiles[nbr_name][1] == sp_row)
+            same_row = fold_same_row(tiles, chain, name, nbr_name)
             for p in nbr.chip_placements:
                 c = getattr(p, "item", None)
                 fp = getattr(c, "footprint", None)

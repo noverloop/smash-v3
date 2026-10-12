@@ -24,6 +24,7 @@ from typing import Iterable
 
 from smash.layout.locked import load_locked_placements
 from smash.layout.placer.cavities import attach_cavities_to_spacers, _flex_chords
+from smash.layout.cavities import fold_same_row
 from smash.layout.placer.face_split import goes_to_bottom
 from smash.layout.placer.pack import pack_radial
 from smash.state.board import Board
@@ -180,7 +181,7 @@ def place_design(
         if not (0 <= si < len(chain)) or chain[si] not in tiles:
             return ()
         spacer = chain[si]
-        same_row = (tiles[spacer][1] == tiles[name][1])
+        same_row = fold_same_row(tiles, chain, spacer, name)
         out = []
         for ang, w in _flex_chords(panel, spacer, si, chain, link_widths):
             out.append((180.0 - ang if same_row else -ang, w))

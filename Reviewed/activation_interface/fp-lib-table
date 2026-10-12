@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashActivationInterface")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashActivationInterface.pretty")(options "")(descr "Editable Smash activation-interface footprints"))
+)

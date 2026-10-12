@@ -31,6 +31,7 @@ from smash.layout.cavities import (
     SPACER_THICKNESS_MM,
     clip_cavities_to_outline,
     fold_project,
+    fold_same_row,
     merge_cavity_polygons,
     project_face_to_spacer,
 )
@@ -221,9 +222,9 @@ def attach_cavities_to_spacers(
         # col-equal → N-S fold (mirror in y). cavity_geom.fold_project
         # consumes the boolean directly.
         sp_col, sp_row = panel.tiles[name]
-        prev_same_row = (panel.tiles[prev_name][1] == sp_row
+        prev_same_row = (fold_same_row(panel.tiles, chain, name, prev_name)
                          if prev_name in panel.tiles else None)
-        next_same_row = (panel.tiles[next_name][1] == sp_row
+        next_same_row = (fold_same_row(panel.tiles, chain, name, next_name)
                          if next_name in panel.tiles else None)
 
         # Potting holes: project each RIGID neighbour's holes through the

@@ -314,6 +314,35 @@ def fold_project(rx: float, ry: float, same_row: bool) -> tuple[float, float]:
     return (-rx, ry) if same_row else (rx, -ry)
 
 
+# 180° stack-axis turn (2026-10-12). This tile and every tile after it in the
+# snake chain (the nose-ward group: power_board, companion_compute, radar,
+# nose_cap and their spacers) are installed rotated 180° about the stack axis
+# relative to the aft group. Both routed boards at the seam are final —
+# Sjoert's power_board bottom field is Francesco's wakeup_board top field
+# turned 180° — and the diagonal potting holes are 180°-symmetric, so the turn
+# keeps every hole aligned. Inside a group nothing changes; only a fold that
+# crosses the seam (spacer_wakeup_board_power_board ↔ power_board) composes
+# the turn, which swaps its mirror axis (x-mirror ∘ 180° = y-mirror).
+ROTATED_180_FROM_TILE = "power_board"
+
+
+def is_rotated_180(chain, name) -> bool:
+    """True when `name` sits in the 180°-turned nose-ward group of `chain`."""
+    chain = list(chain or ())
+    if ROTATED_180_FROM_TILE not in chain or name not in chain:
+        return False
+    return chain.index(name) >= chain.index(ROTATED_180_FROM_TILE)
+
+
+def fold_same_row(tiles, chain, spacer, nbr) -> bool:
+    """The `same_row` flag `fold_project` needs between a spacer and a
+    neighbour: the panel fold direction (row-equal → x-mirror), flipped when
+    the 180° seam lies between them."""
+    same_row = tiles[spacer][1] == tiles[nbr][1]
+    return same_row != (is_rotated_180(chain, spacer)
+                        != is_rotated_180(chain, nbr))
+
+
 def rotated_bbox_mm(w: float, h: float, rot_deg: float) -> tuple[float, float]:
     """Axis-aligned bbox of (w, h) rotated by rot_deg."""
     r = math.radians(rot_deg or 0)

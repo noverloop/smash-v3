@@ -1,0 +1,60 @@
+(version 1)
+
+# ============================================================
+#  DRC NCAB - wakeup_board - 14 layer, non-HDI, stackup 2.225 mm
+#  Set COMPLETO delle regole NCAB (rif. G:\smash-electronics\hdi_fab_rules.md).
+#
+#  ORDINE IMPORTANTE: in KiCad le regole custom si sovrascrivono
+#  nell'ordine del file. Le regole SPECIFICHE vanno DOPO quelle
+#  generali, altrimenti la clearance generica se le mangia e le
+#  violazioni via-via / via-pista non compaiono mai.
+#  (E' l'errore che ha nascosto 389 violazioni su aft_end_board.)
+#
+#  ASPECT RATIO: 2.225 - 0.02 (mask) = 2.205 mm da forare.
+#    punta 0.20 -> 11.0:1   fuori standard
+#    punta 0.25 ->  8.8:1   OK per galvanica standard
+#    punta 0.30 ->  7.3:1   conservativo
+#  Default di progetto: via 0.50 / punta 0.25.
+# ============================================================
+
+# ---------- generali ----------
+
+(rule "NCAB clearance rame-rame 100um"
+  (severity error)
+  (constraint clearance (min 0.1mm)))
+
+(rule "NCAB larghezza pista 100um"
+  (severity error)
+  (constraint track_width (min 0.1mm)))
+
+(rule "NCAB foro-foro 250um"
+  (severity error)
+  (constraint hole_to_hole (min 0.25mm)))
+
+(rule "NCAB rame-bordo 250um"
+  (severity error)
+  (constraint edge_clearance (min 0.25mm)))
+
+# ---------- via meccaniche ----------
+
+(rule "NCAB punta minima 250um (aspect ratio 8.8:1)"
+  (severity error)
+  (constraint hole_size (min 0.25mm))
+  (condition "A.Via_Type == 'Through' || A.Via_Type == 'Blind/buried'"))
+
+(rule "NCAB pad via 450um"
+  (severity error)
+  (constraint via_diameter (min 0.45mm))
+  (condition "A.Via_Type == 'Through' || A.Via_Type == 'Blind/buried'"))
+
+# ---------- specifiche: DOPO le generali ----------
+
+(rule "NCAB via-pista 150um"
+  (severity error)
+  (constraint clearance (min 0.15mm))
+  (condition "A.Type == 'Via' && B.Type == 'Track'"))
+
+(rule "NCAB via-via 250um"
+  (severity error)
+  (constraint clearance (min 0.25mm))
+  (condition "A.Type == 'Via' && B.Type == 'Via'"))

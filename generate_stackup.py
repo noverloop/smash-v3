@@ -3189,6 +3189,28 @@ def build_power_board(d: Design) -> None:
     # exists.
 
 
+def _as_built_0402(value: str, dielectric: str) -> dict:
+    """Factory overrides that put a cap in the 0402 package Francesco placed
+    on the routed wakeup_board (WIP/Finalized from Francesco/wakeup_board 2),
+    where the value-based dispatch would pick 0603. Footprint, body and mass
+    follow the board as built; the MPN is left for the EE to confirm — the
+    0603 family the dispatch picks (MIL X7R / AVX SQCS) has no 0402 part at
+    this value."""
+    from smash.parts.passives import _stock_smd_2pad, weight_g_for_passive
+    return dict(
+        footprint=_stock_smd_2pad(
+            name="Capacitor_SMD:C_0402_1005Metric",
+            size_mm=(1.0, 0.5), height_mm=0.50,
+            pad_size=(0.55, 0.6), pad_pitch_mm=0.95,
+            package_class="0402"),
+        package="0402", size_mm=(1.0, 0.5), height_mm=0.50,
+        weight_g=weight_g_for_passive("0402"),
+        name=f"C_0402_{value}", dielectric=dielectric,
+        manf_pn=f"TBD 0402 {dielectric} {value} (as placed; confirm MPN)",
+        description=(f"0402 {dielectric} ceramic, {value} — package per the "
+                     f"routed wakeup_board; MPN to confirm"))
+
+
 def build_wakeup_board(d: Design) -> None:
     """Always-on wakeup tile (post-WLE5 architecture. The 2026-07-30
     crowding split moved the FIN ACTUATION one tile aft onto
@@ -3551,7 +3573,8 @@ def build_wakeup_board(d: Design) -> None:
     ind_between(d, "WBA_VLX", "WBA_VDD11", "2.2uH",
                 ref="L_WBA_SMPS", board_tag=BTAG)
     cap_to_gnd(d, "WBA_VDD11", "2.2uF",
-               ref="C_WBA_VDD11", board_tag=BTAG)
+               ref="C_WBA_VDD11", board_tag=BTAG,
+               **_as_built_0402("2.2uF", "X5R"))
 
     # VDD decoupling — one 100 nF per pin + bulk. The embedded plane
     # absorbs the per-pin caps; the bulk stays discrete for ESR.
@@ -3697,7 +3720,8 @@ def build_wakeup_board(d: Design) -> None:
     ind_between(d, "WBA_RF", "WBA_RF_M", "2.7nH",
                 ref="L_WBA_PI", board_tag=BTAG, feature="rf")
     cap_to_gnd(d, "WBA_RF",   "0.5pF", ref="C_WBA_PI1",
-               board_tag=BTAG, feature="rf")
+               board_tag=BTAG, feature="rf",
+               **_as_built_0402("0.5pF", "C0G/NP0"))
     cap_to_gnd(d, "WBA_RF_M", "0.5pF", ref="C_WBA_PI2",
                board_tag=BTAG, feature="rf")
 
@@ -4518,26 +4542,85 @@ _ACTIVATION_EE_JSON = (pathlib.Path(__file__).parent
 _POWER_LANDS_EE_JSON = (pathlib.Path(__file__).parent
                         / "application/src/smash/data/"
                           "power_board_ee_lands.json")
+_AFT_END_LANDS_EE_JSON = (pathlib.Path(__file__).parent
+                          / "application/src/smash/data/"
+                            "aft_end_board_ee_lands.json")
+_FIN_BLE_LANDS_EE_JSON = (pathlib.Path(__file__).parent
+                          / "application/src/smash/data/"
+                            "fin_ble_board_ee_lands.json")
+
+
+# Courtyard overlaps on the final routed boards, accepted 2026-10-12 so their
+# placements lock exactly as routed (the routed boards are fabbed as-is; the
+# generator only has to cut matching spacers). Courtyard only — KiCad DRC on
+# the routed files reports no copper clearance error for any of these pairs.
+_ACCEPTED_LOCKED_OVERLAPS = (
+    # Sjoert's power_board (WIP/Sjoert/power_board_generated), bottom face.
+    ("power_board", "C_BAT_BULK1", "U_COMP_BOOST"),
+    ("power_board", "CBAT2", "D_BOOST_COMP"),
+    ("power_board", "CBAT3", "D_BOOST_COMP"),
+    ("power_board", "U_COMP_BOOST", "D_BOOST_COMP"),
+    ("power_board", "L_BOOST_COMP", "D_BOOST_COMP"),
+    ("power_board", "D_BOOST_COMP", "C_BOOST_OUT2_4"),
+    ("power_board", "C_USB_VBUS_1", "Q_USB_WAKE"),
+    ("power_board", "C_USB_VBUS_2", "Q_USB_WAKE"),
+    # Francesco's wakeup_board (WIP/Finalized from Francesco/wakeup_board 2).
+    ("wakeup_board", "U_IMU1", "R_IMU1_SDX_PU"),
+    ("wakeup_board", "U_IMU2", "R_IMU2_SCX_PU"),
+    ("wakeup_board", "QMAIN", "L_WBA_PI"),
+    ("wakeup_board", "D_JUMP_WAKE", "L_WBA_SMPS"),
+    ("wakeup_board", "U_WBA", "L_WBA_PI"),
+    ("wakeup_board", "TP_IMU2_INT", "RHOLD_G"),
+    ("wakeup_board", "R_BOOST_FB1", "CBOOST_IN1_3"),
+    ("wakeup_board", "CBOOST_IN1_4", "C_WBA_VDDRF"),
+    ("wakeup_board", "C_WBA_BULK_1", "C_WBA_HSE_VDD"),
+    ("wakeup_board", "C_WBA_BULK_2", "TP_YAGI_RF_B"),
+    ("wakeup_board", "C_WBA_NRST", "Q_WBA_RST"),
+)
 
 
 def _power_board_pinned_lands() -> dict:
-    """EE-pinned LGA field for power_board's companion-side joint (Sjoert's
-    routed power_board, WIP/Sjoert/power_board/; his part placements are
-    pinned in locked_placements.json). Its top field came from an earlier
-    land placer — two extra lands (USB_VBUS, WBA_BOOT0) shift the net order
-    against today's pack — so rather than re-route the board, the spacer and
-    companion_compute's bottom face adopt it; see
+    """EE-pinned LGA fields for BOTH of power_board's joints, captured from
+    Sjoert's final routed board, WIP/Sjoert/power_board_generated/ (his part
+    placements are pinned in locked_placements.json). Rather than re-route
+    the board, each spacer and the far neighbour adopt its fields; see
     `place_lga_lands(pinned=...)`, which warns if a pinned land leaves the
     joint's free region or a crossing net goes uncarried. Configs inherit
-    it through the maximalist joint capture.
+    them through the maximalist joint capture.
 
-    The wakeup-side (bottom) field is NOT pinned: it was packed around the
-    old wrong-diagonal potting holes, so 24 lands fall on the spacer's real
-    holes/channel and 5 cut into the Ø3 potting holes of the board itself.
-    That joint packs fresh; the board's bottom field must be redone."""
+    Companion side (top, 66 lands): also what WIP/Sjoert/companion_compute's
+    bottom field was routed against. The earlier 2026-09-03 capture
+    (WIP/Sjoert/power_board/) had 68 lands — two extra (USB_VBUS, 3V3) that
+    shifted the net order of everything from land 47 on.
+
+    Wakeup side (bottom, 65 lands): Sjoert's redone field. The 2026-09-03
+    field was packed around the old wrong-diagonal potting holes and cut
+    into the board's own Ø3 holes; this one clears them."""
     if not _POWER_LANDS_EE_JSON.exists():
         return {}
     return json.loads(_POWER_LANDS_EE_JSON.read_text())["joints"]
+
+
+def _aft_end_pinned_lands() -> dict:
+    """EE-pinned LGA field for aft_end_board's activation-side joint, from the
+    final routed aft_end_board (Review/aft_end_board). Net names are mapped
+    FIRE -> ACTIVATE (renamed after routing). The reviewed activation_interface
+    and spacer predate the fin full-pair change and do not match this field."""
+    if not _AFT_END_LANDS_EE_JSON.exists():
+        return {}
+    return json.loads(_AFT_END_LANDS_EE_JSON.read_text())["joints"]
+
+
+def _fin_ble_pinned_lands() -> dict:
+    """EE-pinned LGA field for fin_ble_board's wakeup-side joint, from the
+    final routed fin_ble_board (Review/fin_ble_board2). Francesco's routed
+    wakeup_board carries the same 69-land field on its bottom face, so pinning
+    keeps the spacer mating both — left to the packer, the field drifts as
+    soon as either neighbour's locked parts reshape the joint's free region."""
+    if not _FIN_BLE_LANDS_EE_JSON.exists():
+        return {}
+    return json.loads(_FIN_BLE_LANDS_EE_JSON.read_text())["joints"]
+
 
 
 def _apply_activation_reference_layout(d, boards: dict) -> None:
@@ -4643,7 +4726,7 @@ def _apply_activation_reference_layout(d, boards: dict) -> None:
                 f"with a recorded reason: {', '.join(sorted(refused))}")
     print(msg)
     from smash.validators import assert_no_locked_overlaps
-    assert_no_locked_overlaps(boards)
+    assert_no_locked_overlaps(boards, accepted=_ACCEPTED_LOCKED_OVERLAPS)
 
 
 def _apply_companion_reference_layout(d, boards: dict) -> None:
@@ -4706,7 +4789,7 @@ def _apply_companion_reference_layout(d, boards: dict) -> None:
     # that locks an unplaced pile (overlapping bottom decaps -> merged pads
     # -> power-to-GND shorts) — fail the build here, not at the fab's DRC.
     from smash.validators import assert_no_locked_overlaps
-    assert_no_locked_overlaps(boards)
+    assert_no_locked_overlaps(boards, accepted=_ACCEPTED_LOCKED_OVERLAPS)
 
 
 def _mark_radar_block_cutout(boards: dict) -> None:
@@ -5199,7 +5282,7 @@ def _mark_spacer_cavity_silk(panel, boards: dict) -> None:
     the battery/radar cut post-processing) so the outline matches what
     the spacer actually ships with; re-runnable (clears its own
     overlays first)."""
-    from smash.layout.cavities import fold_project
+    from smash.layout.cavities import fold_project, fold_same_row
     from smash.state.geometry.cavity import CavityRegion
     chain = panel.snake_chain or []
     for b in boards.values():
@@ -5231,7 +5314,7 @@ def _mark_spacer_cavity_silk(panel, boards: dict) -> None:
             # the user caught on the battery spacers).
             if getattr(nbr, "is_spacer", False):
                 continue
-            same_row = panel.tiles[chain[nbr_i]][1] == sp_row
+            same_row = fold_same_row(panel.tiles, chain, name, chain[nbr_i])
             for k, reg in enumerate(regions):
                 pts = [fold_project(x, y, same_row)
                        for (x, y) in reg.exterior_polygon]
@@ -5283,7 +5366,8 @@ def _mark_battery_chip_clearance(boards: dict, panel) -> None:
     from smash.state.geometry.cavity import CavityRegion
     from smash.state.topology.placement import Placement
     from smash.layout.placer.grid import footprint_bbox_mm
-    from smash.layout.cavities import fold_project, rotated_bbox_mm
+    from smash.layout.cavities import (fold_project, fold_same_row,
+                                       rotated_bbox_mm)
     if panel is None:
         return
     chain = list(getattr(panel, "snake_chain", None) or [])
@@ -5305,7 +5389,9 @@ def _mark_battery_chip_clearance(boards: dict, panel) -> None:
             nbr = boards.get(nbr_name) if nbr_name else None
             if nbr is None or getattr(nbr, "is_spacer", False):
                 continue
-            same_row = (tiles.get(nbr_name, (None, None))[1] == sp_row)
+            same_row = (fold_same_row(tiles, chain, nm, nbr_name)
+                        if nm in tiles and nbr_name in tiles
+                        else tiles.get(nbr_name, (None, None))[1] == sp_row)
             for p in nbr.chip_placements:
                 if getattr(p, "face", None) != face:
                     continue
@@ -5648,7 +5734,8 @@ def main() -> int:
     # warning. assert_no_locked_overlaps raises on the former, returns the
     # latter.
     from smash.validators import assert_no_locked_overlaps
-    overlaps = assert_no_locked_overlaps(boards)
+    overlaps = assert_no_locked_overlaps(boards,
+                                         accepted=_ACCEPTED_LOCKED_OVERLAPS)
     if overlaps:
         print(f"WARN: {len(overlaps)} packed chip-overlap(s):")
         for iss in overlaps[:10]:
@@ -5666,7 +5753,9 @@ def main() -> int:
     _lands = place_lga_lands(d, panel, boards,
                              connect=lambda net, pin: _net(d, net).connect(pin),
                              capture=_joint_capture,
-                             pinned=_power_board_pinned_lands())
+                             pinned={**_power_board_pinned_lands(),
+                                     **_fin_ble_pinned_lands(),
+                                     **_aft_end_pinned_lands()})
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))

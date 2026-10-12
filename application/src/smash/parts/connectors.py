@@ -31,6 +31,7 @@ import re
 from smash.state import Chip, Pin, Footprint
 from smash.state.pad import Pad
 from smash.state.routing.via import Via
+from smash.layout.cavities import fold_same_row
 
 # ── ring geometry defaults ──────────────────────────────────────────────
 RING_RADIUS_MM = 15.0           # pad-centre ring (inside the 17 mm edge)
@@ -687,7 +688,8 @@ def _battery_column_lands(boards, panel, chain) -> tuple | None:
     for nb, nb_face in ((before, "top"), (after, "bottom")):
         if nb is None or nb.is_spacer:
             continue
-        sr = (panel.tiles[nb.name][1] == sp_row) if panel.tiles else True
+        sr = (fold_same_row(panel.tiles, chain, ref.name, nb.name)
+              if panel.tiles else True)
         for g in (_tile_component_keepout(nb, nb_face, mirror=False),
                   _tile_cavity_keepout(nb, nb_face)):
             if g is not None and not g.is_empty:
@@ -770,21 +772,94 @@ def _pack_joint_nets(Q, free, crossing, kind_of, name) -> tuple:
     return Q, net_list
 
 
-def _check_pinned_joint(name, Q, net_list, free, crossing) -> None:
-    """Warn (never fix) where an EE-pinned land field disagrees with the
-    stackup: a land not wholly inside the joint's free region (it would sit
-    over a cavity, potting hole or flex mouth), or a crossing net the field
-    doesn't carry."""
+def _trim_cavities_at_lands(name, spacer, Q) -> int:
+    """Pull a spacer's milled windows/pockets back to the edge of every land
+    in `Q`, so each pinned land keeps full FR4 under its copper.
+
+    Only EE-pinned joints need this: their lands were routed against the
+    neighbour boards, not packed into this spacer's free region, and a window
+    cut with `CAVITY_MARGIN_MM` around a neighbouring part's courtyard can
+    reach into a land. The part bodies are fixed, so only the window edge
+    moves — `check_spacer_chip_clearance` (run by the generator after
+    placement) still flags any body the trimmed window no longer clears.
+    Returns the number of lands that were trimmed around."""
+    import dataclasses
     import sys
-    from shapely.geometry import box
+    from shapely.geometry import Polygon, box
+    from shapely.ops import unary_union
+    from smash.layout.placer.cavities import _polygon_to_region
+    from smash.state.geometry.cavity import CavityRegion
     h = LAND_SIZE_MM / 2.0
-    if free is not None:
-        bad = [(i + 1, x, y, net_list[i]) for i, (x, y) in enumerate(Q)
-               if not free.contains(box(x - h, y - h, x + h, y + h))]
-        for n, x, y, net in bad:
-            print(f"  WARNING: LGA joint {name}: pinned land {n} ({net}) at "
-                  f"spacer ({x:.3f}, {y:.3f}) is outside the joint free "
-                  f"region", file=sys.stderr)
+    squares = [box(x - h, y - h, x + h, y + h) for x, y in Q]
+    keep = unary_union(squares)
+    hit = set()
+    out = []
+    for pl in spacer.cavity_placements:
+        reg = pl.item
+        if not isinstance(reg, CavityRegion) or len(reg.exterior_polygon) < 3:
+            out.append(pl)
+            continue
+        poly = Polygon(reg.exterior_polygon,
+                       [r for r in (reg.interior_holes or []) if len(r) >= 3])
+        if not poly.is_valid:
+            poly = poly.buffer(0)
+        if not poly.intersects(keep) or poly.intersection(keep).area < 1e-9:
+            out.append(pl)
+            continue
+        hit.update(i for i, sq in enumerate(squares)
+                   if poly.intersection(sq).area >= 1e-9)
+        rest = poly.difference(keep)
+        parts = [g for g in getattr(rest, "geoms", [rest])
+                 if not g.is_empty and g.area > 1e-6]
+        for j, g in enumerate(parts):
+            new = _polygon_to_region(g, face=reg.face, depth_mm=reg.depth_mm,
+                                     name=reg.name if j == 0
+                                     else f"{reg.name}_{j}")
+            if j == 0 and reg.routing_keepouts:
+                new = dataclasses.replace(new,
+                                          routing_keepouts=reg.routing_keepouts)
+            out.append(pl._replace(item=new))
+    spacer.cavity_placements[:] = out
+    if hit:
+        print(f"  LGA joint {name}: cavity trimmed back to the land edge at "
+              f"pinned land(s) {', '.join(str(i + 1) for i in sorted(hit))}",
+              file=sys.stderr)
+    return len(hit)
+
+
+def _check_pinned_joint(name, Q, net_list, spacer, sr, crossing) -> None:
+    """Warn (never fix) where an EE-pinned land field disagrees with the
+    stackup: land copper that lies over the spacer's actual cutouts (its
+    milled windows/pockets or a Ø3 potting hole) — i.e. a land with no FR4
+    under part of it — or a crossing net the field doesn't carry.
+
+    Deliberately NOT the joint free region: that region is shrunk by keepout
+    margins, so a pinned land can sit inside the margin yet fully on FR4."""
+    import sys
+    from shapely.geometry import Point, Polygon, box
+    from shapely.ops import unary_union
+    from smash.layout.cavities import (POTTING_HOLE_DIA_MM,
+                                       potting_hole_positions_math_yup)
+    from smash.state.geometry.cavity import CavityRegion
+    cuts = []
+    for pl in getattr(spacer, "cavity_placements", None) or []:
+        reg = pl.item
+        if not isinstance(reg, CavityRegion) or len(reg.exterior_polygon) < 3:
+            continue
+        poly = Polygon(reg.exterior_polygon,
+                       [h for h in (reg.interior_holes or []) if len(h) >= 3])
+        cuts.append(poly if poly.is_valid else poly.buffer(0))
+    cuts += [Point(x, y).buffer(POTTING_HOLE_DIA_MM / 2.0, 64)
+             for x, y in _fold(potting_hole_positions_math_yup(), sr)]
+    cut = unary_union(cuts)
+    h = LAND_SIZE_MM / 2.0
+    for i, (x, y) in enumerate(Q):
+        over = box(x - h, y - h, x + h, y + h).intersection(cut).area
+        if over > 1e-6:
+            print(f"  WARNING: LGA joint {name}: pinned land {i + 1} "
+                  f"({net_list[i]}) at spacer ({x:.3f}, {y:.3f}) has "
+                  f"{over:.3f} mm² of copper over a spacer cutout (no FR4)",
+                  file=sys.stderr)
     carried = set(net_list)
     missing = sorted(n for n in crossing
                      if n != GND_NET and not is_off_backbone(n)
@@ -868,6 +943,18 @@ def place_lga_lands(design, panel, boards, *, connect,
         return _emit_land_field(design, board_obj, ref, foot_pts, net_list,
                                 face, connect=connect)
 
+    def _surviving_net_name(name):
+        # Land pads take the merged net's surviving name (e.g. GND is merged
+        # into FLEX_GND), but `net_list` can carry the alias (GND_NET is
+        # "GND"); name the via the same as the land it sits under, or KiCad
+        # sees two nets meeting in one piece of copper.
+        if design.net_by_name(name) is not None:
+            return name
+        for n in design.nets:
+            if name in n.aliases:
+                return n.name
+        return name
+
     def _spacer_vias(spacer, Q, net_list):
         # Filled through-via per land: top pad i ↔ bottom pad i, same net.
         # This is the conducting board-to-board path through the interposer
@@ -876,7 +963,7 @@ def place_lga_lands(design, panel, boards, *, connect,
         # via is centred there.
         for (vx, vy), vnet in zip(Q, net_list):
             spacer.vias.append(Via(
-                net=vnet, position_mm=(vx, vy),
+                net=_surviving_net_name(vnet), position_mm=(vx, vy),
                 drill_mm=LGA_VIA_DRILL_MM, pad_diameter_mm=LAND_SIZE_MM,
                 from_layer="F.Cu", to_layer="B.Cu", filled=True,
                 kind="signal", note="LGA land interposer through-via"))
@@ -888,9 +975,9 @@ def place_lga_lands(design, panel, boards, *, connect,
         before = boards[chain[sidx - 1]] if sidx > 0 else None
         after = boards[chain[sidx + 1]] if sidx + 1 < len(chain) else None
         sp_row = panel.tiles[name][1] if panel.tiles else None
-        sr_before = (panel.tiles[before.name][1] == sp_row
+        sr_before = (fold_same_row(panel.tiles, chain, name, before.name)
                      if before is not None and panel.tiles else True)
-        sr_after = (panel.tiles[after.name][1] == sp_row
+        sr_after = (fold_same_row(panel.tiles, chain, name, after.name)
                     if after is not None and panel.tiles else True)
 
         # ── reference replay (economies of scale) ────────────────────
@@ -987,7 +1074,9 @@ def place_lga_lands(design, panel, boards, *, connect,
                      after.name if after is not None else None: sr_after}
             Q = _fold([tuple(p) for p in pin["pts"]], nb_sr[pin["tile"]])
             net_list = list(pin["nets"])
-            _check_pinned_joint(name, Q, net_list, free, crossing)
+            _trim_cavities_at_lands(name, spacer, Q)
+            _check_pinned_joint(name, Q, net_list, spacer,
+                                nb_sr[pin["tile"]], crossing)
         else:
             Q, net_list = _pack_joint_nets(Q, free, crossing, kind_of, name)
 

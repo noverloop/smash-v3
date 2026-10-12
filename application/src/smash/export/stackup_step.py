@@ -190,6 +190,24 @@ def _fold_signs(tiles, prev_name, name) -> tuple:
     return (-1.0, 1.0)
 
 
+def _tile_pose(tiles, chain, prev_name, name, is_spacer) -> tuple:
+    """Stack pose (mx, my, mz) of one chain tile: rigid boards upright, FR4
+    spacers flipped 180° about their fold axis — then a 180° turn about the
+    stack axis (x, y → −x, −y) for every tile in the nose-ward group
+    (`cavities.is_rotated_180`). The turn composes into another proper
+    rotation, so `_apply_pose` still realises it."""
+    from smash.layout.cavities import is_rotated_180
+    if is_spacer:
+        sx, sy = (_fold_signs(tiles, prev_name, name)
+                  if prev_name is not None else (-1.0, 1.0))
+        mx, my, mz = sx, sy, -1.0
+    else:
+        mx, my, mz = 1.0, 1.0, 1.0
+    if is_rotated_180(chain, name):
+        mx, my = -mx, -my
+    return mx, my, mz
+
+
 def _apply_pose(body, mx: float, my: float, mz: float, z: float, t: float):
     """Place a tile body at its cumulative fold pose. (mx,my,mz) is always
     a proper 180° rotation (det +1) — identity, or 180° about X/Y/Z — so
@@ -273,12 +291,8 @@ def write_stackup_step(
         # the flip keeps each cavity under the chip it clears. (The old
         # cumulative-parity pose mis-flipped every board downstream of the
         # battery compartment's run of spacers — caught by check_stack_collisions.)
-        if getattr(b, "is_spacer", False):
-            sx, sy = (_fold_signs(tiles, prev, name)
-                      if prev is not None else (-1.0, 1.0))
-            mx, my, mz = sx, sy, -1.0
-        else:
-            mx, my, mz = 1.0, 1.0, 1.0
+        mx, my, mz = _tile_pose(tiles, snake_chain, prev, name,
+                                getattr(b, "is_spacer", False))
 
         if getattr(b, "is_spacer", False):
             body, _, _ = build_spacer_solid(b, t)
@@ -388,12 +402,7 @@ def write_stackup_components_step(
         is_spacer = getattr(b, "is_spacer", False)
         step_path = tile_step_dir / name / f"{name}.step"
         if step_path.exists():
-            if is_spacer:
-                sx, sy = (_fold_signs(tiles, prev, name)
-                          if prev is not None else (-1.0, 1.0))
-                mx, my, mz = sx, sy, -1.0
-            else:
-                mx, my, mz = 1.0, 1.0, 1.0
+            mx, my, mz = _tile_pose(tiles, snake_chain, prev, name, is_spacer)
             body = _apply_pose(cq.importers.importStep(str(step_path)),
                                mx, my, mz, z, t)
             asm.add(body, name=name)

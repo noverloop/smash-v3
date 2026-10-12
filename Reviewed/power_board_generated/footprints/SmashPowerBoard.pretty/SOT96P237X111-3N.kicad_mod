@@ -1,0 +1,108 @@
+(footprint "SOT96P237X111-3N"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "MOSFET Power N-Channel, V_DSS=50 V, R_DS(on)=3.5 Ohm typ @ V_GS=5.0 V, I_D=200 mA, SOT-23")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "4e99d8e2-a108-4b24-8f7d-efdfceea14f6")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "SOT96P237X111-3N"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "af37556e-bc1d-4729-82c4-0d5b41102eed")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "243108ee-5460-4fb6-bf14-71ec67687aef")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "72c3f4cc-87f2-48ef-ba9f-58514423c7f2")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_poly
+		(pts
+			(xy -1.575 1.5) (xy 1.575 1.5) (xy 1.575 -1.5) (xy -1.575 -1.5) (xy -1.575 1.5)
+		)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "fb739e68-0f76-40db-b348-9c0950aab049")
+	)
+	(fp_poly
+		(pts
+			(xy -0.65 1.45) (xy 0.65 1.45) (xy 0.65 -1.45) (xy -0.65 -1.45)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "27966eee-04a3-42dd-b6f4-f94bec1fc315")
+	)
+	(pad "1" smd rect
+		(at -1.05 -0.95)
+		(size 0.95 0.56)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "9984e149-5157-4738-9ebf-9a97941bf673")
+	)
+	(pad "2" smd rect
+		(at -1.05 0.95)
+		(size 0.95 0.56)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "0f6963c4-897e-4ab3-a804-661e4fd63dac")
+	)
+	(pad "3" smd rect
+		(at 1.05 0)
+		(size 0.95 0.56)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "21f66531-964b-4627-ac9f-e57e9e77ab99")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/3dmodels/BSS138LT1G/BSS138LT1G.stp"
+		(offset
+			(xyz 0 0 0.5)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -0 -0 90)
+		)
+	)
+)
