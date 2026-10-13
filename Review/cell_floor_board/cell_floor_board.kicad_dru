@@ -1,0 +1,23 @@
+(version 1)
+
+# ============================================================
+#  DRC NCAB - activation_interface (fab NCAB) - NON-HDI design
+#  Rimosse le regole HDI-specifiche (via-track 150um, microvia
+#  <->microvia 150, micro<->buried 250, buried<->buried 300,
+#  microvia capture 250): questa NON e' una board HDI a 0.5mm
+#  pitch come companion_compute, quindi la clearance via-track
+#  usa la clearance netclass generale (non 150um).
+#  Tenute solo le regole via meccanica standard NCAB.
+# ============================================================
+
+# Via meccanica (through/buried): drill >= 200um (NCAB)
+(rule "NCAB mech via drill 200um"
+  (severity error)
+  (constraint hole_size (min 0.2mm))
+  (condition "A.Via_Type == 'Through' || A.Via_Type == 'Blind/buried'"))
+
+# Via meccanica (through/buried): pad >= 450um (NCAB)
+(rule "NCAB mech via pad 450um"
+  (severity error)
+  (constraint via_diameter (min 0.45mm))
+  (condition "A.Via_Type == 'Through' || A.Via_Type == 'Blind/buried'"))
