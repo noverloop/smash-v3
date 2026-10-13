@@ -117,6 +117,13 @@ class Chip:
     board_tag: str | None = None       # tile this chip lives on
     feature: str | None = None         # name of the populate flag, if any
     dnp: bool = False                  # Do Not Populate
+    decouples: list = dataclasses.field(default_factory=list)
+                                       # [(chip ref, pin key), ...] — the
+                                       # pin(s) a bypass/decoupling part
+                                       # serves (pin key = number or
+                                       # datasheet name). Set via
+                                       # cap_to_gnd(pin=...); the
+                                       # schematic wires the part to it.
     role: str | None = None            # declarative role tag, e.g.
                                        # "main_mcu", "wake_controller",
                                        # "ddr_dram", "pmic", "can_phy".

@@ -15,6 +15,8 @@ Format coverage:
   - `write_footprint_inventory` — SamacSys download-checklist CSV with
                                  persisted manual columns
   - `write_specctra_dsn`      — Specctra DSN for FreeRouting / DeepPCB
+  - `write_kicad_schematic`   — hierarchical KiCad schematic, one sheet
+                                 per board (documentation projection)
 
 Companion validator lives in `smash.validators.specctra`.
 """
@@ -30,6 +32,7 @@ from smash.export.fp_inventory import (
     load_allegro_fp_map,
 )
 from smash.export.specctra import write_specctra_dsn
+from smash.export.kicad_sch import write_kicad_schematic
 from smash.export.kicad_pcb import (
     write_kicad_pcb, write_kicad_panel, write_blank_drawing_sheet,
 )
@@ -61,6 +64,7 @@ __all__ = [
     "write_footprint_inventory",
     "load_allegro_fp_map",
     "write_specctra_dsn",
+    "write_kicad_schematic",
     "write_kicad_pcb",
     "write_kicad_panel",
     "write_blank_drawing_sheet",

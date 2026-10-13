@@ -228,6 +228,18 @@ class TestCapToGnd:
         gnd = d.net_by_name("GND")
         assert ("C1", "2") in gnd.pins
 
+    def test_pin_recorded_on_every_instance(self):
+        """`pin=` records the served pin as `decouples` on each part —
+        array members included; undeclared caps record nothing."""
+        d = Design()
+        d.add_signal_net("VDD"); d.add_ground_net("GND")
+        arr = cap_to_gnd(d, "VDD", "4.7uF", ref="C_A", pin=("U1", "VDD"))
+        assert [c.decouples for c in arr] == [[("U1", "VDD")]] * 2
+        two = cap_to_gnd(d, "VDD", "100nF", ref="C_B",
+                         pin=[("U1", "VDD_1"), ("U2", "3")])
+        assert two[0].decouples == [("U1", "VDD_1"), ("U2", "3")]
+        assert cap_to_gnd(d, "VDD", "100nF", ref="C_C")[0].decouples == []
+
     def test_10uF_emits_5_parallel_0603(self):
         """The 10 µF win — parallel array, lower Z, lower ESR.
         Each array element is a 2.2 µF 0603; 5 in parallel = ~11 µF."""

@@ -370,3 +370,109 @@ class TestSpecctraFullSchema:
         # Placement groups by footprint
         all_refs = [p.component_id for c in d.placement for p in c.places]
         assert "U1" in all_refs and "C1" in all_refs and "BT1" in all_refs
+
+
+# ── KiCad schematic ──────────────────────────────────────────────────────
+
+class TestWriteKicadSchematic:
+    def test_one_flat_sheet_framed_per_board(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        result = write_kicad_schematic(tiny_design, tmp_path)
+        assert result["n_boards"] == 2
+        assert result["n_parts"] == 3
+        assert sorted(f.name for f in tmp_path.iterdir()) == [
+            "smash.kicad_pro", "smash.kicad_sch", "smash.kicad_sym", "sym-lib-table"]
+        root = (tmp_path / "smash.kicad_sch").read_text()
+        assert "(sheet " not in root
+        assert '(text "flight_board"' in root and '(text "power_board"' in root
+        assert root.count("(") == root.count(")")
+
+    def test_pcb_constructs_dropped(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        lands = tiny_design.add_chip(ref="J_lands", manf="project", manf_pn="LGA_lands",
+                                     board_tag="flight_board", pins=[Pin(num="1")])
+        sp = tiny_design.add_chip(ref="SP_x", manf="project", board_tag="spacer_x",
+                                  pins=[Pin(num="1")])
+        tiny_design.connect("GND", lands.pin("1"), sp.pin("1"))
+        result = write_kicad_schematic(tiny_design, tmp_path)
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        assert result["n_boards"] == 2 and result["n_parts"] == 3
+        assert "J_lands" not in sch and "SP_x" not in sch
+
+    def test_undeclared_decoupling_not_attached(self, tiny_design, tmp_path):
+        """C1 (VCC→GND) declares no pin: drawn on the rail, not on U1."""
+        from smash.export import write_kicad_schematic
+        r = write_kicad_schematic(tiny_design, tmp_path)
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        assert "Rail decoupling - no pin declared" in sch
+        assert r["warnings"] == []
+
+    def test_declared_decoupling_hangs_off_pin(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "VCC")]
+        r = write_kicad_schematic(tiny_design, tmp_path)
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        assert "Rail decoupling - no pin declared" not in sch
+        assert '(lib_id "smash:SN74LVC1G08DCKRG4_g' in sch     # U1 rebuilt with room
+        assert r["warnings"] == []
+
+    def test_declared_pin_off_rail_warns(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "A")]
+        r = write_kicad_schematic(tiny_design, tmp_path)
+        assert len(r["warnings"]) == 1 and r["warnings"][0].startswith("C1:")
+        # not hung off any pin (U1's symbol is not rebuilt with room)
+        assert '(lib_id "smash:SN74LVC1G08DCKRG4_g' not in (tmp_path / "smash.kicad_sch").read_text()
+
+    def test_pad_groups_boxed(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        write_kicad_schematic(tiny_design, tmp_path,
+                              pad_groups={"power_board": [("BAT", ["BT1"])]})
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        assert '(text "BAT"' in sch and "(type dash)" in sch
+
+    def test_labels_and_no_connects(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        write_kicad_schematic(tiny_design, tmp_path)
+        fb = (tmp_path / "smash.kicad_sch").read_text()
+        # Rails are power symbols, not labels
+        assert '(lib_id "smash:PWR_GND_' in fb and '(lib_id "smash:PWR_VCC_' in fb
+        assert '(global_label "GND"' not in fb and '(label "VCC"' not in fb
+        # CONFIRM stays on flight_board → local label
+        assert '(label "CONFIRM"' in fb
+        # C1 (VCC→GND) is a decoupling bank under U1: drawn vertical, wired
+        assert '(lib_id "smash:C__V' in fb and "(wire " in fb
+        # U1 pins A and B + BT1's spare pin are unconnected → no-connect flags
+        assert fb.count("(no_connect") == 3
+        assert '(property "Footprint" "footprints:SOT-23-5"' in fb
+        assert fb.count("(") == fb.count(")")
+
+    def test_deterministic(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        write_kicad_schematic(tiny_design, tmp_path / "a")
+        write_kicad_schematic(tiny_design, tmp_path / "b")
+        for f in (tmp_path / "a").iterdir():
+            assert f.read_bytes() == (tmp_path / "b" / f.name).read_bytes(), f.name
+
+    def test_kicad_netlist_matches_design(self, tiny_design, tmp_path):
+        """Round-trip through kicad-cli: the netlist KiCad derives from
+        the schematic has the same pin groups as the Design."""
+        import subprocess
+        import xml.etree.ElementTree as ET
+        from smash.export import write_kicad_schematic, find_kicad_cli, KiCadCliNotFound
+        from smash.export._common import nets_with_pins, net_connections
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        write_kicad_schematic(tiny_design, tmp_path)
+        out = tmp_path / "net.xml"
+        subprocess.run([str(cli), "sch", "export", "netlist", "--format",
+                        "kicadxml", "-o", str(out), str(tmp_path / "smash.kicad_sch")],
+                       check=True, capture_output=True)
+        root = ET.parse(out).getroot()
+        got = {frozenset((n.get("ref"), n.get("pin")) for n in net.iter("node"))
+               for net in root.iter("net")
+               if not net.get("name").startswith("unconnected-")}
+        want = {frozenset(net_connections(n)) for n in nets_with_pins(tiny_design)}
+        assert got == want

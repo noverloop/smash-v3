@@ -124,6 +124,7 @@ def cap_to_gnd(design: Design,
                embedded_plane: bool = False,
                force_c0g: bool = False,
                intent: str | None = None,
+               pin=None,
                **overrides) -> list[Chip]:
     """Add one or more bypass caps from `net` to ground.
 
@@ -145,6 +146,15 @@ def cap_to_gnd(design: Design,
                             decoupling done by a dedicated rail plane).
       force_c0g:            override the X7R dispatch and use AVX SQCS
                             C0G — for RF / TIA feedback positions.
+      pin:                  the chip pin this cap serves — a Pin, a
+                            (chip ref, pin number or name) tuple, or a
+                            list of either; (chip ref, None) when the
+                            chip is known but not the pin. Recorded on
+                            each created part as `decouples`; the
+                            schematic wires the cap to that pin, draws
+                            a pin-less one beside its chip, and an
+                            undeclared one on the rail only (never
+                            guessed).
       intent:               human description (passed through to the
                             `connect(..., intent=...)` calls).
       **overrides:          forwarded to the factory.
@@ -152,6 +162,7 @@ def cap_to_gnd(design: Design,
     Returns the list of created Chip objects (1 element for the
     single-part case, N for arrays).
     """
+    decouples = _pin_refs(pin)
     factory, n = _cap_factory_for_value(value, force_c0g=force_c0g)
     # For N×0603 parallel arrays (2.2–10 µF range), each instance is a
     # single 2.2 µF; the array sums to the requested total value.
@@ -183,10 +194,27 @@ def cap_to_gnd(design: Design,
                 "implemented by a dedicated rail plane in the laminate "
                 "stack. No discrete part; marked DNP in the BOM."
             )
+        chip.decouples = list(decouples)
         design.connect(net, chip.pin("1"), intent=intent)
         design.connect(gnd_net, chip.pin("2"))
         chips.append(chip)
     return chips
+
+
+def _pin_refs(pin) -> list:
+    """Normalise cap_to_gnd's `pin` to [(chip ref, pin key), ...]."""
+    if pin is None:
+        return []
+    if not isinstance(pin, list):
+        pin = [pin]
+    out = []
+    for p in pin:
+        if isinstance(p, tuple):
+            ref, key = p
+            out.append((str(ref), None if key is None else str(key)))
+        else:                                   # a Pin
+            out.append((str(p.chip_ref), str(p.num)))
+    return out
 
 
 # ── res_between ─────────────────────────────────────────────────────────

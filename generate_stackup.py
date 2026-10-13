@@ -101,7 +101,7 @@ from smash.export import (                                              # noqa: 
     write_blank_drawing_sheet, write_stackup_step,
     write_stackup_components_step,
     write_consolidated_stackup_stl, write_housing_stl,
-    write_gerbers,
+    write_gerbers, write_kicad_schematic,
 )
 from smash.layout.boards.smash_evb_v1 import (                          # noqa: E402
     build_panel, build_config_panel,
@@ -424,24 +424,24 @@ def build_companion_compute(d: Design) -> None:
                 ref="R_MPU_TXRTUNE", board_tag=BTAG)
     _net(d, "USB_TXRTUNE").connect(mpu.pin("USB3DR_TXRTUNE"))
     _net(d, "V08_CAP") .connect(mpu.pin("V08CAP"))
-    cap_to_gnd(d, "V08_CAP", "2.2uF", ref="C_MPU_V08CAP", board_tag=BTAG)
+    cap_to_gnd(d, "V08_CAP", "2.2uF", ref="C_MPU_V08CAP", board_tag=BTAG, pin=mpu.pin("V08CAP"))
     # Local decoupling for the newly-wired domains (bulk lives at the
     # PMIC; HF bypass pairs ride the ECM laminate). Local bulk is a
     # single 0603 2.2 µF (a 22 µF tantalum cost too much joint area at
     # the saturated power↔companion gap, 53 crossing nets in core_radar).
-    cap_to_gnd(d, "COMP_0V82", "2.2uF", ref="C_MPU_0V82_BULK", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_0V82", "2.2uF", ref="C_MPU_0V82_BULK", board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_MPU_0V82_1",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_MPU_0V82_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_MPU_18A_1",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_MPU_18A_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_MPU_QDDR_1",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_MPU_QDDR_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
 
     # ── System clocks — shock-tolerant MEMS oscillators in bypass mode ──
     # The MP25 needs an external HSE + LSE; both are MEMS clipped-sine
@@ -460,7 +460,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "COMP_3V3")   .connect(hse_osc.pin("4"))  # VDD
     _net(d, "COMP_HSE_IN").connect(mpu.pin("OSC_IN"))   # R1
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_HSE_VDD",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=hse_osc.pin("4"))
     #
     # LSE — 32.768 kHz into OSC32_IN (M2); OSC32_OUT (M1) NC. Real LSE
     # (not internal LSI) so the Linux/flight RTC keeps accurate wall-clock
@@ -475,7 +475,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "COMP_LSE_IN").connect(lse_osc.pin("5"))  # OUT
     _net(d, "COMP_LSE_IN").connect(mpu.pin("OSC32_IN"))  # M2
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_LSE_VDD",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=lse_osc.pin("4"))
 
     # FC↔companion links (UART4 console + SWD to the H562) REMOVED — the M33
     # IS the flight controller now, so M33↔A35 comms are on-chip (RPMsg / shared
@@ -505,9 +505,9 @@ def build_companion_compute(d: Design) -> None:
         _net(d, "NAND_OSPI_IO3").connect(nand.pin("7"))   # HOLD#/IO3
         _net(d, "COMP_3V3")     .connect(nand.pin("8"))   # VCC
         cap_to_gnd(d, "COMP_3V3", "100nF", ref=f"C_NAND_{die}_VCC",
-                   embedded_cap_absorbs=True, board_tag=BTAG)
+                   embedded_cap_absorbs=True, board_tag=BTAG, pin=nand.pin("8"))
         cap_to_gnd(d, "COMP_3V3", "1uF", ref=f"C_NAND_{die}_BULK",
-                   board_tag=BTAG)
+                   board_tag=BTAG, pin=nand.pin("8"))
 
     # MIPI CSI-2 (DCMIPP, 2-lane)
     _net(d, "CAM_CSI_CLK_P").connect(mpu.pin("CSI_CKP"))
@@ -645,9 +645,9 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "USB_VBUS_DET").connect(mpu.pin("PC10"))   # USB3DR_VBUSEN (host-attached sense)
     _net(d, "COMP_3V3")    .connect(mpu.pin("VDD33USB"))
     _net(d, "COMP_1V8").connect(mpu.pin("VDDA18USB"))
-    cap_to_gnd(d, "COMP_3V3", "1uF", ref="C_USB_33", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_3V3", "1uF", ref="C_USB_33", board_tag=BTAG, pin=mpu.pin("VDD33USB"))
     cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_USB_18",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=mpu.pin("VDDA18USB"))
     # PC10 = USB3DR_VBUSEN ("VBUS valid" sense for the device stack),
     # strapped permanently high (rule-sweep F4): the depot session powers
     # the whole round from VBUS, so whenever the MP25 runs with a cable
@@ -670,7 +670,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "GND").connect(mpu.pin("BOOT2"))   # the OTP overrides boot device
     _net(d, "GND").connect(mpu.pin("BOOT3"))   # after provisioning.
     res_between(d, "COMP_3V3", "NRST", "10k", ref="R_MPU_NRST", board_tag=BTAG)
-    cap_to_gnd(d, "NRST", "100nF", ref="C_MPU_NRST", board_tag=BTAG)
+    cap_to_gnd(d, "NRST", "100nF", ref="C_MPU_NRST", board_tag=BTAG, pin=mpu.pin("NRST"))
     res_between(d, "GND", "BOOT0", "10k", ref="R_MPU_BOOT0", board_tag=BTAG)
 
     # Bulk decoupling on supply rails
@@ -836,7 +836,7 @@ def build_companion_compute(d: Design) -> None:
     try:
         _net(d, "MPU_DDR_ZQ").connect(mpu.pin("DDR_ZQ"))
         cap_to_gnd(d, "MPU_DDR_ZQ", "0.1uF", ref="C_MPU_DDR_ZQ",
-                   board_tag=BTAG)
+                   board_tag=BTAG, pin=mpu.pin("DDR_ZQ"))
     except KeyError:
         pass
 
@@ -846,17 +846,17 @@ def build_companion_compute(d: Design) -> None:
                 ref="R_DDR_VREFCA_TOP", board_tag=BTAG)
     res_between(d, "DDR4_VREFCA", "GND", "1k",
                 ref="R_DDR_VREFCA_BOT", board_tag=BTAG)
-    cap_to_gnd(d, "DDR4_VREFCA", "100nF", ref="C_DDR_VREFCA", board_tag=BTAG)
+    cap_to_gnd(d, "DDR4_VREFCA", "100nF", ref="C_DDR_VREFCA", board_tag=BTAG, pin=ddr.pin("VREFCA"))
 
     # DDR4 power decoupling: 1.2 V rail (6× per-ball 100 nF ECM + 2× 10 µF
     # bulk) + VPP 2.5 V (1 µF + 100 nF).
     for n in range(1, 7):
         cap_to_gnd(d, "COMP_1V2", "100nF", ref=f"C_DDR_VDD{n}",
-                   embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK1", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK2", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_VPP", "1uF",   ref="C_DDR_VPP1", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_VPP", "100nF", ref="C_DDR_VPP2", board_tag=BTAG)
+                   embedded_cap_absorbs=True, board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK1", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK2", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_VPP", "1uF",   ref="C_DDR_VPP1", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_VPP", "100nF", ref="C_DDR_VPP2", board_tag=BTAG, pin=(ddr.ref, None))
 
 
 def build_radar_module(d: Design) -> None:
@@ -895,11 +895,11 @@ def build_radar_module(d: Design) -> None:
     res_between(d, "AWR_1V0_FB", "GND",        "100k",
                 ref="R_AWR_FB2", board_tag=BTAG)
 
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG)
+    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG, pin=(buck.ref, None))
     cap_to_gnd(d, "AWR_1V0",   "100nF", ref="C_AWR_1V0_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck.ref, None))
 
     # ── 1.8V LDO ────────────────────────────────────────────────────
     ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
@@ -909,9 +909,9 @@ def build_radar_module(d: Design) -> None:
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
     _net(d, "GND")      .connect(ldo18.pin("EP"))   # per DS10321 Table 1: EP must be GND
 
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
     # ── AWR2944 ─────────────────────────────────────────────────────
     awr = add_awr2944abgaltrq1(d, ref="U_AWR", board_tag=BTAG)
@@ -934,9 +934,9 @@ def build_radar_module(d: Design) -> None:
     _net(d, "VBGAP")        .connect(awr.pin("VBGAP"))
     _net(d, "VOUT__14APLL") .connect(awr.pin("VOUT__14APLL"))
     _net(d, "VOUT__14SYNTH").connect(awr.pin("VOUT__14SYNTH"))
-    cap_to_gnd(d, "VBGAP",         "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG)
-    cap_to_gnd(d, "VOUT__14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG)
-    cap_to_gnd(d, "VOUT__14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG)
+    cap_to_gnd(d, "VBGAP",         "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG, pin=awr.pin("VBGAP"))
+    cap_to_gnd(d, "VOUT__14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG, pin=awr.pin("VOUT__14APLL"))
+    cap_to_gnd(d, "VOUT__14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG, pin=awr.pin("VOUT__14SYNTH"))
 
     # Substrate + VPP to GND
     _net(d, "GND").connect(awr.pin("VNWA"))
@@ -996,7 +996,7 @@ def build_radar_module(d: Design) -> None:
     # Reset pull-up + filter; fault pull-up; SOP bias resistors
     res_between(d, "AWR_1V8", "AWR_NRESET", "10k",
                 ref="R_AWR_NRST",     board_tag=BTAG)
-    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG, pin=awr.pin("NRESET"))
     res_between(d, "3V3",     "AWR_FAULT",  "100k",
                 ref="R_AWR_FAULT_PU", board_tag=BTAG)
     res_between(d, "AWR_1V8", "AWR_SOP0", "10k", ref="R_AWR_SOP0", board_tag=BTAG)
@@ -1059,11 +1059,11 @@ def build_radar_module_awr2e44p(d: Design) -> None:
                 ref="R_AWR_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V0_FB", "GND",        "100k",
                 ref="R_AWR_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG)
+    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG, pin=(buck.ref, None))
     cap_to_gnd(d, "AWR_1V0",   "100nF", ref="C_AWR_1V0_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck.ref, None))
 
     ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
     _net(d, "BAT_PROT").connect(ldo18.pin("VIN"))
@@ -1071,9 +1071,9 @@ def build_radar_module_awr2e44p(d: Design) -> None:
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
     _net(d, "GND")      .connect(ldo18.pin("EP"))
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
     # ── AWR2E44P ────────────────────────────────────────────────────────────
     awr = add_awr2e44pbgamxrq1(d, ref="U_AWR", board_tag=BTAG)
@@ -1102,9 +1102,9 @@ def build_radar_module_awr2e44p(d: Design) -> None:
                       ("VOUT_14APLL", "VOUT_14APLL"),
                       ("VOUT_14SYNTH", "VOUT_14SYNTH")):
         _net(d, net).connect(awr.pin(ball))
-    cap_to_gnd(d, "VBGAP",        "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG)
-    cap_to_gnd(d, "VOUT_14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG)
-    cap_to_gnd(d, "VOUT_14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG)
+    cap_to_gnd(d, "VBGAP",        "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG, pin=(awr.ref, "VBGAP"))
+    cap_to_gnd(d, "VOUT_14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG, pin=(awr.ref, "VOUT_14APLL"))
+    cap_to_gnd(d, "VOUT_14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG, pin=(awr.ref, "VOUT_14SYNTH"))
 
     # Grounds (VSSA ×127 + VSS ×22) + substrate (VNWA) + VPP (tie GND when not
     # one-time-programming, per the AWR2944 build)
@@ -1115,7 +1115,7 @@ def build_radar_module_awr2e44p(d: Design) -> None:
     _net(d, "AWR_NRESET").connect(awr.pin("C19"))   # R\E\S\E\T\
     _net(d, "AWR_FAULT") .connect(awr.pin("B6"))    # E\R\R\O\R\_\O\U\T\
     res_between(d, "AWR_1V8", "AWR_NRESET", "10k", ref="R_AWR_NRST", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG, pin=awr.pin("C19"))
     res_between(d, "3V3", "AWR_FAULT", "100k", ref="R_AWR_FAULT_PU", board_tag=BTAG)
 
     # Host link — MSS_MIBSPIA to the MP25 M33 (also the host-SPI boot path)
@@ -1232,9 +1232,9 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     res_between(d, "AWR_1V2", "AWR_1V2_FB", "100k", ref="R_AWR12_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V2_FB", "GND", "100k", ref="R_AWR12_FB2", board_tag=BTAG)
     cap_to_gnd(d, "AWR_1V2", "22uF",  ref="C_AWR_1V2_1",
-               feature="bottom", board_tag=BTAG)
+               feature="bottom", board_tag=BTAG, pin=(buck12.ref, None))
     cap_to_gnd(d, "AWR_1V2", "100nF", ref="C_AWR_1V2_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck12.ref, None))
 
     # ── 1.3 V buck (LMR10510) — VIN_13RF RF supply ──────────────────────────
     # 118k/100k → 0.6×2.18 = 1.308 V (the old 68k/100k made 1.008 V).
@@ -1254,17 +1254,17 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     res_between(d, "AWR_1V3", "AWR_1V3_FB", "118k", ref="R_AWR13_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V3_FB", "GND", "100k", ref="R_AWR13_FB2", board_tag=BTAG)
     cap_to_gnd(d, "AWR_1V3", "22uF",  ref="C_AWR_1V3_1",
-               feature="bottom", board_tag=BTAG)
+               feature="bottom", board_tag=BTAG, pin=(buck13.ref, None))
     cap_to_gnd(d, "AWR_1V3", "100nF", ref="C_AWR_1V3_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck13.ref, None))
 
     # Shared buck input decoupling on always-on BAT_PROT (bottom, at
     # the bucks' VIN — the 10 µF was landing on F.Cu dead-centre,
     # inside the U_AWR courtyard)
     cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1",
-               feature="bottom", board_tag=BTAG)
+               feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
     cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2",
-               feature="bottom", board_tag=BTAG)
+               feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
 
     # ── 1.8 V LDO (LDL112PV18R) — analog (BB/VCO/CLK) + I/O ──────────────────
     ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
@@ -1273,9 +1273,9 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8") .connect(ldo18.pin("VOUT"))
     _net(d, "GND")     .connect(ldo18.pin("EP"))
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
     # ── AWR1843AOP ──────────────────────────────────────────────────────────
     # feature="rf": the AoP is the radiator → stays on the nose_cap-facing TOP
@@ -1325,10 +1325,10 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                       ("AWR_VOUT_14SYNTH", "VOUT_14SYNTH"),
                       ("AWR_VOUT_PA", "VOUT_PA")):
         _tie(net, base)
-    cap_to_gnd(d, "VBGAP",            "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG)
-    cap_to_gnd(d, "AWR_VOUT_14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG)
-    cap_to_gnd(d, "AWR_VOUT_14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_VOUT_PA",      "100nF", ref="C_AWR_VOUT_PA", board_tag=BTAG)
+    cap_to_gnd(d, "VBGAP",            "100nF", ref="C_AWR_VBGAP",   board_tag=BTAG, pin=(awr.ref, "VBGAP"))
+    cap_to_gnd(d, "AWR_VOUT_14APLL",  "100nF", ref="C_AWR_14APLL",  board_tag=BTAG, pin=(awr.ref, "VOUT_14APLL"))
+    cap_to_gnd(d, "AWR_VOUT_14SYNTH", "100nF", ref="C_AWR_14SYNTH", board_tag=BTAG, pin=(awr.ref, "VOUT_14SYNTH"))
+    cap_to_gnd(d, "AWR_VOUT_PA",      "100nF", ref="C_AWR_VOUT_PA", board_tag=BTAG, pin=(awr.ref, None))  # 3 VOUT_PA balls
 
     # Grounds (VSS ×22 + VSSA ×53) + VPP (GND = no in-system OTP/fuse
     # programming — secure-boot keys must come factory-fused; provisioning-
@@ -1342,7 +1342,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # §5.3: the I/Os are non-failsafe, never pull above/without VIO; with
     # VIOIN at 3.3 V the straps must pull to 3.3 V to clear VIH = 0.7·VIO).
     res_between(d, "COMP_3V3", "AWR_NRESET", "10k", ref="R_AWR_NRST", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG)
+    cap_to_gnd(d, "AWR_NRESET", "100nF", ref="C_AWR_NRST", board_tag=BTAG, pin=awr.pin("NRESET"))
     res_between(d, "COMP_3V3", "AWR_FAULT", "100k", ref="R_AWR_FAULT_PU", board_tag=BTAG)
     # error-in + warm-reset held inactive (pulled up to the VIOIN domain)
     _net(d, "AWR_NERR_IN") .connect(awr.pin("NERROR_IN"))
@@ -1375,7 +1375,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "AWR_OSC_OUT").connect(osc.pin("3"))   # OUT (40 MHz)
     _net(d, "AWR_1V8")    .connect(osc.pin("4"))   # VDD
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_OSC_VDD",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=osc.pin("4"))
     _net(d, "AWR_CLKREF").connect(awr.pin("CLKP"))
     _net(d, "AWR_CLKM")  .connect(awr.pin("CLKM"))
     # External-clock mode per SWRS236 Table 6-6: AC-coupled SINE or
@@ -1388,7 +1388,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                 ref="R_AWR_CLK_SER", board_tag=BTAG)
     res_between(d, "AWR_CLKREF", "GND", "390",
                 ref="R_AWR_CLK_SH", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_CLKM", "100pF", ref="C_AWR_CLKM", board_tag=BTAG)  # CLKM AC-gnd (confirm vs TI mmWave HW guide)
+    cap_to_gnd(d, "AWR_CLKM", "100pF", ref="C_AWR_CLKM", board_tag=BTAG, pin=awr.pin("CLKM"))  # CLKM AC-gnd (confirm vs TI mmWave HW guide)
 
     # ── SPI boot flash (SST26WF080B, 8 Mbit/1 MB, SINGLE-bit SPI) ────────────
     # The AWR1843AOP boots its application from this NOR during GROUND staging
@@ -1413,7 +1413,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "GND")     .connect(fl.pin("VSS"))
     _net(d, "GND")     .connect(fl.pin("EP"))             # exposed pad
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_AWR_FLASH_VCC",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=fl.pin("VDD"))
     _net(d, "AWR_QSPI_CLK").connect(awr.pin("QSPI_CLK"))
     _net(d, "AWR_QSPI_CLK").connect(fl.pin("SCK"))
     _net(d, "AWR_QSPI_CS") .connect(awr.pin("QSPI_CS_N"))
@@ -1469,21 +1469,21 @@ def _g0b1_node(d: Design, *, suffix: str, board_tag: str) -> Chip:
     # Decap rides the ECM laminate like the other ≤100 nF rail bypasses.
     _net(d, "3V3").connect(g.pin("VREF+"))
     cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VREF",
-               embedded_cap_absorbs=True, board_tag=board_tag)
+               embedded_cap_absorbs=True, board_tag=board_tag, pin=g.pin("VREF+"))
     _net(d, "GND").connect_all(g.pins_by_name("VSS"))
     _net(d, "GND").connect_all(g.pins_by_name("VSS/_VSSA"))
     cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VDD1",
-               embedded_cap_absorbs=True, board_tag=board_tag)
+               embedded_cap_absorbs=True, board_tag=board_tag, pin=(g.ref, "VDD/_VDDA"))
     cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VDD2",
-               embedded_cap_absorbs=True, board_tag=board_tag)
+               embedded_cap_absorbs=True, board_tag=board_tag, pin=(g.ref, "VDD/_VDDA"))
     cap_to_gnd(d, "3V3", "1uF", ref=f"C_G0B1_{suffix}_BULK",
-               board_tag=board_tag)
+               board_tag=board_tag, pin=(g.ref, None))
     nrst = f"G0B1_{suffix}_NRST"
     _net(d, nrst).connect(g.pin("PF2-_NRST"))
     res_between(d, "3V3", nrst, "10k", ref=f"R_G0B1_{suffix}_NRST",
                 board_tag=board_tag)
     cap_to_gnd(d, nrst, "100nF", ref=f"C_G0B1_{suffix}_NRST",
-               board_tag=board_tag)
+               board_tag=board_tag, pin=g.pin("PF2-_NRST"))
     # SYS_SPI slave (SPI3) — shared SCLK/MISO/MOSI from the MP25 M33 root + a
     # per-node chip-select. Carries firmware (ISP) + runtime command/telemetry.
     _net(d, "SYS_SPI_SCLK").connect(g.pin("PC10"))            # SPI3_SCK
@@ -1506,7 +1506,7 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
         _net(d, net).connect(pad.pin("1"))
     res_between(d, "3V3", out_net, "10k", ref=f"R_{ref}_PU",
                 board_tag=board_tag)                    # required pull-up
-    cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref}_VCC", board_tag=board_tag)
+    cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref}_VCC", board_tag=board_tag, pin=(f"{ref}_VCC", "1"))
     _net(d, out_net).connect(gpio_chip.pin(gpio_pin))
 
 
@@ -1562,7 +1562,7 @@ def build_fins_module(d: Design) -> None:
     # FIN_VREF directly, so firmware sets the fin current globally (run/hold
     # scaling, ramps). VREF inputs are high-Z; a small cap filters the DAC.
     _net(d, "FIN_VREF").connect(g.pin("PA4"))
-    cap_to_gnd(d, "FIN_VREF", "100nF", ref="C_FIN_VREF", board_tag=BTAG)
+    cap_to_gnd(d, "FIN_VREF", "100nF", ref="C_FIN_VREF", board_tag=BTAG, pin=g.pin("PA4"))
 
     # ── 4× DRV8428E integrated fin-stepper drivers ───────────────────
     for i in range(1, _N_FIN_DRIVERS + 1):
@@ -1572,8 +1572,8 @@ def build_fins_module(d: Design) -> None:
             _net(d, "GND").connect(drv.pin(gpin))
         _net(d, f"FIN{i}_DVDD").connect(drv.pin("DVDD"))
         cap_to_gnd(d, f"FIN{i}_DVDD", "1uF", ref=f"C_FIN{i}_DVDD",
-                   board_tag=BTAG)
-        cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref=f"C_FIN{i}_VM", board_tag=BTAG)
+                   board_tag=BTAG, pin=drv.pin("DVDD"))
+        cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref=f"C_FIN{i}_VM", board_tag=BTAG, pin=drv.pin("VM"))
         # PH/EN control + shared enable
         _net(d, f"FIN{i}_AEN").connect(drv.pin("AEN"))
         _net(d, f"FIN{i}_APH").connect(drv.pin("APH"))
@@ -1856,7 +1856,7 @@ def build_activation_interface(d: Design) -> None:
     # pin 5 = NC (no connect)
     _net(d, "3V3_AON") .connect(comp.pin("6"))   # VCC (launch detector active from Standby on)
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_COMP_PZ",
-               board_tag="fin_ble_board")   # local comparator decoupling
+               board_tag="fin_ble_board", pin=comp.pin("6"))   # local comparator decoupling
 
     _build_activation_array(d)
 
@@ -1937,8 +1937,8 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "ACTIVATE_FREQ")  .connect(boost.pin("FREQ"))    # 10
     res_between(d, "ACTIVATE_FREQ", "GND", "176k", ref="R_ACTIVATE_FREQ", board_tag=BT_BOOST)  # 600 kHz
     _net(d, "ACTIVATE_SS")    .connect(boost.pin("SS"))      # 5
-    cap_to_gnd(d, "ACTIVATE_SS", "47nF", ref="C_ACTIVATE_SS", board_tag=BT_BOOST)
-    cap_to_gnd(d, "COMP_5V", "10uF", ref="C_ACTIVATE_IN", board_tag=BT_BOOST)
+    cap_to_gnd(d, "ACTIVATE_SS", "47nF", ref="C_ACTIVATE_SS", board_tag=BT_BOOST, pin=boost.pin("SS"))
+    cap_to_gnd(d, "COMP_5V", "10uF", ref="C_ACTIVATE_IN", board_tag=BT_BOOST, pin=boost.pin("VIN"))
     # WE-PD 10 µH (DS 4.7-47 µH window) — reused from the COMP_5V boost.
     # D_ACTIVATE keeps the MBRS540T3G: the 33 V output leaves only 7 V of V_RRM
     # margin, so this rectifier is NOT a candidate for the 40 V flat part
@@ -1954,10 +1954,10 @@ def _build_activation_array(d: Design) -> None:
     res_between(d, "ACTIVATE_FB", "GND",     "10k",  ref="R_ACTIVATE_FB2", board_tag=BT_BOOST)
     # COMP RC — light load (the wire), loop non-critical; reuse known values.
     res_between(d, "ACTIVATE_COMP", "ACTIVATE_COMP_C", "1.6k", ref="R_ACTIVATE_COMP", board_tag=BT_BOOST)
-    cap_to_gnd(d, "ACTIVATE_COMP_C", "220nF", ref="C_ACTIVATE_COMP", board_tag=BT_BOOST)
+    cap_to_gnd(d, "ACTIVATE_COMP_C", "220nF", ref="C_ACTIVATE_COMP", board_tag=BT_BOOST, pin=(boost.ref, None))
     # Boost output ceramic — loop stability only (DS wants ≥4.7 µF out), NOT
     # an activate reservoir. cap_to_gnd dispatches 4.7 µF → 50 V KEMET 0603.
-    cap_to_gnd(d, "ACTIVATE_HV", "4.7uF", ref="C_ACTIVATE_OUT", board_tag=BT_BOOST)
+    cap_to_gnd(d, "ACTIVATE_HV", "4.7uF", ref="C_ACTIVATE_OUT", board_tag=BT_BOOST, pin=(boost.ref, None))
 
     # ── bleed + HV monitor ─────────────────────────────────────────────
     res_between(d, "ACTIVATE_HV", "GND", "100k", ref="R_ACTIVATE_BLEED", board_tag=BT)
@@ -2097,23 +2097,23 @@ def build_camera_module(d: Design) -> None:
     # CAP_1UF_PHY (F12): 1 µF decoupling for MIPI regulator
     _net(d, "CAM_PHY_REG").connect(cam.pin("F12"))
     cap_to_gnd(d, "CAM_PHY_REG", "1uF", ref="C_CAM_PHY_REG",
-               board_tag="camera_module")
+               board_tag="camera_module", pin=cam.pin("F12"))
 
     # ── Power-rail decoupling ───────────────────────────────────────
     # 100 nF HF caps absorbed by the ECM laminate; 1 µF bulk stays
     # discrete for frame-rate current swings.
     cap_to_gnd(d, "COMP_1V2", "100nF", ref="C_CAM_VDD_1",
-               embedded_cap_absorbs=True, board_tag="camera_module")
+               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_1V2", "1uF",   ref="C_CAM_VDD_BULK",
-               board_tag="camera_module")
+               board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_VDDIO_1",
-               embedded_cap_absorbs=True, board_tag="camera_module")
+               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_1V8", "1uF",   ref="C_CAM_VDDIO_BULK",
-               board_tag="camera_module")
+               board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_2V8", "100nF", ref="C_CAM_VAA_1",
-               embedded_cap_absorbs=True, board_tag="camera_module")
+               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_2V8", "1uF",   ref="C_CAM_VAA_BULK",
-               board_tag="camera_module")
+               board_tag="camera_module", pin=(cam.ref, None))
 
 
 def build_nose_cap(d: Design) -> None:
@@ -2230,7 +2230,7 @@ def build_nose_cap(d: Design) -> None:
                 ref="R_IR_TX_G",  board_tag=LED_BTAG)
     res_between(d, "IR_TX_G", "GND",     "100k",
                 ref="R_IR_TX_PD", board_tag=LED_BTAG)
-    cap_to_gnd(d, "BAT_PROT", "1uF", ref="C_IR_TX", board_tag=LED_BTAG)
+    cap_to_gnd(d, "BAT_PROT", "1uF", ref="C_IR_TX", board_tag=LED_BTAG, pin=tx.pin("A"))
 
     # ── IR activation_unlock wake — VBPW34FAS daylight-filtered PIN photodiode ─────────
     # The optical on-switch (Standby → Ready, the merged staged state):
@@ -2507,7 +2507,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
     _net(d, "EXT_CAN_P").connect(can_gw.pin("CANH"))
     _net(d, "EXT_CAN_N").connect(can_gw.pin("CANL"))
     cap_to_gnd(d, "COMP_5V", "100nF", ref="C_CAN_GW",
-               embedded_cap_absorbs=True, board_tag=_CAN_TAG)
+               embedded_cap_absorbs=True, board_tag=_CAN_TAG, pin=can_gw.pin("VCC"))
     res_between(d, "EXT_CAN_P", "EXT_CAN_N", "120",
                 ref="R_EXT_CAN_TERM", board_tag=_CAN_TAG)
 
@@ -2525,9 +2525,9 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
     # 220 nF per IIS2MDC DS Table (set/reset reservoir, voltage forced by
     # the device): low ESR (≤200 mΩ), tight to pins 5/6 — a REAL discrete,
     # never ECM-absorbed (private node, not a rail).
-    cap_to_gnd(d, "MAG_C1_TERM", "220nF", ref="C_MAG_C1", board_tag=BTAG)
-    cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=BTAG)
+    cap_to_gnd(d, "MAG_C1_TERM", "220nF", ref="C_MAG_C1", board_tag=BTAG, pin=mag.pin("C1"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=BTAG, pin=(mag.ref, None))
+    cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=BTAG, pin=(mag.ref, None))
     tp_drdy = _add_testpoint(d, ref="TP_MAG_DRDY", board_tag=BTAG)
     _net(d, "MAG_DRDY").connect(tp_drdy.pin("1"))
 
@@ -2570,9 +2570,9 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
         # (it's the aux-interface enable; the old GND tie was an
         # unsanctioned strap), SDO_Aux "connect to Vdd_IO or leave
         # unconnected" (GND not allowed). Both left floating.
-        cap_to_gnd(d, "3V3", "100nF", ref=f"C_IMU{idx}_1", embedded_cap_absorbs=True, board_tag=BTAG)
-        cap_to_gnd(d, "3V3", "2.2uF", ref=f"C_IMU{idx}_2", board_tag=BTAG)
-        cap_to_gnd(d, "3V3", "10nF",  ref=f"C_IMU{idx}_3", embedded_cap_absorbs=True, board_tag=BTAG)
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_IMU{idx}_1", embedded_cap_absorbs=True, board_tag=BTAG, pin=(imu.ref, None))
+        cap_to_gnd(d, "3V3", "2.2uF", ref=f"C_IMU{idx}_2", board_tag=BTAG, pin=(imu.ref, None))
+        cap_to_gnd(d, "3V3", "10nF",  ref=f"C_IMU{idx}_3", embedded_cap_absorbs=True, board_tag=BTAG, pin=(imu.ref, None))
         tp_int = _add_testpoint(d, ref=f"TP_IMU{idx}_INT", board_tag=BTAG)
         _net(d, f"IMU{idx}_INT").connect(tp_int.pin("1"))
 
@@ -2621,7 +2621,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
         _net(d, "QPD_VREF") .connect(opa.pin("+IN"))
         _net(d, tia_out_net).connect(opa.pin("OUT"))
         _net(d, "3V3")      .connect(opa.pin("V+"))
-        cap_to_gnd(d, "3V3", "100nF", ref=f"C_TIA_{ch}_PWR", embedded_cap_absorbs=True, board_tag="qpd_module")
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_TIA_{ch}_PWR", embedded_cap_absorbs=True, board_tag="qpd_module", pin=opa.pin("V+"))
 
     # (Radar power switch deleted — the AWR's buck + LDO now tap always-on
     # BAT_PROT directly and self-gate via their EN pins tied to RADAR_EN; the
@@ -2808,7 +2808,7 @@ def build_power_board(d: Design) -> None:
     # 47 µF + fin bulk downstream of QMAIN were unmanaged with the 61085's
     # open SS pin.
     _net(d, "COMP_5V_SS")  .connect(boost.pin("SS"))      # 5
-    cap_to_gnd(d, "COMP_5V_SS", "47nF", ref="C_BOOST_SS", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V_SS", "47nF", ref="C_BOOST_SS", board_tag=BTAG, pin=boost.pin("SS"))
 
     # Boost topology per DS §Typical Application (non-synchronous):
     # inductor IN → SW, Schottky rectifier SW → VOUT.
@@ -2835,10 +2835,10 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_1"))
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_2"))
     _net(d, "COMP_5V_RAW").connect(d_boost.pin("K"))
-    cap_to_gnd(d, "COMP_5V_RAW", "47uF",  ref="C_BOOST_OUT1", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V_RAW", "47uF",  ref="C_BOOST_OUT1", board_tag=BTAG, pin=(boost.ref, None))
+    cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref="C_BOOST_OUT3",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(boost.ref, None))
     # VOUT = 1.229 × (1 + 309/100) = 5.03 V (TPS61175 V_REF, DS §6.5)
     res_between(d, "COMP_5V_RAW", "COMP_5V_FB", "309k",
                 ref="R_BOOST_R1", board_tag=BTAG)
@@ -2852,7 +2852,7 @@ def build_power_board(d: Design) -> None:
     res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "1.6k",
                 ref="R_BOOST_COMP", board_tag=BTAG)
     cap_to_gnd(d, "COMP_5V_COMP_C", "220nF",
-               ref="C_BOOST_COMP", board_tag=BTAG)
+               ref="C_BOOST_COMP", board_tag=BTAG, pin=(boost.ref, None))
     # LC filter: COMP_5V_RAW (fins, noisy) → COMP_5V (PMIC, clean).
     ind_between(d, "COMP_5V_RAW", "COMP_5V", "1uH",
                 ref="L_PMIC_FILT", board_tag=BTAG)   # TMS-1R0, Isat 2.7 A (was bogus WE-KI 0402)
@@ -2912,9 +2912,9 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_3V3") .connect(pmic.pin("VOUT2"))
     ind_between(d, "PMIC_SW2", "COMP_3V3", "2.2uH",
                 ref="L_PMIC_BUCK2", board_tag=BTAG)   # ST Table 2: 2.2 µH for the ≥1.8 V rails
-    cap_to_gnd(d, "COMP_3V3", "22uF",  ref="C_PMIC_3V3_1", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_3V3", "22uF",  ref="C_PMIC_3V3_1", board_tag=BTAG, pin=pmic.pin("VOUT2"))
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_PMIC_3V3_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT2"))
 
     # BUCK5 → COMP_0V82: the MP25 VDDCORE domain (DS14284 ROC 0.79–0.842 V
     # — required to START, and the 0.9 V CPU rail is out of its range, so
@@ -2931,9 +2931,9 @@ def build_power_board(d: Design) -> None:
     ind_between(d, "PMIC_SW5", "COMP_0V82", "1uH",
                 ref="L_PMIC_BUCK5", board_tag=BTAG, feature="bottom")
     cap_to_gnd(d, "COMP_0V82", "22uF",  ref="C_PMIC_0V82_1", board_tag=BTAG,
-               feature="bottom")
+               feature="bottom", pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_PMIC_0V82_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
 
     # Unused BUCK 7 — VLX + VOUT decoupling caps on auto-named nets
     for n in (7,):
@@ -2941,8 +2941,8 @@ def build_power_board(d: Design) -> None:
         vout_net = f"PMIC_VOUT{n}_TERM"
         _net(d, vlx_net) .connect(pmic.pin(f"VLX{n}"))
         _net(d, vout_net).connect(pmic.pin(f"VOUT{n}"))
-        cap_to_gnd(d, vlx_net,  "100nF", ref=f"C_PMIC_VLX{n}",  board_tag=BTAG)
-        cap_to_gnd(d, vout_net, "100nF", ref=f"C_PMIC_VOUT{n}", board_tag=BTAG)
+        cap_to_gnd(d, vlx_net,  "100nF", ref=f"C_PMIC_VLX{n}",  board_tag=BTAG, pin=pmic.pin(f"VLX{n}"))
+        cap_to_gnd(d, vout_net, "100nF", ref=f"C_PMIC_VOUT{n}", board_tag=BTAG, pin=pmic.pin(f"VOUT{n}"))
 
     # LDO5 → COMP_2V8 (camera analog rail)
     _net(d, "COMP_2V8").connect(pmic.pin("LDO5OUT"))
@@ -2952,7 +2952,7 @@ def build_power_board(d: Design) -> None:
         ldo_net = f"PMIC_LDO{n}_TERM"
         _net(d, ldo_net).connect(pmic.pin(f"LDO{n}OUT"))
         cap_to_gnd(d, ldo_net, "100nF", ref=f"C_PMIC_LDO{n}",
-                   embedded_cap_absorbs=True, board_tag=BTAG)
+                   embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin(f"LDO{n}OUT"))
     # LDO3 (the DDR sink-source terminator) is unused — DS Table 3 says
     # tie BOTH LDO3IN and LDO3OUT to VIN when not used (no output cap).
     _net(d, "COMP_5V").connect(pmic.pin("LDO3OUT"))
@@ -2994,7 +2994,7 @@ def build_power_board(d: Design) -> None:
     # INTLDO bypass — 4.7 µF per DS14278 Table 3 (pin 8) / Table 2 CINTLDO
     _net(d, "PMIC_INTLDO").connect(pmic.pin("INTLDO"))
     cap_to_gnd(d, "PMIC_INTLDO", "4.7uF",
-               ref="C_PMIC_INTLDO", board_tag=BTAG)
+               ref="C_PMIC_INTLDO", board_tag=BTAG, pin=pmic.pin("INTLDO"))
 
     # Exposed pad
     _net(d, "GND").connect(pmic.pin("EP"))
@@ -3020,30 +3020,30 @@ def build_power_board(d: Design) -> None:
     # on companion (C_MPU_*, C_DDR_BULK*), and (c) the power↔companion
     # LGA joint being SATURATED — adding four more tantalum bodies on
     # this tile threw 21 nets off the lands when tried (2026-06-10).
-    cap_to_gnd(d, "COMP_0V9",  "22uF",  ref="C_PMIC_0V9_1", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_0V9",  "22uF",  ref="C_PMIC_0V9_1", board_tag=BTAG, pin=pmic.pin("VOUT1"))
     cap_to_gnd(d, "COMP_0V9",  "100nF", ref="C_PMIC_0V9_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_VPP",  "22uF",  ref="C_PMIC_VPP_1", board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT1"))
+    cap_to_gnd(d, "COMP_VPP",  "22uF",  ref="C_PMIC_VPP_1", board_tag=BTAG, pin=pmic.pin("VOUT3"))
     cap_to_gnd(d, "COMP_VPP",  "100nF", ref="C_PMIC_VPP_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT3"))
+    cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT4"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_PMIC_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_1V2",  "10uF",  ref="C_PMIC_1V2_1", board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT4"))
+    cap_to_gnd(d, "COMP_1V2",  "10uF",  ref="C_PMIC_1V2_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_PMIC_1V2_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_2V8",  "4.7uF", ref="C_PMIC_2V8_1", board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT6"))
+    cap_to_gnd(d, "COMP_2V8",  "4.7uF", ref="C_PMIC_2V8_1", board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
     cap_to_gnd(d, "COMP_2V8",  "100nF", ref="C_PMIC_2V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
 
     # COMP_5V VIN bulk + distributed per-input locals (ST Table 2 wants
     # 10 µF ceramic per BUCKxIN; 4×2.2 µF 0603 spread along the input pins
     # + the shared bulk approximates it at our lower input ripple)
-    cap_to_gnd(d, "COMP_5V", "22uF",  ref="C_PMIC_VIN1", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V", "22uF",  ref="C_PMIC_VIN1", board_tag=BTAG, pin=(pmic.ref, None))
     for _i in range(3, 7):
-        cap_to_gnd(d, "COMP_5V", "2.2uF", ref=f"C_PMIC_VIN{_i}", board_tag=BTAG)
+        cap_to_gnd(d, "COMP_5V", "2.2uF", ref=f"C_PMIC_VIN{_i}", board_tag=BTAG, pin=(pmic.ref, None))
     cap_to_gnd(d, "COMP_5V", "100nF", ref="C_PMIC_VIN2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(pmic.ref, None))
 
     # Reset + PWR_OK open-drain pull-ups — to 3V3 (= VIO rail), not
     # COMP_5V: RSTn/INTn abs max is +4.2 V (DS14278 Table 4).
@@ -3064,8 +3064,8 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V") .connect(ldo_vdd.pin("3"))   # EN tied IN
     _net(d, "COMP_1V2").connect(ldo_vdd.pin("5"))   # OUT
     ldo_vdd.dnp = True
-    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VDD_IN",  board_tag=BTAG)
-    cap_to_gnd(d, "COMP_1V2", "2.2uF", ref="C_CAM_LDO_VDD_OUT", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VDD_IN",  board_tag=BTAG, pin=ldo_vdd.pin("1"))
+    cap_to_gnd(d, "COMP_1V2", "2.2uF", ref="C_CAM_LDO_VDD_OUT", board_tag=BTAG, pin=ldo_vdd.pin("5"))
 
     ldo_vaa = add_lp5907mfx_2_8_nopb(d, ref="U_CAM_LDO_VAA",
                                       board_tag=BTAG)
@@ -3074,8 +3074,8 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V") .connect(ldo_vaa.pin("3"))
     _net(d, "COMP_2V8").connect(ldo_vaa.pin("5"))
     ldo_vaa.dnp = True
-    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VAA_IN",  board_tag=BTAG)
-    cap_to_gnd(d, "COMP_2V8", "4.7uF", ref="C_CAM_LDO_VAA_OUT", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VAA_IN",  board_tag=BTAG, pin=ldo_vaa.pin("1"))
+    cap_to_gnd(d, "COMP_2V8", "4.7uF", ref="C_CAM_LDO_VAA_OUT", board_tag=BTAG, pin=ldo_vaa.pin("5"))
 
     # ── add_tmp117(1, I2C2_SCL, I2C2_SDA) ────────────────────────────
     tmp = add_tmp117maidrvr(d, ref="U_TMP1", board_tag=BTAG)
@@ -3092,7 +3092,7 @@ def build_power_board(d: Design) -> None:
                 ref="R_TMP1_ALERT_PU", board_tag=BTAG)
     _net(d, "GND")       .connect(tmp.pin("EP"))    # WSON-6 thermal pad → GND
     cap_to_gnd(d, "3V3", "100nF", ref="C_TMP1",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=tmp.pin("V+"))
     # NB: system.py's TMP117 placeholder doesn't expose EP. The smash
     # factory does — leave unconnected to match.
 
@@ -3264,7 +3264,7 @@ def build_wakeup_board(d: Design) -> None:
     # Q_USB_WAKE (power_board), which joins this gate's open-drain OR.
     res_between(d, "BAT_RAW", "MAIN_SW_GATE", "1M",
                 ref="RMAIN_PU",     board_tag=BTAG)
-    cap_to_gnd(d, "MAIN_SW_GATE", "100nF", ref="CMAIN_HOLD", board_tag=BTAG)
+    cap_to_gnd(d, "MAIN_SW_GATE", "100nF", ref="CMAIN_HOLD", board_tag=BTAG, pin=qmain.pin("1"))
 
     # (Q_EFEN removed with the eFuse — there is no longer an eFuse EN to
     # gate. The wake now self-sequences through Q_ISO's body diode:
@@ -3320,7 +3320,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "3V3_AON")   .connect(hall.pin("VCC"))   # activation_unlock listener: alive from Standby, silent+free in Shelf
     _net(d, "GND")       .connect(hall.pin("GND"))
     _net(d, "MAG_WAKE_N").connect(hall.pin("OUT"))
-    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_MAG_WAKE", board_tag=BTAG)
+    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_MAG_WAKE", board_tag=BTAG, pin=hall.pin("VCC"))
     # Open-drain node bias: 1 M to 3V3_AON keeps the WBA pin ≤3.3 V (no
     # BAT_RAW level issue). In TRUE shelf AON is down and the node floats
     # — harmless: the shelf wake path needs only the Hall's active sink
@@ -3348,13 +3348,13 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("EN"))     # always on
     _net(d, "GND")    .connect(tmr_ldo.pin("GND"))
     _net(d, "TMR_VDD").connect(tmr_ldo.pin("OUT"))
-    cap_to_gnd(d, "TMR_VDD", "1uF", ref="C_TMR_LDO", board_tag=BTAG)
+    cap_to_gnd(d, "TMR_VDD", "1uF", ref="C_TMR_LDO", board_tag=BTAG, pin=tmr_ldo.pin("OUT"))
     tmr = add_rr123_1h02_612(d, ref="U_MAG_SHELF", board_tag=BTAG)
     _net(d, "TMR_VDD")    .connect(tmr.pin("VDD"))
     _net(d, "GND")        .connect(tmr.pin("GND"))
     _net(d, "MAG_SHELF_N").connect(tmr.pin("DIGITAL_OUT"))
     _net(d, "GND")        .connect(tmr.pin("LATCH_CONTROL"))   # latch inactive (VERIFY polarity)
-    cap_to_gnd(d, "TMR_VDD", "100nF", ref="C_MAG_SHELF", board_tag=BTAG)
+    cap_to_gnd(d, "TMR_VDD", "100nF", ref="C_MAG_SHELF", board_tag=BTAG, pin=tmr.pin("VDD"))
     res_between(d, "MAG_SHELF_K", "MAG_SHELF_N", "3.3k",
                 ref="R_MAG_SHELF", board_tag=BTAG)
 
@@ -3414,11 +3414,11 @@ def build_wakeup_board(d: Design) -> None:
                 ref="R_BOOST_FB1", board_tag=BTAG)
     res_between(d, "BOOST_FB",  "GND",      "100k",
                 ref="R_BOOST_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "REG_IN_MAIN", "10uF",  ref="CBOOST_IN1",  board_tag=BTAG)
-    cap_to_gnd(d, "REG_IN_MAIN", "100nF", ref="CBOOST_IN2",  board_tag=BTAG)
-    cap_to_gnd(d, "BOOST_OUT",   "22uF",  ref="CBOOST_OUT1", board_tag=BTAG)
+    cap_to_gnd(d, "REG_IN_MAIN", "10uF",  ref="CBOOST_IN1",  board_tag=BTAG, pin=boost.pin("3"))
+    cap_to_gnd(d, "REG_IN_MAIN", "100nF", ref="CBOOST_IN2",  board_tag=BTAG, pin=boost.pin("3"))
+    cap_to_gnd(d, "BOOST_OUT",   "22uF",  ref="CBOOST_OUT1", board_tag=BTAG, pin=boost.pin("5"))
     cap_to_gnd(d, "BOOST_OUT",   "100nF", ref="CBOOST_OUT2",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=boost.pin("5"))
 
     # ── LDL112PV33R: BOOST_OUT (3.87 V) → 3V3 ──
     # ST DS10321 Table 1: pin 1=EN, pin 2=GND, pin 3=ADJ (NC on fixed),
@@ -3429,10 +3429,10 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "BOOST_OUT") .connect(ldo_pwr.pin("EN"))   # tied VIN → always-on
     _net(d, "3V3")       .connect(ldo_pwr.pin("VOUT"))
     _net(d, "GND")       .connect(ldo_pwr.pin("EP"))   # thermal pad → GND
-    cap_to_gnd(d, "3V3", "22uF",  ref="COUT1", board_tag=BTAG)
-    cap_to_gnd(d, "3V3", "22uF",  ref="COUT2", board_tag=BTAG)
+    cap_to_gnd(d, "3V3", "22uF",  ref="COUT1", board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
+    cap_to_gnd(d, "3V3", "22uF",  ref="COUT2", board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
     cap_to_gnd(d, "3V3", "100nF", ref="COUT3",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
 
     # ── add_st25dv_tssop8_rf_wake — NFC dual-port tag ──
     # AON latch host tile. Was activation_interface ("beside the ST25DV/H3LIS")
@@ -3468,8 +3468,8 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "GND")    .connect(aon.pin("GND"))
     _net(d, "AON_EN") .connect(aon.pin("EN"))    # smart internal pull-down: floats = OFF
     _net(d, "3V3_AON").connect(aon.pin("OUT"))
-    cap_to_gnd(d, "BAT_RAW", "1uF", ref="C_AON_IN",  board_tag=_ACT_TAG)
-    cap_to_gnd(d, "3V3_AON", "1uF", ref="C_AON_OUT", board_tag=_ACT_TAG)
+    cap_to_gnd(d, "BAT_RAW", "1uF", ref="C_AON_IN",  board_tag=_ACT_TAG, pin=aon.pin("IN"))
+    cap_to_gnd(d, "3V3_AON", "1uF", ref="C_AON_OUT", board_tag=_ACT_TAG, pin=aon.pin("OUT"))
 
     # AON-EN latch — third instance of the wake pattern: Q_AON_EN raises
     # EN to BAT_RAW when a wake source (magnetic / jumpstart via
@@ -3574,22 +3574,25 @@ def build_wakeup_board(d: Design) -> None:
                 ref="L_WBA_SMPS", board_tag=BTAG)
     cap_to_gnd(d, "WBA_VDD11", "2.2uF",
                ref="C_WBA_VDD11", board_tag=BTAG,
-               **_as_built_0402("2.2uF", "X5R"))
+               **_as_built_0402("2.2uF", "X5R"), pin=wba.pin("VDD11"))
 
     # VDD decoupling — one 100 nF per pin + bulk. The embedded plane
     # absorbs the per-pin caps; the bulk stays discrete for ESR.
-    for tag in ("VDDA", "VDDANA", "VDD1", "VDD2", "VDDRF", "VDDRFPA",
-                "VDDHPA", "VDDSMPS"):
+    for tag, vdd_pin in (("VDDA", "VDDA"), ("VDDANA", "VDD_ANA"),
+                         ("VDD1", "VDD_1"), ("VDD2", "VDD_2"),
+                         ("VDDRF", "VDDRF"), ("VDDRFPA", "VDDRF_PA"),
+                         ("VDDHPA", "VDD_HPA"), ("VDDSMPS", "VDD_SMPS")):
         cap_to_gnd(d, "3V3_AON", "100nF", ref=f"C_WBA_{tag}",
-                   embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "3V3_AON", "4.7uF", ref="C_WBA_BULK", board_tag=BTAG)
+                   embedded_cap_absorbs=True, board_tag=BTAG,
+                   pin=wba.pin(vdd_pin))
+    cap_to_gnd(d, "3V3_AON", "4.7uF", ref="C_WBA_BULK", board_tag=BTAG, pin=(wba.ref, None))
 
     # NRST network — 10 kΩ pull-up + 100 nF to GND (RM0497 §6.3.5).
     _net(d, "WBA_NRST").connect(wba.pin("NRST"))   # E2
     res_between(d, "3V3_AON", "WBA_NRST", "10k",
                 ref="R_WBA_NRST", board_tag=BTAG)
     cap_to_gnd(d, "WBA_NRST", "100nF",
-               ref="C_WBA_NRST", board_tag=BTAG)
+               ref="C_WBA_NRST", board_tag=BTAG, pin=wba.pin("NRST"))
     # MP25 → WBA reset, open-drain via NFET (rule-sweep F1 fix): PB3 is
     # a TT pin clamped to VDDIO4/COMP_3V3, so a direct tie onto this
     # 3V3_AON-pulled net back-fed ~280 µA through the dead MP25 every
@@ -3622,7 +3625,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "3V3_AON")    .connect(hse_osc.pin("4"))  # VDD
     _net(d, "WBA_HSE_IN") .connect(wba.pin("OSC_IN"))   # A8
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_WBA_HSE_VDD",
-               embedded_cap_absorbs=True, board_tag=BTAG)
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=hse_osc.pin("4"))
     # LSE = internal LSI (±5 %); PC14/PC15 reused as GPIOs.
 
     # SWD debug
@@ -3678,7 +3681,7 @@ def build_wakeup_board(d: Design) -> None:
     # number) is an output (HCI IRQ to the MP25).
     res_between(d, "3V3_AON", "IR_WAKE", "470k",
                 ref="RPU_IR_WAKE", board_tag=BTAG)
-    cap_to_gnd(d, "IR_WAKE", "10nF", ref="C_IR_WAKE", board_tag=BTAG)
+    cap_to_gnd(d, "IR_WAKE", "10nF", ref="C_IR_WAKE", board_tag=BTAG, pin=wba.pin("PA12"))
     _net(d, "IR_WAKE").connect(wba.pin("PA12"))   # E6 — EXTI12, falling edge
 
     _net(d, "WBA_WAKE").connect(wba.pin("PB4"))   # F5 — GPIO, push high to hold
@@ -3721,7 +3724,7 @@ def build_wakeup_board(d: Design) -> None:
                 ref="L_WBA_PI", board_tag=BTAG, feature="rf")
     cap_to_gnd(d, "WBA_RF",   "0.5pF", ref="C_WBA_PI1",
                board_tag=BTAG, feature="rf",
-               **_as_built_0402("0.5pF", "C0G/NP0"))
+               **_as_built_0402("0.5pF", "C0G/NP0"), pin=wba.pin("RF"))
     cap_to_gnd(d, "WBA_RF_M", "0.5pF", ref="C_WBA_PI2",
                board_tag=BTAG, feature="rf")
 
@@ -3817,8 +3820,8 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "GND")       .connect(acc.pin("GND_4"))    # 16
     # DS9012 §"Application hints": 100 nF ceramic + 10 µF bulk at pin 14
     cap_to_gnd(d, "3V3", "100nF", ref="C_HACC1",
-               embedded_cap_absorbs=True, board_tag="activation_interface")
-    cap_to_gnd(d, "3V3", "10uF",  ref="C_HACC2", board_tag="activation_interface")
+               embedded_cap_absorbs=True, board_tag="activation_interface", pin=acc.pin("VDD"))
+    cap_to_gnd(d, "3V3", "10uF",  ref="C_HACC2", board_tag="activation_interface", pin=acc.pin("VDD"))
 
     # ── 3 test points post-build (per system.py wakeup_board block end) ──
     tp_bat = _add_testpoint(d, ref="TP_BAT", board_tag=BTAG)
@@ -5231,6 +5234,11 @@ _AFT_SILK_GROUPS = [
                        "TP_MP25_GND1", "TP_SWO", "TP_MP25_GND2", "TP_BOOT0"]),
     ("GPIO",          ["TP_GPIO_0", "TP_GPIO_1", "TP_GPIO_2", "TP_GPIO_3"]),
 ]
+# Schematic: aft_end's bottom-face pads drawn as these same groups (the
+# ACTIVATE group also takes the 16 outbound activate-wire pads).
+_SCH_PAD_GROUPS = {"aft_end_board": [
+    (label, refs + [f"P_ACT_WIRE_{i}" for i in range(16)] if label == "ACTIVATE" else refs)
+    for label, refs in _AFT_SILK_GROUPS]}
 _AFT_SILK_PAD_R_MM = 1.0     # Ø2.0 pad → 1.0 half-width
 _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
                              # (kept tight: the caption for each row has
@@ -5618,6 +5626,14 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     out = cfg_dir / f"{name}.kicad_pcb"
     r = write_kicad_panel(d, panel, boards, out)
     write_blank_drawing_sheet(out)
+    # This config's schematic (same projection as the maximalist one, but
+    # only this config's boards/spacers/LGA nets) at <config>/schematic/.
+    sch = write_kicad_schematic(d, cfg_dir / "schematic", project=name,
+                                pad_groups=_SCH_PAD_GROUPS)
+    for _w in sch["warnings"]:
+        print(f"  WARN {name} schematic: {_w}")
+    sch_msg = (f"schematic/{name}.kicad_sch ({sch['n_boards']} boards, "
+               f"{sch['n_parts']} parts, {sch['n_nets']} nets)")
     # This config's spacers (cadquery). The snake adjacencies differ per
     # config — e.g. flight↔radar exists in core_radar but not the
     # maximalist panel — and a spacer's cavities are milled from its two
@@ -5663,6 +5679,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
           f"{r['n_flex_strips']} flex strips, "
           f"{sum(_lands.values())} LGA lands, "
           f"stack {panel.stack_height_mm(boards):.1f} mm; {steps_msg}{asm_msg})")
+    print(f"    {sch_msg}")
     print(f"    shared-part inheritance: {len(extra_locks)} placement locks, "
           f"{len(_replayed)}/{len(_lands)} joints replayed, "
           f"{_absent_fields} truncated-joint tile fields, "
@@ -5821,6 +5838,16 @@ def main() -> int:
     summary = write_canonical_netlist(d, out)
     print(f"Canonical netlist written to {out.relative_to(REPO)} "
           f"({summary['n_parts']} parts, {summary['n_nets']} nets)")
+
+    # Whole-system schematic (documentation projection of the same netlist).
+    sch_dir = _DIST / "schematic"
+    shutil.rmtree(sch_dir, ignore_errors=True)
+    sch = write_kicad_schematic(d, sch_dir, pad_groups=_SCH_PAD_GROUPS)
+    print(f"KiCad schematic written to {sch_dir.relative_to(REPO)}/smash.kicad_sch "
+          f"({sch['n_boards']} boards, {sch['n_parts']} parts, "
+          f"{sch['n_nets']} nets, {sch['n_symbols']} symbols)")
+    for _w in sch["warnings"]:
+        print(f"  WARN schematic: {_w}")
 
     # Start dist/ clean of generated PCB/3D artifacts. Netlist above is
     # rewritten in place. Hand-edited .kicad_pcb files (stem ≠ directory
