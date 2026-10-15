@@ -1,0 +1,65 @@
+{
+ "STM32WBA55HG_ds.pdf": {
+  "role": "MCU BLE STM32WBA55HGF6TR",
+  "url": "https://www.st.com/resource/en/datasheet/stm32wba55hg.pdf",
+  "status": "failed"
+ },
+ "AN5165_STM32WB_RF_layout.pdf": {
+  "role": "AN layout RF STM32WB",
+  "url": "https://www.st.com/resource/en/application_note/an5165-how-to-build-a-wireless-application-using-the-stm32wb-mcu-stmicroelectronics.pdf",
+  "status": "failed"
+ },
+ "ISM330DHCX_ds.pdf": {
+  "role": "IMU 6DoF x3",
+  "url": "https://www.st.com/resource/en/datasheet/ism330dhcx.pdf",
+  "status": "failed"
+ },
+ "IIS2MDC_ds.pdf": {
+  "role": "magnetometro",
+  "url": "https://www.st.com/resource/en/datasheet/iis2mdc.pdf",
+  "status": "failed"
+ },
+ "LDL112_ds.pdf": {
+  "role": "LDO 1.2A LDL112PV33R",
+  "url": "https://www.st.com/resource/en/datasheet/ldl112.pdf",
+  "status": "failed"
+ },
+ "TPS7A02_ds.pdf": {
+  "role": "LDO nanopower TPS7A0233",
+  "url": "https://www.ti.com/lit/ds/symlink/tps7a02.pdf",
+  "bytes": 3405343,
+  "status": "ok"
+ },
+ "DRV5032_ds.pdf": {
+  "role": "hall switch DRV5032FCQDBZR",
+  "url": "https://www.ti.com/lit/ds/symlink/drv5032.pdf",
+  "bytes": 2129308,
+  "status": "ok"
+ },
+ "MCP1640_ds.pdf": {
+  "role": "boost MCP1640CT-I/CHY",
+  "url": "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP1640-1640B-1640C-1640D-Data-Sheet-DS20002234E.pdf",
+  "status": "failed"
+ },
+ "DSC1001_ds.pdf": {
+  "role": "oscillatore MEMS 32 MHz",
+  "url": "https://ww1.microchip.com/downloads/en/DeviceDoc/DSC1001-Data-Sheet-DS20006049.pdf",
+  "status": "failed"
+ },
+ "BSS138_ds.pdf": {
+  "role": "N-MOS BSS138LT1G",
+  "url": "https://www.onsemi.com/pdf/datasheet/bss138lt1-d.pdf",
+  "status": "failed"
+ },
+ "IRLML6402_ds.pdf": {
+  "role": "P-MOS IRLML6402TRPBF",
+  "url": "https://www.infineon.com/dgdl/irlml6402pbf.pdf?fileId=5546d462533600a40153567205e526cf",
+  "bytes": 199592,
+  "status": "ok"
+ },
+ "BAT64_ds.pdf": {
+  "role": "diodo schottky BAT64-06",
+  "url": "https://www.infineon.com/dgdl/Infineon-BAT64SERIES-DS-v01_01-EN.pdf?fileId=db3a304314dca389011528a24d9f77f2",
+  "status": "failed"
+ }
+}
