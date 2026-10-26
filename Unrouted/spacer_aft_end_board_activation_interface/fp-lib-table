@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashSpacerAftEndBoardActivationInterface")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerAftEndBoardActivationInterface.pretty")(options "")(descr "Editable Smash spacer-aft-end-board-activation-interface footprints"))
+)

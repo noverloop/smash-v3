@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashRadarModule")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashRadarModule.pretty")(options "")(descr "Editable Smash radar-module footprints"))
+)

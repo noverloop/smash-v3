@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashSpacerWakeupBoardPowerBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerWakeupBoardPowerBoard.pretty")(options "")(descr "Editable Smash spacer-wakeup-board-power-board footprints"))
+)

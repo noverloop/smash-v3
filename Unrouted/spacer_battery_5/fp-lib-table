@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashSpacerBattery5")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerBattery5.pretty")(options "")(descr "Editable Smash spacer-battery-5 footprints"))
+)
