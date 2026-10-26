@@ -540,7 +540,7 @@ def test_refdes_hidden_on_silkscreen(tmp_pcb):
     write_kicad_pcb(d, board, tmp_pcb)
     text = tmp_pcb.read_text()
     import re
-    m = re.search(r'\(property "Reference" "R_HIDDEN"(.*?)\)\s*\(property',
+    m = re.search(r'\(property "Reference" "R_HIDDEN1"(.*?)\)\s*\(property',
                   text, re.DOTALL)
     assert m is not None
     assert "(hide yes)" in m.group(1)

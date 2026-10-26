@@ -10,6 +10,7 @@ Format coverage:
   - `write_edif`              — EDIF 200 (Xpedition / OrCAD Capture)
   - `write_pads_netlist`      — PADS Layout ASCII (.asc)
   - `write_protel_netlist`    — Protel / Tango / Altium (.NET)
+  - `write_board_protel_netlist` — one board's .NET, matching its .kicad_pcb
   - `write_allegro_netlist`   — Cadence Allegro Telesis (.txt) +
                                  optional KiCad→Allegro fp mapping
   - `write_footprint_inventory` — SamacSys download-checklist CSV with
@@ -26,7 +27,7 @@ from smash.export.bom import write_bom
 from smash.export.flat import write_flat_netlist
 from smash.export.edif import write_edif
 from smash.export.pads import write_pads_netlist
-from smash.export.protel import write_protel_netlist
+from smash.export.protel import write_protel_netlist, write_board_protel_netlist
 from smash.export.allegro import write_allegro_netlist
 from smash.export.fp_inventory import (
     write_footprint_inventory,
@@ -61,6 +62,7 @@ __all__ = [
     "write_edif",
     "write_pads_netlist",
     "write_protel_netlist",
+    "write_board_protel_netlist",
     "write_allegro_netlist",
     "write_footprint_inventory",
     "load_allegro_fp_map",

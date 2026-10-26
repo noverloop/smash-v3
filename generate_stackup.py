@@ -102,7 +102,9 @@ from smash.export import (                                              # noqa: 
     write_stackup_components_step,
     write_consolidated_stackup_stl, write_housing_stl,
     write_gerbers, write_kicad_schematic, write_board_schematic,
+    write_board_protel_netlist,
 )
+from smash.export.kicad_sch import relink_multi_unit_footprints   # noqa: E402
 from smash.layout.boards.smash_evb_v1 import (                          # noqa: E402
     build_panel, build_config_panel,
 )
@@ -4384,21 +4386,34 @@ def _export_tile_steps(design, panel, boards, out_dir,
     written: list[pathlib.Path] = []   # → portable projects, after the exports
     gcli = _gerber_cli()   # None when SMASH_GERBER_EXPORT=0 or kicad-cli absent
     ok_gerber, failed_gerber = 0, []
-    # Each board directory also gets <name>.kicad_sch: every footprint has
+    # Each board directory also gets <name>.kicad_sch + <name>.NET (Altium):
+    # every footprint has
     # a symbol (the .kicad_pcb footprints carry its uuid path), so the EE
     # can open the board as a schematic+PCB project and Update PCB from
     # Schematic. Written before the portable pass, which rewrites the
     # footprint ids the schematic's Footprint fields already point at.
+    # kicad-cli (when installed) re-links multi-unit parts to the unit KiCad
+    # itself picks, so Update PCB from Schematic finds nothing to change.
     ok_sch, failed_sch = 0, []
+    try:
+        sch_cli = find_kicad_cli()
+    except KiCadCliNotFound:
+        sch_cli = None
 
     def _board_sch(name, b, tile_dir):
         nonlocal ok_sch
         try:
             write_board_schematic(design, b, tile_dir,
                                   pad_groups=_SCH_PAD_GROUPS.get(name))
+            # Altium: the same netlist as a Protel .NET, refdes/footprints/
+            # nets exactly as on the board.
+            write_board_protel_netlist(design, b, tile_dir / f"{name}.NET")
+            if sch_cli is not None:
+                relink_multi_unit_footprints(tile_dir / f"{name}.kicad_pcb",
+                                             tile_dir / f"{name}.kicad_sch", sch_cli)
             ok_sch += 1
         except Exception as e:                   # keep run resilient
-            failed_sch.append(f"{name}({type(e).__name__})")
+            failed_sch.append(f"{name}({type(e).__name__}: {str(e)[:200]})")
     for name, b in boards.items():
         if getattr(b, "is_spacer", False):
             # Spacer interposers get a fab set too — .kicad_pcb (2-layer:

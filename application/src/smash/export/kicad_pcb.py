@@ -43,8 +43,10 @@ from smash.state.antenna import Antenna
 from smash.state.design import Design
 from smash.state.geometry.cavity import CavityRegion
 from smash.state.topology.placement import Placement
-from smash.export._common import _strip_ball_prefix, component_value
-from smash.export.kicad_sch import symbol_path, unconnected_nets
+from smash.export._common import (
+    _strip_ball_prefix, board_datasheet, component_value, kicad_ref,
+)
+from smash.export.kicad_sch import symbol_path, symbol_units, unconnected_nets
 from smash.roots import git_repo_root, resolve_repo_path
 
 
@@ -398,7 +400,7 @@ def _emit_footprint(
     # printed silkscreen anywhere. `(hide yes)` keeps it off the silk
     # gerber. Value is likewise hidden.
     parts.append(
-        f'\t\t(property "Reference" "{chip.ref}"\n'
+        f'\t\t(property "Reference" "{kicad_ref(chip.ref)}"\n'
         f'\t\t\t(at 0 0 0)\n'
         f'\t\t\t(layer "{silk_layer}")\n'
         f'\t\t\t(hide yes)\n'
@@ -420,7 +422,9 @@ def _emit_footprint(
     # schematic carries (schematic-parity DRC compares every field).
     for fname, attr in (("Datasheet", "datasheet"), ("Description", "description"),
                         ("MPN", "manf_pn"), ("Manufacturer", "manf")):
-        fval = (getattr(chip, attr, None) or "").replace("\\", "\\\\") \
+        fval = board_datasheet(chip) if (attr == "datasheet" and link_symbol) \
+            else (getattr(chip, attr, None) or "")
+        fval = fval.replace("\\", "\\\\") \
             .replace('"', r'\"').replace("\n", "\\n")
         parts.append(
             f'\t\t(property "{fname}" "{fval}"\n'
@@ -439,6 +443,12 @@ def _emit_footprint(
         parts.append(f'\t\t(path "{symbol_path(board_name, chip.ref)}")')
         parts.append('\t\t(sheetname "/")')
         parts.append(f'\t\t(sheetfile "{board_name}.kicad_sch")')
+        # KiCad 10 unit metadata: which pads each symbol unit carries.
+        parts.append("\t\t(units")
+        for uname, pins in symbol_units(chip):
+            plist = " ".join(f'"{p}"' for p in pins)
+            parts.append(f'\t\t\t(unit (name "{uname}") (pins {plist}))')
+        parts.append("\t\t)")
 
     # Body outline + courtyard polygons. Body lives on F.Fab (yellow
     # in fab view); courtyard on F.CrtYd (red dashed in pcbnew default

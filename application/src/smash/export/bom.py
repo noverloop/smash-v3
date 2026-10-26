@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Mapping
 
 from smash.state import Design
-from smash.export._common import all_components, footprint_full
+from smash.export._common import all_components, footprint_full, kicad_ref
 
 
 _FIELDS = [
@@ -83,7 +83,7 @@ def write_bom(
             total += cost_usd
         rows.append({
             "Board":       board,
-            "Ref":         ref,
+            "Ref":         kicad_ref(ref),      # matches the KiCad boards
             "Value":       getattr(c, "value", "") or "",
             "Footprint":   footprint_full(c),
             "Description": desc,

@@ -38,6 +38,7 @@ import hashlib
 import json
 import pathlib
 import re
+import shutil
 import uuid as _uuid
 
 from smash.state import Design
@@ -46,9 +47,13 @@ from smash.export._common import (
     nets_with_pins,
     net_connections,
     footprint_full,
+    board_datasheet,
     component_value,
+    kicad_ref,
     _strip_ball_prefix,
 )
+from smash.export.samacsys import copy_libraries, find_symbol
+from smash.roots import resolve_repo_path
 
 
 _NS = _uuid.UUID("8c5b9c1e-1a82-4a4a-9c4b-1c1a40000002")
@@ -117,21 +122,25 @@ def _font(hide: bool = False, justify: str | None = None,
 # ── symbol model ─────────────────────────────────────────────────────────
 
 class _LibPin:
-    __slots__ = ("num", "name", "etype", "x", "y", "angle")
+    __slots__ = ("num", "name", "etype", "x", "y", "angle", "length")
 
-    def __init__(self, num, name, etype, x, y, angle):
+    def __init__(self, num, name, etype, x, y, angle, length=_PIN_LEN):
         self.num, self.name, self.etype = num, name, etype
-        self.x, self.y, self.angle = x, y, angle
+        self.x, self.y, self.angle, self.length = x, y, angle, length
 
 
 class _Unit:
-    """One unit of a lib symbol: box geometry + pins (lib coords, y-up)."""
+    """One unit of a lib symbol: box geometry + pins (lib coords, y-up).
+    `graphics` holds a SamacSys body verbatim (s-expressions); generated
+    symbols draw their own."""
 
-    def __init__(self, pins: list, half_w: float, top: float, bottom: float):
+    def __init__(self, pins: list, half_w: float, top: float, bottom: float,
+                 graphics: list | None = None):
         self.pins = pins
         self.half_w = half_w
         self.top = top
         self.bottom = bottom
+        self.graphics = graphics
 
 
 class _LibSymbol:
@@ -139,7 +148,7 @@ class _LibSymbol:
                  units: list, show_pin_names: bool):
         self.name = name
         self.ref_prefix = ref_prefix
-        self.kind = kind                 # "box" | "R" | "C" | "two"
+        self.kind = kind                 # "box" | "R" | "C" | "two" | "samacsys"
         self.units = units
         self.show_pin_names = show_pin_names
         self.vertical = False            # pins top/bottom (see _variant)
@@ -214,6 +223,17 @@ def _build_box(name: str, comp, pins, gaps: dict | None = None) -> _LibSymbol:
                       show_pin_names=True)
 
 
+def _from_samacsys(name: str, comp, ss) -> _LibSymbol:
+    """A lib symbol drawn with the part's SamacSys body and pins."""
+    # A `no_connect` pin never joins a net in KiCad, even when the design
+    # ties it to one (TPS61175 pin 11, "NC", to ground); the sheet's own
+    # no-connect flags mark the pins that really are unused.
+    pins = [_LibPin(p.num, p.name, "passive" if p.etype == "no_connect" else p.etype,
+                    p.x, p.y, p.angle, p.length) for p in ss.pins]
+    unit = _Unit(pins, max(abs(ss.x0), abs(ss.x1)), ss.y1, ss.y0, graphics=ss.graphics)
+    return _LibSymbol(name, _ref_prefix(comp.ref), "samacsys", [unit], show_pin_names=True)
+
+
 def _symbol_base_name(comp, pins) -> str:
     if len(pins) == 2 and _two_pin_kind(comp, pins) in ("R", "C"):
         return _two_pin_kind(comp, pins)
@@ -233,6 +253,20 @@ class _SymbolLibrary:
 
     def for_component(self, comp) -> _LibSymbol:
         pins = _pin_list(comp)
+        # A part's own SamacSys symbol when its pins match (multi-pin parts;
+        # 2-pin parts keep the generated R/C/two symbols the satellite and
+        # decoupling layouts are built around).
+        ss = find_symbol(comp) if len(pins) > 2 else None
+        if ss is not None:
+            base = re.sub(r"[^A-Za-z0-9_.+-]", "_", ss.name)
+            sig = ("samacsys", ss.path)
+            name = base
+            if name in self._sig and self._sig[name] != sig:
+                name = f"{base}_{hashlib.sha1(repr(sig).encode()).hexdigest()[:6]}"
+            if name not in self.by_name:
+                self.by_name[name] = _from_samacsys(name, comp, ss)
+                self._sig[name] = sig
+            return self.by_name[name]
         base = _symbol_base_name(comp, pins)
         if len(pins) == 2 and base in ("R", "C"):
             sig = (base,)
@@ -379,11 +413,14 @@ def _lib_symbol_sexpr(sym, lib_prefix: str | None) -> str:
         out.append(f'\t\t(property "ki_locked" "" (at 0 0 0) {_font()})')
     for ui, unit in enumerate(sym.units, start=1):
         out.append(f'\t\t(symbol {_q(f"{sym.name}_{ui}_1")}')
-        out.extend(_unit_graphics(sym, unit))
+        if unit.graphics is not None:
+            out.extend("\t\t\t" + " ".join(g.split()) for g in unit.graphics)
+        else:
+            out.extend(_unit_graphics(sym, unit))
         for p in unit.pins:
             out.append(
                 f'\t\t\t(pin {p.etype} line (at {_f(p.x)} {_f(p.y)} {p.angle}) '
-                f'(length {_f(_PIN_LEN)}) '
+                f'(length {_f(p.length)}) '
                 f'(name {_q(p.name)} {_font()}) (number {_q(p.num)} {_font()}))')
         out.append('\t\t)')
     out.append('\t)')
@@ -435,10 +472,12 @@ _BANK_W = 150.0                 # decoupling-bank rows wrap past this (or the pa
 
 class _Ctx:
     def __init__(self, lib, comp_sym, pin_net, global_nets, rails,
-                 grounds, heavy, net_size, fp_of=None, label_all=False):
+                 grounds, heavy, net_size, fp_of=None, label_all=False,
+                 datasheet_of=None):
         self.lib, self.comp_sym, self.pin_net = lib, comp_sym, pin_net
         self.global_nets = global_nets
         self.fp_of = fp_of or _footprint_field
+        self.datasheet_of = datasheet_of or (lambda c: getattr(c, "datasheet", None) or "")
         self.label_all = label_all      # name every net, even pin-to-pin wires
         self.rails = rails              # drawn as power symbols
         self.grounds = grounds          # subset of rails
@@ -504,8 +543,12 @@ class _Block:
         glob = net in ctx.global_nets
         self.prims.append(("label", net, x, y, ang, glob))
         w = _text_w(net) + (3.5 if glob else 0)
-        x1 = x - w if ang == 180 else x + w
-        self.box(x, y - 1.4, x1, y + (1.4 if glob else 0))
+        if ang in (90, 270):                    # runs up (90) / down (270)
+            y1 = y - w if ang == 90 else y + w
+            self.box(x - 1.4, y, x + (1.4 if glob else 0), y1)
+        else:
+            x1 = x - w if ang == 180 else x + w
+            self.box(x, y - 1.4, x1, y + (1.4 if glob else 0))
 
     def pwr(self, ctx, net, x, y, d):
         sym = _power_symbol(ctx.lib, net, net in ctx.grounds, d)
@@ -521,16 +564,16 @@ class _Block:
         fp = ctx.fp_of(comp)
         value = _value(comp, ctx)
         fields = [
-            ("Reference", comp.ref, *ref_at, False, size),
+            ("Reference", kicad_ref(comp.ref), *ref_at, False, size),
             ("Value", value, *val_at, False, size),
             ("Footprint", fp, x, y, None, True, 1.27),
-            ("Datasheet", getattr(comp, "datasheet", None) or "", x, y, None, True, 1.27),
+            ("Datasheet", ctx.datasheet_of(comp), x, y, None, True, 1.27),
             ("Description", getattr(comp, "description", None) or "", x, y, None, True, 1.27),
             ("MPN", getattr(comp, "manf_pn", None) or "", x, y, None, True, 1.27),
             ("Manufacturer", getattr(comp, "manf", None) or "", x, y, None, True, 1.27),
         ]
         self.prims.append(("sym", lsym, comp, unit_no, x, y, fields))
-        self.text(comp.ref, ref_at[0], ref_at[1], ref_at[2], size)
+        self.text(kicad_ref(comp.ref), ref_at[0], ref_at[1], ref_at[2], size)
         self.text(value, val_at[0], val_at[1], val_at[2], size)
 
     # packer interface (one grid of padding all round)
@@ -574,6 +617,20 @@ def _terminate(blk: _Block, ctx, ex, ey, d, net) -> None:
         blk.label(ctx, net, lx, ey, 180 if d < 0 else 0)
 
 
+def _terminate_v(blk: _Block, ctx, ex, ey, d, net) -> None:
+    """`_terminate` for a pin end on a top (`d` -1, up) or bottom (+1,
+    down) edge."""
+    if net is None:
+        blk.nc(ex, ey)
+        return
+    ly = ey + d * _STUB
+    blk.wire(ex, ey, ex, ly)
+    if net in ctx.rails:
+        blk.pwr(ctx, net, ex, ly, "U" if d < 0 else "D")
+    else:
+        blk.label(ctx, net, ex, ly, 90 if d < 0 else 270)
+
+
 def _two_pin_nets(ctx, s) -> list:
     return [(num, ctx.pin_net.get((s.ref, num))) for num, _, _ in _pin_list(s)]
 
@@ -589,13 +646,23 @@ def _unit_block(comp, ui, ctx, cands, bank, placed) -> _Block:
     sym = ctx.comp_sym[comp.ref]
     unit = sym.units[ui]
     blk = _Block()
-    blk.symbol(ctx, sym, comp, ui + 1, 0, 0,
-               (0, -unit.top - 1.27, None), (0, -unit.bottom + 1.27, None), 1.27)
+    vertical = [p for p in unit.pins if p.angle in (90, 270)]
+    if vertical:
+        # Pins on the top/bottom edges (SamacSys bodies): their labels run
+        # up/down from the body, so ref/value go to the left-hand corners.
+        h = -unit.half_w - 1.27
+        ref_at, val_at = (h, -unit.top - 1.27, "right"), (h, -unit.bottom + 1.27, "right")
+    else:
+        ref_at, val_at = (0, -unit.top - 1.27, None), (0, -unit.bottom + 1.27, None)
+    blk.symbol(ctx, sym, comp, ui + 1, 0, 0, ref_at, val_at, 1.27)
     blk.box(-unit.half_w, -unit.top, unit.half_w, -unit.bottom)
     for d in (-1, 1):
-        side = sorted((p for p in unit.pins if (p.angle == 0) == (d < 0)),
+        side = sorted((p for p in unit.pins if p.angle == (0 if d < 0 else 180)),
                       key=lambda p: -p.y)
         _layout_side(blk, ctx, comp, side, d, cands, placed)
+    for p in vertical:                          # 270: top edge, 90: bottom
+        _terminate_v(blk, ctx, p.x, -p.y, -1 if p.angle == 270 else 1,
+                     ctx.pin_net.get((comp.ref, p.num)))
     if bank:
         _layout_bank(blk, ctx, bank, -unit.half_w - _PIN_LEN, blk.bb[3])
     return blk
@@ -650,30 +717,15 @@ def _layout_side(blk, ctx, comp, side, d, cands, placed) -> None:
             _satellite(blk, ctx, ex, ey, d, col, net, *sat[i])
             i += 1
             continue
-        if net not in ctx.rails:
-            _terminate(blk, ctx, ex, ey, d, net)
-            i += 1
-            continue
-        # A run of adjacent pins on one rail: stubs onto a short bus, one
-        # power symbol (up/down off the end of the side when it can be).
-        j = i
-        while j + 1 < n_rows and j + 1 not in sat and nets[j + 1] == net:
-            j += 1
-        bx = ex + d * _STUB
-        ys = [-side[k].y for k in range(i, j + 1)]
-        for y in ys:
-            blk.wire(ex, y, bx, y)
-        for a, b in zip(ys, ys[1:]):
-            blk.wire(bx, a, bx, b)
-        out = "L" if d < 0 else "R"
-        hung = ctx.attach.get((comp.ref, side[j].num))
+        # Every pin gets its own stub + label / power symbol — rail pins
+        # too, never a shared bus: no point on the sheet joins more than two
+        # items, so nothing depends on a junction (KiCad's editor drops
+        # junctions it judges unneeded before Update PCB from Schematic).
+        _terminate(blk, ctx, ex, ey, d, net)
+        hung = ctx.attach.get((comp.ref, p.num))
         if hung:
-            _pin_bank(blk, ctx, net, bx, ys[-1], d, hung)
-        elif net in ctx.grounds:
-            blk.pwr(ctx, net, bx, ys[-1], "D" if j == n_rows - 1 else out)
-        else:
-            blk.pwr(ctx, net, bx, ys[0], "U" if i == 0 else out)
-        i = j + 1
+            _pin_bank(blk, ctx, net, ex, ey, d, hung)
+        i += 1
 
 
 def _satellite(blk, ctx, ex, ey, d, col, net, s, near, far_net) -> None:
@@ -697,9 +749,39 @@ def _satellite(blk, ctx, ex, ey, d, col, net, s, near, far_net) -> None:
     _terminate(blk, ctx, nx + 2 * d * ext, ey, d, far_net)
 
 
+_BANK_TOP = 3 * _G               # pin row → top of a bank part (its power symbol + text)
+_BANK_BOT = 2 * _G               # bottom of a bank part → clear of its ground symbol + text
+
+
 def _bank_span(ctx, s) -> float:
+    """Height a vertical bank part takes below the row it hangs from: its
+    rail symbol, the part, its ground symbol."""
     u = ctx.comp_sym[s.ref].units[0]
-    return 2 * (u.half_w + _PIN_LEN)
+    return _BANK_TOP + 2 * (u.half_w + _PIN_LEN) + _BANK_BOT
+
+
+def _bank_part(blk, ctx, s, rail_pin, cx, y_top, just) -> None:
+    """A rail→ground part standing vertically at `cx`, its rail pin end at
+    `y_top`: each end in its own power symbol, no wire to anything."""
+    sym = ctx.comp_sym[s.ref]
+    v = _variant(ctx.lib, sym, "V" if sym.units[0].pins[0].num == rail_pin else "Vr")
+    ext = v.units[0].half_w + _PIN_LEN
+    cy = y_top + ext
+    nets = dict(_two_pin_nets(ctx, s))
+    gnd = next(n for num, n in nets.items() if num != rail_pin)
+    blk.pwr(ctx, nets[rail_pin], cx, y_top, "U")
+    blk.pwr(ctx, gnd, cx, cy + ext, "D")
+    tx = cx + (-1.905 if just == "right" else 1.905)
+    blk.symbol(ctx, v, s, 1, cx, cy, (tx, cy - 1.27, just), (tx, cy + 1.27, just), _SMALL)
+    blk.box(cx - 1.6, y_top, cx + 1.6, cy + ext)
+
+
+def _bank_step(ctx, s, rail_pin) -> float:
+    """Column pitch for a bank part: its ref/value text, and its rail and
+    ground symbols' net names (centred over/under it)."""
+    nets = [n for _, n in _two_pin_nets(ctx, s)]
+    w = max(_text_w(kicad_ref(s.ref)), _text_w(_value(s, ctx))) * _SMALL / 1.27
+    return _ceil_to(max(1.905 + w, max(_text_w(n) for n in nets) / 2) + 2 * _G, _G)
 
 
 def _gap_rows(span: float) -> int:
@@ -754,50 +836,21 @@ def _attach_bank(ic, bank, ctx) -> list:
     return rest
 
 
-def _pin_bank(blk, ctx, rail, bx, y, d, items) -> None:
-    """Decoupling parts hanging off one supply pin's wire (at `bx`, `y`)
-    into the empty rows below it, side by side going outward; the rail
-    and ground lines end in outward-pointing power symbols."""
+def _pin_bank(blk, ctx, rail, ex, y, d, items) -> None:
+    """Decoupling parts for one supply pin (end at `ex`, `y`), standing in
+    the empty rows below it side by side going outward, each with its own
+    rail and ground symbols."""
     just = "right" if d < 0 else "left"
-    out = "L" if d < 0 else "R"
-    parts = []
+    cx = ex + d * 2 * _G
     for s, rail_pin in items:
-        sym = ctx.comp_sym[s.ref]
-        v = _variant(ctx.lib, sym, "V" if sym.units[0].pins[0].num == rail_pin else "Vr")
-        gnd = next(n for num, n in _two_pin_nets(ctx, s) if num != rail_pin)
-        w = max(_text_w(s.ref), _text_w(_value(s, ctx))) * _SMALL / 1.27
-        parts.append((s, v, gnd, _ceil_to(1.905 + w + _G, _G)))
-    y_g = y + max(_bank_span(ctx, s) for s, _, _, _ in parts)
-    gnd0 = parts[0][2]
-    prev_r, prev_g, cx = bx, None, bx + d * 2 * _G
-    for s, v, gnd, step in parts:
-        ext = v.units[0].half_w + _PIN_LEN
-        cy = y + ext
-        blk.wire(prev_r, y, cx, y)
-        if gnd == gnd0:
-            blk.wire(cx, cy + ext, cx, y_g)     # shorter part: drop to the line
-            if prev_g is not None:
-                blk.wire(prev_g, y_g, cx, y_g)
-            prev_g = cx
-        else:                                   # odd ground: its own symbol
-            blk.pwr(ctx, gnd, cx, cy + ext, "D")
-        tx = cx + d * 1.905
-        blk.symbol(ctx, v, s, 1, cx, cy, (tx, cy - 1.27, just),
-                   (tx, cy + 1.27, just), _SMALL)
-        blk.box(cx - 1.6, y, cx + 1.6, y_g)
-        prev_r, cx = cx, cx + d * step
-    x_end = cx - d * _G
-    blk.wire(prev_r, y, x_end, y)
-    blk.pwr(ctx, rail, x_end, y, out)
-    if prev_g is not None:
-        blk.wire(prev_g, y_g, x_end, y_g)
-        blk.pwr(ctx, gnd0, x_end, y_g, out)
+        _bank_part(blk, ctx, s, rail_pin, cx, y + _BANK_TOP, just)
+        cx += d * _bank_step(ctx, s, rail_pin)
 
 
 def _layout_bank(blk, ctx, parts, x0, y_top) -> None:
-    """Rail→ground parts as vertical symbols between a rail line and a
-    ground line, one group per (rail, ground) pair, left to right; groups
-    wrap onto further rows (a long group splits) past `_BANK_W`."""
+    """Rail→ground parts as vertical symbols, each with its own rail and
+    ground symbols, grouped by (rail, ground) pair left to right; rows
+    wrap past `_BANK_W`."""
     groups: dict = {}
     for s in parts:
         (n1, net1), (n2, net2) = _two_pin_nets(ctx, s)
@@ -805,47 +858,16 @@ def _layout_bank(blk, ctx, parts, x0, y_top) -> None:
         groups.setdefault((rail, gnd), []).append((s, rail_pin))
     x_start = x = _snap(x0)
     x_lim = x_start + max(blk.bb[2] - blk.bb[0], _BANK_W)
-    y_r = _ceil_to(y_top + 5.08, _G)            # rail symbol + text above
-    row_bottom = y_r
+    y = _ceil_to(y_top, _G)
+    row_h = 0.0
     for key in sorted(groups, key=lambda k: (_natkey(k[0]), _natkey(k[1]))):
-        rail, gnd = key
-        items = []
         for s, rail_pin in groups[key]:
-            sym = ctx.comp_sym[s.ref]
-            orient = "V" if sym.units[0].pins[0].num == rail_pin else "Vr"
-            v = _variant(ctx.lib, sym, orient)
-            w = max(_text_w(s.ref), _text_w(_value(s, ctx))) * _SMALL / 1.27
-            items.append((s, v, _ceil_to(1.905 + w + _G, _G)))
-        while items:
-            # as many as fit on what's left of this row (at least one)
-            room = x_lim - x - 2 * _G
-            n, used = 0, 0.0
-            while n < len(items) and (n == 0 or used + items[n][2] <= room):
-                used += items[n][2]
-                n += 1
-            if x > x_start and used > room:     # not even one: next row
-                x, y_r = x_start, _ceil_to(row_bottom + 3.81 + 1.3 + 5.08, _G)
-                continue
-            chunk, items = items[:n], items[n:]
-            y_g = y_r + max(2 * (v.units[0].half_w + _PIN_LEN) for _, v, _ in chunk)
-            row_bottom = max(row_bottom, y_g)
-            blk.pwr(ctx, rail, x, y_r, "U")
-            blk.pwr(ctx, gnd, x, y_g, "D")
-            prev, cx = x, x + 2 * _G
-            for s, v, step in chunk:
-                ext = v.units[0].half_w + _PIN_LEN
-                cy = y_r + ext
-                blk.wire(prev, y_r, cx, y_r)
-                blk.wire(prev, y_g, cx, y_g)
-                blk.wire(cx, cy + ext, cx, y_g)     # shorter part: drop to the line
-                tx = cx + 1.905
-                blk.symbol(ctx, v, s, 1, cx, cy, (tx, cy - 1.27, "left"),
-                           (tx, cy + 1.27, "left"), _SMALL)
-                blk.box(cx - 1.6, y_r, cx + 1.6, y_g)
-                prev, cx = cx, cx + step
-            x = cx
-            if items:                           # group continues: next row
-                x, y_r = x_start, _ceil_to(row_bottom + 3.81 + 1.3 + 5.08, _G)
+            step = _bank_step(ctx, s, rail_pin)
+            if x > x_start and x + step > x_lim:        # wrap
+                x, y, row_h = x_start, _ceil_to(y + row_h, _G), 0.0
+            _bank_part(blk, ctx, s, rail_pin, x + _G, y + _BANK_TOP, "left")
+            row_h = max(row_h, _bank_span(ctx, s))
+            x += step
 
 
 def _assign_owners(comps: list, ctx) -> tuple:
@@ -977,17 +999,64 @@ def symbol_path(board: str, ref: str) -> str:
     return "/" + _uid(board, ref, "1", "sym")
 
 
+def relink_multi_unit_footprints(pcb_path, sch_path, kicad_cli) -> int:
+    """Point each footprint of a multi-unit symbol at the unit KiCad itself
+    links it to. `symbol_path` names unit 1, but KiCad associates the
+    footprint with the first unit its netlister finds — an order no rule
+    on the file reproduces — and Update PCB from Schematic then re-links
+    it. So ask kicad-cli for its netlist and take the first of each part's
+    tstamps. Returns the number of footprints changed."""
+    import subprocess
+    import tempfile
+    import xml.etree.ElementTree as ET
+    pcb_path = pathlib.Path(pcb_path)
+    with tempfile.TemporaryDirectory() as tmp:
+        net = pathlib.Path(tmp) / "net.xml"
+        subprocess.run([str(kicad_cli), "sch", "export", "netlist", "--format",
+                        "kicadxml", "-o", str(net), str(sch_path)],
+                       check=True, capture_output=True)
+        root = ET.parse(net).getroot()
+    first = {c.get("ref"): "/" + c.find("tstamps").text.split()[0]
+             for c in root.iter("comp")
+             if len((c.find("tstamps").text or "").split()) > 1}
+    text = pcb_path.read_text()
+    n = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal n
+        block = m.group(0)
+        ref = re.search(r'\(property "Reference" "([^"]*)"', block)
+        want = first.get(ref.group(1)) if ref else None
+        if want is None:
+            return block
+        new = re.sub(r'^(\t\t\(path ")[^"]*("\))', lambda p: p.group(1) + want + p.group(2),
+                     block, count=1, flags=re.M)
+        n += new != block
+        return new
+
+    text = re.sub(r'^\t\(footprint .*?^\t\)$', _fix, text, flags=re.M | re.S)
+    pcb_path.write_text(text)
+    return n
+
+
+def symbol_units(comp) -> list:
+    """[(unit name, [pin number, ...]), ...] of `comp`'s symbol — units
+    "A", "B", … with their pins in symbol order: the unit metadata a KiCad
+    10 footprint carries for its symbol."""
+    units = _SymbolLibrary().for_component(comp).units
+    return [(chr(ord("A") + ui), [p.num for p in u.pins]) for ui, u in enumerate(units)]
+
+
 def unconnected_nets(comp) -> dict:
     """{pad number: net name} for `comp`'s unconnected pins — the
     `unconnected-(REF-NAME-PadN)` net KiCad derives from the no-connect
     flag on that pin (unit letter after REF on a multi-unit symbol, a
     name equal to the number left out, `/` escaped). The board carries the
     same names so schematic parity holds on no-connect pads too."""
-    sym = _SymbolLibrary().for_component(comp)
-    multi = len(sym.units) > 1
+    units = _SymbolLibrary().for_component(comp).units
     out = {}
-    for ui, unit in enumerate(sym.units):
-        ref = comp.ref + (chr(ord("A") + ui) if multi else "")
+    for ui, unit in enumerate(units):
+        ref = kicad_ref(comp.ref) + (chr(ord("A") + ui) if len(units) > 1 else "")
         for p in unit.pins:
             name = p.name.replace("/", "{slash}")
             mid = "" if p.name in ("", p.num) else f"-{name}"
@@ -1028,17 +1097,39 @@ def write_board_schematic(design: Design, board, out_dir, *,
         fp = footprint_full(c)
         return f"{lib}:{_fp_filename(fp)}" if fp else ""
 
-    return _write_schematic(design, pathlib.Path(out_dir), name, comps,
-                            {c.ref: name for c in comps}, lib=lib,
-                            pad_groups={name: pad_groups or []},
-                            fp_of=fp_of, label_all=True)
+    out = pathlib.Path(out_dir)
+    r = _write_schematic(design, out, name, comps,
+                         {c.ref: name for c in comps}, lib=lib,
+                         pad_groups={name: pad_groups or []},
+                         fp_of=fp_of, label_all=True, datasheet_of=board_datasheet)
+    # The parts' datasheets and SamacSys libraries (KiCad symbol + Altium
+    # SchLib/PcbLib) travel with the board; the generator owns both folders.
+    for sub in ("datasheets", "samacsys"):
+        shutil.rmtree(out / sub, ignore_errors=True)
+    for c in comps:
+        ds = board_datasheet(c)
+        if ds.startswith("${KIPRJMOD}/"):
+            src = resolve_repo_path(c.datasheet)
+            if src.is_file():
+                dst = out / ds[len("${KIPRJMOD}/"):]
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+        copy_libraries(c, out / "samacsys")
+    return r
 
 
 def _write_schematic(design, out, project, comps, board_of, *, lib=None,
-                     pad_groups=None, fp_of=None, label_all=False) -> dict:
+                     pad_groups=None, fp_of=None, label_all=False,
+                     datasheet_of=None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     lib = lib or project
     keep = {c.ref for c in comps}
+    by_kicad: dict = {}
+    for c in comps:
+        other = by_kicad.setdefault(kicad_ref(c.ref), c.ref)
+        if other != c.ref:
+            raise ValueError(f"{other} and {c.ref} both become KiCad reference "
+                             f"{kicad_ref(c.ref)}; rename one")
     pin_net: dict = {}
     net_size: dict = {}
     global_nets: set = set()
@@ -1068,7 +1159,8 @@ def _write_schematic(design, out, project, comps, board_of, *, lib=None,
     symlib = _SymbolLibrary()
     comp_sym = {c.ref: symlib.for_component(c) for c in comps}
     ctx = _Ctx(symlib, comp_sym, pin_net, global_nets, rails, grounds, heavy,
-               net_size, fp_of=fp_of, label_all=label_all)
+               net_size, fp_of=fp_of, label_all=label_all,
+               datasheet_of=datasheet_of)
     ctx.warnings.extend(_check_declared(comps, pin_net))
 
     boards = sorted({board_of[c.ref] for c in comps})
@@ -1214,12 +1306,9 @@ def _write_flat(out, project, lib, regions) -> None:
     inst_path = f"/{root_uuid}"
     used: dict = {}
     items: list = []
-    ends: dict = {}                     # connection point → items ending there
+    pins: list = []                     # symbol + power-symbol pin ends
+    wires: list = []
     pwr_no = 1
-
-    def end(x, y):
-        k = (round(x, 3), round(y, 3))
-        ends[k] = ends.get(k, 0) + 1
 
     for rg in regions:
         board = rg.board
@@ -1243,7 +1332,7 @@ def _write_flat(out, project, lib, regions) -> None:
                     items.extend(_symbol_instance(project, lib, inst_path, board, lsym, c,
                                                   uno, X, Y, BX, BY, fields))
                     for p in lsym.units[uno - 1].pins:
-                        end(X + p.x, Y - p.y)
+                        pins.append((X + p.x, Y - p.y))
                 elif kind == "pwr":
                     _, psym, x, y = prim
                     X, Y = BX + x, BY + y
@@ -1265,24 +1354,27 @@ def _write_flat(out, project, lib, regions) -> None:
                         f'(reference {_q(ref)}) (unit 1))))',
                         '\t)',
                     ]
-                    end(X, Y)
+                    pins.append((X, Y))
                 elif kind == "wire":
                     _, x1, y1, x2, y2 = prim
                     X1, Y1, X2, Y2 = BX + x1, BY + y1, BX + x2, BY + y2
+                    # Start before end (left→right, top→bottom), a
+                    # canonical form so regenerating diffs cleanly.
+                    if (round(X2, 3), round(Y2, 3)) < (round(X1, 3), round(Y1, 3)):
+                        X1, Y1, X2, Y2 = X2, Y2, X1, Y1
                     items.append(f'\t(wire (pts (xy {_f(X1)} {_f(Y1)}) (xy {_f(X2)} {_f(Y2)})) '
                                  f'(stroke (width 0) (type default)) (uuid {_q(_uid(*seed, "wire"))}))')
-                    end(X1, Y1)
-                    end(X2, Y2)
+                    wires.append((X1, Y1, X2, Y2))
                 elif kind == "label":
                     _, net, x, y, ang, glob = prim
                     X, Y = BX + x, BY + y
                     if glob:
-                        just = "right" if ang == 180 else "left"
+                        just = "right" if ang in (180, 270) else "left"
                         items.append(
                             f'\t(global_label {_q(net)} (shape bidirectional) (at {_f(X)} {_f(Y)} {ang}) '
                             f'(fields_autoplaced yes) {_font(justify=just)} (uuid {_q(_uid(*seed, "glabel"))}))')
                     else:
-                        just = "right bottom" if ang == 180 else "left bottom"
+                        just = "right bottom" if ang in (180, 270) else "left bottom"
                         items.append(
                             f'\t(label {_q(net)} (at {_f(X)} {_f(Y)} {ang}) '
                             f'(fields_autoplaced yes) {_font(justify=just)} (uuid {_q(_uid(*seed, "label"))}))')
@@ -1300,10 +1392,10 @@ def _write_flat(out, project, lib, regions) -> None:
                     items.append(
                         f'\t(text {_q(s)} (exclude_from_sim no) (at {_f(BX + x)} {_f(BY + y)} 0) '
                         f'{_font(justify="left bottom", size=size)} (uuid {_q(_uid(*seed, "text"))}))')
-    for (x, y), n in sorted(ends.items()):
-        if n >= 3:
-            items.append(f'\t(junction (at {_f(x)} {_f(y)}) (diameter 0) (color 0 0 0 0) '
-                         f'(uuid {_q(_uid(project, "junction", _f(x), _f(y)))}))')
+    hazards = _wiring_hazards(wires, pins)
+    if hazards:
+        raise ValueError(f"{project}: wiring KiCad's editor would cut on cleanup: "
+                         + "; ".join(hazards[:5]))
 
     body = [
         f'(kicad_sch (version {_VERSION}) (generator "smash") (generator_version "10.0")',
@@ -1321,6 +1413,40 @@ def _write_flat(out, project, lib, regions) -> None:
     (out / f"{project}.kicad_sch").write_text("\n".join(body) + "\n")
 
 
+def _wiring_hazards(wires, pins) -> list:
+    """Connections that would only hold through a junction. KiCad's editor
+    deletes junctions it judges unneeded (and then merges the wires around
+    them) before Update PCB from Schematic — kicad-cli does not, so its
+    netlist can't show the damage. So every connection point must join
+    exactly two items (wire ends, pin ends), and nothing may end on the
+    middle of a wire."""
+    def key(x, y):
+        return (round(x, 3), round(y, 3))
+    horiz: dict = {}                    # y → [(x0, x1)]
+    vert: dict = {}                     # x → [(y0, y1)]
+    count: dict = {}                    # point → items ending there
+    for x1, y1, x2, y2 in wires:
+        a, b = key(x1, y1), key(x2, y2)
+        if a[1] == b[1]:
+            horiz.setdefault(a[1], []).append(sorted((a[0], b[0])))
+        else:
+            vert.setdefault(a[0], []).append(sorted((a[1], b[1])))
+        for k in (a, b):
+            count[k] = count.get(k, 0) + 1
+    for x, y in pins:
+        k = key(x, y)
+        count[k] = count.get(k, 0) + 1
+
+    def on_middle(p) -> bool:
+        x, y = p
+        return (any(a < x < b for a, b in horiz.get(y, ()))
+                or any(a < y < b for a, b in vert.get(x, ())))
+
+    out = [f"{n} items meet at {p}" for p, n in sorted(count.items()) if n > 2]
+    out += [f"something ends on the middle of a wire at {p}" for p in sorted(count) if on_middle(p)]
+    return out
+
+
 def _symbol_instance(project, lib, inst_path, board, lsym, c, uno, X, Y, bx, by,
                      fields) -> list:
     seed = (board, c.ref, str(uno))
@@ -1335,7 +1461,7 @@ def _symbol_instance(project, lib, inst_path, board, lsym, c, uno, X, Y, bx, by,
     for p in lsym.units[uno - 1].pins:
         out.append(f'\t\t(pin {_q(p.num)} (uuid {_q(_uid(*seed, "pin", p.num))}))')
     out.append(f'\t\t(instances (project {_q(project)} (path {_q(inst_path)} '
-               f'(reference {_q(c.ref)}) (unit {uno}))))')
+               f'(reference {_q(kicad_ref(c.ref))}) (unit {uno}))))')
     out.append('\t)')
     return out
 
