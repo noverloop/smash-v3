@@ -532,6 +532,10 @@ class TestWriteKicadSchematic:
         # Every signal keeps its PCB name: global labels, never local
         # ones (KiCad would name those "/CONFIRM").
         assert '(global_label "CONFIRM"' in sch and '(label "' not in sch
+        # Rails too: Altium's KiCad importer reads a project-library power
+        # symbol as a one-pin part, one net per symbol.
+        assert '(global_label "VCC"' in sch and '(global_label "GND"' in sch
+        assert "PWR_" not in sch and "#PWR" not in sch
         # The no-connect pins' pads carry KiCad's unconnected-net names.
         assert '(net "unconnected-(U1-A-Pad1)")' in pcb
         # The library footprint keeps no instance link.

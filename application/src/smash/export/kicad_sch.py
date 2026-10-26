@@ -473,13 +473,14 @@ _BANK_W = 150.0                 # decoupling-bank rows wrap past this (or the pa
 class _Ctx:
     def __init__(self, lib, comp_sym, pin_net, global_nets, rails,
                  grounds, heavy, net_size, fp_of=None, label_all=False,
-                 datasheet_of=None):
+                 datasheet_of=None, rail_labels=False):
         self.lib, self.comp_sym, self.pin_net = lib, comp_sym, pin_net
         self.global_nets = global_nets
         self.fp_of = fp_of or _footprint_field
         self.datasheet_of = datasheet_of or (lambda c: getattr(c, "datasheet", None) or "")
         self.label_all = label_all      # name every net, even pin-to-pin wires
         self.rails = rails              # drawn as power symbols
+        self.rail_labels = rail_labels  # ... or as global labels instead
         self.grounds = grounds          # subset of rails
         self.heavy = heavy              # rails + big fan-out (ownership only)
         self.net_size = net_size
@@ -598,7 +599,7 @@ def _term_w(ctx, net) -> float:
     """Room a plain pin termination takes beyond the pin end."""
     if net is None:
         return _G
-    if net in ctx.rails:
+    if net in ctx.rails and not ctx.rail_labels:
         return _STUB + 3.302 + _text_w(net)
     return _STUB + _text_w(net) + (3.5 if net in ctx.global_nets else 1)
 
@@ -611,7 +612,7 @@ def _terminate(blk: _Block, ctx, ex, ey, d, net) -> None:
         return
     lx = ex + d * _STUB
     blk.wire(ex, ey, lx, ey)
-    if net in ctx.rails:
+    if net in ctx.rails and not ctx.rail_labels:
         blk.pwr(ctx, net, lx, ey, "L" if d < 0 else "R")
     else:
         blk.label(ctx, net, lx, ey, 180 if d < 0 else 0)
@@ -625,7 +626,7 @@ def _terminate_v(blk: _Block, ctx, ex, ey, d, net) -> None:
         return
     ly = ey + d * _STUB
     blk.wire(ex, ey, ex, ly)
-    if net in ctx.rails:
+    if net in ctx.rails and not ctx.rail_labels:
         blk.pwr(ctx, net, ex, ly, "U" if d < 0 else "D")
     else:
         blk.label(ctx, net, ex, ly, 90 if d < 0 else 270)
@@ -762,15 +763,24 @@ def _bank_span(ctx, s) -> float:
 
 def _bank_part(blk, ctx, s, rail_pin, cx, y_top, just) -> None:
     """A rail→ground part standing vertically at `cx`, its rail pin end at
-    `y_top`: each end in its own power symbol, no wire to anything."""
+    `y_top`: each end in its own power symbol, no wire to anything — or,
+    with `rail_labels`, a one-grid stub off each end to a label running
+    out to the text side (above / below the ref and value text)."""
     sym = ctx.comp_sym[s.ref]
     v = _variant(ctx.lib, sym, "V" if sym.units[0].pins[0].num == rail_pin else "Vr")
     ext = v.units[0].half_w + _PIN_LEN
     cy = y_top + ext
     nets = dict(_two_pin_nets(ctx, s))
     gnd = next(n for num, n in nets.items() if num != rail_pin)
-    blk.pwr(ctx, nets[rail_pin], cx, y_top, "U")
-    blk.pwr(ctx, gnd, cx, cy + ext, "D")
+    if ctx.rail_labels:
+        ang = 180 if just == "right" else 0
+        for net, y0, y1 in ((nets[rail_pin], y_top, y_top - _G),
+                            (gnd, cy + ext, cy + ext + _G)):
+            blk.wire(cx, y0, cx, y1)
+            blk.label(ctx, net, cx, y1, ang)
+    else:
+        blk.pwr(ctx, nets[rail_pin], cx, y_top, "U")
+        blk.pwr(ctx, gnd, cx, cy + ext, "D")
     tx = cx + (-1.905 if just == "right" else 1.905)
     blk.symbol(ctx, v, s, 1, cx, cy, (tx, cy - 1.27, just), (tx, cy + 1.27, just), _SMALL)
     blk.box(cx - 1.6, y_top, cx + 1.6, cy + ext)
@@ -778,10 +788,13 @@ def _bank_part(blk, ctx, s, rail_pin, cx, y_top, just) -> None:
 
 def _bank_step(ctx, s, rail_pin) -> float:
     """Column pitch for a bank part: its ref/value text, and its rail and
-    ground symbols' net names (centred over/under it)."""
+    ground symbols' net names (centred over/under it) or labels (running
+    out to the next column)."""
     nets = [n for _, n in _two_pin_nets(ctx, s)]
     w = max(_text_w(kicad_ref(s.ref)), _text_w(_value(s, ctx))) * _SMALL / 1.27
-    return _ceil_to(max(1.905 + w, max(_text_w(n) for n in nets) / 2) + 2 * _G, _G)
+    nw = max(_text_w(n) for n in nets)
+    nw = nw + 3.5 if ctx.rail_labels else nw / 2
+    return _ceil_to(max(1.905 + w, nw) + 2 * _G, _G)
 
 
 def _gap_rows(span: float) -> int:
@@ -1076,9 +1089,11 @@ def write_board_schematic(design: Design, board, out_dir, *,
     board — LGA land fields and flex launches included — so each
     footprint has a symbol: `kicad_pcb` stamps every footprint with
     `symbol_path(board, ref)`, and symbol pin numbers are the footprint
-    pad numbers. Every net carries its PCB name (power symbols for rails,
-    global labels for everything else — KiCad would prefix a local label
-    with the sheet path, `/NAME`), so Update PCB from Schematic and
+    pad numbers. Every net carries its PCB name through a global label,
+    rails included (KiCad would prefix a local label with the sheet path,
+    `/NAME`; Altium's KiCad importer reads power symbols from a project
+    library as plain one-pin parts, splitting each rail into one net per
+    symbol), so Update PCB from Schematic and
     schematic-parity DRC see the netlist the board already has. `lib` is
     the library nickname used for both symbols and the Footprint fields
     (the portable project's footprint library). Leaves `<board>.kicad_pro`
@@ -1101,7 +1116,8 @@ def write_board_schematic(design: Design, board, out_dir, *,
     r = _write_schematic(design, out, name, comps,
                          {c.ref: name for c in comps}, lib=lib,
                          pad_groups={name: pad_groups or []},
-                         fp_of=fp_of, label_all=True, datasheet_of=board_datasheet)
+                         fp_of=fp_of, label_all=True, rail_labels=True,
+                         datasheet_of=board_datasheet)
     # The parts' datasheets and SamacSys libraries (KiCad symbol + Altium
     # SchLib/PcbLib) travel with the board; the generator owns both folders.
     for sub in ("datasheets", "samacsys"):
@@ -1120,7 +1136,7 @@ def write_board_schematic(design: Design, board, out_dir, *,
 
 def _write_schematic(design, out, project, comps, board_of, *, lib=None,
                      pad_groups=None, fp_of=None, label_all=False,
-                     datasheet_of=None) -> dict:
+                     datasheet_of=None, rail_labels=False) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     lib = lib or project
     keep = {c.ref for c in comps}
@@ -1160,7 +1176,7 @@ def _write_schematic(design, out, project, comps, board_of, *, lib=None,
     comp_sym = {c.ref: symlib.for_component(c) for c in comps}
     ctx = _Ctx(symlib, comp_sym, pin_net, global_nets, rails, grounds, heavy,
                net_size, fp_of=fp_of, label_all=label_all,
-               datasheet_of=datasheet_of)
+               datasheet_of=datasheet_of, rail_labels=rail_labels)
     ctx.warnings.extend(_check_declared(comps, pin_net))
 
     boards = sorted({board_of[c.ref] for c in comps})
@@ -1170,7 +1186,7 @@ def _write_schematic(design, out, project, comps, board_of, *, lib=None,
                                (pad_groups or {}).get(b, []))
         if blocks:
             regions.append(_Region(b, blocks))
-    _write_flat(out, project, lib, regions)
+    _write_flat(out, project, lib, regions, rail_labels)
     _write_library(out, project, lib, symlib)
 
     return {"n_boards": len(regions), "n_parts": len(comps),
@@ -1300,7 +1316,7 @@ class _Region:
     origin_dy = property(lambda self: self._PAD + self._TITLE)
 
 
-def _write_flat(out, project, lib, regions) -> None:
+def _write_flat(out, project, lib, regions, rail_labels=False) -> None:
     paper = _pack_on_paper(regions)
     root_uuid = _uid(project, "root")
     inst_path = f"/{root_uuid}"
@@ -1392,6 +1408,8 @@ def _write_flat(out, project, lib, regions) -> None:
                     items.append(
                         f'\t(text {_q(s)} (exclude_from_sim no) (at {_f(BX + x)} {_f(BY + y)} 0) '
                         f'{_font(justify="left bottom", size=size)} (uuid {_q(_uid(*seed, "text"))}))')
+    legend = ("Global labels name every net, rails included." if rail_labels else
+              "Power symbols = rails; global labels = signals that cross boards; local labels = single-board signals.")
     hazards = _wiring_hazards(wires, pins)
     if hazards:
         raise ValueError(f"{project}: wiring KiCad's editor would cut on cleanup: "
@@ -1402,7 +1420,7 @@ def _write_flat(out, project, lib, regions) -> None:
         f'\t(uuid {_q(root_uuid)})',
         f'\t{paper}',
         f'\t(title_block (title {_q(project)}) (comment 1 "Generated by smash.export.kicad_sch from the design model - do not edit; regenerate") '
-        f'(comment 2 "One frame per board. Power symbols = rails; global labels = signals that cross boards; local labels = single-board signals."))',
+        f'(comment 2 {_q("One frame per board. " + legend)}))',
         '\t(lib_symbols',
         *[_lib_symbol_sexpr(used[k], lib) for k in sorted(used)],
         '\t)',
