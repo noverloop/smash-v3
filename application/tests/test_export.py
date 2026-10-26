@@ -454,6 +454,70 @@ class TestWriteKicadSchematic:
         for f in (tmp_path / "a").iterdir():
             assert f.read_bytes() == (tmp_path / "b" / f.name).read_bytes(), f.name
 
+    @staticmethod
+    def _board_project(design, tmp_path):
+        """U1 + C1 placed on one board, written the way the generator
+        does: linked .kicad_pcb, its schematic, then the portable pass."""
+        from smash.export import (write_kicad_pcb, write_blank_drawing_sheet,
+                                  write_board_schematic)
+        from smash.export.portable_project import write_portable_project
+        from smash.state import Board
+        from smash.state.topology.placement import Placement
+        board = Board("flight_board")
+        for i, ref in enumerate(("U1", "C1")):
+            chip = next(c for c in design.chips if c.ref == ref)
+            board.chip_placements.append(Placement(
+                position_mm=(4.0 * i, 0), rotation_deg=0, item=chip, face="top"))
+        proj = tmp_path / "flight_board"
+        pcb = proj / "flight_board.kicad_pcb"
+        write_kicad_pcb(design, board, pcb, link_schematic=True)
+        write_blank_drawing_sheet(pcb)
+        result = write_board_schematic(design, board, proj)
+        write_portable_project(pcb)
+        return proj, result
+
+    def test_board_schematic_beside_pcb(self, tiny_design, tmp_path):
+        from smash.export.kicad_sch import symbol_path
+        proj, result = self._board_project(tiny_design, tmp_path)
+        assert result["n_parts"] == 2              # BT1 is on another board
+        assert {f.name for f in proj.iterdir()} >= {
+            "flight_board.kicad_pcb", "flight_board.kicad_pro",
+            "flight_board.kicad_sch", "flight_board.kicad_sym", "sym-lib-table"}
+        sch = (proj / "flight_board.kicad_sch").read_text()
+        pcb = (proj / "flight_board.kicad_pcb").read_text()
+        for ref in ("U1", "C1"):                   # footprint path = symbol uuid
+            assert f'(path "{symbol_path("flight_board", ref)}")' in pcb
+            assert f'(uuid "{symbol_path("flight_board", ref)[1:]}")' in sch
+        # Footprint fields name the portable project's library entries.
+        assert '(property "Footprint" "SmashFlightBoard:SOT-23-5"' in sch
+        assert '(footprint "SmashFlightBoard:SOT-23-5"' in pcb
+        # Every signal keeps its PCB name: global labels, never local
+        # ones (KiCad would name those "/CONFIRM").
+        assert '(global_label "CONFIRM"' in sch and '(label "' not in sch
+        # The no-connect pins' pads carry KiCad's unconnected-net names.
+        assert '(net "unconnected-(U1-A-Pad1)")' in pcb
+        # The library footprint keeps no instance link.
+        lib = (proj / "footprints/SmashFlightBoard.pretty/SOT-23-5.kicad_mod").read_text()
+        assert "(path " not in lib and "(sheetfile " not in lib
+
+    def test_board_schematic_parity(self, tiny_design, tmp_path):
+        """KiCad's own schematic-parity DRC finds the board and its
+        schematic in sync: every footprint linked, every pad on its net,
+        every field equal."""
+        import json
+        import subprocess
+        from smash.export import find_kicad_cli, KiCadCliNotFound
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        proj, _ = self._board_project(tiny_design, tmp_path)
+        report = tmp_path / "drc.json"
+        subprocess.run([str(cli), "pcb", "drc", "--schematic-parity", "--format", "json",
+                        "-o", str(report), str(proj / "flight_board.kicad_pcb")],
+                       check=True, capture_output=True)
+        assert json.loads(report.read_text())["schematic_parity"] == []
+
     def test_kicad_netlist_matches_design(self, tiny_design, tmp_path):
         """Round-trip through kicad-cli: the netlist KiCad derives from
         the schematic has the same pin groups as the Design."""

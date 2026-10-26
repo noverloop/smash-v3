@@ -621,6 +621,24 @@ class TestValidators:
                   if i.rule == "diff_partner_missing"]
         assert len(issues) == 1
 
+    def test_diff_pair_naming(self):
+        """Only <base>_P/<base>_N is recognised as a pair by Altium and
+        KiCad; T/C, DP/DM etc. are flagged, unrelated _N nets are not."""
+        d = Design()
+        for name in ("DDR4_CK_T", "DDR4_CK_C", "USB_DP", "USB_DM",
+                     "CSI_CLK_P", "CSI_CLK_N", "DDR4_RESET_N", "PIEZO_P"):
+            d.add_signal_net(name)
+        issues = [i for i in d.validate() if i.rule == "diff_pair_naming"]
+        assert sorted(i.refs for i in issues) == [
+            ("DDR4_CK_T", "DDR4_CK_C"), ("USB_DP", "USB_DM")]
+
+    def test_declared_diff_pair_named_p_n(self):
+        d = Design()
+        d.add_diff_pair("CK_P", "CK_N")
+        d.add_diff_pair("DQS_T", "DQS_C")
+        issues = [i for i in d.validate() if i.rule == "diff_pair_naming"]
+        assert {r for i in issues for r in i.refs} == {"DQS_T", "DQS_C"}
+
     def test_substitute_malformed_caught(self):
         d = Design()
         d.add_chip(ref="U_BAD", manf_pn="X",

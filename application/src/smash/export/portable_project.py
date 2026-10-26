@@ -195,7 +195,8 @@ def _to_library_footprint(block: str, *, entry: str, header: dict[str, str],
         if kw == "model":
             models.append(chunk)
             continue
-        if kw in ("layer", "uuid", "at", "embedded_fonts"):
+        if kw in ("layer", "uuid", "at", "embedded_fonts",
+                  "path", "sheetname", "sheetfile"):
             continue                          # instance identity / re-emitted
         if kw == "descr":
             descr = head

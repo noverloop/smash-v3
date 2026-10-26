@@ -768,6 +768,40 @@ def _v_no_floating_chips(design: Design):
             )
 
 
+# Positive/negative suffixes a differential pair can carry. Only `_P`/`_N`
+# is recognised as a pair by both Altium ("Create Differential Pairs from
+# Nets") and KiCad's diff-pair router, so the rest are flagged.
+_DIFF_SUFFIXES = (("_T", "_C"), ("_DP", "_DM"), ("DP", "DM"), ("+", "-"),
+                  ("_PLUS", "_MINUS"), ("_POS", "_NEG"), ("P", "N"))
+
+
+@validator
+def _v_diff_pair_naming(design: Design):
+    """A differential pair's nets must be named `<base>_P` / `<base>_N`."""
+    names = {n.name for n in design.nets}
+    for n in design.nets:
+        if n.kind == "diff" and not n.name.endswith(("_P", "_N")):
+            yield Issue(severity="error", rule="diff_pair_naming",
+                        message=f"diff net {n.name!r} must end in _P or _N "
+                                f"for Altium and KiCad to pair it",
+                        refs=(n.name,))
+    for name in sorted(names):
+        if name.endswith(("_P", "_N")):
+            continue
+        for pos, neg in _DIFF_SUFFIXES:
+            base = name[:-len(pos)]
+            if name.endswith(pos) and base and base + neg in names:
+                yield Issue(
+                    severity="error",
+                    rule="diff_pair_naming",
+                    message=f"differential pair {name}/{base + neg}: name it "
+                            f"{base.rstrip('_')}_P/{base.rstrip('_')}_N so "
+                            f"Altium and KiCad recognise the pair",
+                    refs=(name, base + neg),
+                )
+                break
+
+
 @validator
 def _v_unique_refs(design: Design):
     """No two chips may share a KiCad reference."""

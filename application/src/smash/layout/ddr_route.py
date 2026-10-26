@@ -156,17 +156,17 @@ _REF_JSON = (pathlib.Path(__file__).resolve().parents[1]
 _NOTE = "ddr4-route"            # tag on emitted Track/Via for idempotency
 
 # ── net classification ────────────────────────────────────────────────
-_RE_DATA0 = re.compile(r"^DDR4_(DQ[0-7]|DM0_N|DQS0_[TC])$")
-_RE_DATA1 = re.compile(r"^DDR4_(DQ(?:[89]|1[0-5])|DM1_N|DQS1_[TC])$")
+_RE_DATA0 = re.compile(r"^DDR4_(DQ[0-7]|DM0_N|DQS0_[PN])$")
+_RE_DATA1 = re.compile(r"^DDR4_(DQ(?:[89]|1[0-5])|DM1_N|DQS1_[PN])$")
 _RE_AC = re.compile(
     r"^DDR4_(A\d+|BA[01]|BG0|ACT_N|RAS_N_A16|CAS_N_A15|WE_N_A14"
-    r"|CKE|CS_N|ODT|CK_[TC])$")
+    r"|CKE|CS_N|ODT|CK_[PN])$")
 _RE_MISC = re.compile(r"^DDR4_(RESET_N|VREFCA|ALERT_N)$")
 
-PAIRS = {                       # pair name → (T net, C net)
-    "DQS0": ("DDR4_DQS0_T", "DDR4_DQS0_C"),
-    "DQS1": ("DDR4_DQS1_T", "DDR4_DQS1_C"),
-    "CK":   ("DDR4_CK_T",   "DDR4_CK_C"),
+PAIRS = {                       # pair name → (P net, N net)
+    "DQS0": ("DDR4_DQS0_P", "DDR4_DQS0_N"),
+    "DQS1": ("DDR4_DQS1_P", "DDR4_DQS1_N"),
+    "CK":   ("DDR4_CK_P",   "DDR4_CK_N"),
 }
 _PAIR_NETS = {n for tc in PAIRS.values() for n in tc}
 
@@ -1329,15 +1329,15 @@ def _plan_routes(ends, est, target_est):
     order = []
     order.append(("pair", "DQS1"))
     order += [("net", n) for n in _lane_order(b1, north)
-              if n != "DDR4_DQS1_T"]
+              if n != "DDR4_DQS1_P"]
     order.append(("pair", "DQS0"))
     order += [("net", n) for n in _lane_order(b0_south, south0)]
     order += [("net", e.net) for e in
               sorted(b0_west, key=lambda e: -e.dram_xy[1])
-              if e.net != "DDR4_DQS0_T"]
+              if e.net != "DDR4_DQS0_P"]
     order.append(("pair", "CK"))
     order += [("net", n) for n in _lane_order(ac_lane, southA)
-              if n != "DDR4_CK_T"]
+              if n != "DDR4_CK_P"]
     order += [("net", e.net) for e in
               sorted(ac_direct, key=lambda e: e.dram_xy[0])]
     order += [("net", e.net) for e in
@@ -1355,16 +1355,16 @@ def _plan_routes(ends, est, target_est):
     for e in b1:
         exit_dir[e.net] = N_
         lane_rank[e.net] = abs(north[e.net])
-    exit_dir["DDR4_DQS1_C"] = N_
-    lane_rank["DDR4_DQS1_C"] = lane_rank.get("DDR4_DQS1_T", 0.0)
+    exit_dir["DDR4_DQS1_N"] = N_
+    lane_rank["DDR4_DQS1_N"] = lane_rank.get("DDR4_DQS1_P", 0.0)
     for e in b0_south:
         exit_dir[e.net] = S_
         lane_rank[e.net] = abs(south0[e.net])
     for e in ac_lane:
         exit_dir[e.net] = S_
         lane_rank[e.net] = abs(southA[e.net])
-    exit_dir["DDR4_CK_C"] = S_
-    lane_rank["DDR4_CK_C"] = lane_rank.get("DDR4_CK_T", 0.0)
+    exit_dir["DDR4_CK_N"] = S_
+    lane_rank["DDR4_CK_N"] = lane_rank.get("DDR4_CK_P", 0.0)
     return plan, order, exit_dir, lane_rank
 
 

@@ -26,6 +26,11 @@ else is natural-sorted by pin name in between.
 
 Element UUIDs are uuid5-derived from (board, ref, ...) so regenerating
 an unchanged Design gives a byte-identical schematic.
+
+`write_board_schematic` draws the same way for one board, into that
+board's own project directory: every footprint on it gets a symbol and
+the board's footprints point at those symbols (`symbol_path`), so the
+`.kicad_pcb` and `.kicad_sch` are one linked KiCad project.
 """
 from __future__ import annotations
 
@@ -41,6 +46,7 @@ from smash.export._common import (
     nets_with_pins,
     net_connections,
     footprint_full,
+    component_value,
     _strip_ball_prefix,
 )
 
@@ -429,9 +435,11 @@ _BANK_W = 150.0                 # decoupling-bank rows wrap past this (or the pa
 
 class _Ctx:
     def __init__(self, lib, comp_sym, pin_net, global_nets, rails,
-                 grounds, heavy, net_size):
+                 grounds, heavy, net_size, fp_of=None, label_all=False):
         self.lib, self.comp_sym, self.pin_net = lib, comp_sym, pin_net
         self.global_nets = global_nets
+        self.fp_of = fp_of or _footprint_field
+        self.label_all = label_all      # name every net, even pin-to-pin wires
         self.rails = rails              # drawn as power symbols
         self.grounds = grounds          # subset of rails
         self.heavy = heavy              # rails + big fan-out (ownership only)
@@ -441,8 +449,21 @@ class _Ctx:
 
 
 def _value(comp, ctx) -> str:
-    return (getattr(comp, "value", None) or getattr(comp, "manf_pn", None)
-            or ctx.comp_sym[comp.ref].name)
+    return component_value(comp)
+
+
+def _footprint_field(comp) -> str:
+    fp = footprint_full(comp)
+    if fp and ":" not in fp:
+        fp = f"footprints:{fp}"
+    return fp
+
+
+def _named_on_wire(ctx, net) -> bool:
+    """A satellite's near net gets a label on its wire when it continues
+    elsewhere, or always when every net must carry its PCB name (KiCad
+    would auto-name a bare pin-to-pin wire `Net-(…)`)."""
+    return ctx.label_all or ctx.net_size[net] > 2
 
 
 def _text_box(s: str, x: float, y: float, just: str | None, size: float) -> tuple:
@@ -497,9 +518,7 @@ class _Block:
     def symbol(self, ctx, lsym, comp, unit_no, x, y, ref_at, val_at, size):
         """Place a part. `ref_at` / `val_at` are (x, y, justify) relative
         to this block."""
-        fp = footprint_full(comp)
-        if fp and ":" not in fp:
-            fp = f"footprints:{fp}"
+        fp = ctx.fp_of(comp)
         value = _value(comp, ctx)
         fields = [
             ("Reference", comp.ref, *ref_at, False, size),
@@ -618,7 +637,7 @@ def _layout_side(blk, ctx, comp, side, d, cands, placed) -> None:
     need = _G
     for i, n in enumerate(nets):
         if i in sat:
-            need = max(need, _text_w(n) + 2 * _G if ctx.net_size[n] > 2 else 2 * _G)
+            need = max(need, _text_w(n) + 2 * _G if _named_on_wire(ctx, n) else 2 * _G)
         else:
             need = max(need, _term_w(ctx, n))
     col = _ceil_to(need + _G, _G)
@@ -660,7 +679,7 @@ def _layout_side(blk, ctx, comp, side, d, cands, placed) -> None:
 def _satellite(blk, ctx, ex, ey, d, col, net, s, near, far_net) -> None:
     nx = ex + d * col
     blk.wire(ex, ey, nx, ey)
-    if ctx.net_size[net] > 2:                   # net continues elsewhere
+    if _named_on_wire(ctx, net):
         if d < 0:
             blk.label(ctx, net, nx + _G, ey, 0)
         else:
@@ -943,12 +962,83 @@ def write_kicad_schematic(design: Design, out_dir, *, project: str = "smash",
     next to whatever chip they touch. Returns
     `{n_boards, n_parts, n_nets, n_symbols, warnings}` — warnings list
     declared decoupling pins that don't exist or aren't on the part's rail."""
-    out = pathlib.Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
-
     comps = [c for c in all_components(design) if not _is_construct(c)]
-    keep = {c.ref for c in comps}
     board_of = {c.ref: (getattr(c, "board_tag", "") or "unassigned") for c in comps}
+    r = _write_schematic(design, pathlib.Path(out_dir), project, comps, board_of,
+                         pad_groups=pad_groups)
+    _write_project_file(pathlib.Path(out_dir), project)
+    return r
+
+
+def symbol_path(board: str, ref: str) -> str:
+    """The `(path …)` a footprint on `board` carries to link it to its
+    symbol in `write_board_schematic`'s output: the uuid of the symbol's
+    unit 1 (a flat root sheet adds no sheet uuid to the path)."""
+    return "/" + _uid(board, ref, "1", "sym")
+
+
+def unconnected_nets(comp) -> dict:
+    """{pad number: net name} for `comp`'s unconnected pins — the
+    `unconnected-(REF-NAME-PadN)` net KiCad derives from the no-connect
+    flag on that pin (unit letter after REF on a multi-unit symbol, a
+    name equal to the number left out, `/` escaped). The board carries the
+    same names so schematic parity holds on no-connect pads too."""
+    sym = _SymbolLibrary().for_component(comp)
+    multi = len(sym.units) > 1
+    out = {}
+    for ui, unit in enumerate(sym.units):
+        ref = comp.ref + (chr(ord("A") + ui) if multi else "")
+        for p in unit.pins:
+            name = p.name.replace("/", "{slash}")
+            mid = "" if p.name in ("", p.num) else f"-{name}"
+            out[p.num] = f"unconnected-({ref}{mid}-Pad{p.num})"
+    connected = {_strip_ball_prefix(str(p.num)) for p in comp.pins if p.net}
+    return {k: v for k, v in out.items() if k not in connected}
+
+
+def write_board_schematic(design: Design, board, out_dir, *,
+                          lib: str | None = None,
+                          pad_groups: list | None = None) -> dict:
+    """Write `<board>.kicad_sch` (+ its symbol library and sym-lib-table)
+    into the board's own project directory, so the board's `.kicad_pcb`
+    and its schematic form one KiCad project.
+
+    Unlike the system schematic this covers *every* footprint on the
+    board — LGA land fields and flex launches included — so each
+    footprint has a symbol: `kicad_pcb` stamps every footprint with
+    `symbol_path(board, ref)`, and symbol pin numbers are the footprint
+    pad numbers. Every net carries its PCB name (power symbols for rails,
+    global labels for everything else — KiCad would prefix a local label
+    with the sheet path, `/NAME`), so Update PCB from Schematic and
+    schematic-parity DRC see the netlist the board already has. `lib` is
+    the library nickname used for both symbols and the Footprint fields
+    (the portable project's footprint library). Leaves `<board>.kicad_pro`
+    to the board writer."""
+    from smash.export.portable_project import library_nickname, _fp_filename
+    from smash.state import Chip
+    from smash.state.antenna import Antenna
+
+    name = board.name
+    lib = lib or library_nickname(name)
+    refs = {pl.item.ref for pl in board.chip_placements
+            if isinstance(pl.item, (Chip, Antenna)) and pl.item.footprint is not None}
+    comps = [c for c in all_components(design) if c.ref in refs]
+
+    def fp_of(c) -> str:
+        fp = footprint_full(c)
+        return f"{lib}:{_fp_filename(fp)}" if fp else ""
+
+    return _write_schematic(design, pathlib.Path(out_dir), name, comps,
+                            {c.ref: name for c in comps}, lib=lib,
+                            pad_groups={name: pad_groups or []},
+                            fp_of=fp_of, label_all=True)
+
+
+def _write_schematic(design, out, project, comps, board_of, *, lib=None,
+                     pad_groups=None, fp_of=None, label_all=False) -> dict:
+    out.mkdir(parents=True, exist_ok=True)
+    lib = lib or project
+    keep = {c.ref for c in comps}
     pin_net: dict = {}
     net_size: dict = {}
     global_nets: set = set()
@@ -962,7 +1052,7 @@ def write_kicad_schematic(design: Design, out_dir, *, project: str = "smash",
         net_size[n.name] = len(conns)
         for ref, pin in conns:
             pin_net[(ref, pin)] = n.name
-        if len({board_of[r] for r, _ in conns}) > 1:
+        if label_all or len({board_of[r] for r, _ in conns}) > 1:
             global_nets.add(n.name)
         # Rails: declared power nets and anything named like ground
         # (FLEX_GND is declared kind="signal"). Big fan-out nets also
@@ -975,9 +1065,10 @@ def write_kicad_schematic(design: Design, out_dir, *, project: str = "smash",
         if n.name in rails or len(conns) > 20:
             heavy.add(n.name)
 
-    lib = _SymbolLibrary()
-    comp_sym = {c.ref: lib.for_component(c) for c in comps}
-    ctx = _Ctx(lib, comp_sym, pin_net, global_nets, rails, grounds, heavy, net_size)
+    symlib = _SymbolLibrary()
+    comp_sym = {c.ref: symlib.for_component(c) for c in comps}
+    ctx = _Ctx(symlib, comp_sym, pin_net, global_nets, rails, grounds, heavy,
+               net_size, fp_of=fp_of, label_all=label_all)
     ctx.warnings.extend(_check_declared(comps, pin_net))
 
     boards = sorted({board_of[c.ref] for c in comps})
@@ -987,8 +1078,8 @@ def write_kicad_schematic(design: Design, out_dir, *, project: str = "smash",
                                (pad_groups or {}).get(b, []))
         if blocks:
             regions.append(_Region(b, blocks))
-    _write_flat(out, project, regions)
-    _write_library(out, project, lib)
+    _write_flat(out, project, lib, regions)
+    _write_library(out, project, lib, symlib)
 
     return {"n_boards": len(regions), "n_parts": len(comps),
             "n_nets": len(net_size), "n_symbols": len(set(comp_sym.values())),
@@ -1117,7 +1208,7 @@ class _Region:
     origin_dy = property(lambda self: self._PAD + self._TITLE)
 
 
-def _write_flat(out, project, regions) -> None:
+def _write_flat(out, project, lib, regions) -> None:
     paper = _pack_on_paper(regions)
     root_uuid = _uid(project, "root")
     inst_path = f"/{root_uuid}"
@@ -1149,7 +1240,7 @@ def _write_flat(out, project, regions) -> None:
                     _, lsym, c, uno, x, y, fields = prim
                     X, Y = BX + x, BY + y
                     used[lsym.name] = lsym
-                    items.extend(_symbol_instance(project, inst_path, board, lsym, c,
+                    items.extend(_symbol_instance(project, lib, inst_path, board, lsym, c,
                                                   uno, X, Y, BX, BY, fields))
                     for p in lsym.units[uno - 1].pins:
                         end(X + p.x, Y - p.y)
@@ -1161,7 +1252,7 @@ def _write_flat(out, project, regions) -> None:
                     pwr_no += 1
                     vx, vy, just = _PWR_TEXT[psym.d]
                     items += [
-                        f'\t(symbol (lib_id {_q(f"{project}:{psym.name}")}) (at {_f(X)} {_f(Y)} 0) (unit 1)',
+                        f'\t(symbol (lib_id {_q(f"{lib}:{psym.name}")}) (at {_f(X)} {_f(Y)} 0) (unit 1)',
                         '\t\t(exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
                         f'\t\t(uuid {_q(_uid(*seed, "pwr"))})',
                         f'\t\t(property "Reference" {_q(ref)} (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
@@ -1221,7 +1312,7 @@ def _write_flat(out, project, regions) -> None:
         f'\t(title_block (title {_q(project)}) (comment 1 "Generated by smash.export.kicad_sch from the design model - do not edit; regenerate") '
         f'(comment 2 "One frame per board. Power symbols = rails; global labels = signals that cross boards; local labels = single-board signals."))',
         '\t(lib_symbols',
-        *[_lib_symbol_sexpr(used[k], project) for k in sorted(used)],
+        *[_lib_symbol_sexpr(used[k], lib) for k in sorted(used)],
         '\t)',
         *items,
         '\t(sheet_instances (path "/" (page "1")))',
@@ -1230,11 +1321,11 @@ def _write_flat(out, project, regions) -> None:
     (out / f"{project}.kicad_sch").write_text("\n".join(body) + "\n")
 
 
-def _symbol_instance(project, inst_path, board, lsym, c, uno, X, Y, bx, by,
+def _symbol_instance(project, lib, inst_path, board, lsym, c, uno, X, Y, bx, by,
                      fields) -> list:
     seed = (board, c.ref, str(uno))
     out = [
-        f'\t(symbol (lib_id {_q(f"{project}:{lsym.name}")}) (at {_f(X)} {_f(Y)} 0) (unit {uno})',
+        f'\t(symbol (lib_id {_q(f"{lib}:{lsym.name}")}) (at {_f(X)} {_f(Y)} 0) (unit {uno})',
         '\t\t(exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
         f'\t\t(uuid {_q(_uid(*seed, "sym"))})',
     ]
@@ -1249,15 +1340,18 @@ def _symbol_instance(project, inst_path, board, lsym, c, uno, X, Y, bx, by,
     return out
 
 
-def _write_library(out, project, lib: _SymbolLibrary) -> None:
-    syms = [_lib_symbol_sexpr(lib.by_name[k], None) for k in sorted(lib.by_name)]
+def _write_library(out, project, lib: str, symlib: _SymbolLibrary) -> None:
+    syms = [_lib_symbol_sexpr(symlib.by_name[k], None) for k in sorted(symlib.by_name)]
     (out / f"{project}.kicad_sym").write_text(
         f'(kicad_symbol_lib (version {_VERSION}) (generator "smash") (generator_version "10.0")\n'
         + "\n".join(syms) + "\n)\n")
     (out / "sym-lib-table").write_text(
         '(sym_lib_table\n  (version 7)\n'
-        f'  (lib (name {_q(project)})(type "KiCad")(uri "${{KIPRJMOD}}/{project}.kicad_sym")(options "")(descr "Generated by smash"))\n'
+        f'  (lib (name {_q(lib)})(type "KiCad")(uri "${{KIPRJMOD}}/{project}.kicad_sym")(options "")(descr "Generated by smash"))\n'
         ')\n')
+
+
+def _write_project_file(out, project) -> None:
     (out / f"{project}.kicad_pro").write_text(json.dumps({
         "meta": {"filename": f"{project}.kicad_pro", "version": 3},
         "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},

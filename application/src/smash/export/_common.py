@@ -87,6 +87,14 @@ def footprint_full(component) -> str:
     return getattr(fp, "name", "") or ""
 
 
+def component_value(component) -> str:
+    """The Value field a part carries in both the KiCad schematic and the
+    board (they must agree, or schematic-parity DRC flags every part):
+    its value ("10k"), else its MPN, else its ref."""
+    return (getattr(component, "value", None) or getattr(component, "manf_pn", None)
+            or component.ref)
+
+
 # ── identifier sanitization (per-format) ─────────────────────────────────
 
 def sanitize_ascii(s: str) -> str:

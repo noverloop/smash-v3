@@ -107,7 +107,7 @@
    ],
    "clipped": true
   },
-  "DDR4_CK_T": {
+  "DDR4_CK_P": {
    "path": [
     [
      3.5,
@@ -273,7 +273,7 @@
    ],
    "clipped": true
   },
-  "DDR4_CK_C": {
+  "DDR4_CK_N": {
    "path": [
     [
      3.5,
@@ -559,7 +559,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS1_C": {
+  "DDR4_DQS1_N": {
    "path": [
     [
      4.0,
@@ -822,7 +822,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS1_T": {
+  "DDR4_DQS1_P": {
    "path": [
     [
      4.5,
@@ -916,7 +916,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS0_C": {
+  "DDR4_DQS0_N": {
    "path": [
     [
      4.0,
@@ -940,7 +940,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS0_T": {
+  "DDR4_DQS0_P": {
    "path": [
     [
      4.5,
@@ -1598,7 +1598,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS0_C": {
+  "DDR4_DQS0_N": {
    "path": [
     [
      -1.6,
@@ -1626,7 +1626,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS0_T": {
+  "DDR4_DQS0_P": {
    "path": [
     [
      -1.6,
@@ -1654,7 +1654,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS1_C": {
+  "DDR4_DQS1_N": {
    "path": [
     [
      1.6,
@@ -1706,7 +1706,7 @@
    "via_offset": null,
    "clipped": true
   },
-  "DDR4_DQS1_T": {
+  "DDR4_DQS1_P": {
    "path": [
     [
      1.6,
