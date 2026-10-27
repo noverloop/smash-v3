@@ -101,8 +101,10 @@ from smash.export import (                                              # noqa: 
     write_blank_drawing_sheet, write_stackup_step,
     write_stackup_components_step,
     write_consolidated_stackup_stl, write_housing_stl,
-    write_gerbers, write_kicad_schematic,
+    write_gerbers, write_kicad_schematic, write_board_schematic,
+    write_board_protel_netlist,
 )
+from smash.export.kicad_sch import relink_multi_unit_footprints   # noqa: E402
 from smash.layout.boards.smash_evb_v1 import (                          # noqa: E402
     build_panel, build_config_panel,
 )
@@ -640,8 +642,8 @@ def build_companion_compute(d: Design) -> None:
     # power_board + Q_USB_WAKE/Q_USB_WAKE2 wake; Q_ISO's reverse-block keeps the
     # cells at zero load during the session) — the old "power on the nose BAT_PROT
     # pad" note predated the USB-C wake work.
-    _net(d, "USB_DP").connect(mpu.pin("USB3DR_DP"))
-    _net(d, "USB_DM").connect(mpu.pin("USB3DR_DM"))
+    _net(d, "USB_D_P").connect(mpu.pin("USB3DR_DP"))
+    _net(d, "USB_D_N").connect(mpu.pin("USB3DR_DM"))
     _net(d, "USB_VBUS_DET").connect(mpu.pin("PC10"))   # USB3DR_VBUSEN (host-attached sense)
     _net(d, "COMP_3V3")    .connect(mpu.pin("VDD33USB"))
     _net(d, "COMP_1V8").connect(mpu.pin("VDDA18USB"))
@@ -705,15 +707,15 @@ def build_companion_compute(d: Design) -> None:
     # Data byte 0 (lower)
     for m, n in enumerate(_DQL_FROM):
         _net(d, f"DDR4_DQ{n}").connect(ddr.pin(f"DQL{m}"))
-    _net(d, "DDR4_DQS0_T").connect(ddr.pin("DQSL_T"))
-    _net(d, "DDR4_DQS0_C").connect(ddr.pin("DQSL_C"))
+    _net(d, "DDR4_DQS0_P").connect(ddr.pin("DQSL_T"))
+    _net(d, "DDR4_DQS0_N").connect(ddr.pin("DQSL_C"))
     _net(d, "DDR4_DM0_N") .connect(ddr.pin("DML_NDBIL_N"))
 
     # Data byte 1 (upper)
     for m, n in enumerate(_DQU_FROM):
         _net(d, f"DDR4_DQ{n}").connect(ddr.pin(f"DQU{m}"))
-    _net(d, "DDR4_DQS1_T").connect(ddr.pin("DQSU_T"))
-    _net(d, "DDR4_DQS1_C").connect(ddr.pin("DQSU_C"))
+    _net(d, "DDR4_DQS1_P").connect(ddr.pin("DQSU_T"))
+    _net(d, "DDR4_DQS1_N").connect(ddr.pin("DQSU_C"))
     _net(d, "DDR4_DM1_N") .connect(ddr.pin("DMU_NDBIU_N"))
 
     # Address A0..A13 (A10/AP, A12/BC_n are mux pins). Address-bit names
@@ -737,8 +739,8 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "DDR4_BA1").connect(ddr.pin("BA1"))
 
     # Clock + control
-    _net(d, "DDR4_CK_T")   .connect(ddr.pin("CK_T"))
-    _net(d, "DDR4_CK_C")   .connect(ddr.pin("CK_C"))
+    _net(d, "DDR4_CK_P")   .connect(ddr.pin("CK_T"))
+    _net(d, "DDR4_CK_N")   .connect(ddr.pin("CK_C"))
     _net(d, "DDR4_CKE")    .connect(ddr.pin("CKE"))
     _net(d, "DDR4_CS_N")   .connect(ddr.pin("CS_N"))
     _net(d, "DDR4_ODT")    .connect(ddr.pin("ODT"))
@@ -778,10 +780,10 @@ def build_companion_compute(d: Design) -> None:
     # Data + DQS + DM (1:1; DDR4 byte 0 = DQL, byte 1 = DQU)
     for i in range(16):
         _net(d, f"DDR4_DQ{i}").connect(mpu.pin(f"DDR_DQ{i}"))
-    _net(d, "DDR4_DQS0_T").connect(mpu.pin("DDR_DQS0P"))
-    _net(d, "DDR4_DQS0_C").connect(mpu.pin("DDR_DQS0N"))
-    _net(d, "DDR4_DQS1_T").connect(mpu.pin("DDR_DQS1P"))
-    _net(d, "DDR4_DQS1_C").connect(mpu.pin("DDR_DQS1N"))
+    _net(d, "DDR4_DQS0_P").connect(mpu.pin("DDR_DQS0P"))
+    _net(d, "DDR4_DQS0_N").connect(mpu.pin("DDR_DQS0N"))
+    _net(d, "DDR4_DQS1_P").connect(mpu.pin("DDR_DQS1P"))
+    _net(d, "DDR4_DQS1_N").connect(mpu.pin("DDR_DQS1N"))
     _net(d, "DDR4_DM0_N") .connect(mpu.pin("DDR_DQM0"))
     _net(d, "DDR4_DM1_N") .connect(mpu.pin("DDR_DQM1"))
 
@@ -813,8 +815,8 @@ def build_companion_compute(d: Design) -> None:
 
     # Clock + control (unchanged from the DDR3L reference — the DDR4
     # template keeps them on the same balls)
-    _net(d, "DDR4_CK_T").connect(mpu.pin("DDR_A4"))
-    _net(d, "DDR4_CK_C").connect(mpu.pin("DDR_A5"))
+    _net(d, "DDR4_CK_P").connect(mpu.pin("DDR_A4"))
+    _net(d, "DDR4_CK_N").connect(mpu.pin("DDR_A5"))
     _net(d, "DDR4_CKE") .connect(mpu.pin("DDR_A0"))
     _net(d, "DDR4_CS_N").connect(mpu.pin("DDR_A2"))
     _net(d, "DDR4_ODT") .connect(mpu.pin("DDR_A3"))
@@ -2169,8 +2171,8 @@ def build_nose_cap(d: Design) -> None:
     _net(d, "USB_CC2").connect(usb.pin("B5"))
     res_between(d, "USB_CC2", "GND", "5.1k", ref="R_USB_CC2", board_tag=CC_BTAG)
     # USB2 D± — tied across both plug orientations → the MP25 USB-FS pair
-    _net(d, "USB_DP").connect(usb.pin("A6")); _net(d, "USB_DP").connect(usb.pin("B6"))
-    _net(d, "USB_DM").connect(usb.pin("A7")); _net(d, "USB_DM").connect(usb.pin("B7"))
+    _net(d, "USB_D_P").connect(usb.pin("A6")); _net(d, "USB_D_P").connect(usb.pin("B6"))
+    _net(d, "USB_D_N").connect(usb.pin("A7")); _net(d, "USB_D_N").connect(usb.pin("B7"))
     # SBU1/2 (A8/B8) left unconnected — power + USB2 only.
 
     # Depot single-cable power: USB 5 V VBUS ORed into BAT_PROT — the protected
@@ -4384,6 +4386,34 @@ def _export_tile_steps(design, panel, boards, out_dir,
     written: list[pathlib.Path] = []   # → portable projects, after the exports
     gcli = _gerber_cli()   # None when SMASH_GERBER_EXPORT=0 or kicad-cli absent
     ok_gerber, failed_gerber = 0, []
+    # Each board directory also gets <name>.kicad_sch + <name>.NET (Altium):
+    # every footprint has
+    # a symbol (the .kicad_pcb footprints carry its uuid path), so the EE
+    # can open the board as a schematic+PCB project and Update PCB from
+    # Schematic. Written before the portable pass, which rewrites the
+    # footprint ids the schematic's Footprint fields already point at.
+    # kicad-cli (when installed) re-links multi-unit parts to the unit KiCad
+    # itself picks, so Update PCB from Schematic finds nothing to change.
+    ok_sch, failed_sch = 0, []
+    try:
+        sch_cli = find_kicad_cli()
+    except KiCadCliNotFound:
+        sch_cli = None
+
+    def _board_sch(name, b, tile_dir):
+        nonlocal ok_sch
+        try:
+            write_board_schematic(design, b, tile_dir,
+                                  pad_groups=_SCH_PAD_GROUPS.get(name))
+            # Altium: the same netlist as a Protel .NET, refdes/footprints/
+            # nets exactly as on the board.
+            write_board_protel_netlist(design, b, tile_dir / f"{name}.NET")
+            if sch_cli is not None:
+                relink_multi_unit_footprints(tile_dir / f"{name}.kicad_pcb",
+                                             tile_dir / f"{name}.kicad_sch", sch_cli)
+            ok_sch += 1
+        except Exception as e:                   # keep run resilient
+            failed_sch.append(f"{name}({type(e).__name__}: {str(e)[:200]})")
     for name, b in boards.items():
         if getattr(b, "is_spacer", False):
             # Spacer interposers get a fab set too — .kicad_pcb (2-layer:
@@ -4398,8 +4428,9 @@ def _export_tile_steps(design, panel, boards, out_dir,
             tile_dir = out_dir / name
             tile_dir.mkdir(parents=True, exist_ok=True)
             tile_pcb = tile_dir / f"{name}.kicad_pcb"
-            write_kicad_pcb(design, b, tile_pcb)
+            write_kicad_pcb(design, b, tile_pcb, link_schematic=True)
             write_blank_drawing_sheet(tile_pcb)
+            _board_sch(name, b, tile_dir)
             written.append(tile_pcb)
             n_pcb += 1
             from smash.export.spacer_step import write_spacer_cam_notes
@@ -4427,8 +4458,10 @@ def _export_tile_steps(design, panel, boards, out_dir,
         tile_pcb = tile_dir / f"{name}.kicad_pcb"
         write_kicad_pcb(design, b, tile_pcb, panel=panel,
                         link_widths_mm=link_widths,
-                        cutouts_override=(cutouts_ref or {}).get(name))
+                        cutouts_override=(cutouts_ref or {}).get(name),
+                        link_schematic=True)
         write_blank_drawing_sheet(tile_pcb)
+        _board_sch(name, b, tile_dir)
         written.append(tile_pcb)
         n_pcb += 1
         # Manufacturing set: gerbers/ + <name>_gerbers.zip beside the pcb.
@@ -4518,6 +4551,9 @@ def _export_tile_steps(design, panel, boards, out_dir,
 
     gerber_msg = (f", {ok_gerber} gerber zips" if gcli is not None
                   else ", gerbers off")
+    gerber_msg += f", {ok_sch} schematics"
+    if failed_sch:
+        gerber_msg += f" (SCHEMATIC FAILED: {', '.join(failed_sch)})"
     if cli is None:
         msg = (f"{n_pcb} per-board .kicad_pcb{gerber_msg}{portable_msg} → "
                f"{out_dir.relative_to(REPO)}/ (STEP export off)")

@@ -43,7 +43,10 @@ from smash.state.antenna import Antenna
 from smash.state.design import Design
 from smash.state.geometry.cavity import CavityRegion
 from smash.state.topology.placement import Placement
-from smash.export._common import _strip_ball_prefix
+from smash.export._common import (
+    _strip_ball_prefix, board_datasheet, component_value, kicad_ref,
+)
+from smash.export.kicad_sch import symbol_path, symbol_units, unconnected_nets
 from smash.roots import git_repo_root, resolve_repo_path
 
 
@@ -327,10 +330,12 @@ def _emit_footprint(
     *,
     board_name: str,
     offset_xy: tuple[float, float] = (0.0, 0.0),
+    link_symbol: bool = False,
 ) -> str:
     """One `(footprint ...)` block from a chip Placement. `offset_xy`
     is the tile centre in canvas coords for panel exports; pass (0, 0)
-    for single-board files."""
+    for single-board files. `link_symbol` stamps the link to the
+    board schematic (single-board files only — a panel has none)."""
     chip: Chip = placement.item
     fp = chip.footprint
     if fp is None:
@@ -395,7 +400,7 @@ def _emit_footprint(
     # printed silkscreen anywhere. `(hide yes)` keeps it off the silk
     # gerber. Value is likewise hidden.
     parts.append(
-        f'\t\t(property "Reference" "{chip.ref}"\n'
+        f'\t\t(property "Reference" "{kicad_ref(chip.ref)}"\n'
         f'\t\t\t(at 0 0 0)\n'
         f'\t\t\t(layer "{silk_layer}")\n'
         f'\t\t\t(hide yes)\n'
@@ -403,7 +408,7 @@ def _emit_footprint(
         f'\t\t\t(effects (font (size 1 1) (thickness 0.15)))\n'
         f'\t\t)'
     )
-    value = chip.manf_pn or chip.ref
+    value = component_value(chip)
     parts.append(
         f'\t\t(property "Value" "{value}"\n'
         f'\t\t\t(at 0 0 0)\n'
@@ -413,6 +418,37 @@ def _emit_footprint(
         f'\t\t\t(effects (font (size 1 1) (thickness 0.15)))\n'
         f'\t\t)'
     )
+    # The rest of the symbol's fields, hidden — the same values the
+    # schematic carries (schematic-parity DRC compares every field).
+    for fname, attr in (("Datasheet", "datasheet"), ("Description", "description"),
+                        ("MPN", "manf_pn"), ("Manufacturer", "manf")):
+        fval = board_datasheet(chip) if (attr == "datasheet" and link_symbol) \
+            else (getattr(chip, attr, None) or "")
+        fval = fval.replace("\\", "\\\\") \
+            .replace('"', r'\"').replace("\n", "\\n")
+        parts.append(
+            f'\t\t(property "{fname}" "{fval}"\n'
+            f'\t\t\t(at 0 0 0)\n'
+            f'\t\t\t(layer "{fab_layer}")\n'
+            f'\t\t\t(hide yes)\n'
+            f'\t\t\t(uuid "{_uid(board_name, chip.ref, "prop_" + fname)}")\n'
+            f'\t\t\t(effects (font (size 1 1) (thickness 0.15)))\n'
+            f'\t\t)'
+        )
+    # Link to this part's symbol in the board's own schematic
+    # (`kicad_sch.write_board_schematic`, written beside the board), so
+    # Update PCB from Schematic and schematic-parity DRC pair them by
+    # uuid rather than by refdes.
+    if link_symbol:
+        parts.append(f'\t\t(path "{symbol_path(board_name, chip.ref)}")')
+        parts.append('\t\t(sheetname "/")')
+        parts.append(f'\t\t(sheetfile "{board_name}.kicad_sch")')
+        # KiCad 10 unit metadata: which pads each symbol unit carries.
+        parts.append("\t\t(units")
+        for uname, pins in symbol_units(chip):
+            plist = " ".join(f'"{p}"' for p in pins)
+            parts.append(f'\t\t\t(unit (name "{uname}") (pins {plist}))')
+        parts.append("\t\t)")
 
     # Body outline + courtyard polygons. Body lives on F.Fab (yellow
     # in fab view); courtyard on F.CrtYd (red dashed in pcbnew default
@@ -429,10 +465,13 @@ def _emit_footprint(
             uuid_seed=_uid(board_name, chip.ref, "courtyard"),
         ))
 
-    # Pads
+    # Pads. A linked board names its no-connect pads the way its schematic
+    # does, so they stay in parity.
+    nc_nets = unconnected_nets(chip) if link_symbol else {}
     for pad in fp.pads:
         parts.append(_emit_pad(pad, chip, face=face, board_name=board_name,
-                               mirror_x=mirror, orientation_deg=rot))
+                               mirror_x=mirror, orientation_deg=rot,
+                               nc_net=nc_nets.get(pad.num)))
 
     # Non-pad copper polylines (e.g. NFC spiral coil). Emit one fp_line
     # per segment in the polyline — these are footprint-local, so KiCad
@@ -591,9 +630,11 @@ def _parse_kicad_mod_model_xform(
 
 
 def _emit_pad(pad, chip: Chip, *, face: str, board_name: str,
-              mirror_x: bool = False, orientation_deg: float = 0.0) -> str:
+              mirror_x: bool = False, orientation_deg: float = 0.0,
+              nc_net: str | None = None) -> str:
     """One `(pad ...)` block. `mirror_x` bakes the bottom-face flip into
-    the pad's footprint-local position (see `_emit_footprint`).
+    the pad's footprint-local position (see `_emit_footprint`). `nc_net`
+    names a pad whose pin has no net (a linked board's no-connect pins).
 
     `orientation_deg` is the footprint's emitted orientation. KiCad stores a
     pad's angle **absolutely** (footprint orientation + any pad-local
@@ -636,7 +677,7 @@ def _emit_pad(pad, chip: Chip, *, face: str, board_name: str,
         lines.append(f'\t\t\t(drill {_fmt(pad.drill_mm)})')
     lines.append(f'\t\t\t(layers {layers})')
 
-    net_name = _pin_to_net_name(chip, pad.num)
+    net_name = _pin_to_net_name(chip, pad.num) or nc_net
     if net_name:
         lines.append(f'\t\t\t(net "{net_name}")')
     # Per-pad solder-mask expansion. The board-level `pad_to_mask_clearance`
@@ -828,9 +869,12 @@ def _emit_holes(
             f'\t\t(layer "F.Cu")\n'
             f'\t\t(uuid "{_uid(*seed, "fp")}")\n'
             f'\t\t(at {_fmt(cx)} {_fmt(cy)})\n'
-            f'\t\t(attr exclude_from_pos_files exclude_from_bom '
+            # board_only + a refdes: a mechanical hole has no symbol, and
+            # schematic-parity DRC otherwise reports each as an extra
+            # (and, ref-less, duplicate) footprint.
+            f'\t\t(attr board_only exclude_from_pos_files exclude_from_bom '
             f'allow_missing_courtyard)\n'
-            f'\t\t(property "Reference" ""\n'
+            f'\t\t(property "Reference" "MH{i + 1}"\n'
             f'\t\t\t(at 0 0 0)\n'
             f'\t\t\t(layer "F.SilkS")\n'
             f'\t\t\t(hide yes)\n'
@@ -1298,6 +1342,7 @@ def write_kicad_pcb(
     flex_width_mm: float | None = None,
     link_widths_mm: dict | None = None,
     cutouts_override: list | None = None,
+    link_schematic: bool = False,
 ) -> dict:
     """Write a `.kicad_pcb` file for `board` with its placed chips.
 
@@ -1312,6 +1357,10 @@ def write_kicad_pcb(
     from the maximalist panel) instead, keeping the fabbed outline
     identical in every configuration (economies of scale). The override
     still gets the open→flat chord closure below.
+
+    `link_schematic` ties every footprint to its symbol in the
+    `<board>.kicad_sch` that `kicad_sch.write_board_schematic` writes beside
+    it (uuid path, and no-connect pads named as that schematic names them).
     """
     out_path = pathlib.Path(output_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1375,7 +1424,8 @@ def write_kicad_pcb(
     for pl in board.chip_placements:
         if not isinstance(pl.item, (Chip, Antenna)):
             continue
-        block = _emit_footprint(pl, board_name=board.name)
+        block = _emit_footprint(pl, board_name=board.name,
+                                link_symbol=link_schematic)
         if block:
             parts.append(block)
             n_footprints += 1

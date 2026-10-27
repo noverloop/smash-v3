@@ -407,8 +407,12 @@ class TestWriteKicadSchematic:
         assert "Rail decoupling - no pin declared" in sch
         assert r["warnings"] == []
 
-    def test_declared_decoupling_hangs_off_pin(self, tiny_design, tmp_path):
+    def test_declared_decoupling_hangs_off_pin(self, tiny_design, tmp_path, monkeypatch):
+        """A generated symbol opens empty rows under the supply pin for its
+        decoupling parts (forced here: U1 also has a SamacSys symbol)."""
+        import smash.export.kicad_sch as ks
         from smash.export import write_kicad_schematic
+        monkeypatch.setattr(ks, "find_symbol", lambda comp: None)
         next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "VCC")]
         r = write_kicad_schematic(tiny_design, tmp_path)
         sch = (tmp_path / "smash.kicad_sch").read_text()
@@ -423,6 +427,40 @@ class TestWriteKicadSchematic:
         assert len(r["warnings"]) == 1 and r["warnings"][0].startswith("C1:")
         # not hung off any pin (U1's symbol is not rebuilt with room)
         assert '(lib_id "smash:SN74LVC1G08DCKRG4_g' not in (tmp_path / "smash.kicad_sch").read_text()
+
+    def test_samacsys_symbol_used(self, tiny_design, tmp_path):
+        """A part whose SamacSys symbol has its exact pins is drawn with
+        it; its decoupling then stands in a bank under it."""
+        from smash.export import write_kicad_schematic
+        next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "VCC")]
+        write_kicad_schematic(tiny_design, tmp_path)
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        assert '(lib_id "smash:SN74LVC1G08DCKRG4")' in sch
+        assert "_g" not in sch.split('(lib_id "smash:SN74LVC1G08DCKRG4')[1][:3]
+
+    def test_samacsys_no_connect_pin_still_wired(self, tmp_path):
+        """A SamacSys pin typed no_connect (TPS61175 pin 11, "NC") that the
+        design ties to a net must still join it: KiCad never connects a
+        no_connect-typed pin, so it is drawn passive."""
+        import xml.etree.ElementTree as ET
+        import subprocess
+        from smash.export import write_kicad_schematic, find_kicad_cli, KiCadCliNotFound
+        from smash.parts.regulators import add_tps61175pwpr
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        d = Design()
+        u = add_tps61175pwpr(d, ref="U_BOOST", board_tag="b")
+        d.add_ground_net("GND").connect(u.pin("11")).connect(u.pin("6"))
+        write_kicad_schematic(d, tmp_path)
+        out = tmp_path / "net.xml"
+        subprocess.run([str(cli), "sch", "export", "netlist", "--format", "kicadxml",
+                        "-o", str(out), str(tmp_path / "smash.kicad_sch")],
+                       check=True, capture_output=True)
+        gnd = next(n for n in ET.parse(out).getroot().iter("net") if n.get("name") == "GND")
+        assert {(n.get("ref"), n.get("pin")) for n in gnd.iter("node")} >= {
+            ("U_BOOST1", "11"), ("U_BOOST1", "6")}
 
     def test_pad_groups_boxed(self, tiny_design, tmp_path):
         from smash.export import write_kicad_schematic
@@ -453,6 +491,209 @@ class TestWriteKicadSchematic:
         write_kicad_schematic(tiny_design, tmp_path / "b")
         for f in (tmp_path / "a").iterdir():
             assert f.read_bytes() == (tmp_path / "b" / f.name).read_bytes(), f.name
+
+    @staticmethod
+    def _board_project(design, tmp_path, refs=("U1", "C1")):
+        """U1 + C1 placed on one board, written the way the generator
+        does: linked .kicad_pcb, its schematic, then the portable pass."""
+        from smash.export import (write_kicad_pcb, write_blank_drawing_sheet,
+                                  write_board_schematic)
+        from smash.export.portable_project import write_portable_project
+        from smash.state import Board
+        from smash.state.topology.placement import Placement
+        board = Board("flight_board")
+        for i, ref in enumerate(refs):
+            chip = next(c for c in design.chips if c.ref == ref)
+            board.chip_placements.append(Placement(
+                position_mm=(4.0 * i, 0), rotation_deg=0, item=chip, face="top"))
+        proj = tmp_path / "flight_board"
+        pcb = proj / "flight_board.kicad_pcb"
+        write_kicad_pcb(design, board, pcb, link_schematic=True)
+        write_blank_drawing_sheet(pcb)
+        result = write_board_schematic(design, board, proj)
+        write_portable_project(pcb)
+        return proj, result
+
+    def test_board_schematic_beside_pcb(self, tiny_design, tmp_path):
+        from smash.export.kicad_sch import symbol_path
+        proj, result = self._board_project(tiny_design, tmp_path)
+        assert result["n_parts"] == 2              # BT1 is on another board
+        assert {f.name for f in proj.iterdir()} >= {
+            "flight_board.kicad_pcb", "flight_board.kicad_pro",
+            "flight_board.kicad_sch", "flight_board.kicad_sym", "sym-lib-table"}
+        sch = (proj / "flight_board.kicad_sch").read_text()
+        pcb = (proj / "flight_board.kicad_pcb").read_text()
+        for ref in ("U1", "C1"):                   # footprint path = symbol uuid
+            assert f'(path "{symbol_path("flight_board", ref)}")' in pcb
+            assert f'(uuid "{symbol_path("flight_board", ref)[1:]}")' in sch
+        # Footprint fields name the portable project's library entries.
+        assert '(property "Footprint" "SmashFlightBoard:SOT-23-5"' in sch
+        assert '(footprint "SmashFlightBoard:SOT-23-5"' in pcb
+        # Every signal keeps its PCB name: global labels, never local
+        # ones (KiCad would name those "/CONFIRM").
+        assert '(global_label "CONFIRM"' in sch and '(label "' not in sch
+        # Rails too: Altium's KiCad importer reads a project-library power
+        # symbol as a one-pin part, one net per symbol.
+        assert '(global_label "VCC"' in sch and '(global_label "GND"' in sch
+        assert "PWR_" not in sch and "#PWR" not in sch
+        # The no-connect pins' pads carry KiCad's unconnected-net names.
+        assert '(net "unconnected-(U1-A-Pad1)")' in pcb
+        # The library footprint keeps no instance link.
+        lib = (proj / "footprints/SmashFlightBoard.pretty/SOT-23-5.kicad_mod").read_text()
+        assert "(path " not in lib and "(sheetfile " not in lib
+
+    def test_references_annotated(self, tiny_design, tmp_path):
+        """KiCad refuses Update PCB from Schematic unless every reference
+        ends in a digit: a descriptive ref gets a `1`, in the schematic,
+        on the board and in the BOM alike."""
+        from smash.export import write_bom
+        next(c for c in tiny_design.chips if c.ref == "U1").ref = "U_GATE"
+        for net in tiny_design.nets:
+            net.pins = [("U_GATE" if r == "U1" else r, p) for r, p in net.pins]
+        proj, _ = self._board_project(tiny_design, tmp_path, ("U_GATE", "C1"))
+        sch = (proj / "flight_board.kicad_sch").read_text()
+        pcb = (proj / "flight_board.kicad_pcb").read_text()
+        assert '(reference "U_GATE1")' in sch and '(reference "U_GATE")' not in sch
+        assert '(property "Reference" "U_GATE1"' in pcb
+        assert '(net "unconnected-(U_GATE1-A-Pad1)")' in pcb
+        write_bom(tiny_design, tmp_path / "bom.csv")
+        assert ",U_GATE1," in (tmp_path / "bom.csv").read_text()
+
+    def test_reference_collision_rejected(self, tiny_design, tmp_path):
+        from smash.export import write_kicad_schematic
+        tiny_design.add_chip(ref="U", board_tag="flight_board", pins=[Pin(num="1")])
+        with pytest.raises(ValueError, match="U and U1 both become"):
+            write_kicad_schematic(tiny_design, tmp_path)
+
+    def test_wiring_hazards(self):
+        """Nothing may depend on a junction (KiCad's editor deletes the ones
+        it judges unneeded before Update PCB): three items at a point, or
+        anything ending on a wire's middle, is rejected."""
+        from smash.export.kicad_sch import _wiring_hazards
+        assert _wiring_hazards([(0, 0, 5, 0), (5, 0, 10, 0)], [(5, 0)])     # 3 at a joint
+        assert _wiring_hazards([(0, 0, 10, 0), (5, 0, 5, 5)], [])          # tee
+        assert _wiring_hazards([(0, 0, 10, 0)], [(5, 0)])                  # pin mid-wire
+        assert _wiring_hazards([(0, 0, 5, 0)], [(0, 0), (5, 0)]) == []     # pin-wire-pin
+
+    def test_no_junctions(self, tiny_design, tmp_path):
+        """Rails and decoupling banks are drawn with a power symbol on every
+        pin, so the sheet needs no junction anywhere."""
+        from smash.export import write_kicad_schematic
+        next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "VCC")]
+        write_kicad_schematic(tiny_design, tmp_path)
+        assert "(junction" not in (tmp_path / "smash.kicad_sch").read_text()
+
+    def test_wires_start_before_end(self, tiny_design, tmp_path):
+        """Every wire is written in canonical direction (start ≤ end)."""
+        import re
+        from smash.export import write_kicad_schematic
+        next(c for c in tiny_design.chips if c.ref == "C1").decouples = [("U1", "VCC")]
+        write_kicad_schematic(tiny_design, tmp_path)
+        sch = (tmp_path / "smash.kicad_sch").read_text()
+        wires = [tuple(map(float, m.groups())) for m in re.finditer(
+            r"\(wire \(pts \(xy ([-\d.]+) ([-\d.]+)\) \(xy ([-\d.]+) ([-\d.]+)\)\)", sch)]
+        assert wires and all((x1, y1) <= (x2, y2) for x1, y1, x2, y2 in wires)
+
+    def test_multi_unit_footprint_linked_like_kicad(self, tiny_design, tmp_path):
+        """A part split into units: the footprint lists each unit's pads
+        (KiCad 10 unit metadata) and, once re-linked, points at the unit
+        KiCad's own netlister associates it with."""
+        import xml.etree.ElementTree as ET
+        import subprocess
+        from smash.export import find_kicad_cli, KiCadCliNotFound
+        from smash.export.kicad_sch import relink_multi_unit_footprints
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        u1 = next(c for c in tiny_design.chips if c.ref == "U1")
+        u1.pins = [Pin(num=str(i), name=f"P{i}") for i in range(1, 81)]
+        u1.footprint = Footprint(name="BIG", pads=[
+            Pad(num=str(i), position_mm=(i * 0.5, 0), size_mm=(0.3, 0.3)) for i in range(1, 81)])
+        for net in tiny_design.nets:
+            net.pins = [(r, p) for r, p in net.pins if r != "U1"]
+        proj, _ = self._board_project(tiny_design, tmp_path)
+        pcb_path = proj / "flight_board.kicad_pcb"
+        assert '(unit (name "B")' in pcb_path.read_text()
+        relink_multi_unit_footprints(pcb_path, proj / "flight_board.kicad_sch", cli)
+        out = tmp_path / "net.xml"
+        subprocess.run([str(cli), "sch", "export", "netlist", "--format", "kicadxml",
+                        "-o", str(out), str(proj / "flight_board.kicad_sch")],
+                       check=True, capture_output=True)
+        comp = next(c for c in ET.parse(out).getroot().iter("comp") if c.get("ref") == "U1")
+        first = comp.find("tstamps").text.split()[0]
+        assert f'(path "/{first}")' in pcb_path.read_text()
+
+    def test_board_protel_netlist_matches_pcb(self, tiny_design, tmp_path):
+        """The Altium .NET beside a board names the same parts (refdes,
+        footprint, value) and the same pads on the same nets as the
+        .kicad_pcb — no-connect `unconnected-(…)` nets aside."""
+        import re
+        from smash.export import write_board_protel_netlist
+        from smash.state import Board
+        next(c for c in tiny_design.chips if c.ref == "U1").ref = "U_GATE"
+        for net in tiny_design.nets:
+            net.pins = [("U_GATE" if r == "U1" else r, p) for r, p in net.pins]
+        proj, _ = self._board_project(tiny_design, tmp_path, ("U_GATE", "C1"))
+        board = Board("flight_board")
+        from smash.state.topology.placement import Placement
+        for ref in ("U_GATE", "C1"):
+            board.chip_placements.append(Placement(position_mm=(0, 0), rotation_deg=0,
+                item=next(c for c in tiny_design.chips if c.ref == ref), face="top"))
+        r = write_board_protel_netlist(tiny_design, board, proj / "flight_board.NET")
+        assert r == {"n_parts": 2, "n_nets": 3}
+        net_text = (proj / "flight_board.NET").read_text()
+        parts = re.findall(r"\[\n(\S+)\n(\S+)\n(\S+)\n\]", net_text)
+        nets = {m[0]: set(m[1].split()) for m in re.findall(r"\(\n(\S+)\n(.*?)\)", net_text, re.S)}
+        pcb = (proj / "flight_board.kicad_pcb").read_text()
+        want_parts, want_nets = [], {}
+        for blk in re.findall(r'^\t\(footprint "SmashFlightBoard:([^"]+)"(.*?)^\t\)$', pcb, re.M | re.S):
+            if "board_only" in blk[1]:
+                continue                        # mounting holes: no symbol, no nets
+            ref = re.search(r'\(property "Reference" "([^"]+)"', blk[1]).group(1)
+            val = re.search(r'\(property "Value" "([^"]+)"', blk[1]).group(1)
+            want_parts.append((ref, blk[0], val))
+            for pad, net in re.findall(r'\(pad "([^"]+)".*?\(net "([^"]+)"\)', blk[1], re.S):
+                if not net.startswith("unconnected-"):
+                    want_nets.setdefault(net, set()).add(f"{ref}-{pad}")
+        assert sorted(parts) == sorted(want_parts)
+        assert nets == want_nets
+
+    def test_board_folder_carries_datasheets_and_samacsys(self, tiny_design, tmp_path):
+        """A board project carries its parts' datasheets (fields point at
+        the copy, in schematic and board alike) and their SamacSys KiCad
+        symbol + Altium libraries."""
+        import glob
+        u1 = next(c for c in tiny_design.chips if c.ref == "U1")
+        pdf = sorted(glob.glob("src/smash/parts/sources/SN74LVC1G08DCKRG4/*.pdf"))[0]
+        u1.datasheet = "application/" + pdf
+        proj, _ = self._board_project(tiny_design, tmp_path)
+        name = pathlib.Path(pdf).name
+        assert (proj / "datasheets" / "SN74LVC1G08DCKRG4" / name).is_file()
+        field = f"${{KIPRJMOD}}/datasheets/SN74LVC1G08DCKRG4/{name}"
+        assert f'(property "Datasheet" "{field}"' in (proj / "flight_board.kicad_sch").read_text()
+        assert f'(property "Datasheet" "{field}"' in (proj / "flight_board.kicad_pcb").read_text()
+        lib = proj / "samacsys" / "SN74LVC1G08DCKRG4"
+        assert (lib / "SN74LVC1G08DCKRG4.kicad_sym").is_file()
+        assert list((lib / "Altium").glob("*.SchLib")) and list((lib / "Altium").glob("*.PcbLib"))
+
+    def test_board_schematic_parity(self, tiny_design, tmp_path):
+        """KiCad's own schematic-parity DRC finds the board and its
+        schematic in sync: every footprint linked, every pad on its net,
+        every field equal."""
+        import json
+        import subprocess
+        from smash.export import find_kicad_cli, KiCadCliNotFound
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        proj, _ = self._board_project(tiny_design, tmp_path)
+        report = tmp_path / "drc.json"
+        subprocess.run([str(cli), "pcb", "drc", "--schematic-parity", "--format", "json",
+                        "-o", str(report), str(proj / "flight_board.kicad_pcb")],
+                       check=True, capture_output=True)
+        assert json.loads(report.read_text())["schematic_parity"] == []
 
     def test_kicad_netlist_matches_design(self, tiny_design, tmp_path):
         """Round-trip through kicad-cli: the netlist KiCad derives from

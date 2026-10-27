@@ -1,0 +1,33 @@
+(footprint "Spacer_Mechanical_34mm"
+	(version 20260206)
+	(generator "smash")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Mechanical spacer spacer_battery_6 — Ø34 mm rigid interposer, cavities milled for chips on both adjacent tile faces. No signals.")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(property "Value" "Spacer_Mechanical_34mm"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects (font (size 1 1) (thickness 0.15)))
+	)
+	(fp_poly
+		(pts (xy -0.45 0.45) (xy 0.45 0.45) (xy 0.45 -0.45) (xy -0.45 -0.45) (xy -0.45 0.45))
+		(stroke (width 0.05) (type solid))
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "b3005cbd-b8a1-595c-aa0e-804f29bb1175")
+	)
+	(pad "1" smd circle
+		(at 0 0)
+		(size 0.8 0.8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "5bb8d25e-b275-5df2-b02f-f377e0cf6bd4")
+	)
+	(embedded_fonts no)
+)

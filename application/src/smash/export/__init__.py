@@ -10,6 +10,7 @@ Format coverage:
   - `write_edif`              — EDIF 200 (Xpedition / OrCAD Capture)
   - `write_pads_netlist`      — PADS Layout ASCII (.asc)
   - `write_protel_netlist`    — Protel / Tango / Altium (.NET)
+  - `write_board_protel_netlist` — one board's .NET, matching its .kicad_pcb
   - `write_allegro_netlist`   — Cadence Allegro Telesis (.txt) +
                                  optional KiCad→Allegro fp mapping
   - `write_footprint_inventory` — SamacSys download-checklist CSV with
@@ -17,6 +18,7 @@ Format coverage:
   - `write_specctra_dsn`      — Specctra DSN for FreeRouting / DeepPCB
   - `write_kicad_schematic`   — hierarchical KiCad schematic, one sheet
                                  per board (documentation projection)
+  - `write_board_schematic`   — one board's schematic, linked to its .kicad_pcb
 
 Companion validator lives in `smash.validators.specctra`.
 """
@@ -25,14 +27,14 @@ from smash.export.bom import write_bom
 from smash.export.flat import write_flat_netlist
 from smash.export.edif import write_edif
 from smash.export.pads import write_pads_netlist
-from smash.export.protel import write_protel_netlist
+from smash.export.protel import write_protel_netlist, write_board_protel_netlist
 from smash.export.allegro import write_allegro_netlist
 from smash.export.fp_inventory import (
     write_footprint_inventory,
     load_allegro_fp_map,
 )
 from smash.export.specctra import write_specctra_dsn
-from smash.export.kicad_sch import write_kicad_schematic
+from smash.export.kicad_sch import write_kicad_schematic, write_board_schematic
 from smash.export.kicad_pcb import (
     write_kicad_pcb, write_kicad_panel, write_blank_drawing_sheet,
 )
@@ -60,11 +62,13 @@ __all__ = [
     "write_edif",
     "write_pads_netlist",
     "write_protel_netlist",
+    "write_board_protel_netlist",
     "write_allegro_netlist",
     "write_footprint_inventory",
     "load_allegro_fp_map",
     "write_specctra_dsn",
     "write_kicad_schematic",
+    "write_board_schematic",
     "write_kicad_pcb",
     "write_kicad_panel",
     "write_blank_drawing_sheet",

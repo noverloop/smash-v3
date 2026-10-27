@@ -87,6 +87,34 @@ def footprint_full(component) -> str:
     return getattr(fp, "name", "") or ""
 
 
+def kicad_ref(ref: str) -> str:
+    """The refdes a part carries in KiCad files and the BOM. KiCad treats a
+    reference that doesn't end in a digit as unannotated (refusing Update
+    PCB from Schematic, and renumbering it if annotated), so a descriptive
+    ref gets a `1`: `U_PMIC` → `U_PMIC1`; `U_IMU2` is left alone. Internal
+    keys (uuids, net lookups) keep the design ref."""
+    return ref if ref[-1:].isdigit() else ref + "1"
+
+
+def board_datasheet(component) -> str:
+    """The Datasheet field a part carries inside a board project: its PDF
+    as copied to `datasheets/<part folder>/` beside the board, so the link
+    works wherever the folder goes. URLs pass through."""
+    ds = getattr(component, "datasheet", None) or ""
+    if not ds or re.match(r"\w+://", ds):
+        return ds
+    parts = ds.replace("\\", "/").split("/")
+    return "${KIPRJMOD}/datasheets/" + "/".join(parts[-2:])
+
+
+def component_value(component) -> str:
+    """The Value field a part carries in both the KiCad schematic and the
+    board (they must agree, or schematic-parity DRC flags every part):
+    its value ("10k"), else its MPN, else its ref."""
+    return (getattr(component, "value", None) or getattr(component, "manf_pn", None)
+            or component.ref)
+
+
 # ── identifier sanitization (per-format) ─────────────────────────────────
 
 def sanitize_ascii(s: str) -> str:
