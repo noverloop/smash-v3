@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashRCompute")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashRCompute.pretty")(options "")(descr "Editable Smash R-compute footprints"))
+)

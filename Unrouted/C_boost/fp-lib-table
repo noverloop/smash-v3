@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashCBoost")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashCBoost.pretty")(options "")(descr "Editable Smash C-boost footprints"))
+)

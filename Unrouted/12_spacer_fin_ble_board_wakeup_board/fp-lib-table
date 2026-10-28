@@ -1,4 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "SmashSpacerFinBleBoardWakeupBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerFinBleBoardWakeupBoard.pretty")(options "")(descr "Editable Smash spacer-fin-ble-board-wakeup-board footprints"))
-)

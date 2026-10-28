@@ -559,6 +559,91 @@ class TestWriteKicadSchematic:
         write_bom(tiny_design, tmp_path / "bom.csv")
         assert ",U_GATE1," in (tmp_path / "bom.csv").read_text()
 
+    def test_short_refdes(self):
+        from smash.export._common import short_refdes
+        assert short_refdes(["R_MON2", "R_MON10", "TP_BAT_RAW", "R_BLEED", "Q_N0", "C1",
+                             "CBOOST_IN1", "RPU_SCL"]) == {
+            "C1": "C1", "CBOOST_IN1": "C2", "Q_N0": "Q1", "RPU_SCL": "R1",
+            "R_BLEED": "R2", "R_MON2": "R3", "R_MON10": "R4", "TP_BAT_RAW": "TP1"}
+        assert short_refdes(["R_X", "TP_Y"], "C") == {"R_X": "CR1", "TP_Y": "CTP1"}
+
+    def test_board_project_renamed(self, tiny_design, tmp_path):
+        """A board written as project `A_x` (files, schematic, library)
+        keeps its footprints linked to their symbols: parity DRC clean."""
+        import json
+        import subprocess
+        from smash.export import (write_kicad_pcb, write_blank_drawing_sheet,
+                                  write_board_schematic, find_kicad_cli, KiCadCliNotFound)
+        from smash.export.portable_project import write_portable_project
+        from smash.state import Board
+        from smash.state.topology.placement import Placement
+        board = Board("flight_board")
+        for i, ref in enumerate(("U1", "C1")):
+            board.chip_placements.append(Placement(position_mm=(4.0 * i, 0), rotation_deg=0,
+                item=next(c for c in tiny_design.chips if c.ref == ref), face="top"))
+        pcb = tmp_path / "A_x.kicad_pcb"
+        write_kicad_pcb(tiny_design, board, pcb, link_schematic=True)
+        write_blank_drawing_sheet(pcb)
+        write_board_schematic(tiny_design, board, tmp_path, project="A_x")
+        write_portable_project(pcb)
+        sch = (tmp_path / "A_x.kicad_sch").read_text()
+        assert '(sheetfile "A_x.kicad_sch")' in pcb.read_text()
+        assert '(text "A_x"' in sch and '"SmashAX:' in sch
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        report = tmp_path / "drc.json"
+        subprocess.run([str(cli), "pcb", "drc", "--schematic-parity", "--format", "json",
+                        "-o", str(report), str(pcb)], check=True, capture_output=True)
+        assert json.loads(report.read_text())["schematic_parity"] == []
+
+    def test_stack_letter(self):
+        from smash.export._common import stack_letter
+        assert [stack_letter(i) for i in (0, 1, 25, 26, 27)] == ["A", "B", "Z", "AA", "AB"]
+
+    def test_board_refdes_short_and_in_sync(self, tiny_design, tmp_path):
+        """Inside board_refdes the board, its schematic and its .NET all name
+        parts R1/U1/…, and KiCad's schematic-parity DRC still finds them in
+        sync; outside it the descriptive refs come back."""
+        import json
+        import subprocess
+        from smash.export import (write_kicad_pcb, write_blank_drawing_sheet,
+                                  write_board_schematic, write_board_protel_netlist,
+                                  find_kicad_cli, KiCadCliNotFound)
+        from smash.export._common import board_refdes, kicad_ref
+        from smash.export.portable_project import write_portable_project
+        from smash.state import Board
+        from smash.state.topology.placement import Placement
+        next(c for c in tiny_design.chips if c.ref == "U1").ref = "U_GATE"
+        for net in tiny_design.nets:
+            net.pins = [("U_GATE" if r == "U1" else r, p) for r, p in net.pins]
+        board = Board("flight_board")
+        for i, ref in enumerate(("U_GATE", "C1")):
+            board.chip_placements.append(Placement(position_mm=(4.0 * i, 0), rotation_deg=0,
+                item=next(c for c in tiny_design.chips if c.ref == ref), face="top"))
+        proj = tmp_path / "flight_board"
+        pcb = proj / "flight_board.kicad_pcb"
+        with board_refdes(board) as refs:
+            assert refs.mapping == {"C1": "C1", "U_GATE": "U1"}
+            write_kicad_pcb(tiny_design, board, pcb, link_schematic=True)
+            write_blank_drawing_sheet(pcb)
+            write_board_schematic(tiny_design, board, proj)
+            write_board_protel_netlist(tiny_design, board, proj / "flight_board.NET")
+        write_portable_project(pcb)
+        assert kicad_ref("U_GATE") == "U_GATE1"
+        for f in ("flight_board.kicad_pcb", "flight_board.kicad_sch", "flight_board.NET"):
+            text = (proj / f).read_text()
+            assert "U_GATE" not in text and "U1" in text, f
+        try:
+            cli = find_kicad_cli()
+        except KiCadCliNotFound:
+            pytest.skip("kicad-cli not installed")
+        report = tmp_path / "drc.json"
+        subprocess.run([str(cli), "pcb", "drc", "--schematic-parity", "--format", "json",
+                        "-o", str(report), str(pcb)], check=True, capture_output=True)
+        assert json.loads(report.read_text())["schematic_parity"] == []
+
     def test_reference_collision_rejected(self, tiny_design, tmp_path):
         from smash.export import write_kicad_schematic
         tiny_design.add_chip(ref="U", board_tag="flight_board", pins=[Pin(num="1")])

@@ -1,0 +1,6 @@
+Ref,Design ref,Value
+EJ1,J_cell_floor_board_spacer_battery_1,LGA_lands
+EP1,P_CELL_TAB_NEG1,CellSolderTab
+EP2,P_CELL_TAB_NEG2,CellSolderTab
+EP3,P_CELL_TAB_NEG3,CellSolderTab
+EP4,P_cell_floor_board_spacer_activation_interface_cell_floor_board,LGA_lands

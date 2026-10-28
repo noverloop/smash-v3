@@ -87,13 +87,87 @@ def footprint_full(component) -> str:
     return getattr(fp, "name", "") or ""
 
 
+_SHORT_REFS: dict = {}      # design ref → short refdes, while board_refdes is active
+_REF_PREFIX = [""]          # the active board_refdes prefix (board-only refs: MH1 → AMH1)
+
+
+def ref_prefix() -> str:
+    """The board letter `board_refdes` is naming parts with ("" outside it)."""
+    return _REF_PREFIX[0]
+
+
 def kicad_ref(ref: str) -> str:
     """The refdes a part carries in KiCad files and the BOM. KiCad treats a
     reference that doesn't end in a digit as unannotated (refusing Update
     PCB from Schematic, and renumbering it if annotated), so a descriptive
-    ref gets a `1`: `U_PMIC` → `U_PMIC1`; `U_IMU2` is left alone. Internal
-    keys (uuids, net lookups) keep the design ref."""
+    ref gets a `1`: `U_PMIC` → `U_PMIC1`; `U_IMU2` is left alone. Inside
+    `board_refdes` a part on that board gets its short refdes instead.
+    Internal keys (uuids, net lookups) keep the design ref."""
+    if ref in _SHORT_REFS:
+        return _SHORT_REFS[ref]
     return ref if ref[-1:].isdigit() else ref + "1"
+
+
+_REFDES_CLASSES = {"TP", "SP", "BT", "FB", "SW", "LED", "ANT", "MH"}
+
+
+def short_refdes(refs: Iterable[str], prefix: str = "") -> dict:
+    """{design ref: classic refdes} for one board's parts: the ref's class
+    letters (`R_ACTIVATE_MON1` → R, `TP_BAT_RAW` → TP, and a run-on word
+    to its first letter: `CBOOST_IN1` → C, `RPU_I2C2_SCL` → R) numbered
+    1, 2, … in natural order of the design refs, so the names stay put
+    across regenerations while the part set does. `prefix` (the board's
+    stack letter) goes in front — `AR1`, `ATP4` — making the names unique
+    across the stack."""
+    def nat(s):
+        return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", s)]
+    count: dict = {}
+    out = {}
+    for ref in sorted(set(refs), key=nat):
+        cls = (re.match(r"[A-Za-z]+", ref) or [""])[0].upper() or "X"
+        if cls not in _REFDES_CLASSES:
+            cls = cls[0]
+        count[cls] = count.get(cls, 0) + 1
+        out[ref] = f"{prefix}{cls}{count[cls]}"
+    return out
+
+
+def stack_letter(i: int) -> str:
+    """A, B, … Z, AA, AB, … for stack level `i` (0 = the aft end)."""
+    s = ""
+    i += 1
+    while i:
+        i, r = divmod(i - 1, 26)
+        s = chr(ord("A") + r) + s
+    return s
+
+
+class board_refdes:
+    """`with board_refdes(board, prefix): ...` — every per-board writer
+    (board, schematic, Protel netlist) names the board's parts R1, R2,
+    Q1, … (after `prefix`, the board's stack letter) for the duration.
+    Without a prefix the names are unique per board only, so multi-board
+    outputs (panel, system schematic, project BOM) stay outside it.
+    `.mapping` holds the {design ref: short refdes} table."""
+
+    def __init__(self, board, prefix: str = ""):
+        from smash.state import Chip
+        self.prefix = prefix
+        from smash.state.antenna import Antenna
+        self.mapping = short_refdes(
+            (pl.item.ref for pl in board.chip_placements
+             if isinstance(pl.item, (Chip, Antenna)) and pl.item.footprint is not None),
+            prefix)
+
+    def __enter__(self):
+        _SHORT_REFS.clear()
+        _SHORT_REFS.update(self.mapping)
+        _REF_PREFIX[0] = self.prefix
+        return self
+
+    def __exit__(self, *exc):
+        _SHORT_REFS.clear()
+        _REF_PREFIX[0] = ""
 
 
 def board_datasheet(component) -> str:

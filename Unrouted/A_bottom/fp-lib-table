@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashABottom")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashABottom.pretty")(options "")(descr "Editable Smash A-bottom footprints"))
+)

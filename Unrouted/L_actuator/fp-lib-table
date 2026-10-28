@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashLActuator")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashLActuator.pretty")(options "")(descr "Editable Smash L-actuator footprints"))
+)

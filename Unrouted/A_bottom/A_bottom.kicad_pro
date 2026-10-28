@@ -1,0 +1,39 @@
+{
+  "board": {
+    "design_settings": {
+      "rules": {
+        "min_clearance": 0.075,
+        "min_track_width": 0.1,
+        "min_through_hole_diameter": 0.15,
+        "min_via_diameter": 0.3,
+        "min_microvia_diameter": 0.25,
+        "min_microvia_drill": 0.15
+      }
+    }
+  },
+  "meta": {
+    "filename": "A_bottom.kicad_pro",
+    "version": 3
+  },
+  "net_settings": {
+    "classes": [
+      {
+        "name": "Default",
+        "clearance": 0.075,
+        "track_width": 0.1,
+        "via_diameter": 0.3,
+        "via_drill": 0.15,
+        "microvia_diameter": 0.25,
+        "microvia_drill": 0.15,
+        "diff_pair_gap": 0.15,
+        "diff_pair_width": 0.1
+      }
+    ],
+    "meta": {
+      "version": 3
+    }
+  },
+  "pcbnew": {
+    "page_layout_descr_file": "empty.kicad_wks"
+  }
+}

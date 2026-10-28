@@ -1,4 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "SmashSpacerCompanionComputeRadarModule")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashSpacerCompanionComputeRadarModule.pretty")(options "")(descr "Editable Smash spacer-companion-compute-radar-module footprints"))
-)

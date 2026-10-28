@@ -1080,7 +1080,8 @@ def unconnected_nets(comp) -> dict:
 
 def write_board_schematic(design: Design, board, out_dir, *,
                           lib: str | None = None,
-                          pad_groups: list | None = None) -> dict:
+                          pad_groups: list | None = None,
+                          project: str | None = None) -> dict:
     """Write `<board>.kicad_sch` (+ its symbol library and sym-lib-table)
     into the board's own project directory, so the board's `.kicad_pcb`
     and its schematic form one KiCad project.
@@ -1097,13 +1098,16 @@ def write_board_schematic(design: Design, board, out_dir, *,
     schematic-parity DRC see the netlist the board already has. `lib` is
     the library nickname used for both symbols and the Footprint fields
     (the portable project's footprint library). Leaves `<board>.kicad_pro`
-    to the board writer."""
+    to the board writer. `project` names the files, the project and its
+    library (default: the board's name) — it must be the `.kicad_pcb`'s
+    stem; the board's own name still seeds every uuid."""
     from smash.export.portable_project import library_nickname, _fp_filename
     from smash.state import Chip
     from smash.state.antenna import Antenna
 
     name = board.name
-    lib = lib or library_nickname(name)
+    project = project or name
+    lib = lib or library_nickname(project)
     refs = {pl.item.ref for pl in board.chip_placements
             if isinstance(pl.item, (Chip, Antenna)) and pl.item.footprint is not None}
     comps = [c for c in all_components(design) if c.ref in refs]
@@ -1113,11 +1117,11 @@ def write_board_schematic(design: Design, board, out_dir, *,
         return f"{lib}:{_fp_filename(fp)}" if fp else ""
 
     out = pathlib.Path(out_dir)
-    r = _write_schematic(design, out, name, comps,
+    r = _write_schematic(design, out, project, comps,
                          {c.ref: name for c in comps}, lib=lib,
                          pad_groups={name: pad_groups or []},
                          fp_of=fp_of, label_all=True, rail_labels=True,
-                         datasheet_of=board_datasheet)
+                         datasheet_of=board_datasheet, titles={name: project})
     # The parts' datasheets and SamacSys libraries (KiCad symbol + Altium
     # SchLib/PcbLib) travel with the board; the generator owns both folders.
     for sub in ("datasheets", "samacsys"):
@@ -1136,7 +1140,7 @@ def write_board_schematic(design: Design, board, out_dir, *,
 
 def _write_schematic(design, out, project, comps, board_of, *, lib=None,
                      pad_groups=None, fp_of=None, label_all=False,
-                     datasheet_of=None, rail_labels=False) -> dict:
+                     datasheet_of=None, rail_labels=False, titles=None) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     lib = lib or project
     keep = {c.ref for c in comps}
@@ -1186,7 +1190,7 @@ def _write_schematic(design, out, project, comps, board_of, *, lib=None,
                                (pad_groups or {}).get(b, []))
         if blocks:
             regions.append(_Region(b, blocks))
-    _write_flat(out, project, lib, regions, rail_labels)
+    _write_flat(out, project, lib, regions, rail_labels, titles)
     _write_library(out, project, lib, symlib)
 
     return {"n_boards": len(regions), "n_parts": len(comps),
@@ -1316,7 +1320,7 @@ class _Region:
     origin_dy = property(lambda self: self._PAD + self._TITLE)
 
 
-def _write_flat(out, project, lib, regions, rail_labels=False) -> None:
+def _write_flat(out, project, lib, regions, rail_labels=False, titles=None) -> None:
     paper = _pack_on_paper(regions)
     root_uuid = _uid(project, "root")
     inst_path = f"/{root_uuid}"
@@ -1333,7 +1337,7 @@ def _write_flat(out, project, lib, regions, rail_labels=False) -> None:
             f'\t(rectangle (start {_f(fx0)} {_f(fy0)}) (end {_f(fx0 + rg.width)} {_f(fy0 + rg.height)}) '
             f'(stroke (width 0.5) (type solid)) (fill (type none)) (uuid {_q(_uid(board, "frame"))}))')
         items.append(
-            f'\t(text {_q(board)} (exclude_from_sim no) (at {_f(fx0 + _G)} {_f(fy0 + 3 * _G)} 0) '
+            f'\t(text {_q((titles or {}).get(board, board))} (exclude_from_sim no) (at {_f(fx0 + _G)} {_f(fy0 + 3 * _G)} 0) '
             f'(effects (font (size 5 5) (thickness 0.6)) (justify left bottom)) '
             f'(uuid {_q(_uid(board, "title"))}))')
         for bi, blk in enumerate(rg.blocks):

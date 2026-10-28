@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashMSpacer")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashMSpacer.pretty")(options "")(descr "Editable Smash M-spacer footprints"))
+)

@@ -44,7 +44,7 @@ from smash.state.design import Design
 from smash.state.geometry.cavity import CavityRegion
 from smash.state.topology.placement import Placement
 from smash.export._common import (
-    _strip_ball_prefix, board_datasheet, component_value, kicad_ref,
+    _strip_ball_prefix, board_datasheet, component_value, kicad_ref, ref_prefix,
 )
 from smash.export.kicad_sch import symbol_path, symbol_units, unconnected_nets
 from smash.roots import git_repo_root, resolve_repo_path
@@ -331,6 +331,7 @@ def _emit_footprint(
     board_name: str,
     offset_xy: tuple[float, float] = (0.0, 0.0),
     link_symbol: bool = False,
+    sheetfile: str | None = None,
 ) -> str:
     """One `(footprint ...)` block from a chip Placement. `offset_xy`
     is the tile centre in canvas coords for panel exports; pass (0, 0)
@@ -442,7 +443,7 @@ def _emit_footprint(
     if link_symbol:
         parts.append(f'\t\t(path "{symbol_path(board_name, chip.ref)}")')
         parts.append('\t\t(sheetname "/")')
-        parts.append(f'\t\t(sheetfile "{board_name}.kicad_sch")')
+        parts.append(f'\t\t(sheetfile "{sheetfile or board_name + ".kicad_sch"}")')
         # KiCad 10 unit metadata: which pads each symbol unit carries.
         parts.append("\t\t(units")
         for uname, pins in symbol_units(chip):
@@ -874,7 +875,7 @@ def _emit_holes(
             # (and, ref-less, duplicate) footprint.
             f'\t\t(attr board_only exclude_from_pos_files exclude_from_bom '
             f'allow_missing_courtyard)\n'
-            f'\t\t(property "Reference" "MH{i + 1}"\n'
+            f'\t\t(property "Reference" "{ref_prefix()}MH{i + 1}"\n'
             f'\t\t\t(at 0 0 0)\n'
             f'\t\t\t(layer "F.SilkS")\n'
             f'\t\t\t(hide yes)\n'
@@ -1425,7 +1426,8 @@ def write_kicad_pcb(
         if not isinstance(pl.item, (Chip, Antenna)):
             continue
         block = _emit_footprint(pl, board_name=board.name,
-                                link_symbol=link_schematic)
+                                link_symbol=link_schematic,
+                                sheetfile=f"{pathlib.Path(output_path).stem}.kicad_sch")
         if block:
             parts.append(block)
             n_footprints += 1
