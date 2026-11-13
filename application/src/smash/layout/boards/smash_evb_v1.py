@@ -35,7 +35,7 @@ from smash.state        import Board, Flex
 # compartment ceiling since the 2026-07-31 stack reorder: cell + contacts
 # P_CELL_CONTACTS on its bottom face, which also tucks its embeddable
 # passives into the compartment's free trefoil space). activation_interface
-# moved DOWN between aft_end and cell_floor the same day, putting the FIRE
+# moved DOWN between aft_end and cell_floor the same day, putting the ACTIVATE
 # boost one thin gap from the aft_end fire bank. PCB fabs cap board
 # thickness, so the holder is N manufacturable thin spacers — one design,
 # replicated N times — each ≤ MAX_SPACER_THICKNESS_MM, together summing to
@@ -45,14 +45,14 @@ from smash.state        import Board, Flex
 # cell_floor_board 2026-07-30 rework: briefly DELETED (side-solder-tab cells
 # standing directly on the piezo disc), then REINSTATED THIN the same day —
 # with cells on aft_end, the piezo hole + comparator pockets + tab chimneys
-# starved the aft LGA joint (59→20 lands, FIRE_ARMED/BAT_RAW dropped), and
+# starved the aft LGA joint (59→20 lands, ACTIVATE_SET/BAT_RAW dropped), and
 # moving the comparator to the bottom face gave PIEZO_P an unwanted via stub.
 # The tile is now 6L / ~0.85 mm (was a 20L coin host — the Cu coin is GONE,
 # the potted monolith carries the pack load) and carries POTTING pass-through
 # holes so the thin aft gaps below it (activation↔cell_floor, and via
 # activation's own pass-throughs aft_end↔activation) fill from the
 # compartment channels. Since the 2026-07-31 reorder its aft neighbour is
-# activation_interface (FIRE boost) and the compartment sits nose-ward, up
+# activation_interface (ACTIVATE boost) and the compartment sits nose-ward, up
 # to the fin_ble_board ceiling. Single-cell mode still drops the tile (the
 # one horizontal cell lies on aft_end directly).
 BATTERY_LENGTH_MM = 21.0           # default (3-cell superset) = TLM-1520HPM/S
