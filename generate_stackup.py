@@ -2,6 +2,12 @@
 """Smash design generator — builds the full Smash design using nothing
 but the `smash` library and emits the KiCad panels + per-config variants.
 
+Smash is a high-speed emergency airdrop of a sensor package — sonar,
+infrared, or a radio — onto an illuminated point, so missing people can
+be found while the window is still open. `PARACHUTE_CUTTER_SET` arms the
+aft nichrome bank; `PARACHUTE_CUTTER_ACTIVATE` feeds the selected
+parachute restraint.
+
 Originally a twin of the legacy SKiDL `system.py` (now frozen under
 `archive/`; see archive/README.md). The `smash` library is the sole
 authority — parity with `system.py` is no longer maintained, so the old
@@ -582,13 +588,15 @@ def build_companion_compute(d: Design) -> None:
     # witness (moved off the WBA with the IR-wake change; alive from
     # Ready (merged stage), quantitative rapid deceleration beside the piezo's COMP_OUT edge)
 
-    # Launch detect — QPD TIA outputs (ADC) + piezo comparator + activation
+    # Aim-point steering (QPD TIAs) for the sensor drop, plus the drop-shock
+    # piezo and the parachute cutters.
+    # PARACHUTE_CUTTER_SET arms the high side; ACTIVATE_CONFIRM reads the 33 V rail.
     _net(d, "QPD_TIA_A").connect(mpu.pin("PB11"))  # ADC1
     _net(d, "QPD_TIA_B").connect(mpu.pin("PG15"))  # ADC1
     _net(d, "QPD_TIA_C").connect(mpu.pin("PI11"))  # ADC1
     _net(d, "QPD_TIA_D").connect(mpu.pin("PG11"))  # ADC2
     _net(d, "COMP_OUT").connect(mpu.pin("PD5"))         # TLV3691 piezo comparator EXTI
-    _net(d, "ACTIVATE_SET").connect(mpu.pin("PE0"))
+    _net(d, "PARACHUTE_CUTTER_SET").connect(mpu.pin("PE0"))
     _net(d, "ACTIVATE_CONFIRM").connect(mpu.pin("PD9"))
 
     # WBA55 wake/BLE radio: HCI (SPI3 host) + LPUART (firmware/console) + boot
@@ -1620,18 +1628,20 @@ def build_fins_module(d: Design) -> None:
 
 
 def build_aft_end_board(d: Design) -> None:
-    """Aft-most service tile (snake start) — the activate board
-    (2026-07-31: the sector select + activate chain came here from
-    activation; the piezo cluster left for fin_ble_board's top face in the
+    """Aft-most service tile (snake start) — the parachute-cutter board
+    for the emergency sensor drop (sonar, infrared, or a radio) onto an
+    illuminated point
+    (2026-07-31: the sector select + cutter chain came here from
+    activation_interface; the piezo cluster left for fin_ble_board's top face in the
     same-day stack reorder that also brought activation_interface down to
     be this tile's direct neighbour — see the piezo block). Top face: the
     COMPLETE sector-select chain — the CD74HC4514 4-to-16 decoder, the 16
-    DMN6075 select NFETs, the DMP6110 activation_unlock high-side + level shift, HV
+    DMN6075 select NFETs, the DMP6110 parachute_cutter_activate high-side + level shift, HV
     monitor + bleed (see _build_activation_array) — and the EXT_CAN
     gateway (TCAN1042 + terminator) at its TP_CAN pads; all 16
     Y*_ACTIVATE_SEL gate nets are tile-local. Bottom (outer) face: the
-    bench-test pogo array + the 16 outbound activate-wire pads + activation_unlock
-    common — so every activate net is a top↔bottom via through THIS tile and
+    bench-test pogo array + the 16 outbound parachute-restraint pads + the
+    PARACHUTE_CUTTER_ACTIVATE common — so every cutter net is a top↔bottom via through THIS tile and
     none cross the battery compartment. All emitted by the existing
     builders tagged ``board_tag="aft_end_board"``. In the 3-cell default
     the cells do NOT sit here (they stand on cell_floor_board, past
@@ -1694,7 +1704,7 @@ def build_activation_interface(d: Design) -> None:
     SYS_I2C control/sensor bus (the CAN replacement), the live fin-driver
     lines, spare GPIO, and power. The retired CAN + spin-brake pads are gone."""
     # Bottom-face bench pad map (2026-09-10 re-layout). Grouped by function
-    # in rows around the centred activation_unlock common, at the array's 2.101 mm
+    # in rows around the centred PARACHUTE_CUTTER_ACTIVATE common, at the array's 2.101 mm
     # pitch; positions are pinned in locked_placements.json so the silkscreen
     # groups and the bench fixture stay in step. The four TP_ACT_MOTOR*
     # single-phase probes are GONE — every fin now surfaces its FULL bipolar
@@ -1737,10 +1747,11 @@ def build_activation_interface(d: Design) -> None:
         # ── BAT ── power monitor / shunt insertion
         "TP_BAT_RAW":     "BAT_RAW",
         "TP_BAT_PROT":    "BAT_PROT",
-        # ── activation_unlock ── activate-rail unlock command + monitor. TP_ACT_SET drives the
-        # activate-rail high side: driving it on a bench makes Zone A live.
+        # ── parachute cutter ── PARACHUTE_CUTTER_SET arms the high side;
+        # ACTIVATE_CONFIRM is the 33 V rail monitor. Driving the set pad
+        # on the bench connects ACTIVATE_HV to the restraint wires.
         "TP_ACT_CONFIRM": "ACTIVATE_CONFIRM",
-        "TP_ACT_SET":     "ACTIVATE_SET",
+        "TP_PARACHUTE_CUTTER_SET":     "PARACHUTE_CUTTER_SET",
         # ── GROUND ── the single bench ground
         "TP_GND_ACT":     "FLEX_GND",
         # ── HALL ── fin-deploy DRV5023 (OFF-board). HALL_VIN exposes the
@@ -1765,7 +1776,7 @@ def build_activation_interface(d: Design) -> None:
         "TP_MP25_GND2":   "FLEX_GND",
         "TP_BOOT0":       "BOOT0",
         # ── GPIO ── 4-to-16 sector-decoder address lines (NOT spares while
-        # the activate rail has activation_unlock -- they select which sector activates)
+        # the parachute-cutter rail is armed -- they select which restraint cuts)
         "TP_GPIO_0":      "GPIO_EXT_0",
         "TP_GPIO_1":      "GPIO_EXT_1",
         "TP_GPIO_2":      "GPIO_EXT_2",
@@ -1774,13 +1785,13 @@ def build_activation_interface(d: Design) -> None:
     # Pin-1 convention: the FIRST pad of each silkscreen group is SQUARE,
     # the rest round. Same 2.0 mm size and pitch either way — the silhouette
     # alone tells a bench user where a group starts, with no legend to read.
-    # Single-pad groups (activate, GROUND) get no marker: there is no run to start.
+    # Single-pad groups (parachute wires, GROUND) get no marker: there is no run to start.
     SQUARE_STARTS = {
         "TP_SPI_MOSI",                                     # SPI
         "TP_FIN1_A1", "TP_FIN2_A1", "TP_FIN3_A1", "TP_FIN4_A1",   # FIN 1..4
         "TP_CAN_N",                                        # CAN
         "TP_BAT_RAW",                                      # BAT
-        "TP_ACT_CONFIRM",                                  # activation_unlock
+        "TP_ACT_CONFIRM",                                  # parachute cutter
         "TP_FIN_HALL",                                     # HALL
         "TP_I2C_SDA",                                      # I2C
         "TP_JUMP_WAKE",                                    # JUMPSTART
@@ -1825,13 +1836,14 @@ def build_activation_interface(d: Design) -> None:
     # brought around) → GND.
     #
     # A LOCAL TLV3691 thresholds PIEZO_P → COMP_OUT (= piezo_over_threshold),
-    # which crosses to the M33 PD5 EXTI for a near-instant launch interrupt.
+    # which crosses to the M33 PD5 EXTI as the drop-shock witness for the
+    # sensor deployment, before PARACHUTE_CUTTER_SET is allowed to cut.
     # The comparator + its resistors ride the SAME top face right beside the
     # disc (the EE's hand-placed x≈8.5 column) so the high-impedance PIEZO_P
     # charge node stays microscopically short — only the digital edge
     # crosses off-tile (and the hub is now 2 gaps away, not 5). The packer
     # fits the fins cluster (G0B1 + 4× DRV8428E) around these locks.
-    # ACTIVATE_SET / ACTIVATE_CONFIRM are firmware GPIOs now — the old hardware
+    # PARACHUTE_CUTTER_SET / ACTIVATE_CONFIRM are firmware GPIOs now — the old hardware
     # confirm AND-gate is gone. The comparator runs off the always-on bootstrap
     # 3V3 (exposed on the aft_end TP_VDD pogo) so the detector is alive while
     # the unit waits for launch. Complements the H3LIS331 high-G accel (on
@@ -1867,16 +1879,24 @@ def build_activation_interface(d: Design) -> None:
     _build_activation_array(d)
 
 
-# ── aft activation array — 12-sector capacitive-discharge activate ──
+# ── aft parachute-cutter array — 16 nichrome restraint sectors ──
 def _build_activation_array(d: Design) -> None:
-    """12 circular outbound activate-wire sectors, current-source activated (no cap).
+    """Sixteen nichrome parachute restraints for an emergency sensor drop.
+
+    The payload is a sonar, an infrared sensor, or a radio, put down on
+    an illuminated point so missing people can be found while the window
+    is still open. Fins steer the fall; the 1064 nm quadrant detector
+    and camera see the mark. At release, PARACHUTE_CUTTER_SET turns on the high-side
+    PFET and connects ACTIVATE_HV to PARACHUTE_CUTTER_ACTIVATE, the
+    common that feeds whichever restraint the sector decoder has
+    selected. That wire fuses and lets its sector of the canopy go.
 
     A TPS61175 boost makes ACTIVATE_HV = 33 V (off COMP_5V) and sources the
-    activate current DIRECTLY — no reservoir cap. At this operating point one
+    cutter current DIRECTLY — no reservoir cap. At this operating point one
     sector is ~30 mm of 25 µm / fine outbound at current density
     ~1000 A/mm²: V = J·ρ·L = 33 V, the wire draws ~20-120 mA depending on
     gauge (0.65-4 W), and self-fuses adiabatically in ~5 ms. That power is
-    well within the boost's ~280 mA @ 33 V output, so the old activate cap
+    well within the boost's ~280 mA @ 33 V output, so the old cutter cap
     (and the cell-pulse problem it solved) is GONE — the wire is the load.
 
     Selection:  GPIO_EXT_0..3 → CD74HC4514 4-to-16 decoder (powered from
@@ -1885,28 +1905,31 @@ def _build_activation_array(d: Design) -> None:
                 stay valid HC highs; a 5 V VCC would fail V_IH). E tied low
                 (always decoding), LE tied high (transparent). Y0..Y15 → 16
                 low-side DMN6075 select NFETs (full 16-sector array).
-    Unlock/activate: ACTIVATE_SET → DMP6110 high-side activation_unlock (ACTIVATE_HV → the sector
-                commons). Without activation_unlock, ACTIVATE_HV can't reach any wire even if a
-                select NFET shorts. The PFET gate is a resistor divider
-                (R1=R2=100k off ACTIVATE_HV) → V_GS ≈ -16.5 V at 33 V, inside
-                the ±20 V limit (no zener).
+    Set/activate: PARACHUTE_CUTTER_SET → DMP6110 high side
+                (ACTIVATE_HV → PARACHUTE_CUTTER_ACTIVATE → the sector
+                commons). Without PARACHUTE_CUTTER_ACTIVATE, ACTIVATE_HV
+                can't reach any wire even if a select NFET shorts. The
+                PFET gate is a resistor divider (R1=R2=100k off
+                ACTIVATE_HV) → V_GS ≈ -16.5 V at 33 V, inside the ±20 V
+                limit (no zener).
     Monitor:    ACTIVATE_HV → 100k/11k divider → ACTIVATE_CONFIRM (MP25 ADC) so
-                firmware verifies the 33 V rail before activate; R_ACTIVATE_BLEED
-                discharges the small output cap when activation_unlock is released.
+                firmware verifies the 33 V rail before the cut; R_ACTIVATE_BLEED
+                discharges the small output cap when PARACHUTE_CUTTER_SET is released.
 
     Both 33 V (vs the cap's 25 V) and 60 V FETs are comfortable; only the
     boost's mandatory output ceramic remains on ACTIVATE_HV (50 V, loop
-    stability — NOT an activate reservoir). All on aft_end_board. SAFETY
-    (eFuse-gated decoder + activation_unlock interlock): no wire activates unless the round
-    is in MAIN (BAT_PROT live) AND ACTIVATE_SET sets activation_unlock on the high side."""
+    stability — NOT a cutter reservoir). All on aft_end_board. SAFETY
+    (eFuse-gated decoder + PARACHUTE_CUTTER_SET interlock): no restraint
+    cuts unless the package is in MAIN (BAT_PROT live) AND
+    PARACHUTE_CUTTER_SET drives the high side."""
     # SECTOR SELECT + ACTIVATE CHAIN on aft_end_board's TOP face (moved here
     # from activation 2026-07-31; the piezo cluster moved OUT to
     # fin_ble_board's top in the same-day stack reorder, freeing the room
     # that lets the whole chain sit together): the CD74HC4514 4-to-16
-    # decoder, 16 select NFETs, activation_unlock high-side + level shift, HV monitor and
+    # decoder, 16 select NFETs, parachute_cutter_activate high-side + level shift, HV monitor and
     # bleed all sit ONE via away from the outbound wire-pad ring + common
     # on aft_end's bottom face — the 16 Y*_ACTIVATE_SEL gate nets are
-    # tile-local, and ACT_WIRE_0..15 + activation_unlock never cross the battery
+    # tile-local, and ACT_WIRE_0..15 + parachute_cutter_activate never cross the battery
     # compartment. ACTIVATE_HV comes down from the boost on activation, which
     # the reorder made the DIRECT neighbour (one thin gap, not the battery
     # column; the 2.8 mm inductor still doesn't fit this tile's thin gap).
@@ -1926,7 +1949,7 @@ def _build_activation_array(d: Design) -> None:
     # the battery column (its feed COMP_5V now rides the column lands down
     # from power_board instead; 33 V across 0.37 mm potted land gaps was
     # fine per IPC-2221, and the 5 V rail is more comfortable still); the
-    # activation_unlock high-side, decoder, NFETs, monitor and bleed sit on aft_end with
+    # parachute_cutter_activate high-side, decoder, NFETs, monitor and bleed sit on aft_end with
     # the wires — safety topology unchanged.
     BT_BOOST = "activation_interface"
     boost = add_tps61175pwpr(d, ref="U_ACTIVATE_BOOST", board_tag=BT_BOOST)
@@ -1936,8 +1959,8 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "ACTIVATE_FB")    .connect(boost.pin("FB"))      # 9
     for p in ("PGND_1", "PGND_2", "PGND_3", "AGND", "EP", "NC", "SYNC"):
         _net(d, "GND")    .connect(boost.pin(p))
-    # EN = COMP_5V: ACTIVATE_HV is live whenever the round is in MAIN. The activation_unlock
-    # interlock + bleed keep it safe until ACTIVATE_SET activates.
+    # EN = COMP_5V: ACTIVATE_HV is live whenever the package is in MAIN. The
+    # PARACHUTE_CUTTER_SET interlock + bleed keep the restraints intact until it cuts.
     _net(d, "COMP_5V")    .connect(boost.pin("EN"))      # 4
     _net(d, "ACTIVATE_COMP")  .connect(boost.pin("COMP"))    # 8
     _net(d, "ACTIVATE_FREQ")  .connect(boost.pin("FREQ"))    # 10
@@ -1973,20 +1996,20 @@ def _build_activation_array(d: Design) -> None:
     res_between(d, "ACTIVATE_CONFIRM", "GND", "11k",
                 ref="R_ACTIVATE_MON2", board_tag=BT)
 
-    # ── high-side activation_unlock (DMP6110) + level-shift + gate-clamp divider ─────
-    unlock = add_dmp6110svt_7(d, ref="Q_ACTIVATION_UNLOCK", board_tag=BT)
+    # ── high-side parachute_cutter_activate (DMP6110) + level-shift + gate-clamp divider ─────
+    unlock = add_dmp6110svt_7(d, ref="Q_PARACHUTE_CUTTER_ACTIVATE", board_tag=BT)
     for dp in ("D_1", "D_2", "D_3", "D_4"):
-        _net(d, "ACTIVATION_UNLOCK").connect(unlock.pin(dp))   # drains → sector common
+        _net(d, "PARACHUTE_CUTTER_ACTIVATE").connect(unlock.pin(dp))   # drains → sector common
     _net(d, "ACTIVATE_HV")   .connect(unlock.pin("S"))      # source = the 33 V rail
-    _net(d, "ACTIVATION_UNLOCK_G").connect(unlock.pin("G"))
-    # gate divider: ACTIVATE_HV ─100k─ G ─100k─ (BSS138 drain). activation_unlock → G≈16.5 V
-    # → V_GS≈-16.5 V (PFET on, inside ±20 V); without activation_unlock → G=ACTIVATE_HV (off).
-    res_between(d, "ACTIVATE_HV", "ACTIVATION_UNLOCK_G", "100k", ref="R_ACTIVATION_UNLOCK_H", board_tag=BT)
-    res_between(d, "ACTIVATION_UNLOCK_G", "ACTIVATION_UNLOCK_GD", "100k", ref="R_ACTIVATION_UNLOCK_L", board_tag=BT)
-    q_unlock = add_bss138lt1g(d, ref="Q_ACTIVATION_UNLOCK_LS", board_tag=BT)
-    _net(d, "ACTIVATION_UNLOCK_GD").connect(q_unlock.pin("3"))   # drain
+    _net(d, "PARACHUTE_CUTTER_ACTIVATE_G").connect(unlock.pin("G"))
+    # gate divider: ACTIVATE_HV ─100k─ G ─100k─ (BSS138 drain). parachute_cutter_activate → G≈16.5 V
+    # → V_GS≈-16.5 V (PFET on, inside ±20 V); without parachute_cutter_activate → G=ACTIVATE_HV (off).
+    res_between(d, "ACTIVATE_HV", "PARACHUTE_CUTTER_ACTIVATE_G", "100k", ref="R_PARACHUTE_CUTTER_ACTIVATE_H", board_tag=BT)
+    res_between(d, "PARACHUTE_CUTTER_ACTIVATE_G", "PARACHUTE_CUTTER_ACTIVATE_GD", "100k", ref="R_PARACHUTE_CUTTER_ACTIVATE_L", board_tag=BT)
+    q_unlock = add_bss138lt1g(d, ref="Q_PARACHUTE_CUTTER_ACTIVATE_LS", board_tag=BT)
+    _net(d, "PARACHUTE_CUTTER_ACTIVATE_GD").connect(q_unlock.pin("3"))   # drain
     _net(d, "GND")        .connect(q_unlock.pin("2"))   # source
-    _net(d, "ACTIVATE_SET").connect(q_unlock.pin("1"))  # gate ← MP25 activation_unlock
+    _net(d, "PARACHUTE_CUTTER_SET").connect(q_unlock.pin("1"))  # gate ← MP25 PARACHUTE_CUTTER_SET
 
     # ── 4-to-16 sector decoder (CD74HC4514PW, BAT_PROT-powered) ───────
     # Back on aft_end's TOP face with the select NFETs it drives (a brief
@@ -2007,21 +2030,22 @@ def _build_activation_array(d: Design) -> None:
     # ── 16 low-side select NFETs + outbound activate-wire pads ─────────────
     # ALL 16 decoder outputs Y0..Y15 are used → a full 16-sector radial array
     # (30°→22.5° per sector.
-    # Each sector: activation_unlock (common) → outbound wire → ACT_WIRE_i pad →
+    # Each sector: PARACHUTE_CUTTER_ACTIVATE (common) → restraint wire → ACT_WIRE_i pad →
     # DMN6075 drain; source → GND. Only the addressed sector's gate is high,
-    # and only activation_unlock ACTIVATE_HV makes current flow → exactly one wire activates.
+    # and only while PARACHUTE_CUTTER_SET holds the high side on does current
+    # flow → exactly one parachute restraint cuts.
     # NB: no spare Y12..Y15 "no-sector" idle code anymore — the safe idle state is
-    # the DMP6110 activation_unlock (ACTIVATE_HV gated off); tie ~E to a GPIO if a hard all-off
+    # the DMP6110 parachute_cutter_activate (ACTIVATE_HV gated off); tie ~E to a GPIO if a hard all-off
     # decoder state is also wanted.
-    # Activate-wire pads on aft_end_board's BOTTOM face (the aft outbound activation
-    # interface) — the outbound wires attach at the outbound activation. With the NFETs +
-    # activation_unlock back on aft_end's top face (2026-07-31), ACT_WIRE_i (drain → pad)
-    # and activation_unlock (high-side → common) are plain top↔bottom vias through this
-    # one tile — nothing activate-side crosses the battery compartment. Pads laid
+    # Restraint-wire pads on aft_end_board's BOTTOM face — the parachute
+    # lines attach here. With the NFETs + PARACHUTE_CUTTER_ACTIVATE back on
+    # aft_end's top face (2026-07-31), ACT_WIRE_i (drain → pad)
+    # and PARACHUTE_CUTTER_ACTIVATE (high-side → common) are plain top↔bottom vias through this
+    # one tile — nothing on the cutter side crosses the battery compartment. Pads laid
     # out as a ring of 16 around the rim (one per sector) via
     # locked_placements; common centred.
     common = add_pogo_pad(d, ref="P_ACTIVATE_COMMON", board_tag="aft_end_board", manf_pn=None, feature="bottom")
-    _net(d, "ACTIVATION_UNLOCK").connect(common.pin("1"))
+    _net(d, "PARACHUTE_CUTTER_ACTIVATE").connect(common.pin("1"))
     for i in range(16):
         nfet = add_dmn6075sq_7(d, ref=f"Q_ACTIVATE_N{i}", board_tag=BT)
         _net(d, f"Y{i}_ACTIVATE_SEL").connect(nfet.pin("G"))
@@ -2039,8 +2063,8 @@ def build_camera_module(d: Design) -> None:
     """AR0234CS 2.3-MP monochrome global-shutter image sensor (83-ball
     ODCSP) + power-rail decoupling caps + RSVD pulldown. 2-lane MIPI
     CSI-2 + I²C + EXTCLK + RESET_BAR control. All on a small Ø15 mm
-    tile behind the 1064 nm bandpass lens — see system.py:add_camera
-    for the design rationale."""
+    tile behind the 1064 nm bandpass lens. It steers the drop onto the
+    illuminated aim point and, once down, looks for people."""
     cam = add_ar0234cssm00suka0_cp(d, ref="U_CAM", board_tag="camera_module")
 
     # ── Power rails (per datasheet Table 3) ─────────────────────────
@@ -2593,7 +2617,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
     # the piezo disk (the battery-compartment ceiling's top face since the
     # 2026-07-31 stack reorder) so the high-Z analog stays local; only the
     # digital COMP_OUT crosses to the M33 PD5 EXTI. The hardware confirm
-    # AND-gate is retired: ACTIVATE_SET / ACTIVATE_CONFIRM are firmware GPIOs.
+    # AND-gate is retired: PARACHUTE_CUTTER_SET / ACTIVATE_CONFIRM are firmware GPIOs.
 
     # ── 4x AD8603 QPD transimpedance amps (board_tag=qpd_module, bottom face — directly behind the photodiode so
     # the high-Z anode->TIA node is microscopic; TIA outputs ride the branch to ADC) ────────
@@ -2731,7 +2755,7 @@ def build_power_board(d: Design) -> None:
     # path; depot-USB force-OFF is a HARDWARE interlock (Q_ISO_USB),
     # independent of firmware. DMP6110: -60 V, 6.5 A cont — carries the
     # whole pack (the radar taps BAT_PROT downstream of this, ahead of
-    # QMAIN). Same high-side P-FET + NFET gate-pull idiom as Q_ACTIVATION_UNLOCK.
+    # QMAIN). Same high-side P-FET + NFET gate-pull idiom as Q_PARACHUTE_CUTTER_ACTIVATE.
     # NOTE: forward-drop, gate-drive timing and the USB interlock want
     # bench/sim confirmation before fab (analog behaviour, not modelled
     # by the connectivity build).
@@ -5348,9 +5372,9 @@ _AFT_SILK_GROUPS = [
     ("FIN 4",         ["TP_FIN4_A1", "TP_FIN4_A2", "TP_FIN4_B1", "TP_FIN4_B2"]),
     ("CAN",           ["TP_CAN_N", "TP_CAN_P"]),
     ("BAT",           ["TP_BAT_RAW", "TP_BAT_PROT"]),
-    ("ACTIVATE",      ["P_ACTIVATE_COMMON"]),
+    ("PARACHUTE WIRES", ["P_ACTIVATE_COMMON"]),
     ("GROUND",        ["TP_GND_ACT"]),
-    ("ACTIVATION_UNLOCK", ["TP_ACT_CONFIRM", "TP_ACT_SET"]),
+    ("PARACHUTE CUTTER", ["TP_ACT_CONFIRM", "TP_PARACHUTE_CUTTER_SET"]),  # set + rail monitor
     ("HALL",          ["TP_FIN_HALL", "TP_HALL_VIN"]),
     ("I2C",           ["TP_I2C_SDA", "TP_I2C_SCL"]),
     ("JUMPSTART",     ["TP_JUMP_WAKE", "TP_JUMP_GND"]),
@@ -5359,9 +5383,9 @@ _AFT_SILK_GROUPS = [
     ("GPIO",          ["TP_GPIO_0", "TP_GPIO_1", "TP_GPIO_2", "TP_GPIO_3"]),
 ]
 # Schematic: aft_end's bottom-face pads drawn as these same groups (the
-# ACTIVATE group also takes the 16 outbound activate-wire pads).
+# PARACHUTE WIRES group also takes the 16 outbound restraint-wire pads).
 _SCH_PAD_GROUPS = {"aft_end_board": [
-    (label, refs + [f"P_ACT_WIRE_{i}" for i in range(16)] if label == "ACTIVATE" else refs)
+    (label, refs + [f"P_ACT_WIRE_{i}" for i in range(16)] if label == "PARACHUTE WIRES" else refs)
     for label, refs in _AFT_SILK_GROUPS]}
 _AFT_SILK_PAD_R_MM = 1.0     # Ø2.0 pad → 1.0 half-width
 _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
@@ -5372,7 +5396,7 @@ _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
 def _mark_aft_bench_silk(boards: dict) -> None:
     """Box + label each bench-pad group on aft_end_board's BOTTOM silkscreen.
 
-    Single-pad groups (activate, GROUND) get a label only — a box around one pad
+    Single-pad groups (parachute wires, GROUND) get a label only — a box around one pad
     adds nothing and the copper is already unambiguous. Must run AFTER
     `_mark_spacer_cavity_silk`, which clears every board's silk_overlays."""
     b = boards.get("aft_end_board")

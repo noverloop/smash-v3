@@ -724,7 +724,9 @@ def add_mt03_092_qpd(design, ref: str = "U_QPD", **overrides) -> Chip:
             "each anode → AD8603 TIA on the qpd_module tile. 4 "
             "photodiode quadrants (A, B, C, D) with 200 µm dead-zone "
             "gaps between them. Sits behind the 1064 nm bandpass lens "
-            "on the rigid qpd_module sensor tile."
+            "on the rigid qpd_module sensor tile. It holds the drop on "
+            "the illuminated aim point so the sensor package (sonar, "
+            "infrared, or a radio) can be put down where people are missing."
         ),
     )
     fields.update(overrides)

@@ -8515,7 +8515,7 @@
    ]
   },
   {
-   "net": "ACTIVATE_SET",
+   "net": "PARACHUTE_CUTTER_SET",
    "layer": "F.Cu",
    "width": 0.1,
    "path": [
@@ -8530,7 +8530,7 @@
    ]
   },
   {
-   "net": "ACTIVATE_SET",
+   "net": "PARACHUTE_CUTTER_SET",
    "layer": "F.Cu",
    "width": 0.1,
    "path": [
@@ -8545,7 +8545,7 @@
    ]
   },
   {
-   "net": "ACTIVATE_SET",
+   "net": "PARACHUTE_CUTTER_SET",
    "layer": "B.Cu",
    "width": 0.1,
    "path": [
@@ -8560,7 +8560,7 @@
    ]
   },
   {
-   "net": "ACTIVATE_SET",
+   "net": "PARACHUTE_CUTTER_SET",
    "layer": "B.Cu",
    "width": 0.1,
    "path": [
@@ -12477,7 +12477,7 @@
    "kind": "through"
   },
   {
-   "net": "ACTIVATE_SET",
+   "net": "PARACHUTE_CUTTER_SET",
    "x": 14.7105,
    "y": -1.3338,
    "size": 0.45,

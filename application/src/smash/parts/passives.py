@@ -471,15 +471,15 @@ def add_capacitor_svpf_25v_330uf_panasonic(design, ref: str, **overrides) -> Chi
     code F12: a vertical V-chip can, øD 10.0 mm × **12.6 mm tall**.
 
     Polymer-aluminium (no ignite-on-failure mode, low ESR) rated to 50 V
-    / 1000 µF across the family. This is the aft activation array's
-    activation CAPACITOR on ACTIVATE_HV: the boost (TPS61175) trickle-charges it,
-    and on fire it dumps the ~1 A / 10 ms pulse into the selected
-    nichrome burn-wire so the cell never sees the pulse power.
+    / 1000 µF across the family. Kept in the catalog. It used to be the
+    reservoir on ACTIVATE_HV for the aft parachute-cutter wires; the live
+    circuit current-sources each nichrome restraint from the TPS61175
+    directly, so this can is not instantiated.
 
-    ACTIVATE_HV runs at ~19.7 V (150k/10k FB) = ~79 % of the 25 V rating —
-    proper polymer derating. The 12.6 mm height is absorbed by mounting
-    the can in the annular dead-space BESIDE the cell (its length
-    overlaps the battery compartment, costing ~0 added stack height).
+    The old bias was ~19.7 V (150k/10k FB), about 79 % of the 25 V
+    rating. The live cutter rail is 33 V and does not use this can. The
+    12.6 mm height was absorbed by mounting it in the annular dead-space
+    beside the cell.
 
     Ground-truth in parts/sources/25SVPF330M/ (SamacSys zip + DS
     PANA-S-A0027325923-1 → SVPF.pdf). Polarized; + = pin 1."""
@@ -526,9 +526,9 @@ def add_capacitor_svpf_25v_330uf_panasonic(design, ref: str, **overrides) -> Chi
         note=(
             "Panasonic SVPF polymer-Al, 105 °C/5000 h, 50 V / 1000 µF max "
             "family. 25SVPF330M = F12 V-chip, øD 10.0 × 12.6 mm, ESR "
-            "14 mΩ, ripple 1650 mA. Smash: FIRE_HV firing cap (charged to "
-            "~19.7 V, ~79 % derated); mounts beside the cell so its height "
-            "overlaps the battery compartment. Polarized; + = pin 1."
+            "14 mΩ, ripple 1650 mA. Retired parachute-cutter reservoir "
+            "(the live restraints are current-sourced from the 33 V "
+            "boost). Polarized; + = pin 1."
         ),
     )
     fields.update(overrides)

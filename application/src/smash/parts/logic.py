@@ -15,10 +15,12 @@ def add_sn74lvc1g08dbvr(design, ref: str, **overrides) -> Chip:
     SC-70-5 / SOT-23-5 (DBV) package.
 
     Used on `flight_board` as the hardware AND gate producing
-    `ACTIVATE_CONFIRM = ACTIVATE_SET AND COMP_OUT` — the unforgeable
-    confirmation that BOTH firmware (ACTIVATE_SET on PC15) AND the
-    piezo comparator (COMP_OUT) agree before the activation board sees
-    the activation signal. Single-fault tolerance for the safety-critical signal."""
+    `ACTIVATE_CONFIRM = PARACHUTE_CUTTER_SET AND COMP_OUT` — the retired
+    interlock that required BOTH the parachute-cutter command
+    (PARACHUTE_CUTTER_SET) AND the drop-shock comparator (COMP_OUT)
+    before a restraint wire could be cut, putting the sensor package
+    down where missing people are being searched for. Single-fault
+    tolerance for that release."""
     pn = "SN74LVC1G08DBVR"
     fp_mod = src(pn, "SOT95P280X145-5N.kicad_mod")
     fields = dict(
@@ -72,15 +74,18 @@ def add_sn74lvc1g08dbvr(design, ref: str, **overrides) -> Chip:
             "  I_off          : supports live insertion, partial power\n"
             "                   down, back-drive protection\n\n"
             "Smash use (legacy hardware-confirm topology — RETIRED; the\n"
-            "ACTIVATE_SET/CONFIRM interlock is firmware GPIOs on the MP25\n"
-            "M33 now, no AND gate). Historical wiring:\n"
+            "PARACHUTE_CUTTER_SET / ACTIVATE_CONFIRM interlock is firmware\n"
+            "GPIOs on the MP25 M33 now, no AND gate). Historical wiring:\n"
             "  Y = ACTIVATE_CONFIRM\n"
-            "  A = ACTIVATE_SET   (firmware command from MP25 M33 PE0)\n"
-            "  B = COMP_OUT       (TLV3691 piezo comparator output)\n\n"
+            "  A = PARACHUTE_CUTTER_SET   (cutter arm from MP25 M33 PE0)\n"
+            "  B = COMP_OUT       (TLV3691 drop-shock comparator output)\n\n"
             "Neither firmware (which controlled A) nor the piezo (which\n"
-            "controls B) alone could produce Y — both had to agree, making\n"
-            "the AND gate an unforgeable launch confirmation. Kept in the\n"
-            "catalog; not instantiated since the interlock moved to firmware."
+            "controls B) alone could produce Y — both had to agree before\n"
+            "a parachute restraint could be cut on the way to the\n"
+            "illuminated aim point, where the sensor package (sonar,\n"
+            "infrared, or a radio) starts the search for missing people.\n"
+            "Kept in the catalog; not instantiated since the interlock\n"
+            "moved to firmware."
         ),
     )
     fields.update(overrides)
@@ -158,15 +163,18 @@ def add_sn74lvc1g08dckrg4(design, ref: str, **overrides) -> Chip:
             "  I_off          : supports live insertion, partial power\n"
             "                   down, back-drive protection\n\n"
             "Smash use (legacy hardware-confirm topology — RETIRED; same as\n"
-            "DBVR; the ACTIVATE_SET/CONFIRM interlock is firmware GPIOs on the\n"
-            "MP25 M33 now, no AND gate). Historical wiring:\n"
+            "DBVR; the PARACHUTE_CUTTER_SET / ACTIVATE_CONFIRM interlock is\n"
+            "firmware GPIOs on the MP25 M33 now, no AND gate). Historical wiring:\n"
             "  Y = ACTIVATE_CONFIRM\n"
-            "  A = ACTIVATE_SET   (firmware command from MP25 M33 PE0)\n"
-            "  B = COMP_OUT       (TLV3691 piezo comparator output)\n\n"
+            "  A = PARACHUTE_CUTTER_SET   (cutter arm from MP25 M33 PE0)\n"
+            "  B = COMP_OUT       (TLV3691 drop-shock comparator output)\n\n"
             "Neither firmware (which controlled A) nor the piezo (which\n"
-            "controls B) alone could produce Y — both had to agree, making\n"
-            "the AND gate an unforgeable launch confirmation. Kept in the\n"
-            "catalog; not instantiated since the interlock moved to firmware.\n\n"
+            "controls B) alone could produce Y — both had to agree before\n"
+            "a parachute restraint could be cut on the way to the\n"
+            "illuminated aim point, where the sensor package (sonar,\n"
+            "infrared, or a radio) starts the search for missing people.\n"
+            "Kept in the catalog; not instantiated since the interlock\n"
+            "moved to firmware.\n\n"
             "Lead-finish note: G4 = TI's Pb-free / NiPdAu marker. The "
             "physical part has no Pb anywhere; assembly with Sn-Pb "
             "solder paste yields a 'mixed-alloy' joint (NiPdAu leads + "

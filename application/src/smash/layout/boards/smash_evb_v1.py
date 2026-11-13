@@ -45,7 +45,7 @@ from smash.state        import Board, Flex
 # cell_floor_board 2026-07-30 rework: briefly DELETED (side-solder-tab cells
 # standing directly on the piezo disc), then REINSTATED THIN the same day —
 # with cells on aft_end, the piezo hole + comparator pockets + tab chimneys
-# starved the aft LGA joint (59→20 lands, ACTIVATE_SET/BAT_RAW dropped), and
+# starved the aft LGA joint (59→20 lands, PARACHUTE_CUTTER_SET/BAT_RAW dropped), and
 # moving the comparator to the bottom face gave PIEZO_P an unwanted via stub.
 # The tile is now 6L / ~0.85 mm (was a 20L coin host — the Cu coin is GONE,
 # the potted monolith carries the pack load) and carries POTTING pass-through

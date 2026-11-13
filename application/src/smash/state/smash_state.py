@@ -43,6 +43,14 @@ class SmashState:
     def new(cls) -> "SmashState":
         """Create a fresh SmashState pre-loaded with the Core boards.
 
+        Smash is a high-speed emergency airdrop of a sensor package —
+        sonar, infrared, or a radio — onto an illuminated point, so
+        missing people can be found while the window is still open.
+        Fins steer the fall, the 1064 nm quadrant detector and camera
+        see the mark, and the aft nichrome bank cuts the parachute
+        restraints: `PARACHUTE_CUTTER_SET` arms the high side,
+        `PARACHUTE_CUTTER_ACTIVATE` feeds the selected wire.
+
         Every Smash configuration shares the same Core tiles (per the
         "Order Configurations" table in components.md), so they're
         declared up-front. Optional subsystems — companion_computer,
@@ -58,7 +66,7 @@ class SmashState:
           - power_board:          battery cells + eFuse + bulk caps
           - wakeup_board:         always-on WLE5 + LoRa + wakeup NAND
           - flight_board:         H562 MCU + IMU/mag/baro + nav sensors
-          - activation_interface: pogo-pad activation channel detect
+          - activation_interface: pogo pads, Hall channel-detect, parachute-cutter boost
           - nfc_antenna_flex:     ST25DV NFC tag + 13.56 MHz antenna
           - nose_cap:             USB-C + LED nose cap (radar forward-end)
         """
@@ -79,8 +87,9 @@ class SmashState:
                         "+ TMP117 temp + S25HL512 64 MB QSPI flash")
         s.add_board(
             "activation_interface", kind="rigid",
-            description="Pogo-pad tile: 22 TestPoints + DRV5023 Hall "
-                        "channel-detect + activation")
+            description="Pogo-pad tile: bench access + DRV5023 Hall "
+                        "channel-detect + parachute-cutter boost "
+                        "(ACTIVATE_HV for the aft restraint wires)")
         s.add_board(
             "nfc_antenna_flex", kind="flex", standalone=True,
             description="ST25DV16KC-IE8T3 dynamic NFC tag + etched "
@@ -170,11 +179,12 @@ class SmashState:
         return self
 
     def add_qpd(self) -> "SmashState":
-        """Quadrant photodetector tile"""
+        """Quadrant photodetector that steers the sensor drop onto the
+        1064 nm illuminated aim point."""
         self.add_board(
             "qpd_module", kind="rigid", standalone=True,
-            description="MT03-092 Si or InGaAs QPD + 4× AD8603 TIA "
-                        "opamps + ADF4351 PLL synth")
+            description="MT03-092 QPD on the 1064 nm illuminated aim "
+                        "point + 4× AD8603 TIA opamps + ADF4351 PLL synth")
         return self
 
     def add_nfc(self) -> "SmashState":
@@ -214,13 +224,15 @@ class SmashState:
         return self
 
     def add_camera(self) -> "SmashState":
-        """Camera module — global-shutter CMOS sensor on a small tile
-        behind the optics. Only populated for visual-processing configs.
+        """Infrared camera behind the 1064 nm bandpass, both to steer
+        onto the illuminated aim point and to look for people once the
+        sensor package is down. Only populated for visual-processing configs.
         """
         self.add_board(
             "camera_module", kind="rigid", standalone=True,
             description="AR0234CSSM00SUKA0-CP 2.3 MP mono CMOS "
-                        "(1064 nm bandpass) + LP5907 VDD/VAA LDOs")
+                        "(1064 nm bandpass on the illuminated aim point) "
+                        "+ LP5907 VDD/VAA LDOs")
         return self
 
     def add_all(self) -> "SmashState":

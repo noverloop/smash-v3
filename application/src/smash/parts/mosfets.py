@@ -689,9 +689,11 @@ def add_bss138lt1g(design, ref: str, **overrides) -> Chip:
 # Diodes Inc. DMN6075SQ-7 — 60 V N-channel MOSFET, SOT-23
 #
 # Ground-truth in parts/sources/DMN6075SQ-7/ (SamacSys zip + DS
-# DIOD-S-A0009189360-1 → DMN6075SQ.pdf). The 12× low-side sector-select
-# switch in the aft activation array: blocks the 30 V FIRE_HV rail,
-# passes the ~1 A burn-wire current with 2× margin, driven ~4 V from the
+# DIOD-S-A0009189360-1 → DMN6075SQ.pdf). Low-side sector select in the
+# aft parachute-cutter array (one nichrome restraint per sector). The
+# drop puts a sonar, infrared, or radio sensor on an illuminated point.
+# Blocks the ACTIVATE_HV rail, passes the
+# cutter current with margin, driven ~4 V from the
 # BAT_PROT-powered CD74HC4514 decoder (so a worst-case 3 V-threshold part
 # is still well enhanced).
 # ─────────────────────────────────────────────────────────────────────────
@@ -715,12 +717,14 @@ Static (typ/max):
 
 AEC-Q101 qualified. SOT-23 (pins: 1=G, 2=S, 3=D).
 
-Smash use: aft activation array, low-side sector select (one of 12). The
-gate is driven by a CD74HC4514 output rail powered from BAT_PROT
-(~3.6-4.2 V) — chosen over 3V3 precisely because V_GS(th) runs to 3 V max,
-so 3.3 V drive could leave a worst-case part barely on. Source→GND,
-drain→one nichrome burn-wire; FIRE_HV (30 V cap) reaches the wire only
-when the DMP6110 ARM is on.
+Smash use: aft parachute-cutter array, low-side sector select (one of
+16 restraints around the tail of the sensor drop). The gate is
+driven by a CD74HC4514 output rail powered from BAT_PROT (~3.6-4.2 V) —
+chosen over 3V3 precisely because V_GS(th) runs to 3 V max, so 3.3 V
+drive could leave a worst-case part barely on. Source→GND, drain→one
+nichrome parachute restraint; PARACHUTE_CUTTER_ACTIVATE (the 33 V rail,
+gated by PARACHUTE_CUTTER_SET) reaches the wire only when the DMP6110
+high side is on.
 """
 
 
@@ -785,8 +789,8 @@ def add_dmn6075sq_7(design, ref: str, **overrides) -> Chip:
 #
 # Ground-truth in parts/sources/DMP6110SVT-7/ (SamacSys zip + DS
 # DIOD-S-A0001248745-1 → DMP6110SVT.pdf). The aft activation array's
-# high-side master ARM: isolates the charged 30 V firing cap from all 12
-# burn-wires until ACTIVATE_SET arms. Drain split across pins 1,2,5,6
+# high-side arm for the parachute cutters: isolates ACTIVATE_HV from all
+# 16 restraint wires until PARACHUTE_CUTTER_SET arms. Drain split across pins 1,2,5,6
 # (paralleled in the package). Source sits at FIRE_HV (30 V), so the gate
 # needs a zener clamp (V_GSS ±20 V) on the level-shift drive.
 # ─────────────────────────────────────────────────────────────────────────
@@ -810,12 +814,13 @@ Static (typ/max):
 
 AEC-Q101 qualified. TSOT-26 (pins: 1,2,5,6=D, 3=G, 4=S).
 
-Smash use: aft activation array, high-side ARM. Source→FIRE_HV (30 V cap),
-drain→the 12 sector-select NFET array. Disarmed, the cap can't reach any
-burn-wire even if a select NFET shorts. Because the source rides at 30 V,
-the gate is driven through a level-shift NFET (ACTIVATE_SET) with a
-~12-15 V zener gate-source clamp so V_GS stays inside the ±20 V limit while
-still fully enhancing the device (R_DS(on) 105 mΩ at -10 V).
+Smash use: aft parachute-cutter array, high-side arm. Source→ACTIVATE_HV
+(33 V boost), drain→PARACHUTE_CUTTER_ACTIVATE, the common feeding the
+16 sector-select NFETs. Disarmed, the rail can't reach any restraint
+wire even if a select NFET shorts. Because the source rides at 33 V,
+the gate is driven through a level-shift NFET (PARACHUTE_CUTTER_SET) and a
+100k/100k divider, so V_GS sits near -16.5 V, inside the ±20 V limit,
+while the device is fully enhanced (R_DS(on) 105 mΩ at -10 V).
 """
 
 

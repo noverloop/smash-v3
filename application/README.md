@@ -1,7 +1,12 @@
 # smash — Smash design data-model library
 
 Pure-Python library carrying the canonical electrical-design schema for
-the Smash radar sonde. Defines the data classes
+Smash, a high-speed emergency airdrop that puts a sensor package —
+sonar, infrared, or a radio — onto an illuminated point so missing
+people can be found while the window is still open. The package steers
+onto that mark, then `PARACHUTE_CUTTER_SET` arms the aft cutter bank
+and `PARACHUTE_CUTTER_ACTIVATE` feeds the selected nichrome restraint.
+Defines the data classes
 (`Chip`, `Net`, `Design`, `Board`, `SmashState`) that every Smash tool
 reads and writes, plus the validators that enforce design rules across
 the whole state.
