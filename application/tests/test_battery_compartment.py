@@ -169,8 +169,8 @@ def test_piezo_disc_smd_no_pocket(built):
     """The Steminc SMD10T04R111 disc reflows flat on fin_ble_board's TOP
     face (the disc + comparator column swapped off the saturated aft_end
     top in the 2026-07-31 stack reorder). TOP (nose-facing) is the hard
-    mechanical rule: setback loads the ceramic in COMPRESSION against
-    rigid FR4; an aft-facing mount would put its ~114 N @ 46.7 kG on the
+    mechanical rule: rapid deceleration loads the ceramic in COMPRESSION against
+    rigid FR4; an aft-facing mount would put the disc's inertial load on the
     In52 joints in tension and bend the ceramic over potting voids. NO
     milled pocket cavity remains anywhere (the pocket existed to recess
     the old CEB-21018 brass diaphragm and give it flex room)."""
@@ -188,7 +188,7 @@ def test_piezo_disc_smd_no_pocket(built):
 def test_no_chips_on_activation_bottom(built):
     """The 2026-07-31 redistribution keeps activation_interface's bottom face
     strictly pads-only (cell + contacts + battery LGA lands) — a bottom-face
-    part sees setback as solder-joint tension, so no chip may ride there."""
+    part sees rapid deceleration as solder-joint tension, so no chip may ride there."""
     _gen, _d, _panel, boards = built
     act = boards["activation_interface"]
     bottom = [p.item.ref for p in act.chip_placements if p.face == "bottom"]

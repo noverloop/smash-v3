@@ -764,7 +764,7 @@ def add_stlq020j33r(design, ref: str, **overrides) -> Chip:
         switches from SOT-23-5 to DSBGA-4 (different pads, BGA reflow,
         underfill recommended for shock).
 
-    >>> **High-G launch survivability** (1000+ G axial): DSBGA-4 with
+    >>> **Rapid-deceleration survivability**: DSBGA-4 with
         0.40 mm pitch balls is more demanding than a leaded SOT-23-5.
         Smash already uses Loctite Eccobond UF-1173/3811/3812
         underfill in other DSBGA positions (e.g. the QPD module's
@@ -816,7 +816,7 @@ def add_stlq020j33r(design, ref: str, **overrides) -> Chip:
             source="samacsys",
             note=(
                 "DSBGA-4 (Flip-Chip), 4 balls A1/A2/B1/B2. Bare-die "
-                "package — underfill recommended for high-G launch "
+                "package — underfill recommended for rapid-deceleration "
                 "survivability."
             ),
         ),
@@ -858,7 +858,7 @@ def add_stlq020j33r(design, ref: str, **overrides) -> Chip:
 # **Recommended replacement for the hallucinated `STLQ020M33R`** —
 # matches the original SOT-23-5 design intent better than the
 # DSBGA-4 J33R variant (5-lead leaded → far more shock-tolerant than
-# Flip-Chip 4 under Smash's 1000+ G launch loads).
+# Flip-Chip 4 under Smash's rapid deceleration).
 # ═════════════════════════════════════════════════════════════════════════
 
 def add_stlq020c33r(design, ref: str, **overrides) -> Chip:
@@ -870,8 +870,8 @@ def add_stlq020c33r(design, ref: str, **overrides) -> Chip:
     1067-1129). The original design intent assumed SOT-23-5; SOT323-5L
     is the closest STLQ020 variant — same 5-lead leaded topology, just
     a smaller body and 0.65 mm pitch (vs SOT-23-5's 0.95 mm pitch).
-    Leaded package → mechanically robust under Smash's 1000+ G launch
-    shock (vs the DSBGA-4 J33R variant which needs underfill).
+    Leaded package → mechanically robust under Smash's rapid deceleration
+    (vs the DSBGA-4 J33R variant which needs underfill).
 
     Sibling factory: `add_stlq020j33r` for the Flip-Chip 4 variant
     (smaller but bare-die / underfill required).
@@ -937,7 +937,7 @@ def add_stlq020c33r(design, ref: str, **overrides) -> Chip:
             "(hallucinated PN). C33R is the closest fit:\n"
             "  - 5-lead leaded package (same topology as SOT-23-5)\n"
             "  - 0.65 mm pitch (vs SOT-23-5's 0.95 mm; smaller body)\n"
-            "  - Shock-tolerant for high-G launch (vs J33R DSBGA-4\n"
+            "  - Shock-tolerant for rapid deceleration (vs J33R DSBGA-4\n"
             "    which needs underfill)\n\n"
             "Order code decode (STLQ020C33R, per datasheet p20 Table 9):\n"
             "  STLQ020 : family (200 mA nano-Iq LDO)\n"

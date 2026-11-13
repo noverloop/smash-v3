@@ -93,7 +93,7 @@ def goes_to_bottom(chip: Chip) -> bool:
     if getattr(chip, "feature", None) in ("clock", "bottom"):
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that
-        # survive on the internal bottom face under setback — e.g. the radar's
+        # survive on the internal bottom face under rapid deceleration — e.g. the radar's
         # SOT-23 bucks (compliant leads + low mass), kept off the nose_cap-facing
         # top so they don't need their own coupling cutout. Tall/heavy parts
         # (bulk caps) are NOT opted in — they stay on top.

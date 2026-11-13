@@ -451,7 +451,7 @@ def build_companion_compute(d: Design) -> None:
 
     # ── System clocks — shock-tolerant MEMS oscillators in bypass mode ──
     # The MP25 needs an external HSE + LSE; both are MEMS clipped-sine
-    # parts (no quartz — survives the axial acceleration shock) driving the IN pin
+    # parts (no quartz — survives rapid deceleration) driving the IN pin
     # with the OUT pin left NC (HSEBYP/LSEBYP=1, no crystal feedback path),
     # mirroring the WBA55 HSE on the wakeup tile.
     #
@@ -580,7 +580,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "IMU3_INT").connect(mpu.pin("PD7"))
     _net(d, "H3LIS_INT1").connect(mpu.pin("PD10"))  # EXTI10 — ±400 g launch
     # witness (moved off the WBA with the IR-wake change; alive from
-    # Ready (merged stage), quantitative setback beside the piezo's COMP_OUT edge)
+    # Ready (merged stage), quantitative rapid deceleration beside the piezo's COMP_OUT edge)
 
     # Launch detect — QPD TIA outputs (ADC) + piezo comparator + activation
     _net(d, "QPD_TIA_A").connect(mpu.pin("PB11"))  # ADC1
@@ -1399,7 +1399,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # ── SPI boot flash (SST26WF080B, 8 Mbit/1 MB, SINGLE-bit SPI) ────────────
     # The AWR1843AOP boots its application from this NOR during GROUND staging
     # (depot-BIST sessions re-boot from it; since the Chambered→Ready merge the
-    # radar is DARK in Ready and cold-booaxial accelerationsetback) —
+    # radar is DARK in Ready and cold-boots on rapid deceleration) —
     # historically NOT after launch, which was a resume from RAM (power_states.md). So boot
     # latency is ground-side and a plain 4-wire single-SPI bus (CLK/CS/SI/SO) is
     # plenty — no need for the SST26's x2/x4 modes or a 6-wire quad bus. 1 MB >
@@ -1654,7 +1654,7 @@ def build_cell_floor_board(d: Design) -> None:
     chimneys starved the aft LGA joint, 59→20 lands, and moving the
     comparator to the bottom face gave PIEZO_P an unwanted via stub). Now
     6L / ~0.85 mm, NO Cu coin (the potted monolith carries the ~27 g pack's
-    setback load — full-stack FEA): it carries the cells' side solder-tab −
+    rapid-deceleration load — full-stack FEA): it carries the cells' side solder-tab −
     lands (`P_CELL_TAB_NEG1..3`, inside the cell bore circles, GND; built in
     build_power_board), the backbone LGA/filled-via pass-through, and TWO
     potting pass-through holes so the thin aft gaps below it
@@ -1680,7 +1680,7 @@ def build_activation_interface(d: Design) -> None:
     contact pads (P_CELL_CONTACTS, built in build_power_board) now ride
     fin_ble_board's bottom face, the compartment ceiling. This tile's
     bottom face stays chip-free (lands only — a bottom-face part sees
-    setback as joint TENSION, see the piezo block); its top also hosts
+    rapid deceleration as joint TENSION, see the piezo block); its top also hosts
     the H3LIS331 high-g accel (near the spin axis; built in
     build_wakeup_board with board_tag="activation_interface"). The AON
     latch moved to wakeup_board and the activate chain + CAN gateway to
@@ -1802,12 +1802,12 @@ def build_activation_interface(d: Design) -> None:
     # swapped off the saturated aft_end top; fin_ble — now the battery
     # compartment ceiling — has the room). The TOP (nose-facing) face is
     # the hard rule (user-confirmed over the compartment-side bottom):
-    #   • MECHANICAL — setback throws every part AFT, so a nose-facing
+    #   • MECHANICAL — rapid deceleration throws every part AFT, so a nose-facing
     #     (top) face loads the disc in COMPRESSION against rigid FR4
-    #     (~1-2 MPa vs >500 MPa PZT compressive strength; this is also the
+    #     (far below the >500 MPa PZT compressive strength; this is also the
     #     bonded-compression sensing mode). An aft-facing mount inverts
-    #     that: the disc's ~0.25 g is ~114 N at 46.7 kG carried by the
-    #     In52 joints in TENSION (~10-14 MPa ≈ the alloy's UTS), or by the
+    #     that: the disc's inertia under rapid deceleration is carried by the
+    #     In52 joints in TENSION, or by the
     #     potting pillar behind it — where any fill void becomes a bending
     #     span, and PZT in bending (~80-100 MPa, less at solder stress
     #     risers) cracks. Never mount the ceramic on an aft-facing face.
@@ -1820,8 +1820,8 @@ def build_activation_interface(d: Design) -> None:
     # narrowest-rated part in the round; SM111's ~320 °C Curie clears the
     # full envelope) and with it the milled pocket: a rigid bonded disc
     # needs no recess or flex gap. Bonded-compression sensing scales with
-    # thickness² (diameter-independent): ~5–7 V at 20 kG vs the 0.30 V
-    # threshold. Two pads: MAIN electrode → sense node, WRAP (top electrode
+    # thickness² (diameter-independent), compared with the 0.30 V
+    # threshold under rapid deceleration. Two pads: MAIN electrode → sense node, WRAP (top electrode
     # brought around) → GND.
     #
     # A LOCAL TLV3691 thresholds PIEZO_P → COMP_OUT (= piezo_over_threshold),
@@ -2128,7 +2128,7 @@ def build_nose_cap(d: Design) -> None:
     **USB-C** on its outer, post-potting-accessible face, (2) carries the
     **IR service-link window** (the RX/TX pair lives on the radar face under
     its through-cuts), and (3) structurally **supports the aluminium waveguide
-    disk** so the disk's setback load runs nose_cap → body, NOT through the AWR.
+    disk** so the disk's rapid-deceleration load runs nose_cap → body, NOT through the AWR.
 
     Stack (radar tile top = ref, +Z toward the nose): the AWR2E44P (1.234 mm
     tall) sits on the radar; the radar↔nose_cap spacer is sized to
@@ -2266,7 +2266,7 @@ def build_nose_cap(d: Design) -> None:
     _net(d, "GND")    .connect(pd_wake.pin("A"))
 
     # The aluminium waveguide DISK mounts on the cap's outer face and bears the
-    # setback load (not the AWR). The radar couples to it across the air gap over
+    # rapid-deceleration load (not the AWR). The radar couples to it across the air gap over
     # the AWR aperture (no potting in the gap — black Stycast is a 77 GHz
     # absorber). No BLE radiator here (the disk would blind it; the WBA uses the
     # Yagi pair). The aperture is milled by _mark_radar_block_cutout.
@@ -3545,7 +3545,7 @@ def build_wakeup_board(d: Design) -> None:
     #     no transceiver)
     #   - I²C1 → ST25DV (WBA I²C3 freed — H3LIS now on the M33's I2C3)
     # Lives directly on the always-on 3V3 rail (no dedicated nano-LDO).
-    # 32 MHz HSE via MEMS resonator (shock-tolerant); LSE = internal LSI
+    # 32 MHz HSE via MEMS resonator (survives rapid deceleration); LSE = internal LSI
     # which frees PC14/PC15 as plain spare GPIOs.
     # Mandatory: die-area underfill (Hysol FP4549) — captured on the
     # Chip record; an assembly-process validator enforces it.
@@ -3797,7 +3797,7 @@ def build_wakeup_board(d: Design) -> None:
     # replaced by the D_IR_WAKE photodiode on the radar tile, so it now
     # powers up with the main rail at Ready (the merged staged state) and keeps only its
     # launch-witness + flight-recorder roles (quantitative ±400 g beside
-    # the piezo's fast edge; the ±16 g ISM330s saturate at setback).
+    # the piezo's fast edge; the ±16 g ISM330s saturate under rapid deceleration).
     # I²C moved WBA→M33 with the rail: it joins the M33's I2C3 bus
     # (addr 0x18 — no clash with IMU2/IMU3 at 0x6A/0x6B; bus pull-ups
     # RPU_I2C3_* to 3V3 already exist on wakeup_board, so the dedicated
@@ -3805,7 +3805,7 @@ def build_wakeup_board(d: Design) -> None:
     # pattern as every 3V3 sensor in Standby. INT1 → M33 PD10 EXTI.
     # board_tag=activation_interface: the H3LIS331 ±400g high-G accel is pinned
     # to the activation tile dead-centre (on the spin axis) for clean axial
-    # setback sensing; I2C3/INT reach the M33 over the backbone.
+    # rapid-deceleration sensing; I2C3/INT reach the M33 over the backbone.
     acc = add_h3lis331dltr(d, ref="U_HACC", board_tag="activation_interface")
     _net(d, "3V3")       .connect(acc.pin("VDD_IO"))   # 1
     # 2, 3 = NC_1, NC_2 → leave floating per datasheet
@@ -3986,8 +3986,8 @@ _RADAR     = {"radar_module", "nose_cap"}
 # requirement with useful shelf life (tools/simulate_battery_mission.py: 1 h
 # to ~5 y shelf on the best single cell vs ~12 y on the pack). The old
 # default — 1× TLM-1530M/S laid HORIZONTAL (15.1 mm compartment, ~15 g
-# lighter, gun-hardened 20 kgₙ tested) — survives as the `core_1cell` opt-in
-# for no-radar optical builds. ⚠ The TLM-1520HPM's own gun-launch rating is
+# lighter, rated for rapid deceleration) — survives as the `core_1cell` opt-in
+# for no-radar optical builds. ⚠ The TLM-1520HPM's own rapid-deceleration rating is
 # NOT datasheet-confirmed (Preliminary 2016) — open Tadiran qualification item.
 # BATTERY REWORK 2026-07-30: the cells are ordered with SIDE solder tabs (no
 # end pins). Triple mode: the pack stands on the reinstated THIN

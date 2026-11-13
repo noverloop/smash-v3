@@ -236,8 +236,8 @@ def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
     reflow — depoling risk above ~Curie/2) and is potted with them.
 
     Sensing: bonded-compression mode. V ≈ d33·ρ·a·t²/ε — thickness²,
-    diameter-independent: ~5–7 V at 20 kG vs the 0.30 V comparator
-    threshold. Static capacitance 2100 pF ±15 % → 1 MΩ bleed gives a
+    diameter-independent, compared with the 0.30 V comparator
+    threshold under rapid deceleration. Static capacitance 2100 pF ±15 % → 1 MΩ bleed gives a
     ~75 Hz high-pass corner (launch edge passes clean).
 
     Pad map:
@@ -289,7 +289,7 @@ def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
             "MAIN electrode feeds the sense node (R_COMP_SER → TLV3691 "
             "launch-detect comparator, same tile); WRAP (top electrode, "
             "brought around) ties to GND. A piezoelectric accelerometer — "
-            "reads launch setback (+g) and impact (−g); complements the "
+            "reads rapid deceleration (+g) and impact (−g); complements the "
             "H3LIS331 high-G accel (quantitative but I²C — no µs-class "
             "hardware edge). In-Sn solder only: SAC reflow risks depoling "
             "the PZT and exceeds nothing else but joins the battery-close "

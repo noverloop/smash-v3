@@ -1,11 +1,11 @@
 """Copper-layer bend-strain extraction from a board FEA `.frd`.
 
 The launch FEA (`smash.sim.fea`) meshes a board tile and bends it under
-setback body force, but `report.py` only scores *solder-joint* margins
+rapid-deceleration body force, but `report.py` only scores *solder-joint* margins
 at chip pads. This module answers a different question:
 
     Do the horizontal routed traces on the F.Cu / B.Cu copper layers
-    survive the *bend strain* the setback imposes on the board?
+    survive the *bend strain* the rapid deceleration imposes on the board?
 
 The key physics: a trace bonded to a copper layer follows the board's
 local in-plane surface strain by strain compatibility — the strain is

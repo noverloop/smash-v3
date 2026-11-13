@@ -1,8 +1,8 @@
 """Isolated CalculiX coupon for a plated via barrel under an AXIAL pull.
 
-⚠ CAVEAT — this does NOT represent how a via loads under setback.
+⚠ CAVEAT — this does NOT represent how a via loads under rapid deceleration.
 A via barrel is NOT a structural load path for a component's inertial
-load. Setback bends the rim-supported board *plate*: a component's load
+load. Rapid deceleration bends the rim-supported board *plate*: a component's load
 is reacted IN-PLANE (σxx/σyy at the copper surfaces) and spread to the
 spacer-ring supports — the through-thickness direction (σzz, the barrel
 axis) carries almost nothing in the board interior. The component is
@@ -23,7 +23,7 @@ barrel fatigue (z-axis CTE mismatch), a different load case entirely.
 
 Kept as a generic "isolated copper tube under an axial end load" check
 (it matches σ = F/(π·d_mean·t_wall) within ~6%, validating the mesh +
-*CLOAD path), NOT as a setback via verdict.
+*CLOAD path), NOT as a rapid-deceleration via verdict.
 """
 from __future__ import annotations
 
@@ -149,7 +149,7 @@ def _build_mesh(spec: ViaCouponSpec) -> _ViaMesh:
 def build_via_coupon_deck(spec: ViaCouponSpec, *, accel_m_per_s2: float,
                           direction: str = "reverse",
                           job_name: str | None = None) -> tuple:
-    """Compose a CCXDeck for one via-barrel coupon under setback.
+    """Compose a CCXDeck for one via-barrel coupon under rapid deceleration.
 
     `direction` = "reverse" (+Z, tension + pad pull-off — the worst for a
     barrel) or "forward" (−Z, compression). Returns `(deck, mesh)`.
@@ -186,7 +186,7 @@ def build_via_coupon_deck(spec: ViaCouponSpec, *, accel_m_per_s2: float,
         materials=[material],
         boundaries=[CCXBoundary(nset_name="BOT_FIX", dof_first=1, dof_last=3)],
         steps=[step],
-        note=(mesh.note + f"\nsetback {direction}: supported mass "
+        note=(mesh.note + f"\nrapid deceleration {direction}: supported mass "
               f"{spec.supported_mass_g} g × {a/9.80665:.0f} G = "
               f"{f_total:.3f} N on the top pad"))
     return deck, mesh

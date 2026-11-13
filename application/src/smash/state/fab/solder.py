@@ -8,7 +8,7 @@ import dataclasses
 class Solder:
     """One solder alloy. Constants feed both physics domains the joints
     matter for: thermal (κ at the die→board path) and structural (the
-    bend/setback solder-joint shear check).
+    bend/rapid-deceleration solder-joint shear check).
 
     `shear_strength_mpa` + `youngs_modulus_gpa` drive the joint-failure
     model; `cte_ppm_k` the thermal-cycling fatigue; `melting_c` (liquidus)
@@ -30,7 +30,7 @@ class Solder:
                                                  # ~50 MPa; ball-pad geometry +
                                                  # stress concentrators debit to
                                                  # ~35 MPa effective). Used by
-                                                 # the bend-sim reverse-setback
+                                                 # the bend-sim reverse rapid-deceleration
                                                  # and impact paths.
     density_g_cm3: float | None = None
     note: str | None = None

@@ -261,8 +261,8 @@ def add_stm32wba52cgu7tr(design, ref: str, **overrides) -> Chip:
     LPUART ↔ system CAN-FD (datasheet Table 2 confirms).
 
     The 32 MHz HSE is implemented as a MEMS resonator (DSC1001CI5-032.0000
-    or equivalent) rather than a crystal, for shock survival under launch
-    setback (Smash takes 1000+ g). The 32.768 kHz LSE is dropped — internal
+    or equivalent) rather than a crystal, for shock survival under rapid
+    deceleration. The 32.768 kHz LSE is dropped — internal
     LSI (±5 %) is sufficient for BLE periodic-scan timing."""
     fields = _stm32(
         pn="STM32WBA52CGU7TR",
@@ -321,7 +321,7 @@ def add_stm32wba55hgf6tr(design, ref: str, **overrides) -> Chip:
 
     **Underfill is MANDATORY.** This is a wafer-level chip-scale
     package — bare silicon with 0.23 mm solder balls at 0.40 mm pitch
-    and no overmould. Smash's 1000+ g setback would shear unprotected
+    and no overmould. Smash's rapid deceleration would shear unprotected
     WLCSP joints; Hysol FP4549 (or equivalent capillary underfill)
     under the entire die is the standard mitigation and is rated
     >5000 g. Documented also in `components.md` as a process step
@@ -353,8 +353,8 @@ def add_stm32wba55hgf6tr(design, ref: str, **overrides) -> Chip:
             "the SPDT directly from radio hardware. "
             "**WLCSP shock note:** mandatory die-area underfill (Hysol "
             "FP4549 or equivalent capillary epoxy) — without it the "
-            "WLCSP joints will shear under Smash's 1000+ g launch "
-            "setback. Underfill process is already in the assembly "
+            "WLCSP joints will shear under Smash's rapid deceleration. "
+            "Underfill process is already in the assembly "
             "flow for the H562 / MP25 / Micron NAND BGAs."
         ),
         standards=["RoHS", "ECOPACK2"],

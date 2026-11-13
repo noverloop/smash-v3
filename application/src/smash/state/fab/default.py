@@ -135,7 +135,7 @@ def default_fab_profile() -> FabProfile:
         # TLM-1520HPM/S cells can't see a SAC305 reflow (~245 °C) — their
         # safety qualification tops out at a 150 °C oven — so the cell-tab
         # joints use In52/Sn48 (liquidus 118 °C, peak ~135-145 °C, under the
-        # cell limit). Ductile (good for the setback joint, unlike brittle
+        # cell limit). Ductile (good for the rapid-deceleration joint, unlike brittle
         # Sn-Bi). Mechanical constants left None: this joint is not a
         # launch-FEA target (the potting + hard seating carry the cell mass;
         # the joint is electrical). Properties beyond the eutectic point are

@@ -203,7 +203,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # No Rogers: the 77 GHz SIW launches couple directly into the machined
     # aluminium waveguide/horn block bonded above, so the PCB laminate never
     # sees RF — plain FR4 top substrate. The 20L count stays for MECHANICAL
-    # stiffness (the setback/bend envelope), not RF.
+    # stiffness (the rapid-deceleration/bend envelope), not RF.
     radar_module      = Board("radar_module", copper_layers=20)
     # (its Cu T-coin was REMOVED 2026-07-04 — see the coin note above.)
     # companion_compute is the other bend-sim bottleneck — U_MPU

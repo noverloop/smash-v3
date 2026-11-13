@@ -8,7 +8,7 @@ mesher can assign per-body materials and inter-layer contacts:
   - each rigid board   → solid FR4 disc (+ any through holes)
   - each spacer        → build_spacer_solid (disc − cavities − potting holes)
   - component masses    → a block per placed chip on the facing side, so the
-                          components' inertial load under setback is captured
+                          components' inertial load under rapid deceleration is captured
   - potting encapsulant → the Ø stack envelope minus the FR4 bodies, i.e.
                           the vacuum-potting compound filling the interstices
                           (mostly the spacer cavities + flat notches)

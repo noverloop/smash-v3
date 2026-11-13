@@ -452,7 +452,7 @@ def test_radar_module_is_plain_fr4_no_rogers(tmp_pcb):
     rearchitecture the 77 GHz SIW launches couple directly into the machined
     aluminium waveguide/horn block bonded above the tile, so the PCB laminate
     never sees RF and the Rogers RO4350B top dielectric is dropped. The 20L
-    copper count stays for MECHANICAL stiffness (the setback/bend envelope),
+    copper count stays for MECHANICAL stiffness (the rapid-deceleration/bend envelope),
     not RF. No dedicated tile-Al backing either (the Al spacers above/below
     carry the BGA composite stiffness; WR-10 pass-throughs go through the
     adjacent Al spacer only)."""

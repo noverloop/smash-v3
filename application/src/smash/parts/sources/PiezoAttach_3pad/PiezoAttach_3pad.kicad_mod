@@ -1,6 +1,6 @@
 (module "PiezoAttach_3pad" (layer F.Cu)
   (descr "Solder-pad trio for an aft piezoelectric shock/launch disk (CEB-21018-L100, Ø21 brass diaphragm, 3 wire leads Red/Blue/Black). Three 3.0x1.6mm SMD pads in a column at y=+2.6/0/-2.6mm where the disk's three leads land. Pads: 1=PIEZO+ (main electrode), 2=PIEZO_FB (feedback electrode), 3=PIEZO- (brass common). The disk seats in a milled pocket (piezo_disk_pocket) centred on this footprint.")
-  (tags "piezo shock launch-detect setback 3-lead smash")
+  (tags "piezo shock launch-detect rapid-deceleration 3-lead smash")
   (attr smd)
   (fp_text reference REF** (at 0 0) (layer F.SilkS)
     (effects (font (size 1.0 1.0) (thickness 0.15)))

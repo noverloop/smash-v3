@@ -17,7 +17,7 @@ to use a real PN when porting the design to use this catalog.
 
 | referenced PN | status | datasheet-correct alternatives | notes |
 |---|---|---|---|
-| `STLQ020M33R` | RESOLVED — `STLQ020C33R` recommended | `add_stlq020c33r` (SOT323-5L, leaded — best match for original SOT-23-5 intent) **or** `add_stlq020j33r` (DSBGA-4, smaller but needs underfill) | Original system.py used `AP2112K-3.3` SOT-23-5 placeholder with `manf_pn="STLQ020M33R"` (hallucinated). STLQ020 doesn't ship in SOT-23-5; closest variant is **C33R (SOT323-5L)** — 5-lead leaded, shock-tolerant for 1000+ G launch. Alternative `J33R` (DSBGA-4) is smaller but Flip-Chip → underfill required. Both factories shipped; recommend **C33R** for the WLE5 always-on LDO position on wakeup_board. |
+| `STLQ020M33R` | RESOLVED — `STLQ020C33R` recommended | `add_stlq020c33r` (SOT323-5L, leaded — best match for original SOT-23-5 intent) **or** `add_stlq020j33r` (DSBGA-4, smaller but needs underfill) | Original system.py used `AP2112K-3.3` SOT-23-5 placeholder with `manf_pn="STLQ020M33R"` (hallucinated). STLQ020 doesn't ship in SOT-23-5; closest variant is **C33R (SOT323-5L)** — 5-lead leaded, shock-tolerant for rapid deceleration. Alternative `J33R` (DSBGA-4) is smaller but Flip-Chip → underfill required. Both factories shipped; recommend **C33R** for the WLE5 always-on LDO position on wakeup_board. |
 | `DSC1001CI5-032.7680` | RESOLVED — replaced with `SiT1630AE-S6-DCC-32.768E` | Factory `add_sit1630ae_s6_dcc_32_768e` shipped. | DSC1001/3/4 family datasheet (Microchip) explicitly states **frequency range 1 MHz to 150 MHz**, so the original PN was hallucinated. Replacement is SiTime SiT1630 — 32.768 kHz MEMS osc, SOT23-5, 1.0 µA, ±20 ppm. **Sourcing flag**: SiTime's analog ASIC uses TSMC Taiwan — verify against Smash's TW exclusion before fab lock-in. If TSMC dependency is unacceptable, swap to Microchip DSC2311 / DSC6101 (USA-fab). |
 | `AWR2944ALBGALTRQ1` | **wrong variant** — Smash needs the full AWR2944, not LC | `AWR2944ABGALTRQ1` (full AWR2944, 4 MB + DSP + Aurora + Ethernet + CSI2 RX, T&R packing) | The design's earlier BOM reference (`ALBGALTRQ1`) was the LC variant which drops DSP, Aurora LVDS, Ethernet, and CSI2 RX. Smash needs the full feature set for firmware-headroom reasons. Use `add_awr2944abgaltrq1` (tape & reel) in the rebuild. The LC factory `add_awr2944albgaltrq1` is kept in the catalog for reference only. |
 
@@ -200,7 +200,7 @@ Verify per ST's app-note / reference design what value (typically
 ~100 nF X7R to GND).
 
 **Sensitivity to mechanical shock** — datasheet p14 explicitly notes
-this. May need shock-protection during Smash launch (1000+ G).
+this. May need shock-protection during Smash's rapid deceleration.
 
 ### `add_ism330dhcxtr` (ST ISM330DHCXTR)
 | field | gap | source to pull |
@@ -227,7 +227,7 @@ external slaves. If unused, ground per datasheet.
 explicit. Pin notes encode this.
 
 **Picked for shock survivability** (10000 g rated) — relevant to
-Smash's launch loads. Surface in design-rationale documentation.
+Smash's rapid deceleration. Surface in design-rationale documentation.
 
 ### `add_tcan1042gvdq1` (TI TCAN1042GVDQ1)
 | field | gap | source to pull |
@@ -332,7 +332,7 @@ These would be filled by a single sweep across all parts, not per-part.
 ### Material data
 - **`body_material`, `lead_material`, `density_g_cm3`, `youngs_modulus_gpa`, `cte_ppm_k`**
   unknown for every chip. Needed for the structural-shock FEM
-  simulation at launch (1000+ G axial).
+  simulation under rapid deceleration.
   Source: vendor material declaration forms (FAE request) or generic
   package-material standards (epoxy mold compound + Sn-plated Cu
   leadframe for plastic SO/SOT/QFN; SAC305 solder balls for BGA/DSBGA;

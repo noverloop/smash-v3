@@ -195,7 +195,7 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
     Same package, pinout, and electrical spec as the -008.0000 variant
     — only the programmed frequency differs. Smash uses this part for
     the STM32WBA52's 32 MHz HSE (BLE PHY reference). The MEMS resonator
-    survives the 1000+ g launch setback that fractures quartz crystals.
+    survives the rapid deceleration that fractures quartz crystals.
     """
     fields = dict(
         manf="Microchip",
@@ -257,7 +257,7 @@ def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
     — only the programmed frequency differs (40 MHz is well inside the
     DSC1001 family's 1-150 MHz range). Smash uses this part for the
     STM32MP255's 40 MHz HSE. The all-silicon MEMS resonator survives the
-    1000+ g launch setback that fractures quartz crystals.
+    rapid deceleration that fractures quartz crystals.
     """
     fields = dict(
         manf="Microchip",

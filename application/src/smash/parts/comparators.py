@@ -240,7 +240,7 @@ def add_tlv3691idpfr(design, ref: str, **overrides) -> Chip:
             "±3 mV, response time 24 µs. X2SON-6 (DPF0006A, 1.0×1.0 mm); also in "
             "SC70-5 (DBV). Pin 5 = NC; V+ on pin 6. Replaces the LMV331 on the "
             "launch-detect to take its ~80 µA off the always-on 3V3 shelf rail — "
-            "the 24 µs response is ample for the ms-scale setback event."
+            "the 24 µs response is ample for the ms-scale rapid deceleration."
         ),
     )
     fields.update(overrides)

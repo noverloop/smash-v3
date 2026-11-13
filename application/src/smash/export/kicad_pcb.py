@@ -1297,7 +1297,7 @@ def _emit_eccobond(
 ) -> list[str]:
     """Eccobond corner-stake marks on F.Adhes / B.Adhes — a short 45°
     stroke dispensed into each component corner for shock/vibration
-    survival (Smash sees 1000+ G setback). Applied to every placed chip;
+    survival (Smash sees rapid deceleration). Applied to every placed chip;
     BGAs get a longer stroke (corner staking is mandatory for them). The
     stroke scales down on tiny parts so it never overruns the body."""
     from smash.layout.placer.grid import placement_extents_mm

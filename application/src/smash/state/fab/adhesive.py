@@ -11,7 +11,7 @@ class Adhesive:
     vacuum-potting Stycast) and staking adhesive.
 
     Constants feed the structural mesh (underfill stiffens the solder
-    joints under setback — `youngs_modulus_gpa`, `cte_ppm_k`) and the
+    joints under rapid deceleration — `youngs_modulus_gpa`, `cte_ppm_k`) and the
     thermal mesh (`thermal_w_mk`). `tg_c` is the glass transition (CTE
     jumps above Tg); `filler_pct` the inorganic loading.
     """

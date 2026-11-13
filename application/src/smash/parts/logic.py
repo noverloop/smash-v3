@@ -100,8 +100,8 @@ def add_sn74lvc1g08dckrg4(design, ref: str, **overrides) -> Chip:
     Sn-Pb solder paste at assembly is the standard mil-aero workaround
     to get a leaded solder joint on this Pb-free part: NiPdAu leads
     bond to both Sn63/Pb37 and SAC305 pastes. Pb-free part + Sn-Pb
-    joint = "mixed-alloy" assembly; well-characterised for high-G
-    shock and thermal-cycle survivability."""
+    joint = "mixed-alloy" assembly; well-characterised for rapid
+    deceleration and thermal-cycle survivability."""
     pn = "SN74LVC1G08DCKRG4"
     fp_mod = src(pn, "SOT65P210X110-5N.kicad_mod")
     fields = dict(
@@ -147,7 +147,7 @@ def add_sn74lvc1g08dckrg4(design, ref: str, **overrides) -> Chip:
             "vs 2.9 x 1.6 for SOT-23-5). Pad pitch 0.65 mm (vs 0.95 "
             "for DBV) — less solder volume per joint, lower shock "
             "margin. Acceptable in potted/underfilled Smash assemblies; "
-            "use DBVR variant for unfilled high-G surface mounting.\n\n"
+            "use DBVR variant for unfilled mounting under rapid deceleration.\n\n"
             "Key specs (datasheet SCES217Z — same family doc as DBVR):\n"
             "  V_CC operating : 1.65 V to 5.5 V\n"
             "  Input voltage  : up to 5.5 V (5 V tolerant on V_CC=3.3)\n"

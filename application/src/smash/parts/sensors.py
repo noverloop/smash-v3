@@ -452,7 +452,7 @@ def add_ism330dhcxtr(design, ref: str, **overrides) -> Chip:
 _H3LIS331DL_NOTE = """\
 Datasheet extras (ST H3LIS331DL). 3-axis ±100/±200/±400 g
 accelerometer with 10000 g high-shock survivability — picked for
-impact-detection / launch-event sensing.
+impact detection and rapid deceleration.
 
 Product summary (datasheet p1):
   Supply voltage         : 2.16 V to 3.6 V

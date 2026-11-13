@@ -280,7 +280,7 @@ class TestViaCouponDeck:
         assert all(e[1] == ELEMENT_TYPE_LINEAR_HEX for e in deck.elements)
         for ns in ("TOP_PAD", "BOT_FIX", "BARREL"):
             assert deck.node_sets[ns], f"missing node set {ns}"
-        # Reverse setback → +Z tension load on the top pad.
+        # Reverse rapid deceleration → +Z tension load on the top pad.
         nl = deck.steps[0].nodal_loads[0]
         assert nl.nset_name == "TOP_PAD" and nl.dof == 3
         assert nl.magnitude_n > 0

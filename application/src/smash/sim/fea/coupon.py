@@ -6,13 +6,13 @@ strain and survives because copper is ductile. The case it cannot
 answer is a trace that is **not** fully bonded — one crossing an
 unsupported span: a milled slot, an anti-pad in a plane, a cavity edge,
 or a delaminated patch. There the trace is a free copper ribbon loaded
-transversely by its own inertia under setback, and the response is
+transversely by its own inertia under rapid deceleration, and the response is
 genuinely width- and thickness-dependent.
 
 This module meshes exactly that coupon: a copper ribbon of width `w`
 and thickness `t` running along X, rigidly fixed over an anchor length
 at each end (the supported lands) and free across a central gap `L`.
-Setback is applied as a ±Z gravity body load at the platform's peak
+Rapid deceleration is applied as a ±Z gravity body load at the platform's peak
 acceleration. The fixed-fixed span concentrates the bending moment at
 the anchor lips (M = qL²/12) and at mid-span (qL²/24) — the classic
 locations a free-spanning trace cracks.
@@ -156,7 +156,7 @@ def build_trace_coupon_deck(spec: TraceCouponSpec, *,
                             direction: str = "forward",
                             nlgeom: bool = False,
                             job_name: str | None = None) -> tuple:
-    """Compose a CCXDeck for one free-span trace coupon under setback.
+    """Compose a CCXDeck for one free-span trace coupon under rapid deceleration.
 
     Returns `(deck, mesh)` — the mesh carries the `span_node_ids`
     evaluation set the result reader needs.
@@ -198,7 +198,7 @@ def build_trace_coupon_deck(spec: TraceCouponSpec, *,
         boundaries=[CCXBoundary(nset_name="LANDS", dof_first=1, dof_last=3)],
         steps=[step],
         note=(mesh.note
-              + f"\nsetback {direction} @ {accel_m_per_s2:.3e} m/s² "
+              + f"\nrapid deceleration {direction} @ {accel_m_per_s2:.3e} m/s² "
                 f"({accel_m_per_s2/9.80665:.0f} G)"
               + (", NLGEOM" if nlgeom else ", linear")),
     )
