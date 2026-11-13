@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SX1280
+D LoRa Connect Long Range Low Power LoRa 2.4GHz RF Transceiver With Ranging  Long Range 2.4 GHz transceiver  High sensitivity, down to -132 dBm  +12.5 dBm, high efficiency PA  Low energy consumption, on-chip DC-DC  LoRa, FLRC, (G)FSK supported modulations  Programmable bit rate  Excellent blocking immunity  Standard & Advanced Ranging Engine, Time-of-Flight  BLE PHY layer compatibility  Low system cost
+K
+F https://semtech.my.salesforce.com/sfc/p/E0000000JelG/a/2R000000HoCW/8EVYKPLcthcKCB_cKzApAc6Xf6tAHtn9.UKcOh7SNmg
+$ENDCMP
+#
+#End Doc Library

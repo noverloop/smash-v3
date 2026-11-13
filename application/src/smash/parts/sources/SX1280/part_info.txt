@@ -1,0 +1,9 @@
+Manufacturer=SEMTECH
+PartNumber=SX1280
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=25
+Version=2.1
+Released=2025-01-28 04:41:27
+Downloaded=2026-11-13 09:41:46
+3D=Y
