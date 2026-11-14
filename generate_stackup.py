@@ -5461,6 +5461,17 @@ _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
                              #  to fit in the gap to the row above)
 
 
+def _plug_groups(d) -> list:
+    """[(label, [(ref, net)])] — the aft board's bottom interface pads, in
+    silk-group order, for the sleeve's plug ring."""
+    ref_net = {}
+    for n in d.nets:
+        for rf, _p in n.pins:
+            ref_net.setdefault(rf, n.name)
+    return [(label, [(rf, ref_net[rf]) for rf in refs if rf in ref_net])
+            for label, refs in _SCH_PAD_GROUPS["aft_end_board"]]
+
+
 def _mark_aft_bench_silk(boards: dict) -> None:
     """Box + label each bench-pad group on aft_end_board's BOTTOM silkscreen.
 
@@ -6119,7 +6130,8 @@ def main() -> int:
     # fixed physical angle (lane) on the stack. Spacers are no longer PCBs.
     _foldM = board_fold_transforms(panel, list(panel.snake_chain))
     _cast_contract, _cast = place_castellations(
-        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin))
+        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
+        plug_groups=_plug_groups(d))
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))

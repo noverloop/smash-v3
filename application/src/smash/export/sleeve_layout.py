@@ -36,18 +36,16 @@ from smash.export.sleeve_step import (SLEEVE_GAP_MM, SLEEVE_WALL_MM,
 VIA_PAD_MM = 0.75
 GND_PLANE_MARGIN_MM = 1.0          # plane stops this far from the sector edges
 ANT_WINDOW_MARGIN_MM = 1.5         # plane cut-back round each antenna element
-# Plug ring (2026-11-14): a band of the sleeve BELOW the aft board (z < 0) that
-# plugs into the follow-up object. Its OUTER face carries the bus as flat gold
-# pads (spring contacts in the mating bore press radially — spin presses them
-# harder); the 33 V restraint pair ends in two moulded Faston-size tabs
-# (2.8 × 0.8 mm, Ø1.4 latch hole) in the antenna sector, reached on the INNER
-# face so they cross no bus pad.
-PLUG_H_MM = 7.0
-PLUG_PAD_LEN_MM = 3.0
-PLUG_PAD_Z_MM = (-4.5, -1.5)
-TAB_W_MM, TAB_LEN_MM, TAB_HOLE_MM = 2.8, 6.5, 1.4
-TAB_ANGLES_DEG = (170.0, 190.0)     # 33 V tabs, ~6 mm apart, far from the bus
-GND_PLUG_ANGLES_DEG = (113.0, 120.0, 240.0, 247.0)
+# Plug ring (2026-11-14): a band of the sleeve BELOW the aft board (z < 0).
+# It carries the aft board's former bottom-face interface, unchanged (same
+# groups, labels and pads: SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES — the 33 V
+# mux sector outputs + common —, GROUND, PROGRAM_MP25, …) as solderable gold
+# pads on its OUTER face, two staggered rows. Each pad is fed from its own
+# exit castellation on the aft board (contract["plug"]) by a non-crossing
+# fan-out; no trace crosses a seam (each half-shell fans out on its own).
+PLUG_PAD_W_MM, PLUG_PAD_H_MM = 1.5, 2.5
+PLUG_LEVEL_STEP_MM = 0.4
+PLUG_TRACE_MM = 0.25
 
 
 def _x_of(theta_deg: float, r: float) -> float:
@@ -179,67 +177,79 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
         f'(xy {X(gx1)} {Y(0.5)}) (xy {X(gx0)} {Y(0.5)}))) ' + " ".join(fills) + ')')
 
     # ── Plug ring ──
-    from smash.parts.castellations import RESTRAINT_NETS
-    first = rigid[0] if rigid else None
-    zf = sum(zmap[first]) / 2.0 if first else 0.0
-    n_plug = 0
-    pz0, pz1 = PLUG_PAD_Z_MM
-    for net, lane in lanes.items():
-        kind = lane.get("kind", "signal")
-        if first not in lane["boards"] or kind in ("gnd_plane", "antenna_feed"):
+    plug = contract.get("plug", [])
+    ab = contract.get("aft_board")
+    zf = sum(zmap[ab]) / 2.0 if ab in zmap else 0.0
+    hw = r_out * math.radians(SEAM_HALF_WIDTH_DEG) + 0.6
+    halves = [(hw, W / 2 - hw), (W / 2 + hw, W - hw)]
+    placed = []                                     # (entry, cx, px, row)
+    for lo, hi in halves:
+        es = sorted((e for e in plug
+                     if (_x_of(e["angle"], r_out) < W / 2) == (lo < W / 2)),
+                    key=lambda e: _x_of(e["angle"], r_out))
+        if not es:
             continue
-        n = nid(net)
-        for ang in lane["angles"]:
-            x = X(_x_of(ang, r_out))
-            w = lane.get("width_mm", 0.2)
-            if kind == "plug_exit":                     # via at the aft board
-                items.append(f'\t(via (at {x} {Y(zf)}) (size {VIA_PAD_MM}) '
-                             f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
-            if net in RESTRAINT_NETS:
-                # down to the ring, via to the inner face, across to its tab
-                tab = TAB_ANGLES_DEG[RESTRAINT_NETS.index(net)]
-                zr = pz1 + 0.5 if net == RESTRAINT_NETS[0] else pz0 + 0.5
-                tx = X(_x_of(tab, r_out))
-                items.append(f'\t(segment (start {x} {Y(zf)}) (end {x} {Y(zr)}) (width {w}) (layer "F.Cu") (net {n}))')
-                for vx in (x, tx):
-                    items.append(f'\t(via (at {vx} {Y(zr)}) (size 1.0) (drill 0.5) (layers "F.Cu" "B.Cu") (net {n}))')
-                items.append(f'\t(segment (start {x} {Y(zr)}) (end {tx} {Y(zr)}) (width {w}) (layer "B.Cu") (net {n}))')
-                ty0 = -PLUG_H_MM + 0.5
-                items.append(f'\t(segment (start {tx} {Y(zr)}) (end {tx} {Y(ty0)}) (width {TAB_W_MM}) (layer "F.Cu") (net {n}))')
-                items.append(f'\t(gr_circle (center {tx} {Y(ty0 + 1.6)}) (end {tx + TAB_HOLE_MM / 2} {Y(ty0 + 1.6)}) '
-                             f'(stroke (width 0.1) (type solid)) (fill none) (layer "Edge.Cuts"))')
-                ox0, ox1 = tx - TAB_W_MM / 2, tx + TAB_W_MM / 2
-                for (xa, ya, xb, yb) in ((ox0, Y(-PLUG_H_MM), ox0, Y(-PLUG_H_MM - TAB_LEN_MM)),
-                                         (ox0, Y(-PLUG_H_MM - TAB_LEN_MM), ox1, Y(-PLUG_H_MM - TAB_LEN_MM)),
-                                         (ox1, Y(-PLUG_H_MM - TAB_LEN_MM), ox1, Y(-PLUG_H_MM))):
-                    items.append(f'\t(gr_line (start {xa:.3f} {ya}) (end {xb:.3f} {yb}) (stroke (width 0.15) (type solid)) (layer "F.SilkS"))')
-                items.append(f'\t(gr_text "33V {'HV' if net == RESTRAINT_NETS[0] else 'RET'}" (at {tx} {Y(-PLUG_H_MM - TAB_LEN_MM - 1.2)}) (layer "F.SilkS") '
-                             f'(effects (font (size 0.7 0.7) (thickness 0.1))))')
-                n_plug += 1
-                continue
-            # bus pad: lane runs on down to a flat contact pad on the ring
-            pw = max(0.5, w)
-            items.append(f'\t(segment (start {x} {Y(zf)}) (end {x} {Y(pz1)}) (width {w}) (layer "F.Cu") (net {n}))')
-            items.append(f'\t(zone (net {n}) (net_name "{net}") (layer "F.Cu") (hatch none 0.5) '
-                         f'(connect_pads yes (clearance 0.15)) (min_thickness 0.1) (fill yes) '
-                         f'(polygon (pts (xy {x - pw / 2:.3f} {Y(pz1)}) (xy {x + pw / 2:.3f} {Y(pz1)}) '
-                         f'(xy {x + pw / 2:.3f} {Y(pz0)}) (xy {x - pw / 2:.3f} {Y(pz0)}))) '
-                         f'(filled_polygon (layer "F.Cu") (pts (xy {x - pw / 2:.3f} {Y(pz1)}) (xy {x + pw / 2:.3f} {Y(pz1)}) '
-                         f'(xy {x + pw / 2:.3f} {Y(pz0)}) (xy {x - pw / 2:.3f} {Y(pz0)}))))')
-            n_plug += 1
-    g_ = nid("GND")
-    for ga in GND_PLUG_ANGLES_DEG:                     # GND pads from the inner plane
-        gx = X(_x_of(ga, r_out))
-        items.append(f'\t(via (at {gx} {Y(0.9)}) (size {VIA_PAD_MM}) (drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {g_}))')
-        items.append(f'\t(segment (start {gx} {Y(0.9)}) (end {gx} {Y(pz1)}) (width 0.6) (layer "F.Cu") (net {g_}))')
-        items.append(f'\t(zone (net {g_}) (net_name "GND") (layer "F.Cu") (hatch none 0.5) (connect_pads yes (clearance 0.15)) '
-                     f'(min_thickness 0.1) (fill yes) (polygon (pts (xy {gx - 0.75:.3f} {Y(pz1)}) (xy {gx + 0.75:.3f} {Y(pz1)}) '
-                     f'(xy {gx + 0.75:.3f} {Y(pz0)}) (xy {gx - 0.75:.3f} {Y(pz0)}))) (filled_polygon (layer "F.Cu") '
-                     f'(pts (xy {gx - 0.75:.3f} {Y(pz1)}) (xy {gx + 0.75:.3f} {Y(pz1)}) (xy {gx + 0.75:.3f} {Y(pz0)}) (xy {gx - 0.75:.3f} {Y(pz0)}))))')
+        pitch = (hi - lo) / len(es)
+        for i, e in enumerate(es):
+            placed.append((e, _x_of(e["angle"], r_out), lo + pitch * (i + 0.5), i % 2))
+    # levels: right-movers — the left one jogs LOWER; left-movers mirrored.
+    depth = {}
+    for sgn in (1, -1):
+        movers = [t for t in placed if sgn * (t[2] - t[1]) > 1e-6]
+        movers.sort(key=lambda t: -sgn * t[1])        # process the far end first
+        done = []
+        for t in movers:
+            ia = sorted((t[1], t[2]))
+            d_ = 1 + max([depth[id(u)] for u in done
+                          if not (sorted((u[1], u[2]))[1] < ia[0] - 0.3
+                                  or sorted((u[1], u[2]))[0] > ia[1] + 0.3)] or [0])
+            depth[id(t)] = d_
+            done.append(t)
+    n_lv = max(depth.values() or [0])
+    z_top = -0.6
+    za1 = z_top - (n_lv + 1) * PLUG_LEVEL_STEP_MM    # row A pad top
+    rows = [(za1, za1 - PLUG_PAD_H_MM),
+            (za1 - PLUG_PAD_H_MM - 1.0, za1 - 2 * PLUG_PAD_H_MM - 1.0)]
+    ring_bottom = rows[1][1] - 4.5                   # room for the group labels
+    n_plug = 0
+    gbox = {}
+    for t in placed:
+        e, cx, px, row = t
+        n = nid(e["net"])
+        xc, xp = X(cx), X(px)
+        items.append(f'\t(via (at {xc} {Y(zf)}) (size {VIA_PAD_MM}) (drill {CAST_DRILL_MM}) '
+                     f'(layers "F.Cu" "B.Cu") (net {n}))')
+        zl = z_top - depth.get(id(t), 0) * PLUG_LEVEL_STEP_MM
+        pts = [(xc, Y(zf)), (xc, Y(zl)), (xp, Y(zl)), (xp, Y(rows[row][0]))]
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            if (x1, y1) != (x2, y2):
+                items.append(f'\t(segment (start {x1} {y1}) (end {x2} {y2}) '
+                             f'(width {PLUG_TRACE_MM}) (layer "F.Cu") (net {n}))')
+        zt, zb = rows[row]
+        pw = PLUG_PAD_W_MM / 2
+        poly = (f'(xy {xp - pw:.3f} {Y(zt)}) (xy {xp + pw:.3f} {Y(zt)}) '
+                f'(xy {xp + pw:.3f} {Y(zb)}) (xy {xp - pw:.3f} {Y(zb)})')
+        items.append(f'\t(zone (net {n}) (net_name "{e["net"]}") (layer "F.Cu") (hatch none 0.5) '
+                     f'(connect_pads yes (clearance 0.15)) (min_thickness 0.1) (fill yes) '
+                     f'(polygon (pts {poly})) (filled_polygon (layer "F.Cu") (pts {poly})))')
+        square = e["ref"].endswith("_0") or e["ref"] in ("P_ACT_WIRE_0",)
+        items.append(f'\t(gr_text "{e["ref"].replace("TP_", "").replace("P_ACT_WIRE_", "W")}" '
+                     f'(at {xp:.3f} {Y((zt + zb) / 2):.2f} 90) (layer "F.SilkS") '
+                     f'(effects (font (size 0.45 0.45) (thickness 0.07))))')
+        x0g, x1g = gbox.get(e["group"], (xp, xp))
+        gbox[e["group"]] = (min(x0g, xp), max(x1g, xp))
         n_plug += 1
+    for gi, (label, (x0g, x1g)) in enumerate(gbox.items()):
+        bx0, bx1 = x0g - PLUG_PAD_W_MM / 2 - 0.3, x1g + PLUG_PAD_W_MM / 2 + 0.3
+        by0, by1 = Y(rows[0][0] + 0.3), Y(rows[1][1] - 0.3)
+        for (xa, ya, xb, yb) in ((bx0, by0, bx1, by0), (bx1, by0, bx1, by1),
+                                 (bx1, by1, bx0, by1), (bx0, by1, bx0, by0)):
+            items.append(f'\t(gr_line (start {xa:.3f} {ya}) (end {xb:.3f} {yb}) '
+                         f'(stroke (width 0.12) (type solid)) (layer "F.SilkS"))')
+        items.append(f'\t(gr_text "{label}" (at {(bx0 + bx1) / 2:.3f} {by1 + 1.0 + 1.0 * (gi % 3):.2f}) '
+                     f'(layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.09))))')
     items.append(f'\t(gr_line (start {X(0)} {Y(0)}) (end {X(W)} {Y(0)}) (stroke (width 0.3) (type solid)) (layer "F.SilkS"))')
-    items.append(f'\t(gr_text "PLUG RING (outer-face contact pads; 33V restraint tabs)" '
-                 f'(at {X(W * 0.72)} {Y(-PLUG_H_MM) + 1.6:.2f}) (layer "F.SilkS") (effects (font (size 0.9 0.9) (thickness 0.14))))')
+    PLUG_H = -ring_bottom
 
     # Aluminium BEHIND the sleeve (battery holder, aft rings): outline bands
     # across the full width at their height, so antennas / lanes over metal
@@ -299,7 +309,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
 \t)
 \t(setup (pad_to_mask_clearance 0))
 {net_lines}
-\t(gr_rect (start {X(0)} {Y(H)}) (end {X(W)} {Y(-PLUG_H_MM)}) (stroke (width 0.1) (type default)) (fill none) (layer "Edge.Cuts"))
+\t(gr_rect (start {X(0)} {Y(H)}) (end {X(W)} {Y(-PLUG_H)}) (stroke (width 0.1) (type default)) (fill none) (layer "Edge.Cuts"))
 {body}
 )
 ''')

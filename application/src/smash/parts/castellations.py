@@ -51,11 +51,11 @@ GND_CAST_ANGLES_DEG = (113.0, 120.0, 240.0, 247.0)
 # Antenna feeds: single-board nets that leave fin_ble_board through a
 # castellation + sleeve via to the antenna copper on the sleeve's outer face.
 ANTENNA_FEED_ANGLES_DEG = {"ANT_2G4_FEED": 135.0, "ANT_SUBG_FEED": 205.0}
-# Restraint (33 V) circuit leaves the stack at the plug ring: ACTIVATE_HV is
-# already a lane; the switched return PARACHUTE_CUTTER_ACTIVATE lives only on
-# the aft board, so it gets an EXIT lane (aft board → ring).
-PLUG_EXIT_NETS = ("PARACHUTE_CUTTER_ACTIVATE",)
-RESTRAINT_NETS = ("ACTIVATE_HV", "PARACHUTE_CUTTER_ACTIVATE")
+# Plug ring (2026-11-14): the aft board's bottom-face bench/harness interface
+# (SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES, …) is UNCHANGED — it is now reached
+# on the sleeve's plug ring instead of on the board face. Each interface pad
+# gets an EXIT castellation on the aft board (any free angle, both sectors),
+# allocated in group order so each group stays contiguous round the ring.
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -69,6 +69,18 @@ def _is_gnd(net) -> bool:
 def _mult(net) -> int:
     """One lane per net: power rails get a WIDE lane instead of extra ones."""
     return 1
+
+
+def _ring_angles(r: float) -> list:
+    """Every lane slot round the full ring (same grid as `_lane_angles`),
+    minus the seam stripes, ascending from the 105° seam."""
+    step = math.degrees(CAST_PITCH_MM / r)
+    n = int(360.0 // step)
+    step = 360.0 / n
+    out = [round(k * step, 3) for k in range(n)
+           if not any(min(abs(k * step - c), 360 - abs(k * step - c)) < hw
+                      for c, hw in RESERVED_SECTORS_DEG)]
+    return sorted(out, key=lambda a: (a - SEAM_ANGLES_DEG[0]) % 360.0)
 
 
 def _in_signal_sector(ang: float) -> bool:
@@ -119,7 +131,7 @@ def _lane_angles(r: float) -> list:
     return out
 
 
-def castellation_contract(design, panel, boards) -> dict:
+def castellation_contract(design, panel, boards, plug_groups=None) -> dict:
     """Compute the lane contract for this (maximalist) build."""
     from smash.parts.connectors import is_off_backbone
     chain = [n for n in (panel.snake_chain or []) if n in boards]
@@ -193,16 +205,36 @@ def castellation_contract(design, panel, boards) -> dict:
                                "width_mm": (POWER_LANE_WIDTH_MM
                                             if getattr(net, "kind", None) == "power"
                                             else SIGNAL_LANE_WIDTH_MM)}
-    for en in PLUG_EXIT_NETS:
-        if en in lanes or design.net_by_name(en) is None or not rigid:
-            continue
-        hv = lanes.get("ACTIVATE_HV", {}).get("angles", [])
-        cand = sorted((a for a in angles if free(a, 0, 0)),
-                      key=lambda a: min(abs(a - hv[0]), 360 - abs(a - hv[0])) if hv else 0)
-        if cand:
-            occupied[cand[0]].append((0, 0))
-            lanes[en] = {"angles": [cand[0]], "boards": [rigid[0]],
-                         "kind": "plug_exit", "width_mm": POWER_LANE_WIDTH_MM}
+    # Plug-ring exits on the aft board (rigid[0]).
+    plug = []
+    if plug_groups and rigid:
+        taken = {a for ln in lanes.values() if rigid[0] in ln["boards"]
+                 for a in ln["angles"]}
+        taken |= {a for a in angles if not free(a, 0, 0)}
+        taken |= {float(a) for a in ANTENNA_FEED_ANGLES_DEG.values()}
+        slots = [a for a in _ring_angles(r)
+                 if all(min(abs(a - t), 360 - abs(a - t)) > 0.5 * math.degrees(CAST_PITCH_MM / r)
+                        for t in taken)]
+        # Two half-shells (seam at 285°): whole groups go to half 1 until it
+        # holds ~half the pads (or half 2 runs out of room), the rest to half 2.
+        h1 = [a for a in slots if (a - SEAM_ANGLES_DEG[0]) % 360.0 < 180.0]
+        h2 = [a for a in slots if (a - SEAM_ANGLES_DEG[0]) % 360.0 >= 180.0]
+        total = sum(len(ns) for _l, ns in plug_groups)
+        target1 = max(total - len(h2), (total + 1) // 2)
+        src, k, n1 = h1, 0, 0
+        for label, nets in plug_groups:
+            if src is h1 and n1 + len(nets) > target1 and n1 >= total - len(h2):
+                src, k = h2, 0
+            for ref, net in nets:
+                if k >= len(src):
+                    print(f"  WARNING: castellations: plug ring short of exit "
+                          f"slots at {ref}", file=sys.stderr)
+                    break
+                plug.append({"group": label, "ref": ref, "net": net,
+                             "angle": src[k]})
+                k += 1
+                if src is h1:
+                    n1 += 1
     used = sum(1 for a in angles if occupied[a])
     lanes.update(feeds)
     if overflow:
@@ -214,17 +246,19 @@ def castellation_contract(design, panel, boards) -> dict:
             "signal_sector_deg": [SIGNAL_SECTOR_CENTRE_DEG - SIGNAL_SECTOR_HALF_DEG,
                                   SIGNAL_SECTOR_CENTRE_DEG + SIGNAL_SECTOR_HALF_DEG],
             "seam_deg": list(SEAM_ANGLES_DEG),
+            "aft_board": rigid[0] if rigid else None,
+            "plug": plug,
             "lanes": lanes}
 
 
 def place_castellations(design, panel, boards, *, connect,
-                        contract: dict | None = None) -> tuple:
+                        contract: dict | None = None, plug_groups=None) -> tuple:
     """Emit one CASTELLATIONS chip per rigid snake board (pads on the outline
     at the contract's lanes, mapped into the board's folded frame). Computes
     the contract when none is given. Returns (contract, {board: n_pads})."""
     from smash.state.topology.placement import Placement
     if contract is None:
-        contract = castellation_contract(design, panel, boards)
+        contract = castellation_contract(design, panel, boards, plug_groups)
     chain = [n for n in (panel.snake_chain or []) if n in boards]
     M = board_fold_transforms(panel, chain)
     r = contract["radius_mm"]
@@ -234,6 +268,10 @@ def place_castellations(design, panel, boards, *, connect,
             if b in boards and b in M:
                 for a in lane["angles"]:
                     per_board.setdefault(b, []).append((a, net_name))
+    ab = contract.get("aft_board")
+    for e in contract.get("plug", []):
+        if ab in boards and ab in M:
+            per_board.setdefault(ab, []).append((e["angle"], e["net"]))
     counts = {}
     for b, items in per_board.items():
         items.sort()
