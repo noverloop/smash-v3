@@ -32,14 +32,13 @@ def built():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     gen._set_battery_mode("maximalist")  # maximalist superset = the 3-cell pack
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in (gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
                gen.build_aft_end_board, gen.build_cell_floor_board,
                gen.build_activation_interface,
@@ -143,8 +142,12 @@ def test_cell_contacts_3cell_split(built):
     trefoil valleys); no single-cell P_CELL_CONTACTS_1H, and no
     P_CELL_CONTACTS_AFT centre cluster (side tabs since 2026-07-30)."""
     _gen, _d, _panel, boards = built
-    plus = _placement(boards["fin_ble_board"], "P_CELL_CONTACTS")
-    assert plus is not None and plus.face == "bottom"
+    # + : three discrete tab-extension lands (2026-11-14 headroom) — the
+    # cells' tab extensions bend across the 2 mm gap to them
+    assert _placement(boards["fin_ble_board"], "P_CELL_CONTACTS") is None
+    for k in (1, 2, 3):
+        plus = _placement(boards["fin_ble_board"], f"P_CELL_TAB_POS{k}")
+        assert plus is not None and plus.face == "bottom", f"P_CELL_TAB_POS{k}"
     for k in (1, 2, 3):
         tab = _placement(boards["cell_floor_board"], f"P_CELL_TAB_NEG{k}")
         assert tab is not None and tab.face == "top", f"P_CELL_TAB_NEG{k}"
@@ -161,8 +164,13 @@ def test_no_cu_coins_anywhere(built):
     _gen, _d, _panel, boards = built
     coined = [n for n, b in boards.items() if getattr(b, "cu_coin_inserts", None)]
     assert coined == []
-    # and the floor really is thin now (was the 3.3 mm 20L coin host)
-    assert boards["cell_floor_board"].thickness_mm < 1.0
+    # standard board stackup (2026-11-14): cell_floor is the same 8L board as
+    # every other rigid tile (was a thin 6L floor, and before that a 3.3 mm
+    # 20L coin host)
+    from smash.layout.boards.smash_evb_v1 import STANDARD_COPPER_LAYERS
+    assert boards["cell_floor_board"].copper_layers == STANDARD_COPPER_LAYERS
+    assert (boards["cell_floor_board"].thickness_mm
+            == boards["fin_ble_board"].thickness_mm)
 
 
 def test_piezo_disc_smd_no_pocket(built):
@@ -185,16 +193,17 @@ def test_piezo_disc_smd_no_pocket(built):
     assert pl.item.height_mm == pytest.approx(0.4)
 
 
-def test_no_chips_on_activation_bottom(built):
-    """The 2026-07-31 redistribution keeps activation_interface's bottom face
-    strictly pads-only (cell + contacts + battery LGA lands) — a bottom-face
-    part sees rapid deceleration as solder-joint tension, so no chip may ride there."""
+def test_piezo_disc_never_aft_facing(built):
+    """The piezo disc must sit on a nose-facing (top) face: rapid deceleration
+    then loads the ceramic in compression; aft-facing would put its inertial
+    load on the In52 joints in tension. (Replaces the old blanket "no chips on
+    activation_interface bottom" rule — that face is open to small parts that
+    opt in with feature="bottom".)"""
     _gen, _d, _panel, boards = built
-    act = boards["activation_interface"]
-    bottom = [p.item.ref for p in act.chip_placements if p.face == "bottom"]
-    chips = [r for r in bottom if not r.startswith(("P_", "J_", "TP_"))]
-    assert chips == [], f"unexpected chips on activation bottom: {chips}"
-    assert "P_PIEZO" not in bottom               # the disc lives on aft_end top
+    for name, b in boards.items():
+        for p in getattr(b, "chip_placements", []) or []:
+            if getattr(p.item, "ref", "") == "P_PIEZO":
+                assert p.face == "top", f"P_PIEZO on {name} {p.face} face"
 
 
 def test_no_lga_lands_on_piezo_disc(built):
@@ -229,9 +238,9 @@ def test_potting_holes_on_activation_not_aft(built):
     # cell_floor passes the potting through (2026-07-30) so the
     # aft_end↔cell_floor gap (piezo + comparator) fills from the
     # activation-side channels — it is no longer sealed.
-    assert len(floor.holes or []) == 2
+    assert len(floor.holes or []) == 1   # one potting hole per board (2026-11-14)
     assert all(h.tag == "potting" for h in floor.holes)
-    assert len(act.holes or []) == 2        # potting enters here
+    assert len(act.holes or []) == 1        # potting enters here
     assert all(h.tag == "potting" for h in act.holes)
 
 
@@ -244,7 +253,7 @@ def test_core_single_cell_compartment():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     prev = gen._BATTERY_MODE

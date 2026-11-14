@@ -45,15 +45,6 @@
   "rotation_deg": 0,
   "reason": "The Ø22 round NFC coil IS the whole nfc_antenna_flex tile — centre it. Locked because the packer's square-bbox fit test rejects a full-disc circular footprint inside a circular tile (bbox corners exceed the radius) even though the round coil fits the round tile fine."
  },
- "P_CELL_CONTACTS": {
-  "position_mm": [
-   0.0,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Three battery + contact pads at the cell-centre triangle on activation_interface's BOTTOM face (the battery-connector tile). Locked centred so each pad seats on the cell below it (the cell bores in the battery-compartment spacers are centred on the spin axis). Replaces the old P_CELLS solder-tab cluster."
- },
  "P_CELL_TAB_POS": {
   "position_mm": [
    0.0,
@@ -413,303 +404,6 @@
   "rotation_deg": 90,
   "face": "top",
   "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
- },
- "U_FIN1": {
-  "position_mm": [
-   -2.562,
-   8.313
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "DRV8837 fin driver 1, hand-placed by the user 2026-07-31 on fin_ble_board TOP (nudged west off the piezo N-S axis so the driver row clears the re-fit G0B1/driver cluster; the 2026-07-31 fresh pack had parked U_FIN3/U_FIN4 off-tile at x=168 - the four drivers + MCU are locked so the whole fin cluster stays ON the board around the piezo/comparator locks)."
- },
- "U_FIN3": {
-  "position_mm": [
-   5.5,
-   8.5
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "DRV8837 fin driver 3, hand-placed by the user 2026-07-31 on fin_ble_board TOP - the packer had OVERFLOW-PARKED it off-tile at x=168 (couldn't fit the driver pair); locked NE of the piezo so the fin cluster stays on the board."
- },
- "U_FIN4": {
-  "position_mm": [
-   3.938,
-   -8.625
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "DRV8837 fin driver 4, hand-placed by the user 2026-07-31 on fin_ble_board TOP - the packer had OVERFLOW-PARKED it off-tile at x=168 (couldn't fit the driver pair); locked SE of the piezo so the fin cluster stays on the board."
- },
- "U_G0B1_FIN": {
-  "position_mm": [
-   -3.75,
-   -8.75
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "STM32G0B1 fins MCU, hand-placed by the user 2026-07-31 on fin_ble_board TOP (shifted west-south off the piezo N-S axis to make room for the re-fit driver row; locked with the four DRV8837s so the fin cluster stays on the board around the piezo/comparator locks)."
- },
- "C_FIN1_DVDD": {
-  "position_mm": [
-   12.5,
-   -3.525
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (5.1 mm from that cell centre)."
- },
- "C_FIN2_DVDD": {
-  "position_mm": [
-   -8.5,
-   -10.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (5.8 mm from that cell centre)."
- },
- "C_FIN3_DVDD": {
-  "position_mm": [
-   -7.0,
-   0.5
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (4.8 mm from that cell centre)."
- },
- "C_FIN4_DVDD": {
-  "position_mm": [
-   1.8646,
-   -4.33
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (7.5 mm from that cell centre). Nudged (0.0, -5.0)→(1.44, -4.56) (rot 0) 2026-08-28: the body+0.3 mm clearance box overhung the S-cusp inter-lobe web past the bore 48-gon, so _mark_battery_chip_clearance healed it into a pocket bump cut through EVERY battery spacer (the spacer artifact). Now fully inside the bore — zero clearance extras."
- },
- "C_FIN_VM_BULK_1": {
-  "position_mm": [
-   5.5,
-   -10.34
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (6.1 mm from that cell centre)."
- },
- "C_FIN_VM_BULK_2": {
-  "position_mm": [
-   -0.99,
-   -4.4
-  ],
-  "rotation_deg": 270,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (7.3 mm from that cell centre). Nudged (-0.5, -6.5)→(-1.56, -5.93) (rot 90) 2026-08-28: the body+0.3 mm clearance box overhung the S-cusp inter-lobe web past the bore 48-gon, so _mark_battery_chip_clearance healed it into a pocket bump cut through EVERY battery spacer (the spacer artifact). Now fully inside the bore — zero clearance extras."
- },
- "C_FIN_VM_BULK_3": {
-  "position_mm": [
-   2.18,
-   -6.02
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (5.0 mm from that cell centre)."
- },
- "C_FIN_VM_BULK_5": {
-  "position_mm": [
-   -12.5,
-   -2.2
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (5.5 mm from that cell centre)."
- },
- "C_G0B1_FIN_BULK": {
-  "position_mm": [
-   12.4771,
-   -6.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (5.5 mm from that cell centre)."
- },
- "C_J_HALL_FIN_VCC": {
-  "position_mm": [
-   -10.849,
-   -5.0
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (3.5 mm from that cell centre)."
- },
- "J_HALL_FIN_GND": {
-  "position_mm": [
-   -12.0,
-   -8.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (5.9 mm from that cell centre)."
- },
- "J_HALL_FIN_OUT": {
-  "position_mm": [
-   -3.0,
-   1.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (6.9 mm from that cell centre)."
- },
- "J_HALL_FIN_VCC": {
-  "position_mm": [
-   2.5,
-   0.5
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (6.9 mm from that cell centre)."
- },
- "R_FIN2_DECAY": {
-  "position_mm": [
-   12.5,
-   -0.5
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (6.3 mm from that cell centre)."
- },
- "R_G0B1_FIN_NRST": {
-  "position_mm": [
-   -10.025,
-   -8.5
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (4.9 mm from that cell centre)."
- },
- "C_FIN1_VM": {
-  "position_mm": [
-   -12.455,
-   -4.4
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (3.5 mm from that cell centre)."
- },
- "C_FIN2_VM": {
-  "position_mm": [
-   -10.849,
-   -1.052
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (4.7 mm from that cell centre)."
- },
- "C_FIN3_VM": {
-  "position_mm": [
-   7.029,
-   -7.701
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (3.4 mm from that cell centre)."
- },
- "C_FIN4_VM": {
-  "position_mm": [
-   -10.849,
-   -2.653
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (3.8 mm from that cell centre)."
- },
- "C_FIN_VM_BULK_4": {
-  "position_mm": [
-   11.024,
-   -0.076
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (5.5 mm from that cell centre)."
- },
- "C_FIN_VREF": {
-  "position_mm": [
-   5.428,
-   -7.701
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (4.0 mm from that cell centre)."
- },
- "C_G0B1_FIN_NRST": {
-  "position_mm": [
-   3.827,
-   -7.701
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (5.0 mm from that cell centre)."
- },
- "C_G0B1_FIN_VDD1": {
-  "position_mm": [
-   6.83,
-   -8.925
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (4.7 mm from that cell centre)."
- },
- "C_G0B1_FIN_VDD2": {
-  "position_mm": [
-   -6.428,
-   -7.701
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (3.6 mm from that cell centre)."
- },
- "C_G0B1_FIN_VREF": {
-  "position_mm": [
-   -5.978,
-   -8.852
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (4.8 mm from that cell centre)."
- },
- "R_FIN1_DECAY": {
-  "position_mm": [
-   2.226,
-   -7.701
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (6.2 mm from that cell centre)."
- },
- "R_FIN3_DECAY": {
-  "position_mm": [
-   -7.129,
-   -8.402
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (4.1 mm from that cell centre)."
- },
- "R_FIN4_DECAY": {
-  "position_mm": [
-   10.849,
-   -2.302
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 330-deg lobe (3.9 mm from that cell centre)."
- },
- "R_J_HALL_FIN_PU": {
-  "position_mm": [
-   -10.849,
-   0.549
-  ],
-  "rotation_deg": 90,
-  "face": "bottom",
-  "reason": "Battery-compartment ceiling rule (hand-moved by the user 2026-07-31): every bottom-face element on fin_ble_board sits INSIDE the 3-cell bore circles (r=7.6 lobes on the r=8.6 cluster triangle), so battery spacer 6 gives up no cutout beyond the trefoil that already exists for the cells and the perimeter ring keeps its LGA interconnect + potting area. This part rides the 210-deg lobe (5.9 mm from that cell centre)."
  },
  "C_ACTIVATE_COMP": {
   "position_mm": [
@@ -2286,15 +1980,6 @@
   "face": "bottom",
   "reason": "Sjoert's final routed power_board (WIP/Sjoert/power_board_generated, 2026-09-28) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter)."
  },
- "U_FIN2": {
-  "position_mm": [
-   -8.051,
-   0.0
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter)."
- },
  "R_IMU2_SCX_PU": {
   "position_mm": [
    -7.5,
@@ -3518,5 +3203,50 @@
   "rotation_deg": 90,
   "face": "top",
   "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
+ },
+ "U_NAND_B": {
+  "position_mm": [
+   3.273,
+   -8.599
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "SPI-NAND die B, locked 2026-11-14 at the spot the packer used to find next to the (now removed) SE potting hole: with ONE potting hole per board the packer lost that anchor and could not seat it. Point-mirror of U_NAND_A. Placeholder until the layout EE re-places companion_compute."
+ },
+ "P_CELL_TAB_POS1": {
+  "position_mm": [
+   0.0,
+   12.5
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "Cell 1 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 90° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+ },
+ "P_CELL_TAB_POS2": {
+  "position_mm": [
+   -10.825,
+   -6.25
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "Cell 2 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 210° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+ },
+ "P_CELL_TAB_POS3": {
+  "position_mm": [
+   10.825,
+   -6.25
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "Cell 3 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 330° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+ },
+ "U_G0B1_FIN": {
+  "position_mm": [
+   0.0,
+   0.0
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "STM32G0B1RET6 (LQFP-64, 12×12 incl. leads, 1.6 mm) at the centre of fin_ble_board's BOTTOM face — the only spot a 13.4 mm courtyard fits between the three + tab lands (r 12.5), the potting hole (135°, r 13) and the battery holder's edge ring (r ≥ 15.8); 1.6 mm ≤ the 1.8 mm headroom. Placeholder for the layout EE (2026-11-14)."
  }
 }

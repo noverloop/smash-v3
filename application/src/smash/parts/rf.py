@@ -227,3 +227,216 @@ def add_adf4351bcpz(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Shared helper for the SamacSys-sourced 2.4 GHz radio parts below
+# ═════════════════════════════════════════════════════════════════════════
+
+def _samacsys_qfn_footprint(part_dir: str, mod_file: str, *, name: str,
+                            package_class: str, pitch_mm: float,
+                            size_mm: tuple, height_mm: float) -> Footprint:
+    mod = src(part_dir, mod_file)
+    return Footprint(
+        name=name,
+        package_class=package_class,
+        pads=pads_from_kicad_mod(mod),
+        body_outline=outline_polygon(mod, "F.Fab") or [
+            (-size_mm[0] / 2, -size_mm[1] / 2), (size_mm[0] / 2, -size_mm[1] / 2),
+            (size_mm[0] / 2, size_mm[1] / 2), (-size_mm[0] / 2, size_mm[1] / 2)],
+        courtyard=outline_polygon(mod, "F.CrtYd"),
+        pitch_mm=pitch_mm,
+        size_mm=size_mm,
+        height_mm=height_mm,
+        model_3d_path=datasheet_ref(part_dir, f"{part_dir}.stp"),
+        source="samacsys",
+    )
+
+
+def _check_pins_vs_pads(pn: str, pins: list, fp: Footprint) -> None:
+    pads = {p.num for p in fp.pads}
+    mapped = {p.num for p in pins}
+    if pads != mapped:
+        raise ValueError(f"{pn}: pin/pad mismatch — pads not mapped: "
+                         f"{pads - mapped}, pins without pad: {mapped - pads}")
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Semtech SX1280 — 2.4 GHz LoRa® / FLRC / GFSK / BLE-PHY transceiver,
+# VQFN-24 4×4 mm + exposed pad
+# ═════════════════════════════════════════════════════════════════════════
+
+_SX1280_NOTE = """\
+Datasheet extras (Semtech SX1280/SX1281 DS, Rev 3.2, March 2020).
+
+Pin table (§2 Table 2-1). The datasheet numbers the exposed pad "0";
+the SamacSys footprint numbers it "25" — same pad, GND.
+
+Supplies (Table 2-1): VBAT 1.8–3.7 V; VBAT_IO 1.8–3.7 V and must be
+≤ VBAT. VDD_IN "Connect to Pin 12" (DCC_FB, the internal regulator
+output).
+
+Regulation (§5.1): LDO enabled by default in all modes; the DC-DC buck
+(15 µH between DCC_SW pin 14 and DCC_FB pin 12) is optional —
+"LDO-only operation is possible which negates the need for the 15 μH
+inductor", at higher energy consumption. All DS specs are given with
+the DC-DC enabled.
+
+Reference: 52 MHz crystal (§3.7 Table 3-9: CLOAD 10 pF, internal foot
+capacitances — no external load caps), or a 0.8 V clipped-sine TCXO
+AC-coupled into XTA (§15.2).
+
+Host interface (§9): SPI (CPOL=0, CPHA=0, up to 18 MHz) or UART on the
+same pins; at power-up both are enabled until the first valid
+transaction (§9.2). BUSY low = ready for a new command (§9.1) — must be
+checked before every transaction. Wake from Sleep = falling edge on NSS
+(§9.3.3).
+
+Reference design BOM (§15.1.2): RF match C0 0.8 pF, L1 3.0 nH, PI
+filter C1 1.2 pF / L2 2.5 nH / C2 1.2 pF, DC block C3 100 pF; C5/C6
+10 nF on VR_PA; C8 100 nF VBAT_IO; C10 100 nF VBAT; C9 470 nF DCC_FB.
+"""
+
+
+def add_sx1280(design, ref: str, **overrides) -> Chip:
+    """Semtech SX1280 — 2.4 GHz LoRa/FLRC/GFSK transceiver, SPI/UART
+    host interface, VQFN-24 4×4 mm (QFN50P400X400X100-25N-D)."""
+    pn = "SX1280"
+    fp = _samacsys_qfn_footprint(
+        pn, "QFN50P400X400X100-25N-D.kicad_mod",
+        name="QFN50P400X400X100-25N-D", package_class="VQFN-24 4x4 + EP",
+        pitch_mm=0.5, size_mm=(4.0, 4.0), height_mm=1.0)
+    P = Pin
+    pins = [
+        P(num="1",  name="VR_PA",    type="power",  note="Regulated supply for the PA (internal; decouple only)"),
+        P(num="2",  name="VDD_IN",   type="power",  note="Regulated supply input. Connect to Pin 12."),
+        P(num="3",  name="NRESET",   type="input",  note="Reset, active low, internal 50 kΩ pull-up"),
+        P(num="4",  name="XTA",      type="passive", note="Reference oscillator connection or TCXO input"),
+        P(num="5",  name="GND",      type="ground"),
+        P(num="6",  name="XTB",      type="passive", note="Reference oscillator connection"),
+        P(num="7",  name="BUSY",     type="output", note="Transceiver busy indicator"),
+        P(num="8",  name="DIO1",     type="io"),
+        P(num="9",  name="DIO2",     type="io"),
+        P(num="10", name="DIO3",     type="io"),
+        P(num="11", name="VBAT_IO",  type="power",  note="Digital IO supply 1.8–3.7 V, must be ≤ VBAT"),
+        P(num="12", name="DCC_FB",   type="power",  note="Regulated output voltage from the internal regulator"),
+        P(num="13", name="GND",      type="ground"),
+        P(num="14", name="DCC_SW",   type="output", note="DC-DC switcher output (NC in LDO-only use)"),
+        P(num="15", name="VBAT",     type="power",  note="RFIC supply 1.8–3.7 V, must be ≥ VBAT_IO"),
+        P(num="16", name="MISO_TX",  type="output", aliases=["MISO", "TX"]),
+        P(num="17", name="MOSI_RX",  type="input",  aliases=["MOSI", "RX"]),
+        P(num="18", name="SCK_RTSN", type="input",  aliases=["SCK", "RTSN"]),
+        P(num="19", name="NSS_CTS",  type="input",  aliases=["NSS", "CTS"]),
+        P(num="20", name="GND",      type="ground"),
+        P(num="21", name="GND",      type="ground"),
+        P(num="22", name="RFIO",     type="io",     note="RF transmit output and receive input"),
+        P(num="23", name="GND",      type="ground"),
+        P(num="24", name="GND",      type="ground"),
+        P(num="25", name="GND",      type="ground", aliases=["EP", "0"],
+          note="Exposed ground pad (DS pin 0)"),
+    ]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Semtech", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("2.4 GHz LoRa/FLRC/GFSK transceiver, SPI/UART host "
+                     "interface, VQFN-24 4×4 mm"),
+        datasheet=datasheet_ref(pn, "SX1280.pdf"),
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=[], eccn=None, itar=None,
+        package="VQFN-24 4x4", size_mm=(4.0, 4.0), height_mm=1.0,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=3.7, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=pins, footprint=fp, note=_SX1280_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Nordic nRF21540-QDAA-R7 — 2.4 GHz RF front-end module (PA + LNA + 2:1
+# antenna switch), QFN-16 4×4 mm + exposed pad
+# ═════════════════════════════════════════════════════════════════════════
+
+_NRF21540_NOTE = """\
+Product Specification extras (Nordic nRF21540 PS, docs.nordicsemi.com).
+
+Pin assignments (Table 1). NOTE: the SamacSys symbol names pin 10 "TRE";
+the PS names it TRX ("Transceiver interface") — PS name used here.
+
+Ratings: VDD abs max 3.6 V; recommended 1.7 / 3.0 / 3.6 V. RF input
+abs max: TRX +5 dBm (CW, TX mode), ANT +15 dBm (CW, RX/Program).
+T_OP −40…+105 °C. ZL 50 Ω (single-ended 50 Ω matched in/out).
+
+Electrical (VDD 3 V, 25 °C, 2440 MHz): PSAT 21.5 dBm, G_TX 20 dB
+(adjustable 5…21 dB), I_TX 110 mA @ +20 dBm / 38 mA @ +10 dBm,
+I_RX 2.9 mA, G_RX 13 dB, NF 2.7 dB, I_PD 45 nA, I_PG 1.1 mA.
+
+Control (Operational states): PDN=0 → power-down; PDN=1 → Program;
+then RX_EN / TX_EN (or SPI CONFREG0/1) → RX / TX. Only one state at a
+time. ANT_SEL=0 → ANT1, =1 → ANT2 (switches isolate in PD/PG).
+Settling (max): PD→PG 17.5 µs, PG→TX/RX 10.5 µs, TX/RX→PD 10 µs.
+
+SPI optional ("I/O, SPI, or a combination"). Unused: SCK, MOSI → VSS;
+CSN → VDD; MISO unconnected. SPI FSCK max 8.9 MHz.
+
+Reference BOM (dual antenna, QFN16): 1.0 pF / 2.0 pF NP0, 1.9 nH /
+3.0 nH, 100 nF, 10 µF, 33 kΩ — pin mapping is in the PS schematic
+image (not transcribed); confirm before routing.
+"""
+
+
+def add_nrf21540_qdaa_r7(design, ref: str, **overrides) -> Chip:
+    """Nordic nRF21540-QDAA-R7 — 2.4 GHz RF FEM (+21 dBm PA, 13 dB LNA,
+    2:1 antenna switch), GPIO or SPI control, QFN-16 4×4 mm."""
+    pn = "nRF21540-QDAA-R7"
+    fp = _samacsys_qfn_footprint(
+        pn, "QFN65P400X400X95-17N-D.kicad_mod",
+        name="QFN65P400X400X95-17N-D", package_class="QFN-16 4x4 + EP",
+        pitch_mm=0.65, size_mm=(4.0, 4.0), height_mm=0.95)
+    P = Pin
+    pins = [
+        P(num="1",  name="VSS",     type="ground"),
+        P(num="2",  name="ANT1",    type="io",    note="First antenna interface (50 Ω)"),
+        P(num="3",  name="ANT2",    type="io",    note="Second antenna interface (50 Ω)"),
+        P(num="4",  name="MODE",    type="input", note="TX power mode control"),
+        P(num="5",  name="VDD",     type="power", note="Supply voltage 1.7–3.6 V"),
+        P(num="6",  name="VDD",     type="power", note="Supply voltage 1.7–3.6 V"),
+        P(num="7",  name="RX_EN",   type="input", note="RX mode enable"),
+        P(num="8",  name="ANT_SEL", type="input", note="Antenna select (0 = ANT1)"),
+        P(num="9",  name="TX_EN",   type="input", note="TX mode enable"),
+        P(num="10", name="TRX",     type="io",    aliases=["TRE"],
+          note="Transceiver interface (50 Ω); abs max +5 dBm in TX"),
+        P(num="11", name="PDN",     type="input", note="Power-down, active low"),
+        P(num="12", name="SCK",     type="input", note="SPI clock; VSS if SPI unused"),
+        P(num="13", name="MOSI",    type="input", note="SPI data in; VSS if SPI unused"),
+        P(num="14", name="MISO",    type="output", note="SPI data out; NC if SPI unused"),
+        P(num="15", name="CSN",     type="input", note="SPI chip select, active low; VDD if SPI unused"),
+        P(num="16", name="VSS",     type="ground"),
+        P(num="17", name="VSS",     type="ground", aliases=["DAP", "EP"],
+          note="Exposed pad (DAP) — ground"),
+    ]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Nordic Semiconductor", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("2.4 GHz RF front-end: +21 dBm PA, 13 dB LNA, 2:1 "
+                     "antenna switch, GPIO/SPI control, QFN-16 4×4 mm"),
+        datasheet=None,
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=["J-STD-020 260 °C reflow", "MSL 2",
+                                  "ESD HBM 1 kV", "ESD CDM 2 kV"],
+        eccn=None, itar=None,
+        package="QFN-16 4x4", size_mm=(4.0, 4.0), height_mm=0.95,
+        temp_range_c=(-40, 105),
+        body_material=None, lead_material=None,
+        voltage_rating_v=3.6, vcc_nominal_v=3.0,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=pins, footprint=fp, note=_NRF21540_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

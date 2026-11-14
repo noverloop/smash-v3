@@ -297,6 +297,29 @@ def assign_spacer_backings(chain: list, floor_mm: float | None = None,
             b.spacer_floor_above_mm = t          # spacer between b and chain[i+1]
 
 
+# (2026-11-14) ONE potting hole per board: the spacer-less tower is potted
+# inside the LDS sleeve (fed from its feed groove), so the board hole is only
+# an insurance path past tall parts. The NW hole (135°) is kept: in every
+# board frame the cells sit at 90/210/330°, so SE (315°) lies inside a cell
+# bore on cell_floor_board / fin_ble_board. Holes need not align across
+# boards — each just links the gaps above and below its own board.
+BOARD_POTTING_HOLE_ANGLES_DEG = (POTTING_HOLE_ANGLE_DEG_A,)
+# r = 13 (was 14): the Ø3 hole (r 11.5–14.5) must clear the 1 mm Al rings in
+# the two aft gaps (r 15.2–16.2, keep-out from r 15.0). Still clears the cells
+# on cell_floor / fin_ble (0.25 mm to the Ø14.9 bore, outside the tip relief).
+# The holes form ONE continuous axial channel up the stack at PHYSICAL 135°
+# (smash_evb_v1._align_potting_holes turns them 180° on the nose-ward group);
+# the nose_cap has none.
+BOARD_POTTING_HOLE_RADIUS_MM = 13.0
+
+
+def board_potting_hole_positions() -> list[tuple[float, float]]:
+    """Potting holes actually drilled in each rigid board (see above)."""
+    return [(BOARD_POTTING_HOLE_RADIUS_MM * math.cos(math.radians(a)),
+             BOARD_POTTING_HOLE_RADIUS_MM * math.sin(math.radians(a)))
+            for a in BOARD_POTTING_HOLE_ANGLES_DEG]
+
+
 def potting_hole_positions_math_yup() -> list[tuple[float, float]]:
     return [
         (POTTING_HOLE_RADIUS_MM * math.cos(math.radians(a)),

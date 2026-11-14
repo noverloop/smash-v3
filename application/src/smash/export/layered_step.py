@@ -363,6 +363,8 @@ def _pad_openings_for_face(board, face: str, base_z: float,
     for wx, wy, pw, ph, shape, r_deg, pad in _iter_pad_world_geom(board, face):
         exp = pad.solder_mask_expansion_mm
         exp = expansion_mm if exp is None else exp
+        if pw + 2.0 * exp <= 1e-6 or ph + 2.0 * exp <= 1e-6:
+            continue        # fully tented (e.g. castellation face annulus): no opening
         ps = _pad_solid(wx, wy, pw + 2.0 * exp, ph + 2.0 * exp,
                         shape, r_deg, base_z, thickness_mm)
         pad_shapes.append(ps.val())

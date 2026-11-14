@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP nRF21540-QDAA-R7
+D RF Front End Range Extender FEM +13 dB RX gain
+K
+F https://ms.componentsearchengine.com/Datasheets/2/NRF21540-QDAA-R7.pdf
+$ENDCMP
+#
+#End Doc Library

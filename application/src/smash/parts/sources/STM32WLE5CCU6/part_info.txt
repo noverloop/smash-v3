@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32WLE5CCU6
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=49
+Version=2.1
+Released=2020-10-27 12:57:35
+Downloaded=2026-11-14 15:57:35
+3D=Y

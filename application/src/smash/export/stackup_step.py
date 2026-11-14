@@ -235,8 +235,18 @@ def write_stackup_step(
     with_layered_rigid: bool = False,
     fab=None,
     tiles: dict | None = None,
+    spacer_hardware: bool = True,
+    sleeve_contract: dict | None = None,
+    with_sleeve: bool = True,
 ) -> dict:
     """Emit the folded tower as one multi-body STEP assembly.
+
+    (2026-11-14) `spacer_hardware=True`: a gap is NOT an FR4 disc any more —
+    it holds its generated hardware (Al ring / battery ring / PEEK standoffs,
+    `spacer_step.gap_hardware_body`, physical frame, no fold flip) and the
+    potting. `with_sleeve` adds the LDS sleeve half-shells (vias from
+    `sleeve_contract`, the castellation contract); the potting body is then
+    the sleeve bore minus boards and hardware.
 
     Stacks every `snake_chain` tile (boards + spacers) at cumulative Z,
     concentric. Optionally adds per-chip component-mass blocks and a
@@ -294,7 +304,18 @@ def write_stackup_step(
         mx, my, mz = _tile_pose(tiles, snake_chain, prev, name,
                                 getattr(b, "is_spacer", False))
 
-        if getattr(b, "is_spacer", False):
+        if getattr(b, "is_spacer", False) and spacer_hardware:
+            from smash.export.spacer_step import gap_hardware_body
+            hw = gap_hardware_body(name, boards, list(snake_chain))
+            if hw is not None:
+                body, _h, label, kind = hw
+                body = body.translate((0, 0, z))
+                col = (cq.Color(0.75, 0.75, 0.8, 1.0) if kind != "standoffs"
+                       else cq.Color(0.85, 0.7, 0.45, 1.0))
+                asm.add(body, name=label, color=col)
+                fr4_bodies.append(body)
+            n_spacers += 1
+        elif getattr(b, "is_spacer", False):
             body, _, _ = build_spacer_solid(b, t)
             body = _apply_pose(body, mx, my, mz, z, t)
             asm.add(body, name=name, color=cq.Color(0.4, 0.5, 0.6, 1.0))
@@ -334,7 +355,23 @@ def write_stackup_step(
         prev = name
 
     total_h = z
-    if with_potting and total_h > 0 and max_radius > 0 and fr4_bodies:
+    segs = None
+    if with_sleeve and spacer_hardware:
+        from smash.export.sleeve_step import build_sleeve, _sleeve_profile
+        live = [n for n in snake_chain if n in boards]
+        sa, sb, _nv, segs = build_sleeve(boards, live, sleeve_contract)
+        asm.add(sa, name="sleeve_half_a", color=cq.Color(0.85, 0.8, 0.6, 0.6))
+        asm.add(sb, name="sleeve_half_b", color=cq.Color(0.8, 0.75, 0.55, 0.6))
+    if with_potting and segs:
+        pot = None
+        for z0, z1, r_in in segs:
+            c = (cq.Workplane("XY").circle(r_in).extrude(z1 - z0)
+                 .translate((0, 0, z0)))
+            pot = c if pot is None else pot.union(c)
+        for fb in fr4_bodies:
+            pot = pot.cut(fb)
+        asm.add(pot, name="potting", color=cq.Color(0.8, 0.4, 0.4, 0.4))
+    elif with_potting and total_h > 0 and max_radius > 0 and fr4_bodies:
         # Vacuum potting = stack envelope minus the FR4 (boards + spacers).
         # What remains is the spacer cavities, flat notches and edge gaps
         # the compound fills. (Component blocks are left as separate bodies;
@@ -371,6 +408,8 @@ def write_stackup_components_step(
     output_path,
     *,
     tiles: dict | None = None,
+    spacer_hardware: bool = True,
+    sleeve_dir=None,
 ) -> dict:
     """Fold the DETAILED per-tile STEPs into the tower — the component-render
     counterpart of `write_stackup_step`'s mass-block FEA tower.
@@ -401,6 +440,22 @@ def write_stackup_components_step(
         t = b.thickness_mm
         is_spacer = getattr(b, "is_spacer", False)
         step_path = tile_step_dir / name / f"{name}.step"
+        if is_spacer and spacer_hardware:
+            # Gap hardware STEPs are in the PHYSICAL frame (no fold flip); the
+            # battery run has ONE ring STEP, placed at the run's first slot.
+            from smash.export.spacer_step import gap_kind
+            if gap_kind(name) == "battery_holder":
+                first = next((n for n in snake_chain if n in boards
+                              and gap_kind(n) == "battery_holder"), None)
+                step_path = (tile_step_dir / "battery_holder" / "battery_holder.step"
+                             if name == first else None)
+            if step_path is not None and step_path.exists():
+                asm.add(cq.importers.importStep(str(step_path)).translate((0, 0, z)),
+                        name=step_path.stem)
+                n_tiles += 1
+            z += t
+            prev = name
+            continue
         if step_path.exists():
             mx, my, mz = _tile_pose(tiles, snake_chain, prev, name, is_spacer)
             body = _apply_pose(cq.importers.importStep(str(step_path)),
@@ -423,6 +478,11 @@ def write_stackup_components_step(
         z += t
         prev = name
 
+    if sleeve_dir is not None:
+        sp = pathlib.Path(sleeve_dir) / "sleeve.step"
+        if sp.exists():
+            asm.add(cq.importers.importStep(str(sp)), name="sleeve",
+                    color=cq.Color(0.85, 0.8, 0.6, 0.6))
     out = pathlib.Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     if hasattr(asm, "export"):

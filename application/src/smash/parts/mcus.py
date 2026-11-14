@@ -201,6 +201,36 @@ def add_stm32g0b1rei6n(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_stm32g0b1ret6(design, ref: str, **overrides) -> Chip:
+    """ST STM32G0B1RET6 — the same G0B1 die as the REI6N in LQFP-64
+    (10×10 mm body, 0.5 mm lead pitch, leaded gull-wing). Chosen 2026-11-14
+    over the UFBGA-64 REI6N so fin_ble_board needs no HDI microvias. AF table
+    borrowed from the REI6N CubeMX XML by pin NAME (same die)."""
+    pn = "STM32G0B1RET6"
+    fields = _stm32(
+        pn=pn,
+        ds_name=f"{pn}.pdf",
+        fp_mod_name="QFP50P1200X1200X160-64N.kicad_mod",
+        fp_class="LQFP-64 (10×10 mm)",
+        package="LQFP-64 (10×10 mm)",
+        description="STM32G0B1, Cortex-M0+ 64 MHz, 512 KB flash, 144 KB SRAM, LQFP-64",
+        clock_max_hz=64e6,
+        vcc_nominal_v=3.3,
+        size_mm=(12.0, 12.0), height_mm=1.6, pitch_mm=0.5,
+        p_active_w=0.028,                   # same die as REI6N (DS Tab 28)
+        p_max_w=0.032,
+        tj_max_c=150.0,
+        note=("LQFP-64 variant of STM32G0B1 (same die as REI6N). Leaded "
+              "package: no HDI needed at 0.5 mm lead pitch. Single VDD/VDDA "
+              "and VSS/VSSA pins; no separate VDDIO2 pin in this package."),
+        standards=["RoHS", "ECOPACK2"],
+    )
+    fields["pins"] = _overlay_cubemx_af(pn, fields["pins"],
+                                        af_source_pn="STM32G0B1REI6N")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ─── STM32WLE5 — Cortex-M4 with sub-GHz LoRa radio ───────────────────────
 
 def add_stm32wle5jci6(design, ref: str, **overrides) -> Chip:
@@ -236,6 +266,40 @@ def add_stm32wle5jci6(design, ref: str, **overrides) -> Chip:
         ),
         standards=["RoHS", "ECOPACK2"],
     )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_stm32wle5ccu6(design, ref: str, **overrides) -> Chip:
+    """ST STM32WLE5CCU6 — Cortex-M4 48 MHz + sub-GHz LoRa/(G)FSK radio,
+    256 KB flash, 64 KB SRAM, UFQFPN-48 (7×7 mm, 0.5 mm pitch, leadless +
+    exposed pad). The package of the E77 module that mLRS's
+    rx-hal-easysolder-e77-e28-dualband-wle5cc target is written for, so the
+    radio pin map is the stock mLRS one. Chosen 2026-11-14 over the
+    UFBGA-73 JCI6 so fin_ble_board needs no HDI. AF table borrowed from the
+    JCI6 CubeMX XML by pin NAME (same die)."""
+    pn = "STM32WLE5CCU6"
+    fields = _stm32(
+        pn=pn,
+        ds_name=f"{pn}.pdf",
+        fp_mod_name="QFN50P700X700X60-49N-D.kicad_mod",
+        fp_class="UFQFPN-48 (7×7 mm) + EP",
+        package="UFQFPN-48 (7×7 mm)",
+        description=("Cortex-M4 48 MHz + sub-GHz LoRa/(G)FSK radio, 256 KB "
+                     "flash, 64 KB SRAM, UFQFPN-48"),
+        clock_max_hz=48e6,
+        vcc_nominal_v=3.3,
+        size_mm=(7.0, 7.0), height_mm=0.6, pitch_mm=0.5,
+        p_active_w=0.018,                   # same die as JCI6 (DS Tab 28 p70)
+        p_max_w=0.396,                      # TX +22 dBm HP (DS Tab 29 p71)
+        tj_max_c=125.0,
+        note=("STM32WLE5 in UFQFPN-48: same die as the JCI6. Ground is the "
+              "exposed pad (EP) + VSSSMPS; no separate VSS / VSSRF pins and "
+              "no VREF+ pin in this package."),
+        standards=["RoHS", "ECOPACK2"],
+    )
+    fields["pins"] = _overlay_cubemx_af(pn, fields["pins"],
+                                        af_source_pn="STM32WLE5JCI6")
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
 

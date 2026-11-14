@@ -13,7 +13,7 @@ Originally a twin of the legacy SKiDL `system.py` (now frozen under
 authority — parity with `system.py` is no longer maintained, so the old
 byte-diff verification loop is retired. Run:
 
-    python3 generate_maximalist_system.py                # full twin + configs
+    python3 generate_stackup.py                # full twin + configs
 
 Boards are built bottom-up — smallest first. Cross-board nets are
 get-or-create via `_net()`; whichever board's builder runs first
@@ -53,6 +53,8 @@ from smash.parts.mechanical import (                                   # noqa: E
     add_pogo_pad, add_cell_contacts_3, add_cell_solder_tab, add_piezo_disc_smd10t04r111,
     add_mechanical_spacer_34mm,
 )
+from smash.parts.castellations import (place_castellations,             # noqa: E402
+                                       board_fold_transforms)
 from smash.parts.connectors import (place_lga_lands,                    # noqa: E402
                                     place_branch_flex_launches)
 from smash.parts.batteries import add_tlm_1520hpms, add_tlm_1530m       # noqa: E402
@@ -75,7 +77,8 @@ from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: 
 from smash.parts.transceivers import add_tcan1042gvdq1                  # noqa: E402
 from smash.parts.mcus import (                                          # noqa: E402
     add_stm32mp255dal3, add_stm32g0b1rei6n,
-    add_stm32wba55hgf6tr, add_stm32h562aii6,
+    add_stm32wba55hgf6tr, add_stm32h562aii6, add_stm32wle5ccu6,
+
 )
 from smash.parts.flash import (                                         # noqa: E402
     add_ktdm4g4b626bgieat,
@@ -100,6 +103,8 @@ from smash.parts.comparators import add_tlv3691idpfr                      # noqa
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
 from smash.parts.hall_sensors import add_drv5032fcqdbzr, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
+from smash.parts.rf import (add_sx1280, add_nrf21540_qdaa_r7,          # noqa: E402
+                            add_bgs12wn6e6327xtsa1)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
 from smash.export import (                                              # noqa: E402
@@ -1473,7 +1478,12 @@ def _g0b1_node(d: Design, *, suffix: str, board_tag: str) -> Chip:
     bus are gone. The node is flashed (G0 SPI system bootloader, AN2606) and
     commanded over SYS_SPI — single-ended over the LGA backbone, no
     transceiver. CS is the per-node `SYS_SPI_CS_<suffix>` line from the MP25 M33."""
-    g = add_stm32g0b1rei6n(d, ref=f"U_G0B1_{suffix}", board_tag=board_tag)
+    # UFBGA-64 REI6N (back 2026-11-14 — the LQFP-64 RET6 swap was reverted:
+    # its 12 × 12 mm body had no room on fin_ble). feature="bottom": fin_ble's
+    # top is full (piezo + comparator column + 4 fin drivers); its bottom is
+    # free since the 2026-11-14 battery headroom (≤ 1.8 mm parts).
+    g = add_stm32g0b1rei6n(d, ref=f"U_G0B1_{suffix}", board_tag=board_tag,
+                           feature="bottom")
     _net(d, "3V3").connect_all(g.pins_by_name("VDD/_VDDA"))
     _net(d, "3V3").connect(g.pin("VDDIO_2"))
     _net(d, "3V3").connect(g.pin("VBAT"))
@@ -1522,6 +1532,206 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
                 board_tag=board_tag)                    # required pull-up
     cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref}_VCC", board_tag=board_tag, pin=(f"{ref}_VCC", "1"))
     _net(d, out_net).connect(gpio_chip.pin(gpio_pin))
+
+
+def _build_lr_radio(d: Design, g, BTAG: str) -> None:
+    """Long-range radio cluster on fin_ble_board's BOTTOM face (2026-11-14).
+
+    Architecture — mLRS dual band (mirrors mLRS target
+    rx-hal-easysolder-e77-e28-dualband-wle5cc.h, so the firmware is a
+    near-stock custom target):
+      • U_LR_MCU  STM32WLE5CC (UFQFPN-48, the E77's package) — runs mLRS; its integrated SX126x-class radio
+        is the sub-GHz LoRa transceiver (868–923 MHz, RFO_HP up to +22 dBm).
+      • U_LR      SX1280 on the WLE5's SPI1 — 2.4 GHz LoRa / FLRC.
+      • U_LR_FEM  nRF21540 PA/LNA after the SX1280 (+20 dBm).
+      • U_ANTSW_2G4  BGS12 SPDT at the 2.4 GHz antenna: RF1 (CTRL=0, the
+        pulled-down DEFAULT) = BLE_RF from the WBA55 on wakeup_board, RF2 =
+        FEM ANT1. BLE is GROUND-ONLY, so it BYPASSES the FEM (no per-packet
+        FEM timing from the WBA needed); ownership flips by MODE (ground =
+        BLE, flight = mLRS). Powered from 3V3_AON so BLE works with the main
+        rails dark.
+      • U_ANTSW_SUBG BGS12 SPDT = the WLE5's TX/RX switch (RF2 = RFO_HP TX,
+        RF1 = RFI balun RX), CTRL = mLRS SX_TX_EN (PA6).
+    Antennas: conformal elements against the PEEK compartment wall —
+    crescent 2 = 2.4 GHz (ANT_2G4), crescent 3 = sub-GHz (ANT_SUBG).
+
+    Host link: mLRS serial (WLE5 USART1 PB6/PB7) ↔ the fin node G0B1 USART1
+    (PA9/PA10), which bridges to the MP25 over the existing SYS_SPI — ZERO
+    new backbone nets. The G0B1 also owns: WLE5 reflash (SWD bit-bang +
+    NRST), FEM power-down (PDN) and the 2.4 GHz antenna owner (CTRL).
+
+    WLE5 pin map (mLRS E77+E28 dual-band HAL):
+      SPI1 SCK PA5 · MISO PA11 · MOSI PA12 · NSS PB2 → SX1280
+      SX1280 NRESET PA1 · BUSY PA0 · DIO1 PB8 (EXTI8)
+      FEM TX_EN PA4 · RX_EN PB12   (sx2_amp_transmit / _receive)
+      sub-GHz SX_TX_EN PA6 → U_ANTSW_SUBG CTRL · SX_RX_EN PA7 (NC)
+      serial USART1 TX PB6 / RX PB7 · SWD PA13/PA14 · debug SWUART TX PA9.
+    G0B1 pins: USART1 TX PA9 / RX PA10, SWCLK PB14, SWDIO PB15, NRST PB12,
+    FEM PDN PB8, ANTSW_2G4 CTRL PB9 (AFs checked against cubemx.xml).
+
+    Power: WLE5 in LDO mode (no SMPS coil, VLXSMPS NC; VFBSMPS = VDDRF1V55
+    internal 1.55 V, decoupled). SX1280 LDO-only (no 15 µH). FIRMWARE MUST
+    CAP SX1280 OUTPUT ≤ 0 dBm (nRF21540 TRX abs max +5 dBm) — mLRS's own
+    POWER2_SX1280_MAX = SX1280_POWER_0_DBM already does.
+
+    ⚠ OPEN: (1) 52 MHz reference for the SX1280 and 32 MHz TCXO for the
+    WLE5 (PB0-VDD_TCXO → TCXO VDD, OSC_IN) — no parts in the library.
+    (2) Sub-GHz match / low-pass / RX balun values are PLACEHOLDERS (ST
+    AN5457 reference to transcribe); nRF21540 port matching per its PS
+    schematic image still to transcribe. (3) BLE_RF crosses the M joint as
+    a plain LGA land — needs a GND-ringed 50 Ω transition. (4) Conformal
+    antenna elements are modelled as feed pads only."""
+    # Whole cluster on L's BOTTOM face — the compartment-facing ceiling,
+    # free since the PEEK holder + L↔E flex replace the battery LGA column;
+    # also keeps the +20 dBm PA away from the high-Z PIEZO_P column on top.
+    F = "bottom"
+    # UFQFPN-48 CCU6 (2026-11-14, was the UFBGA-73 JCI6): the exact package
+    # of mLRS's wle5cc target; no HDI needed on fin_ble_board.
+    mcu = add_stm32wle5ccu6(d, ref="U_LR_MCU", board_tag=BTAG, feature=F)
+    lr  = add_sx1280(d, ref="U_LR", board_tag=BTAG, feature=F)
+    fem = add_nrf21540_qdaa_r7(d, ref="U_LR_FEM", board_tag=BTAG, feature=F)
+    sw24 = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_2G4", board_tag=BTAG, feature=F)
+    swsg = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_SUBG", board_tag=BTAG, feature=F)
+
+    def C0G(net, val, ref, pin=None):
+        cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
+                   **_as_built_0402(val, "C0G/NP0"), pin=pin)
+
+    def series_cap(n1, n2, val, ref):
+        c = add_capacitor_c0g_0603_avx_sqcs(
+            d, ref=ref, value=val, board_tag=BTAG, feature=F,
+            **_as_built_0402(val, "C0G/NP0"))
+        _net(d, n1).connect(c.pin("1")); _net(d, n2).connect(c.pin("2"))
+
+    # ── STM32WLE5 supplies (DS13105 §3.9.1, LDO mode) ────────────────
+    for pn in ("VSSSMPS", "EP"):              # UFQFPN-48: ground = EP + VSSSMPS
+        _net(d, "GND").connect(mcu.pin(pn))
+    for pn in ("VDD_1", "VDD_2", "VDDSMPS", "VDDA", "VDDRF", "VBAT", "VDDPA"):
+        _net(d, "3V3").connect(mcu.pin(pn))   # (no VREF+ pin in this package)
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDD1", board_tag=BTAG, pin=mcu.pin("VDD_1"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDD2", board_tag=BTAG, pin=mcu.pin("VDD_2"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDDRF", board_tag=BTAG, pin=mcu.pin("VDDRF"))
+    cap_to_gnd(d, "3V3", "2.2uF", ref="C_LR_MCU_VDDPA", board_tag=BTAG, pin=mcu.pin("VDDPA"))
+    # VFBSMPS = main-regulator input (1.55 V from the internal LDO in LDO
+    # mode); VDDRF1V55 "must be connected externally to VFBSMPS".
+    _net(d, "LR_MCU_1V55").connect(mcu.pin("VFBSMPS"))
+    _net(d, "LR_MCU_1V55").connect(mcu.pin("VDDRF1V55"))
+    cap_to_gnd(d, "LR_MCU_1V55", "1uF", ref="C_LR_MCU_1V55", board_tag=BTAG, pin=mcu.pin("VFBSMPS"))
+    _net(d, "LR_MCU_VR_PA").connect(mcu.pin("VR_PA"))
+    cap_to_gnd(d, "LR_MCU_VR_PA", "100nF", ref="C_LR_MCU_VRPA", board_tag=BTAG, pin=mcu.pin("VR_PA"))
+    # PH3-BOOT0 low = boot from flash; NRST from the G0B1 (reflash), RC'd.
+    res_between(d, "LR_MCU_BOOT0", "GND", "10k", ref="R_LR_MCU_BOOT0", board_tag=BTAG)
+    _net(d, "LR_MCU_BOOT0").connect(mcu.pin("PH3-BOOT0"))
+    _net(d, "LR_MCU_NRST").connect(mcu.pin("NRST"))
+    _net(d, "LR_MCU_NRST").connect(g.pin("PB12"))
+    cap_to_gnd(d, "LR_MCU_NRST", "100nF", ref="C_LR_MCU_NRST", board_tag=BTAG, pin=mcu.pin("NRST"))
+    _net(d, "LR_MCU_SWCLK").connect(mcu.pin("PA14")); _net(d, "LR_MCU_SWCLK").connect(g.pin("PB14"))
+    _net(d, "LR_MCU_SWDIO").connect(mcu.pin("PA13")); _net(d, "LR_MCU_SWDIO").connect(g.pin("PB15"))
+    # mLRS serial ↔ G0B1 bridge (crossed TX/RX).
+    _net(d, "LR_UART_TX").connect(mcu.pin("PB6")); _net(d, "LR_UART_TX").connect(g.pin("PA10"))
+    _net(d, "LR_UART_RX").connect(mcu.pin("PB7")); _net(d, "LR_UART_RX").connect(g.pin("PA9"))
+
+    # ── SX1280 on WLE5 SPI1 ──────────────────────────────────────────
+    for gp in ("5", "13", "20", "21", "23", "24", "25"):
+        _net(d, "GND").connect(lr.pin(gp))
+    _net(d, "3V3").connect(lr.pin("VBAT"))
+    _net(d, "3V3").connect(lr.pin("VBAT_IO"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBATIO", board_tag=BTAG, pin=lr.pin("VBAT_IO"))
+    _net(d, "LR_VREG").connect(lr.pin("DCC_FB"))      # VDD_IN "Connect to Pin 12"
+    _net(d, "LR_VREG").connect(lr.pin("VDD_IN"))
+    cap_to_gnd(d, "LR_VREG", "470nF", ref="C_LR_VREG", board_tag=BTAG, pin=lr.pin("DCC_FB"))
+    _net(d, "LR_VR_PA").connect(lr.pin("VR_PA"))
+    cap_to_gnd(d, "LR_VR_PA", "10nF", ref="C_LR_VRPA1", board_tag=BTAG, pin=lr.pin("VR_PA"))
+    cap_to_gnd(d, "LR_VR_PA", "10nF", ref="C_LR_VRPA2", board_tag=BTAG, pin=lr.pin("VR_PA"))
+    for net, mpin, lpin in (("LR_SPI_SCK",  "PA5",  "SCK_RTSN"),
+                            ("LR_SPI_MISO", "PA11", "MISO_TX"),
+                            ("LR_SPI_MOSI", "PA12", "MOSI_RX"),
+                            ("LR_NSS",      "PB2",  "NSS_CTS"),
+                            ("LR_NRESET",   "PA1",  "NRESET"),
+                            ("LR_BUSY",     "PA0",  "BUSY"),
+                            ("LR_DIO1",     "PB8",  "DIO1")):
+        _net(d, net).connect(mcu.pin(mpin)); _net(d, net).connect(lr.pin(lpin))
+    res_between(d, "3V3", "LR_NSS", "100k", ref="R_LR_NSS_PU", board_tag=BTAG)
+
+    # SX1280 RFIO → Semtech ref match (C0 shunt, L1, PI C1/L2/C2) → 100 pF
+    # DC block → FEM TRX. (Ref C4 0.5 pF is an antenna tweak — omitted.)
+    _net(d, "LR_RFIO").connect(lr.pin("RFIO"))
+    C0G("LR_RFIO", "0.8pF", "C_LR_M0", pin=lr.pin("RFIO"))
+    ind_between(d, "LR_RFIO", "LR_RF_M1", "3.0nH", ref="L_LR_M1", board_tag=BTAG, feature=F)
+    C0G("LR_RF_M1", "1.2pF", "C_LR_M1")
+    ind_between(d, "LR_RF_M1", "LR_RF_M2", "2.5nH", ref="L_LR_M2", board_tag=BTAG, feature=F)
+    C0G("LR_RF_M2", "1.2pF", "C_LR_M2")
+    series_cap("LR_RF_M2", "LR_FEM_TRX", "100pF", "C_LR_DCBLK")
+    _net(d, "LR_FEM_TRX").connect(fem.pin("TRX"))
+
+    # ── nRF21540 FEM (GPIO mode) ─────────────────────────────────────
+    for gp in ("1", "16", "17"):
+        _net(d, "GND").connect(fem.pin(gp))
+    _net(d, "3V3").connect(fem.pin("5")); _net(d, "3V3").connect(fem.pin("6"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_FEM_VDD", board_tag=BTAG, pin=fem.pin("5"))
+    cap_to_gnd(d, "3V3", "2.2uF", ref="C_LR_FEM_BULK", board_tag=BTAG, pin=fem.pin("6"))
+    _net(d, "GND").connect(fem.pin("SCK"))       # SPI unused → VSS (PS pin table)
+    _net(d, "GND").connect(fem.pin("MOSI"))
+    _net(d, "3V3").connect(fem.pin("CSN"))       # SPI unused → VDD; MISO NC
+    _net(d, "GND").connect(fem.pin("MODE"))      # TX power mode — fixed (⚠ confirm POUTA/B)
+    _net(d, "GND").connect(fem.pin("ANT_SEL"))   # ANT1 only; ANT2 NC
+    _net(d, "LR_FEM_TX_EN").connect(mcu.pin("PA4"));  _net(d, "LR_FEM_TX_EN").connect(fem.pin("TX_EN"))
+    _net(d, "LR_FEM_RX_EN").connect(mcu.pin("PB12")); _net(d, "LR_FEM_RX_EN").connect(fem.pin("RX_EN"))
+    _net(d, "LR_FEM_PDN").connect(g.pin("PB8"));      _net(d, "LR_FEM_PDN").connect(fem.pin("PDN"))
+    # Pull-downs: the PA can never key up while its drivers are in reset.
+    res_between(d, "LR_FEM_PDN",   "GND", "100k", ref="R_LR_FEM_PDN_PD",  board_tag=BTAG)
+    res_between(d, "LR_FEM_TX_EN", "GND", "100k", ref="R_LR_FEM_TXEN_PD", board_tag=BTAG)
+    _net(d, "LR_FEM_ANT1").connect(fem.pin("ANT1"))
+    series_cap("LR_FEM_ANT1", "LR_ANTSW_LR", "100pF", "C_LR_FEM_ANTBLK")
+
+    # ── 2.4 GHz antenna owner switch (BGS12: CTRL 0 → RF1, 1 → RF2) ──
+    _net(d, "GND").connect(sw24.pin("GND"))
+    _net(d, "3V3_AON").connect(sw24.pin("VDD"))
+    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_ANTSW_2G4_VDD", board_tag=BTAG, pin=sw24.pin("VDD"))
+    series_cap("BLE_RF", "LR_ANTSW_BLE", "100pF", "C_BLE_DCBLK")   # no DC on BGS12 ports
+    _net(d, "LR_ANTSW_BLE").connect(sw24.pin("RF1"))    # default (CTRL=0): BLE
+    _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: nRF21540 / mLRS
+    _net(d, "ANT_2G4_FEED").connect(sw24.pin("RFIN"))
+    _net(d, "ANTSW_2G4_CTRL").connect(g.pin("PB9")); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
+    res_between(d, "ANTSW_2G4_CTRL", "GND", "100k", ref="R_ANTSW_2G4_PD", board_tag=BTAG)
+
+    # ── WLE5 sub-GHz front end (868–923 MHz) — ⚠ values PLACEHOLDERS ──
+    _net(d, "LR_SG_RFO").connect(mcu.pin("RFO_HP"))
+    ind_between(d, "LR_MCU_VR_PA", "LR_SG_RFO", "47nH", ref="L_LR_SG_CHOKE", board_tag=BTAG, feature=F)
+    C0G("LR_SG_RFO", "6.8pF", "C_LR_SG_TX1", pin=mcu.pin("RFO_HP"))
+    ind_between(d, "LR_SG_RFO", "LR_SG_TX_M", "8.2nH", ref="L_LR_SG_TX", board_tag=BTAG, feature=F)
+    C0G("LR_SG_TX_M", "6.8pF", "C_LR_SG_TX2")
+    series_cap("LR_SG_TX_M", "LR_SG_TX", "100pF", "C_LR_SG_TXBLK")
+    # RX: lattice LC balun RFI_P/RFI_N → single-ended LR_SG_RX.
+    _net(d, "LR_SG_RFI_P").connect(mcu.pin("RFI_P"))
+    _net(d, "LR_SG_RFI_N").connect(mcu.pin("RFI_N"))
+    series_cap("LR_SG_RFI_P", "LR_SG_RX", "3.3pF", "C_LR_SG_BAL1")
+    ind_between(d, "LR_SG_RFI_N", "LR_SG_RX", "10nH", ref="L_LR_SG_BAL1", board_tag=BTAG, feature=F)
+    ind_between(d, "LR_SG_RFI_P", "GND", "10nH", ref="L_LR_SG_BAL2", board_tag=BTAG, feature=F)
+    C0G("LR_SG_RFI_N", "3.3pF", "C_LR_SG_BAL2", pin=mcu.pin("RFI_N"))
+    _net(d, "GND").connect(swsg.pin("GND"))
+    _net(d, "3V3").connect(swsg.pin("VDD"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_ANTSW_SUBG_VDD", board_tag=BTAG, pin=swsg.pin("VDD"))
+    series_cap("LR_SG_RX", "LR_SG_RX_SW", "100pF", "C_LR_SG_RXBLK")
+    _net(d, "LR_SG_RX_SW").connect(swsg.pin("RF1"))     # CTRL=0: RX (default)
+    _net(d, "LR_SG_TX").connect(swsg.pin("RF2"))        # CTRL=1: TX
+    _net(d, "ANT_SUBG_FEED").connect(swsg.pin("RFIN"))
+    _net(d, "LR_SG_TX_EN").connect(mcu.pin("PA6")); _net(d, "LR_SG_TX_EN").connect(swsg.pin("CTRL"))
+    res_between(d, "LR_SG_TX_EN", "GND", "100k", ref="R_LR_SG_TXEN_PD", board_tag=BTAG)
+
+    # ── Antenna feeds → conformal elements in the PEEK crescents ────
+    for ref, net, desc in (
+        ("ANT_2G4", "ANT_2G4_FEED",
+         "2.4 GHz conformal antenna feed (crescent 2, PEEK wall) — mLRS "
+         "SX1280+nRF21540 in flight, WBA55 BLE on the ground"),
+        ("ANT_SUBG", "ANT_SUBG_FEED",
+         "868–923 MHz conformal antenna feed (crescent 3, PEEK wall) — "
+         "STM32WLE5 sub-GHz LoRa (mLRS)")):
+        a = _add_antenna_pad(d, ref=ref, value=ref, description=desc, board_tag=BTAG)
+        _net(d, net).connect(a.pin("1"))
+        gp = _add_testpoint(d, ref=f"P_{ref}_GND", board_tag=BTAG)
+        _net(d, "GND").connect(gp.pin("1"))
 
 
 def build_fins_module(d: Design) -> None:
@@ -1619,6 +1829,9 @@ def build_fins_module(d: Design) -> None:
     # Hall position sensor (fin-deploy reference)
     _hall_switch(d, ref="J_HALL_FIN", board_tag=BTAG, out_net="FIN_HALL",
                  gpio_chip=g, gpio_pin="PB13")
+
+    # Long-range radio cluster (mLRS: WLE5 + SX1280 + nRF21540), bridged by this G0B1
+    _build_lr_radio(d, g, BTAG)
 
     # ── Fin VM rail: merged onto COMP_5V ──────────────────────────────
     # The standalone U_FINBOOST (BAT_PROT->5V) is GONE — the DRV8428E VM now
@@ -2297,159 +2510,9 @@ def build_nose_cap(d: Design) -> None:
 
 
 # build_nfc_antenna_flex REMOVED 2026-07-30 (NFC subsystem deleted).
-
-
-def _add_yagi_meander_2g4(d: Design, *, ref: str, board_tag: str,
-                          parent_side: str = "S"):
-    """Placeholder meandered-Yagi 2.4 GHz flex tile (returns Antenna).
-
-    The fab-ready element geometry (reflector + driven + director(s)
-    with a meander pattern that fits λ/2 elements tangentially on a
-    Ø34 metal body) is locked by EM simulation — out of scope per the
-    plan's "Yagi EM simulation" note. This footprint reserves the tile
-    area (20×40 mm rect) and the feed pad; the F.Cu meander pattern
-    is a rough placeholder so panel layout, cavity projection, and
-    stack-up STEPs all build cleanly while the antenna team works.
-
-    `parent_side` ∈ {"N", "S"} describes where the rigid parent tile
-    sits relative to this antenna tile — "S" means the parent is to
-    the south, so the feed pad lives on this tile's south edge (the
-    one facing the parent). The feed pad spans most of the tile width
-    so the flex strip lands ON the pad regardless of where the placer
-    routes it. (Before this fix, the pad was a narrow 1.5 × 1.5 mm
-    speck at the WRONG edge — the flex was landing on dead copper
-    in the middle of the tile.)
-
-    Topology when finalised: boom axial (along the body spin axis,
-    pointing aft); elements perpendicular (tangential, meandered into
-    ~30 % of λ/2); metal sonde body acts as the back-reflector that
-    improves the front-to-back ratio.
-    """
-    W = 20.0      # tile tangential extent
-    L = 40.0      # tile axial extent (boom direction)
-    # Courtyard padding is zero: the chip's body IS the tile body
-    # (the flex IS the antenna), so the packer's "chip fully inside
-    # outline" check needs equal extents. A non-zero crt would push
-    # the chip's bbox by 2·crt > tile, the packer falls back to
-    # (100, 0), and the antenna renders 100 mm off-tile.
-    crt = 0.0
-
-    # Feed pad on the edge facing the parent. Tile-local Smash y is
-    # negated on KiCad export, so a tile-local Smash y of -18.5 lands
-    # at panel +18.5 in KiCad coords (the +y / south-on-screen edge of
-    # the tile body) — which is the edge facing a parent that sits
-    # south of this tile (`parent_side="S"`). And vice-versa.
-    if parent_side == "S":
-        feed_y = -L / 2 + 1.5     # Smash y = south edge of tile
-    elif parent_side == "N":
-        feed_y = +L / 2 - 1.5
-    else:
-        raise ValueError(f"parent_side must be 'N' or 'S', got {parent_side!r}")
-    feed_xy = (0.0, feed_y)
-    feed_pad = Pad(num="1", position_mm=feed_xy,
-                   size_mm=(W - 2.0, 1.5), shape="rect", layer="F.Cu")
-
-    # Boom runs the long axis, AWAY from the feed edge into the tile.
-    # sign = +1 when feed is at -y, so boom progresses through +y.
-    sign = +1.0 if parent_side == "S" else -1.0
-    driven_y = feed_y + sign * 4.0
-    # Reflector behind the driven (toward feed edge); directors ahead.
-    # 8 mm spacing — calibrated so all elements stay inside the body
-    # rectangle [-20, +20] regardless of boom orientation.
-    element_offsets = [-3.5, 0.0, +8.0, +16.0]
-    #                 (reflector, driven, dir1, dir2 — relative offset
-    #                  from driven along the boom direction)
-    elements_y = [driven_y + sign * dy for dy in element_offsets]
-
-    placeholder_traces = []
-    for y in elements_y:
-        # Each element is a horizontal trace of meander-equivalent
-        # length; the real meander zigzag replaces this in fab.
-        placeholder_traces.append({
-            "layer": "F.Cu",
-            "width_mm": 0.3,
-            "points": [(-W / 2 + 2.0, y), (W / 2 - 2.0, y)],
-        })
-    # Feed line from the feed pad inward to the driven element.
-    placeholder_traces.append({
-        "layer": "F.Cu",
-        "width_mm": 0.5,
-        "points": [feed_xy, (0.0, driven_y)],
-    })
-
-    fp = Footprint(
-        name="Yagi_Meander_Flex_2G4",
-        package_class="Flex-tile meandered Yagi (placeholder)",
-        pads=[feed_pad],
-        copper_lines=placeholder_traces,
-        body_outline=[(-W/2, -L/2), (+W/2, -L/2),
-                      (+W/2, +L/2), (-W/2, +L/2)],
-        courtyard=[(-W/2 - crt, -L/2 - crt), (+W/2 + crt, -L/2 - crt),
-                   (+W/2 + crt, +L/2 + crt), (-W/2 - crt, +L/2 + crt)],
-        size_mm=(W, L),
-        height_mm=0.1,
-        source="project",
-    )
-    return d.add_antenna(
-        ref=ref, manf_pn=None, footprint=fp, board_tag=board_tag,
-        name="YAGI_MEANDER_FLEX_2G4",
-        description=(
-            "2.4 GHz meandered-Yagi printed on polyimide flex "
-            "(placeholder). Boom axial along the body spin axis (aft-"
-            "pointing); elements tangential, meandered into ~30 % of "
-            "λ/2; metal sonde body is the back-reflector. Endfire "
-            "backward toward the launch point. Fab-ready element "
-            "geometry pending EM simulation."),
-        frequency_band_hz=(2.4e9, 2.485e9),
-        centre_frequency_hz=2.442e9,
-        bandwidth_hz=85e6,
-        polarization="linear",          # CP comes from the on-board
-                                        # Wilkinson + 90° hybrid combining
-                                        # this antenna with its 90°-offset
-                                        # partner (yagi_b), so EACH tile
-                                        # is linearly polarised
-        pattern="yagi-uda",
-        peak_gain_dbi=5.0,
-        front_to_back_db=8.0,
-        half_power_beamwidth_deg=60.0,
-        efficiency=0.45,                # meandering costs efficiency
-        impedance_ohm=50.0,
-        vswr_max=2.0,
-        package="printed-flex Yagi",
-        size_mm=(W, L), height_mm=0.1,
-        body_material="polyimide flex",
-        weight_g=0.02,
-        pins=[Pin(num="1", name="FEED", type="passive")],
-    )
-
-
-def build_yagi_antenna_a_flex(d: Design) -> None:
-    """Yagi-A 2.4 GHz meandered flex. Branches off wakeup_board's
-    NORTH edge (back with the WBA since 2026-07-31), so Yagi-A's parent
-    sits to the SOUTH of the tile and the feed pad lives on the tile's
-    south edge — the one facing the rigid-flex transition to
-    wakeup_board. Feed pad sees `YAGI_RF_A` (driven by WBA RF →
-    π-match → Wilkinson → 90° hybrid on wakeup_board). Not in
-    core_radar (RF-dark: the leaf is dropped, the parent stays)."""
-    ant = _add_yagi_meander_2g4(
-        d, ref="ANT_YAGI_A", board_tag="yagi_ant_a_flex",
-        parent_side="S")
-    _net(d, "YAGI_RF_A").connect(ant.pin("1"))
-
-
-def build_yagi_antenna_b_flex(d: Design) -> None:
-    """Yagi-B 2.4 GHz meandered flex — CP partner to Yagi-A. Branches
-    off wakeup_board's SOUTH edge (back with the WBA since 2026-07-31;
-    90° opposite from Yagi-A on the body meridians), so its parent is
-    to the NORTH and the feed pad lives on the tile's north edge facing
-    wakeup_board. Fed 90° out of phase with Yagi-A via the on-board
-    hybrid coupler → circular polarisation on the backward beam,
-    spin-immune. Not in core_radar (RF-dark: the leaf is dropped, the
-    parent stays)."""
-    ant = _add_yagi_meander_2g4(
-        d, ref="ANT_YAGI_B", board_tag="yagi_ant_b_flex",
-        parent_side="N")
-    _net(d, "YAGI_RF_B").connect(ant.pin("1"))
+# Yagi A/B flex tiles + _add_yagi_meander_2g4 REMOVED 2026-11-14: BLE is
+# ground-only and shares the conformal 2.4 GHz antenna in the PEEK battery
+# compartment (see _build_lr_radio).
 
 
 def build_spacers(d: Design, boards: dict | None = None) -> None:
@@ -2709,11 +2772,14 @@ def build_power_board(d: Design) -> None:
         # + → 200 mΩ iso resistor → BAT_RAW.
         # (The cells themselves are not board-tagged parts, just the pads +
         # iso resistors.)
-        contacts = add_cell_contacts_3(d, ref="P_CELL_CONTACTS",
+        # (2026-11-14) + side: the cells' existing TAB EXTENSIONS bend up across
+        # the 2 mm headroom to three DISCRETE lands (one per cell centre) on
+        # fin_ble's bottom face — was one 3-pad P_CELL_CONTACTS footprint whose
+        # ~21 × 19 mm bounding box blanked the board centre for the packer.
+        for _k in (1, 2, 3):
+            ptab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_POS{_k}",
                                        board_tag="fin_ble_board")
-        _net(d, "BAT_CELL1_POS").connect(contacts.pin("1"))
-        _net(d, "BAT_CELL2_POS").connect(contacts.pin("2"))
-        _net(d, "BAT_CELL3_POS").connect(contacts.pin("3"))
+            _net(d, f"BAT_CELL{_k}_POS").connect(ptab.pin("1"))
         for _k in (1, 2, 3):
             tab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_NEG{_k}",
                                       board_tag="cell_floor_board")
@@ -3723,59 +3789,31 @@ def build_wakeup_board(d: Design) -> None:
     res_between(d, "WBA_AON_HOLD", "AON_EN", "1k",
                 ref="RHOLD_AON", board_tag=BTAG)
 
-    # Antenna pin → π-match → Wilkinson input.
+    # Antenna pin → π-match → BLE_RF (down to fin_ble_board).
     _net(d, "WBA_RF").connect(wba.pin("RF"))  # C2
 
-    # ── WBA55 RF chain — π-match + Wilkinson + 90° hybrid ───────────
-    # Antenna chain: WBA55 RF pin → π-match → Wilkinson 3 dB splitter
-    # → 90° branchline hybrid → Yagi-A + Yagi-B feeds. The Wilkinson
-    # and the hybrid coupler are distributed-element microstrip
-    # structures laid down directly in copper on the wakeup_board RF
-    # layer (no lumped components beyond the Wilkinson isolation
-    # resistor) — they're not instantiated as parts. Real microstrip
-    # widths and lengths pending the antenna-team EM-sim work flagged
-    # in the plan's out-of-scope section.
+    # ── WBA55 RF chain — π-match → BLE_RF → shared 2.4 GHz antenna ──
+    # (2026-11-14) The Yagi pair, its Wilkinson splitter + 90° hybrid
+    # (R_WILK_ISO, TP_WILK_A/B, TP_YAGI_RF_A/B) and the two Yagi flex tiles
+    # are GONE. BLE is GROUND-ONLY (programming / activation_unlock), so it
+    # shares the long-range 2.4 GHz antenna — a conformal element in a
+    # crescent gap of the PEEK battery compartment, fed from fin_ble_board's
+    # bottom face. BLE_RF crosses the wakeup↔fin_ble (M) joint as a 50 Ω
+    # vertical transition (signal land ringed by GND lands — ⚠ the LGA
+    # generator does not model the ground ring yet) and reaches U_ANTSW_2G4
+    # on fin_ble, which BYPASSES the nRF21540 FEM for BLE (default throw).
+    # See _build_lr_radio.
     #
-    # The BGS12 SPDT (U_SPDT) that used to sit between the π-match and
-    # the Wilkinson is REMOVED along with its ANT_NOSE throw: the nose
-    # chip antenna it selected was deleted in the radar forward-end
-    # nose-thinning pass (the metal block would detune it), leaving the
-    # switch with a single live throw. Short-range BLE (programming /
-    # activation_unlock) now rides the Yagi pair; NFC covers activation_unlock/wake
-    # independently. Frees WBA PA12 (RF_ANTSW0) + PC15 (SPDT_PWR).
-
-    # π-match L + 2 shunt C between WBA RF pin and the Wilkinson input.
-    # Values are placeholders; topology is locked. `feature="rf"` keeps
-    # these on the top face (face_split's ECM-embedding rule normally
-    # sweeps 0402/0603 passives to the bottom — RF nets need the
-    # matching network adjacent to the radio with controlled-impedance
-    # microstrip, NOT inside the embedded-cap laminate).
-    ind_between(d, "WBA_RF", "WBA_RF_M", "2.7nH",
+    # π-match L + 2 shunt C. Values are placeholders; topology is locked.
+    # `feature="rf"` keeps these on the top face (face_split's ECM-embedding
+    # rule normally sweeps 0402/0603 passives to the bottom).
+    ind_between(d, "WBA_RF", "BLE_RF", "2.7nH",
                 ref="L_WBA_PI", board_tag=BTAG, feature="rf")
     cap_to_gnd(d, "WBA_RF",   "0.5pF", ref="C_WBA_PI1",
                board_tag=BTAG, feature="rf",
                **_as_built_0402("0.5pF", "C0G/NP0"), pin=wba.pin("RF"))
-    cap_to_gnd(d, "WBA_RF_M", "0.5pF", ref="C_WBA_PI2",
+    cap_to_gnd(d, "BLE_RF", "0.5pF", ref="C_WBA_PI2",
                board_tag=BTAG, feature="rf")
-
-    # Wilkinson 3 dB splitter + 90° branchline hybrid (microstrip).
-    # The Wilkinson splits WBA_RF_M → YAGI_WILK_A + YAGI_WILK_B
-    # (in-phase); the 100 Ω isolation resistor sits across the two
-    # output ports. The hybrid then adds a 90° phase offset on one
-    # branch on its way to YAGI_RF_A vs YAGI_RF_B → circular pol.
-    res_between(d, "YAGI_WILK_A", "YAGI_WILK_B", "100",
-                ref="R_WILK_ISO", board_tag=BTAG)
-    # Stitch the named nets onto courtesy test points so the canonical
-    # netlist sees them and so the routing tools can find the right
-    # microstrip endpoints. (The actual splitter/hybrid traces are drawn
-    # in copper at routing time, no chip instances here. WBA_RF_M — the
-    # Wilkinson input — needs no test point: the π-match parts anchor it.)
-    for tp_ref, tp_net in (("TP_WILK_A",   "YAGI_WILK_A"),
-                           ("TP_WILK_B",   "YAGI_WILK_B"),
-                           ("TP_YAGI_RF_A", "YAGI_RF_A"),
-                           ("TP_YAGI_RF_B", "YAGI_RF_B")):
-        tp = _add_testpoint(d, ref=tp_ref, board_tag=BTAG)
-        _net(d, tp_net).connect(tp.pin("1"))
 
     # WLE5 LSE oscillator removed — WBA55 uses internal LSI (±5 %); LSE
     # crystal not needed for periodic BLE-scan timing accuracy.
@@ -3911,8 +3949,6 @@ _BOARD_BUILDERS = {
     "activation_interface": lambda d: build_activation_interface(d),
     "camera_module":        lambda d: build_camera_module(d),
     "qpd_module":           lambda d: build_qpd_module(d),
-    "yagi_ant_a_flex":      lambda d: build_yagi_antenna_a_flex(d),
-    "yagi_ant_b_flex":      lambda d: build_yagi_antenna_b_flex(d),
 }
 
 # Snake fold order (rigid boards). A config's snake is this list filtered
@@ -3941,8 +3977,6 @@ _MASTER_SNAKE = [
 # its own meridian. s_fold=False (Yagi tiles) means the leaf sits DIRECTLY
 # perpendicular to the snake; s_fold=True tucks it alongside the snake flex.
 _BRANCH_PARENT = {
-    "yagi_ant_a_flex":  ("wakeup_board", 60.0, "N", False),
-    "yagi_ant_b_flex":  ("wakeup_board", 60.0, "S", False),
     # qpd N / camera S in EVERY build (matching the maximalist panel,
     # where both coexist): the companion's flex-launch strips must sit
     # at the SAME spot in every config so the board routes ONCE — a
@@ -3985,7 +4019,7 @@ _FLEX_LAUNCH_CATALOG = [
 # PAYLOAD / seeker (radar / qpd / camera). "core" IS the guided base.
 _CORE      = {"aft_end_board", "cell_floor_board", "power_board",
               "activation_interface", "fin_ble_board", "wakeup_board",
-              "companion_compute", "yagi_ant_a_flex", "yagi_ant_b_flex"}
+              "companion_compute"}
 # fin_ble_board is in EVERY config, core_radar included (2026-07-31 user
 # decision, reversing the 2026-07-30 drop: since the same-day stack reorder
 # the tile is the battery-compartment CEILING — cell + contact lands — and
@@ -3995,7 +4029,10 @@ _CORE      = {"aft_end_board", "cell_floor_board", "power_board",
 # The wake/activation_unlock ladder (power_states.md) is unaffected: the WBA orchestrator +
 # every wake listener ride wakeup_board, and the IR service-link optics ride
 # radar_module — all present in core_radar.
-_YAGI_LEAVES = {"yagi_ant_a_flex", "yagi_ant_b_flex"}
+# (_YAGI_LEAVES removed 2026-11-14 with the Yagi tiles: the 2.4 GHz + sub-GHz
+# antennas are conformal elements in the PEEK battery compartment, fed from
+# fin_ble_board — a core tile — so there are no RF leaves to shed. "RF-dark"
+# core_radar is now a firmware / DNP decision, not a board-set one.)
 # nfc_antenna_flex REMOVED 2026-07-30 with the whole NFC subsystem (tag +
 # antenna + wake legs) — wake channels are now magnetic / jumpstart / USB.
 # The radar forward-end: the AWR2E44P tile + the nose_cap that closes the nose
@@ -4029,7 +4066,9 @@ _RADAR     = {"radar_module", "nose_cap"}
 # calls _set_battery_mode.
 _BATTERY_MODES = {
     "single": {"compartment_mm": 15.1},   # 1× TLM-1530M/S horizontal (opt-in)
-    "triple": {"compartment_mm": 21.0},   # 3× TLM-1520HPM/S vertical on
+    "triple": {"compartment_mm": 23.0},   # 21 mm cells + 2 mm headroom under
+                                          #   fin_ble (holder = edge ring there)
+                                          # 3× TLM-1520HPM/S vertical on
                                           #   cell_floor_board (DEFAULT)
 }
 _BATTERY_BY_CONFIG = {"core_1cell": "single"}  # everything else = triple
@@ -4069,7 +4108,7 @@ def _compartment_mm() -> float:
 # config).
 CONFIGS: dict[str, set[str]] = {
     "core":         _CORE,                          # no seeker
-    "core_radar":   (_CORE | _RADAR) - _YAGI_LEAVES,  # RF-dark: no BLE/Yagi
+    "core_radar":   _CORE | _RADAR,   # RF-dark = firmware/DNP (no RF leaves since 2026-11-14)
     "core_qpd":     _CORE | {"qpd_module"},
     "core_camera":  _CORE | {"camera_module"},
     # Same boards as "core", but OPTS IN to the legacy single horizontal
@@ -4084,6 +4123,12 @@ CONFIGS: dict[str, set[str]] = {
 
 
 
+
+# Spacers are NOT PCBs any more (2026-11-14 spacer-less potted tower with
+# castellations + LDS sleeve): no per-spacer .kicad_pcb / gerbers; each gap's
+# hardware (Al ring, battery ring, PEEK standoffs) is a generated STEP
+# (write_gap_hardware). Flip to True only to resurrect the FR4 interposers.
+_SPACERS_ARE_PCBS = False
 
 # ── STEP export of chip-bearing PCBs (via kicad-cli) ────────────────────
 # Spacers get true 4 mm bodies from cadquery (write_all_spacer_steps); the
@@ -4142,7 +4187,8 @@ _ASSEMBLY_DIR = _DIST / "assembly"
 _STRAIGHT_SNAKE = os.environ.get("SMASH_STRAIGHT_SNAKE", "1") == "1"
 
 
-def _export_stackup(design, boards, snake_chain, out_path, tiles=None) -> str:
+def _export_stackup(design, boards, snake_chain, out_path, tiles=None,
+                    contract=None) -> str:
     """Best-effort folded-tower assembly STEP for FEA. Writes the potted
     tower (`stackup.step`) and a bare-FR4 sibling without the potting
     body (`stackup_no_potting.step`). `tiles` (grid positions) lets the
@@ -4152,9 +4198,10 @@ def _export_stackup(design, boards, snake_chain, out_path, tiles=None) -> str:
     nopot_path = out_path.with_name(out_path.stem + "_no_potting.step")
     try:
         r = write_stackup_step(design, boards, snake_chain, out_path,
-                               tiles=tiles)
+                               tiles=tiles, sleeve_contract=contract)
         write_stackup_step(design, boards, snake_chain, nopot_path,
-                           with_potting=False, tiles=tiles)
+                           with_potting=False, tiles=tiles,
+                           sleeve_contract=contract)
     except ImportError:
         return "stackup skipped (no cadquery)"
     except Exception as e:                       # keep generation resilient
@@ -4166,12 +4213,14 @@ def _export_stackup(design, boards, snake_chain, out_path, tiles=None) -> str:
 
 def _export_components_stackup(boards, snake_chain, tile_step_dir, out_path,
                                tiles=None):
+    # (2026-11-14) gap hardware + the LDS sleeve (from <tile_step_dir>/sleeve/)
     """Component-render sibling of `_export_stackup` — fold the detailed per-tile
     STEPs (real component bodies, not mass boxes) into the same tower. Needs the
     tile + spacer STEPs already on disk under `tile_step_dir`. Never raises."""
     try:
-        r = write_stackup_components_step(boards, snake_chain, tile_step_dir,
-                                          out_path, tiles=tiles)
+        r = write_stackup_components_step(
+            boards, snake_chain, tile_step_dir, out_path, tiles=tiles,
+            sleeve_dir=pathlib.Path(tile_step_dir) / "sleeve")
     except ImportError:
         return "components stackup skipped (no cadquery)"
     except Exception as e:                       # keep generation resilient
@@ -4525,6 +4574,8 @@ def _export_tile_steps(design, panel, boards, out_dir,
         except Exception as e:                   # keep run resilient
             failed_sch.append(f"{name}({type(e).__name__}: {str(e)[:200]})")
     for name, b in boards.items():
+        if getattr(b, "is_spacer", False) and not _SPACERS_ARE_PCBS:
+            continue              # gap hardware is a STEP (write_gap_hardware)
         if getattr(b, "is_spacer", False):
             # Spacer interposers get a fab set too — .kicad_pcb (2-layer:
             # outline + NPTH + LGA lands + filled through-vias + Eco1/Eco2
@@ -4725,7 +4776,6 @@ _ACCEPTED_LOCKED_OVERLAPS = (
     ("wakeup_board", "R_BOOST_FB1", "CBOOST_IN1_3"),
     ("wakeup_board", "CBOOST_IN1_4", "C_WBA_VDDRF"),
     ("wakeup_board", "C_WBA_BULK_1", "C_WBA_HSE_VDD"),
-    ("wakeup_board", "C_WBA_BULK_2", "TP_YAGI_RF_B"),
     ("wakeup_board", "C_WBA_NRST", "Q_WBA_RST"),
 )
 
@@ -5134,8 +5184,34 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                     rects.append((run_start * STEP, gj * STEP,
                                   gi * STEP, (gj + 1) * STEP))
                     run_start = None
-        for bname, cu in (("fin_ble_board", "B.Cu"),
-                          ("cell_floor_board", "F.Cu")):
+        # fin_ble's bottom: since the 2026-11-14 headroom it is FREE inside
+        # the holder's edge ring (r < 15.8) — only the ring band is blocked.
+        from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
+                                              BATT_PART_CLEARANCE_MM)
+        r_free = BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM
+        ring_rects = []
+        for gj in range(-k, k):
+            run_start = None
+            for gi in range(-k, k + 1):
+                cx0, cy0 = gi * STEP, gj * STEP
+                corners = [(cx0, cy0), (cx0 + STEP, cy0), (cx0, cy0 + STEP),
+                           (cx0 + STEP, cy0 + STEP)]
+                blocked = gi < k and any(x * x + y * y > r_free ** 2
+                                         for x, y in corners)
+                if blocked and run_start is None:
+                    run_start = gi
+                elif not blocked and run_start is not None:
+                    ring_rects.append((run_start * STEP, gj * STEP,
+                                       gi * STEP, (gj + 1) * STEP))
+                    run_start = None
+        fb = boards.get("fin_ble_board")
+        if fb is not None and getattr(fb, "geometry", None) is not None:
+            for (x0, y0, x1, y1) in ring_rects:
+                fb.geometry.keepouts.append(Keepout(
+                    polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                    layers=("B.Cu",), scope="component", tag="battery_ring_band",
+                    note="battery holder edge ring (r 16–17) bears here"))
+        for bname, cu in (("cell_floor_board", "F.Cu"),):
             b = boards.get(bname)
             if b is None or getattr(b, "geometry", None) is None:
                 continue
@@ -5425,6 +5501,151 @@ def _mark_aft_bench_silk(boards: dict) -> None:
             # label-only: a degenerate span just above the lone pad
             b.silk_overlays.append(
                 ("B.SilkS", [(x0, y1), (x1, y1)], label))
+
+
+def _gap_neighbours(chain: list, boards: dict) -> list:
+    """[(spacer_name, before_rigid, after_rigid)] for every gap in `chain`.
+    A run of battery spacers is ONE gap (cell_floor_board ↔ fin_ble_board)."""
+    out = []
+    i = 0
+    while i < len(chain):
+        n = chain[i]
+        b = boards.get(n)
+        if b is None or not getattr(b, "is_spacer", False):
+            i += 1
+            continue
+        j = i
+        if n.startswith("spacer_battery_"):
+            while (j + 1 < len(chain)
+                   and chain[j + 1].startswith("spacer_battery_")):
+                j += 1
+        before = chain[i - 1] if i > 0 else None
+        after = chain[j + 1] if j + 1 < len(chain) else None
+        out.append((n, before, after))
+        i = j + 1
+    return out
+
+
+def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
+    """Silkscreen where each gap's hardware lands (2026-11-14 spacer-less
+    tower), on the two facing board faces — the lower board's TOP (F.SilkS)
+    and the upper board's BOTTOM (B.SilkS), in each board's own folded frame:
+      • Al ring gaps: the ring band ± RING_CLEARANCE_MM (the standoff
+        distance) — keep parts and exposed copper out;
+      • battery ring: its inner contact edge (− clearance);
+      • PEEK-standoff gaps: each standoff footprint + clearance.
+    Clears every board's silk_overlays first (replaces the old spacer-cutout
+    windows: spacers are no longer milled PCBs)."""
+    from smash.parts.castellations import _local_xy
+    from smash.export.spacer_step import (
+        gap_kind, RING_R_IN_MM, RING_R_OUT_MM, RING_CLEARANCE_MM,
+        STANDOFF_D_MM, STANDOFF_R_MM, STANDOFF_ANGLES_DEG,
+        battery_holder_cavity)
+    import math as _m
+
+    def circle(cx, cy, r, n=72):
+        return [(cx + r * _m.cos(2 * _m.pi * k / n),
+                 cy + r * _m.sin(2 * _m.pi * k / n)) for k in range(n)]
+
+    for b in boards.values():
+        if getattr(b, "silk_overlays", None):
+            b.silk_overlays.clear()
+    chain = list(panel.snake_chain or [])
+    for sp, before, after in _gap_neighbours(chain, boards):
+        kind = gap_kind(sp)
+        for nbr, layer in ((before, "F.SilkS"), (after, "B.SilkS")):
+            if nbr is None or nbr not in boards or nbr not in fold_M:
+                continue
+            ov = boards[nbr].silk_overlays
+            if kind == "ring":
+                ov.append((layer, circle(0, 0, RING_R_OUT_MM + RING_CLEARANCE_MM),
+                           ""))
+                ov.append((layer, circle(0, 0, RING_R_IN_MM - RING_CLEARANCE_MM),
+                           f"AL RING r{RING_R_IN_MM:g}-{RING_R_OUT_MM:g} "
+                           f"+{RING_CLEARANCE_MM:g} KEEPOUT"))
+            elif kind == "battery_holder":
+                # cell cavity outline: the holder's end face bears on the
+                # board everywhere OUTSIDE it (E top: cell tabs only inside);
+                # on the upper board (fin_ble bottom) the crescent POCKETS are
+                # the only part space (≤ pocket depth − 0.2 mm tall).
+                cav = battery_holder_cavity()
+                ov.append((layer, [_local_xy(fold_M[nbr], _m.degrees(_m.atan2(y, x)),
+                                             _m.hypot(x, y))
+                                   for x, y in list(cav.exterior.coords)[:-1]],
+                           "BATT HOLDER bears outside cell bores"))
+                if layer == "B.SilkS":
+                    from smash.export.spacer_step import (
+                        BATT_TOP_RING_R_IN_MM, BATT_PART_CLEARANCE_MM,
+                        BATT_HEADROOM_MM)
+                    ov.pop()        # upper board: no cavity outline, just the ring
+                    ov.append((layer, circle(0, 0, BATT_TOP_RING_R_IN_MM
+                                             - BATT_PART_CLEARANCE_MM),
+                               f"BATT RING r{BATT_TOP_RING_R_IN_MM:g}-17 KEEPOUT; "
+                               f"PARTS <= {BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:.1f} mm"))
+            else:
+                for k, ang in enumerate(STANDOFF_ANGLES_DEG):
+                    x, y = _local_xy(fold_M[nbr], ang, STANDOFF_R_MM)
+                    ov.append((layer, circle(x, y, STANDOFF_D_MM / 2.0
+                                             + RING_CLEARANCE_MM, 24),
+                               "PEEK STANDOFF" if k == 0 else ""))
+
+
+def _check_gap_hardware_clearance(panel, boards: dict) -> list:
+    """Warn-list of chips that collide with gap hardware on the faces it
+    touches: an Al ring band (± clearance); the battery holder — on the
+    lower board's top only pads may sit (cell tabs), on the upper board's
+    bottom parts must lie inside a holder pocket."""
+    from smash.export.spacer_step import (
+        gap_kind, RING_R_IN_MM, RING_R_OUT_MM, RING_CLEARANCE_MM)
+    import math as _m
+    issues = []
+    for sp, before, after in _gap_neighbours(list(panel.snake_chain or []), boards):
+        kind = gap_kind(sp)
+        if kind == "standoffs":
+            continue
+        for nbr, face in ((before, "top"), (after, "bottom")):
+            b = boards.get(nbr) if nbr else None
+            if b is None:
+                continue
+            for p in b.chip_placements:
+                c = p.item
+                if p.face != face or getattr(c, "manf_pn", None) in (
+                        "CASTELLATIONS", "LGA_lands"):
+                    continue
+                sz = getattr(c, "size_mm", None) or getattr(
+                    getattr(c, "footprint", None), "size_mm", None) or (0, 0)
+                x, y = p.position_mm
+                if kind == "ring":
+                    half = _m.hypot(*sz) / 2.0
+                    r = _m.hypot(x, y)
+                    lo = RING_R_IN_MM - RING_CLEARANCE_MM
+                    hi = RING_R_OUT_MM + RING_CLEARANCE_MM
+                    if r + half > lo and r - half < hi:
+                        issues.append(f"{nbr}/{face}: {c.ref} reaches the Al ring "
+                                      f"band of {sp} (r {r:.1f} ± {half:.1f})")
+                    continue
+                ref = getattr(c, "ref", "")
+                if ref.startswith(("P_", "TP_", "J_")):
+                    continue                       # pads: cell tabs / contacts
+                if face == "top":
+                    issues.append(f"{nbr}/top: {ref} under the battery holder / "
+                                  "cells (only cell-tab pads allowed)")
+                    continue
+                from smash.export.spacer_step import (
+                    BATT_TOP_RING_R_IN_MM, BATT_PART_CLEARANCE_MM, BATT_HEADROOM_MM)
+                r_free = BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM
+                w, h = (sz[0], sz[1]) if sz else (0.5, 0.5)
+                far = max(_m.hypot(x + sx * w / 2, y + sy * h / 2)
+                          for sx in (-1, 1) for sy in (-1, 1))
+                ht = (getattr(c, "height_mm", None)
+                      or getattr(getattr(c, "footprint", None), "height_mm", None) or 0)
+                if far > r_free:
+                    issues.append(f"{nbr}/bottom: {ref} reaches the battery "
+                                  f"holder edge ring (r {far:.1f} > {r_free:g})")
+                elif ht > BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:
+                    issues.append(f"{nbr}/bottom: {ref} too tall for the battery "
+                                  f"headroom ({ht:g} mm)")
+    return issues
 
 
 def _mark_spacer_cavity_silk(panel, boards: dict) -> None:
@@ -5722,23 +5943,12 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     # spacers (not just the maximalist build). Joints shared with the
     # maximalist build replay its patterns + nets verbatim (economies of
     # scale); truncated-away joints still fab their tile-face fields.
-    _jref = dict(ref.get("joints") or {})
-    if not _battery_column_conforms(panel, ref):
-        # Moved/shrunk battery column (core_1cell): drop the battery joints
-        # from the reference so the WHOLE column recomputes one consistent
-        # pattern from its own bore (mixing replayed + fresh patterns
-        # mid-column would break the pad-to-pad via stack).
-        _jref = {k: v for k, v in _jref.items()
-                 if not k.startswith("spacer_battery")}
-    _lands = place_lga_lands(d, panel, boards,
-                             connect=lambda net, pin: _net(d, net).connect(pin),
-                             reference=_jref)
-    _absent_fields = _replay_absent_joint_fields(
-        d, panel, boards, {**ref, "joints": _jref})
-    _replayed = [j for j in _lands
-                 if j in _jref and _chain_neighbors(
-                     list(panel.snake_chain), j)
-                 == (_jref[j]["before"], _jref[j]["after"])]
+    # Castellations replay the maximalist lane contract (economies of scale:
+    # identical board edges in every config; absent nets keep a bare pad).
+    _cfgM = board_fold_transforms(panel, list(panel.snake_chain))
+    _, _cast = place_castellations(
+        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
+        contract=ref.get("castellations"))
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))
@@ -5764,7 +5974,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     if _nonconform:
         print(f"  WARNING: {name}: non-conforming board(s) — NOT the shared "
               f"maximalist part: {', '.join(_nonconform)}", file=sys.stderr)
-    _mark_spacer_cavity_silk(panel, boards)     # cutout windows → neighbour silk
+    _mark_gap_hardware_silk(panel, boards, _cfgM)   # Al rings / standoffs → silk
     _mark_aft_bench_silk(boards)                # bench-pad group boxes + labels
     # Self-contained config folder at dist/<config>/: <config>.kicad_pcb
     # + per-board <tile>/ subfolders (3D models next to each tile).
@@ -5796,11 +6006,13 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         cutouts_ref={bn: c for bn, c in (ref.get("cutouts") or {}).items()
                      if bn in _conform})
     if _STEP_ENABLED:
-        sp = write_all_spacer_steps(boards, cfg_dir, subdir=True)
+        from smash.export.spacer_step import write_gap_hardware
+        sp = write_gap_hardware(boards, list(panel.snake_chain), cfg_dir)
         if _STACKUP_ALL:
             _export_stackup(d, boards, panel.snake_chain,
                             _DIST / f"stackup_{name}.step",
-                            tiles=panel.tiles)
+                            tiles=panel.tiles,
+                            contract=ref.get("castellations"))
             _export_components_stackup(boards, panel.snake_chain, cfg_dir,
                                        _DIST / f"stackup_{name}_components.step",
                                        tiles=panel.tiles)
@@ -5825,12 +6037,10 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     print(f"  {name}: {out.name} "
           f"({r['n_tiles']} tiles, {r['n_footprints']} footprints, "
           f"{r['n_flex_strips']} flex strips, "
-          f"{sum(_lands.values())} LGA lands, "
+          f"{sum(_cast.values())} castellations, "
           f"stack {panel.stack_height_mm(boards):.1f} mm; {steps_msg}{asm_msg})")
     print(f"    {sch_msg}")
     print(f"    shared-part inheritance: {len(extra_locks)} placement locks, "
-          f"{len(_replayed)}/{len(_lands)} joints replayed, "
-          f"{_absent_fields} truncated-joint tile fields, "
           f"{_cav_n} boards' cavities inherited"
           + (f"; NON-CONFORMING: {len(_nonconform)}" if _nonconform else ""))
 
@@ -5843,8 +6053,6 @@ def main() -> int:
 
     # Boards (ordered smallest → largest)
     build_qpd_module(d)
-    build_yagi_antenna_a_flex(d)
-    build_yagi_antenna_b_flex(d)
     build_nose_cap(d)
     build_camera_module(d)
     build_aft_end_board(d)
@@ -5914,13 +6122,12 @@ def main() -> int:
     # adaptive square solder lands packed into the FREE area of each joint
     # (around components / cavities / potting holes), carrying the power/gnd/CAN
     # backbone through the FR4-spacer interposers (replaces the snake flexes).
-    _joint_capture: dict = {}
-    _lands = place_lga_lands(d, panel, boards,
-                             connect=lambda net, pin: _net(d, net).connect(pin),
-                             capture=_joint_capture,
-                             pinned={**_power_board_pinned_lands(),
-                                     **_fin_ble_pinned_lands(),
-                                     **_aft_end_pinned_lands()})
+    # (2026-11-14) LGA lands REPLACED by board-edge castellations: the side-
+    # wall interconnect runs on the LDS sleeve; each cross-board net owns a
+    # fixed physical angle (lane) on the stack. Spacers are no longer PCBs.
+    _foldM = board_fold_transforms(panel, list(panel.snake_chain))
+    _cast_contract, _cast = place_castellations(
+        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin))
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))
@@ -5930,9 +6137,8 @@ def main() -> int:
     _drop_radar_nose_spacer(d, panel, boards)   # scaffold spacer → discard
     _apply_companion_reference_layout(d, boards)
     _apply_activation_reference_layout(d, boards)
-    _mark_spacer_cavity_silk(panel, boards)     # cutout windows → neighbour silk
+    _mark_gap_hardware_silk(panel, boards, _foldM)  # Al rings / standoffs → silk
     _mark_aft_bench_silk(boards)                # bench-pad group boxes + labels
-    _lands.pop("spacer_radar_module_nose_cap", None)
 
     # ── capture the economies-of-scale reference for the config builds ──
     # Everything a config must fab IDENTICALLY comes from here: final chip
@@ -5947,7 +6153,8 @@ def main() -> int:
     from smash.layout.placer.flex_sizing import compute_link_widths as _ref_clw
     _ref_lw, _ = _ref_clw(d, panel)
     _MAX_REF = {
-        "joints": _joint_capture,
+        "joints": {},
+        "castellations": _cast_contract,
         "chain": list(panel.snake_chain),
         "placements": {
             bn: {pl.item.ref: _NS(position_mm=pl.position_mm,
@@ -5966,19 +6173,22 @@ def main() -> int:
                     and getattr(b, "kind", "rigid") != "flex"
                     and b.geometry is not None},
     }
-    print(f"Backbone LGA lands: {sum(_lands.values())} across "
-          f"{len(_lands)} joints "
-          f"({', '.join(f'{k}={v}' for k, v in _lands.items())})")
+    print(f"Castellations: {sum(_cast.values())} pads on {len(_cast)} boards, "
+          f"{len(_cast_contract['lanes'])} nets on {_cast_contract['n_used']}/"
+          f"{_cast_contract['n_angles']} lanes "
+          f"({', '.join(f'{k}={v}' for k, v in _cast.items())})")
 
     # Geometric guard: no neighbour-tile chip may collide with a spacer's FR4
     # in the folded tower — each spacer cavity must clear the chips on the face
     # that points at it (fold-parity aware). Catches the class of bug where a
     # post-battery-compartment board folds inverted and the milled window lands
     # under the wrong face.
-    from smash.validators import check_spacer_chip_clearance
-    _clr = check_spacer_chip_clearance(panel, boards)
+    _clr = _check_gap_hardware_clearance(panel, boards)
     if _clr:
-        print(f"WARN: {len(_clr)} spacer↔chip collision(s) in the folded stack:")
+        from collections import Counter as _C
+        _by = _C(i.split(":", 1)[0] for i in _clr)
+        print(f"WARN: {len(_clr)} part(s) collide with gap hardware (Al rings / "
+              f"battery holder): " + ", ".join(f"{k}={v}" for k, v in _by.items()))
         for _iss in _clr[:10]:
             print(f"  {_iss}")
 
@@ -6056,13 +6266,24 @@ def main() -> int:
     # a fast netlist/panel run skips them. KiCad's panel STEP uses a uniform
     # 1.6 mm thickness (wrong for the rigid-flex spacers), hence cadquery.
     print(f"  tile PCBs: {_export_tile_steps(d, panel, boards, _MAXIMALIST_DIR)}")
+    # Gap hardware (Al rings, battery ring, PEEK standoffs) — cheap cadquery
+    # bodies, written on every run; spacers are no longer PCBs.
+    try:
+        from smash.export.spacer_step import write_gap_hardware
+        _gh = write_gap_hardware(boards, list(panel.snake_chain), _MAXIMALIST_DIR)
+        print(f"  gap hardware STEPs: {len(_gh)} "
+              f"({', '.join(sorted({r['kind'] for r in _gh}))}) → "
+              f"{_MAXIMALIST_DIR.relative_to(REPO)}/<gap>/")
+        from smash.export.sleeve_step import write_sleeve_and_mould
+        _sl = write_sleeve_and_mould(boards, list(panel.snake_chain),
+                                     _cast_contract, _MAXIMALIST_DIR)
+        print(f"  LDS sleeve: 2 half-shells, {_sl['n_vias']} vias, "
+              f"{_sl['height_mm']:.1f} mm → {_sl['sleeve_dir'].relative_to(REPO)}/; "
+              f"potting mould (clamp + caps) → {_sl['mould_dir'].relative_to(REPO)}/")
+    except ImportError:
+        print("  gap hardware STEPs: SKIPPED (cadquery not installed)")
     if _STEP_ENABLED:
-        spacer_results = write_all_spacer_steps(boards, _MAXIMALIST_DIR, subdir=True)
-        _sp_th = sorted({f"{r['thickness_mm']:.2f}" for r in spacer_results})
-        print(f"Spacer STEPs written to {_MAXIMALIST_DIR.relative_to(REPO)}/ "
-              f"({len(spacer_results)} files, FR4 interposers "
-              f"{'/'.join(_sp_th)} mm + filled vias + routed cavities)")
-        print(f"  {_export_stackup(d, boards, panel.snake_chain, pcb_out / 'stackup.step', tiles=panel.tiles)}")
+        print(f"  {_export_stackup(d, boards, panel.snake_chain, pcb_out / 'stackup.step', tiles=panel.tiles, contract=_cast_contract)}")
         print(f"  {_export_components_stackup(boards, panel.snake_chain, _MAXIMALIST_DIR, pcb_out / 'stackup_components.step', tiles=panel.tiles)}")
         print(f"  {_export_print_stls(boards, panel.snake_chain, pcb_out, _MAXIMALIST_DIR)}")
         print(f"  {_export_waveguide_stubs(boards, pcb_out / 'waveguide_stubs.step')}")

@@ -677,6 +677,9 @@ def _emit_pad(pad, chip: Chip, *, face: str, board_name: str,
     if pth:
         lines.append(f'\t\t\t(drill {_fmt(pad.drill_mm)})')
     lines.append(f'\t\t\t(layers {layers})')
+    if pth and pad.note == "castellated":
+        # Plated half-hole on the board outline (side-wall interconnect).
+        lines.append('\t\t\t(property pad_prop_castellated)')
 
     net_name = _pin_to_net_name(chip, pad.num) or nc_net
     if net_name:

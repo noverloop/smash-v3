@@ -157,7 +157,7 @@ def test_potting_holes_emitted(tmp_pcb):
     # them for outline cutouts and bounding-box-fallback the whole board.
     pads = list(_find_all(sexp, "pad"))
     npth = [p for p in pads if len(p) > 2 and p[2] == "np_thru_hole"]
-    assert len(npth) == 2
+    assert len(npth) == 1   # ONE potting hole per board since 2026-11-14
     for p in npth:                       # Ø3 drill, size == drill (no annulus)
         drill = next(c for c in p if isinstance(c, list) and c[0] == "drill")
         size  = next(c for c in p if isinstance(c, list) and c[0] == "size")
@@ -345,7 +345,7 @@ def test_return_dict_summary(tmp_pcb):
     ])
     r = write_kicad_pcb(d, board, tmp_pcb)
     assert r["n_footprints"] == 2
-    assert r["n_holes"] == 2       # flight_board has 2 potting holes
+    assert r["n_holes"] == 1       # flight_board: one potting hole (2026-11-14)
     assert r["n_cavities"] == 0
     assert r["output_path"] == str(tmp_pcb)
 
@@ -374,15 +374,17 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # reinstated 2026-07-30 + fin_ble_board from the same-day crowding
     # split) + 13 spacers (7 normal + the 6-spacer battery compartment
     # between cell_floor_board and activation_interface) + 2 deploy
-    # branches (qpd, camera; nfc deleted) + 2 Yagi antenna flex tiles
-    # (off wakeup_board) = 26.
-    assert r["n_tiles"] == 26
+    # branches (qpd, camera; nfc deleted) = 24. (The 2 Yagi antenna flex
+    # tiles were removed 2026-11-14 — BLE shares the conformal 2.4 GHz
+    # antenna in the PEEK battery compartment.)
+    assert r["n_tiles"] == 24
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
-    # snake links draw NO strips. Only the 4 perpendicular branch/module
-    # flexes remain (Yagi-A, Yagi-B, qpd, camera; nfc deleted 2026-07-30).
-    assert r["n_flex_strips"] == 4
+    # snake links draw NO strips. Only the 2 perpendicular branch/module
+    # flexes remain (qpd, camera; nfc deleted 2026-07-30, the Yagi-A/B
+    # flexes 2026-11-14).
+    assert r["n_flex_strips"] == 2
     # Round-trip parses
     sexp = _parse_sexp(out.read_text())
     assert sexp[0] == "kicad_pcb"
@@ -613,7 +615,7 @@ def test_full_twin_exports_clean(tmp_path):
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     from smash.layout.boards.smash_evb_v1 import build_panel
@@ -622,7 +624,6 @@ def test_full_twin_exports_clean(tmp_path):
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
@@ -901,7 +902,17 @@ def test_full_twin_exports_clean(tmp_path):
     #   it, ±0 — and fin_ble_board is now in EVERY config; core_radar sheds
     #   only the Yagi leaves, RF-dark.) This maximalist twin keeps
     #   everything.
-    assert total_fps == 514
+    # → 533: as measured at commit 37c0d04 (2026-11-14) — the changes between
+    #   the 2026-07-31 reorder and then were never recorded here (the test
+    #   could not import the renamed generator, so the count went stale).
+    # → 575: long-range radio cluster on fin_ble_board's bottom face (+49:
+    #   STM32WLE5 mLRS host + SX1280 + nRF21540 FEM + 2× BGS12 antenna switches
+    #   + matching/decoupling + 2 antenna feeds and their GND pads) and the
+    #   Yagi chain removed (−7: R_WILK_ISO, TP_WILK_A/B, TP_YAGI_RF_A/B,
+    #   ANT_YAGI_A/B) — BLE shares the conformal 2.4 GHz antenna.
+    # → 577: the 3-pad P_CELL_CONTACTS split into 3 discrete + tab lands
+    #   (P_CELL_TAB_POS1..3) for the battery headroom (+2).
+    assert total_fps == 577
 
 
 

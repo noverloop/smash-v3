@@ -18,7 +18,7 @@
     "fins_module":          { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
     "companion_compute":    { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
     "companion_io":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "nose_cap":             { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
+    "nose_cap":             { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
     "activation_interface": { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
     "aft_end_board":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
     "cell_floor_board":     { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
