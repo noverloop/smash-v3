@@ -40,10 +40,14 @@ ANT_WINDOW_MARGIN_MM = 1.5         # plane cut-back round each antenna element
 # It carries the aft board's former bottom-face interface, unchanged (same
 # groups, labels and pads: SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES — the 33 V
 # mux sector outputs + common —, GROUND, PROGRAM_MP25, …) as solderable gold
-# pads on its OUTER face, two staggered rows. Each pad is fed from its own
+# pads on its OUTER face: ONE row, all pads the same size, copper running
+# to the ring's aft edge (wires soldered on; the nichrome restraint wires are
+# attached mechanically to their pads — same pad, no solder). Each pad is fed from its own
 # exit castellation on the aft board (contract["plug"]) by a non-crossing
 # fan-out; no trace crosses a seam (each half-shell fans out on its own).
-PLUG_PAD_W_MM, PLUG_PAD_H_MM = 1.5, 2.5
+PLUG_PAD_GAP_MM = 0.45            # copper gap between neighbouring pads
+PLUG_PAD_H_MM = 4.0                # pad length, ending at the aft edge
+PLUG_LABEL_BAND_MM = 3.2           # pad names + group captions above the pads
 PLUG_LEVEL_STEP_MM = 0.4
 PLUG_TRACE_MM = 0.25
 
@@ -183,15 +187,19 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     hw = r_out * math.radians(SEAM_HALF_WIDTH_DEG) + 0.6
     halves = [(hw, W / 2 - hw), (W / 2 + hw, W - hw)]
     placed = []                                     # (entry, cx, px, row)
+    per_half = [sum(1 for e in plug if (_x_of(e["angle"], r_out) < W / 2) == (lo < W / 2))
+                for lo, _hi in halves]
+    pitch = min((hi - lo) / max(n_, 1) for (lo, hi), n_ in zip(halves, per_half))
+    PLUG_PAD_W_MM = pitch - PLUG_PAD_GAP_MM
     for lo, hi in halves:
         es = sorted((e for e in plug
                      if (_x_of(e["angle"], r_out) < W / 2) == (lo < W / 2)),
                     key=lambda e: _x_of(e["angle"], r_out))
         if not es:
             continue
-        pitch = (hi - lo) / len(es)
+        x0 = (lo + hi) / 2 - pitch * len(es) / 2
         for i, e in enumerate(es):
-            placed.append((e, _x_of(e["angle"], r_out), lo + pitch * (i + 0.5), i % 2))
+            placed.append((e, _x_of(e["angle"], r_out), x0 + pitch * (i + 0.5), 0))
     # levels: right-movers — the left one jogs LOWER; left-movers mirrored.
     depth = {}
     for sgn in (1, -1):
@@ -207,10 +215,9 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             done.append(t)
     n_lv = max(depth.values() or [0])
     z_top = -0.6
-    za1 = z_top - (n_lv + 1) * PLUG_LEVEL_STEP_MM    # row A pad top
-    rows = [(za1, za1 - PLUG_PAD_H_MM),
-            (za1 - PLUG_PAD_H_MM - 1.0, za1 - 2 * PLUG_PAD_H_MM - 1.0)]
-    ring_bottom = rows[1][1] - 4.5                   # room for the group labels
+    za1 = z_top - (n_lv + 1) * PLUG_LEVEL_STEP_MM - PLUG_LABEL_BAND_MM
+    rows = [(za1, za1 - PLUG_PAD_H_MM)]
+    ring_bottom = rows[0][1]                         # pads run to the aft edge
     n_plug = 0
     gbox = {}
     for t in placed:
@@ -233,20 +240,26 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                      f'(connect_pads yes (clearance 0.15)) (min_thickness 0.1) (fill yes) '
                      f'(polygon (pts {poly})) (filled_polygon (layer "F.Cu") (pts {poly})))')
         square = e["ref"].endswith("_0") or e["ref"] in ("P_ACT_WIRE_0",)
-        items.append(f'\t(gr_text "{e["ref"].replace("TP_", "").replace("P_ACT_WIRE_", "W")}" '
-                     f'(at {xp:.3f} {Y((zt + zb) / 2):.2f} 90) (layer "F.SilkS") '
+        short = {"P_ACTIVATE_COMMON": "COM", "TP_PARACHUTE_CUTTER_SET": "SET",
+                 "TP_ACT_CONFIRM": "CONF", "TP_SPI_CS_FIN": "CS"}.get(
+            e["ref"], e["ref"].replace("TP_", "").replace("P_ACT_WIRE_", "W")
+            .replace("SPI_", "").replace("I2C_", "").replace("JUMP_", "J")
+            .replace("MP25_", "").replace("GPIO_", "IO").replace("FIN", "F")
+            .replace("BAT_", "").replace("CAN_", "CAN").replace("HALL_", "H"))
+        items.append(f'\t(gr_text "{short}" '
+                     f'(at {xp:.3f} {Y(zt + 1.2):.2f} 90) (layer "F.SilkS") '
                      f'(effects (font (size 0.45 0.45) (thickness 0.07))))')
         x0g, x1g = gbox.get(e["group"], (xp, xp))
         gbox[e["group"]] = (min(x0g, xp), max(x1g, xp))
         n_plug += 1
     for gi, (label, (x0g, x1g)) in enumerate(gbox.items()):
         bx0, bx1 = x0g - PLUG_PAD_W_MM / 2 - 0.3, x1g + PLUG_PAD_W_MM / 2 + 0.3
-        by0, by1 = Y(rows[0][0] + 0.3), Y(rows[1][1] - 0.3)
+        by0, by1 = Y(rows[0][0] + 2.3), Y(rows[0][0] + 0.15)
         for (xa, ya, xb, yb) in ((bx0, by0, bx1, by0), (bx1, by0, bx1, by1),
                                  (bx1, by1, bx0, by1), (bx0, by1, bx0, by0)):
             items.append(f'\t(gr_line (start {xa:.3f} {ya}) (end {xb:.3f} {yb}) '
                          f'(stroke (width 0.12) (type solid)) (layer "F.SilkS"))')
-        items.append(f'\t(gr_text "{label}" (at {(bx0 + bx1) / 2:.3f} {by1 + 1.0 + 1.0 * (gi % 3):.2f}) '
+        items.append(f'\t(gr_text "{label}" (at {(bx0 + bx1) / 2:.3f} {by0 - 0.5 - 0.8 * (gi % 2):.2f}) '
                      f'(layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.09))))')
     items.append(f'\t(gr_line (start {X(0)} {Y(0)}) (end {X(W)} {Y(0)}) (stroke (width 0.3) (type solid)) (layer "F.SilkS"))')
     PLUG_H = -ring_bottom
