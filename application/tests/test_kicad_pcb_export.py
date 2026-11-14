@@ -912,7 +912,10 @@ def test_full_twin_exports_clean(tmp_path):
     #   ANT_YAGI_A/B) — BLE shares the conformal 2.4 GHz antenna.
     # → 577: the 3-pad P_CELL_CONTACTS split into 3 discrete + tab lands
     #   (P_CELL_TAB_POS1..3) for the battery headroom (+2).
-    assert total_fps == 577
+    # → 573: the antenna feed pads on fin_ble (ANT_2G4, ANT_SUBG + their GND
+    #   pads, −4) replaced by feed castellations into the sleeve's antenna
+    #   sector (antennas now LDS copper on the sleeve).
+    assert total_fps == 573
 
 
 

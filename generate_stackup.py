@@ -1720,18 +1720,10 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     _net(d, "LR_SG_TX_EN").connect(mcu.pin("PA6")); _net(d, "LR_SG_TX_EN").connect(swsg.pin("CTRL"))
     res_between(d, "LR_SG_TX_EN", "GND", "100k", ref="R_LR_SG_TXEN_PD", board_tag=BTAG)
 
-    # ── Antenna feeds → conformal elements in the PEEK crescents ────
-    for ref, net, desc in (
-        ("ANT_2G4", "ANT_2G4_FEED",
-         "2.4 GHz conformal antenna feed (crescent 2, PEEK wall) — mLRS "
-         "SX1280+nRF21540 in flight, WBA55 BLE on the ground"),
-        ("ANT_SUBG", "ANT_SUBG_FEED",
-         "868–923 MHz conformal antenna feed (crescent 3, PEEK wall) — "
-         "STM32WLE5 sub-GHz LoRa (mLRS)")):
-        a = _add_antenna_pad(d, ref=ref, value=ref, description=desc, board_tag=BTAG)
-        _net(d, net).connect(a.pin("1"))
-        gp = _add_testpoint(d, ref=f"P_{ref}_GND", board_tag=BTAG)
-        _net(d, "GND").connect(gp.pin("1"))
+    # ── Antenna feeds (2026-11-14): ANT_2G4_FEED / ANT_SUBG_FEED leave the
+    # board through dedicated castellations in the sleeve's ANTENNA sector
+    # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → antenna copper on
+    # the sleeve's outer face, over its inner GND plane. No pads on the board.
 
 
 def build_fins_module(d: Design) -> None:
@@ -6277,6 +6269,16 @@ def main() -> int:
         from smash.export.sleeve_step import write_sleeve_and_mould
         _sl = write_sleeve_and_mould(boards, list(panel.snake_chain),
                                      _cast_contract, _MAXIMALIST_DIR)
+        from smash.export.sleeve_layout import (write_unrolled_sleeve,
+                                                write_sleeve_copper_step)
+        _ul = write_unrolled_sleeve(boards, list(panel.snake_chain), _cast_contract,
+                                    _sl["sleeve_dir"] / "sleeve_unrolled.kicad_pcb")
+        _cu = write_sleeve_copper_step(boards, list(panel.snake_chain), _cast_contract,
+                                       _sl["sleeve_dir"] / "sleeve_copper.step")
+        print(f"  unrolled sleeve layout: {_ul['width_mm']:.1f} × {_ul['height_mm']:.1f} mm, "
+              f"{_ul['n_lanes']} lanes, {_ul['n_vias']} vias, {_ul['n_plug']} plug-ring contacts, {_ul['n_antennas']} antenna "
+              f"placeholders → sleeve/sleeve_unrolled.kicad_pcb (+ sleeve_copper.step, "
+              f"{_cu['n_bodies']} bodies)")
         print(f"  LDS sleeve: 2 half-shells, {_sl['n_vias']} vias, "
               f"{_sl['height_mm']:.1f} mm → {_sl['sleeve_dir'].relative_to(REPO)}/; "
               f"potting mould (clamp + caps) → {_sl['mould_dir'].relative_to(REPO)}/")

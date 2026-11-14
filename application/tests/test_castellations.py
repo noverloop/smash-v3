@@ -120,3 +120,25 @@ def test_lane_frame_matches_stack_assembly_pose(built):
             mx, my, _mz = _tile_pose(panel.tiles, chain, prev, n, False)
             assert M[n] == ((mx, 0), (0, my)), n
         prev = n
+
+
+def test_signal_lanes_stay_in_the_signal_sector(built):
+    """Signal / power lanes only in the 210° signal sector; GND castellations
+    and antenna feeds only in the opposite antenna sector (no lanes there)."""
+    from smash.parts.castellations import (SIGNAL_SECTOR_CENTRE_DEG,
+                                           SIGNAL_SECTOR_HALF_DEG)
+    _d, _p, _b, contract, _n, _M = built
+
+    def in_signal(a):
+        d = (a - SIGNAL_SECTOR_CENTRE_DEG + 180) % 360 - 180
+        return abs(d) <= SIGNAL_SECTOR_HALF_DEG
+    kinds = set()
+    for net, lane in contract["lanes"].items():
+        kind = lane.get("kind", "signal")
+        kinds.add(kind)
+        for a in lane["angles"]:
+            if kind in ("signal", "power", "plug_exit"):
+                assert in_signal(a), (net, a)
+            else:
+                assert not in_signal(a), (net, a)
+    assert {"gnd_plane", "antenna_feed"} <= kinds

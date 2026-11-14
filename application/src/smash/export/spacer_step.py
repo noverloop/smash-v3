@@ -573,8 +573,8 @@ BATT_CELL_ANGLES_DEG = (90.0, 210.0, 330.0)
 BATT_BORE_R_MM = 7.45                 # Ø14.8 cell + 0.05 radial location fit
 BATT_TIP_RELIEF_R_MM = 7.6            # tip relief → skin = 17 − 8.6 − 7.6 = 0.8 mm
 BATT_TIP_RELIEF_HALF_DEG = 30.0
-BATT_FEED_ANGLES_DEG = (0.0, 180.0)   # behind the sleeve's feed / vent grooves
-BATT_NOTCH_R_IN_MM = 12.0            # notch reaches into the cell cavity (bore edge ≈ r 13.5 at 0°/180°)
+BATT_FEED_ANGLES_DEG = (105.0, 285.0) # behind the sleeve's feed / vent grooves (= its seams)
+BATT_NOTCH_R_IN_MM = 9.0             # notch reaches into the cell cavity at the seam angles
 BATT_CHANNEL_D_MM, BATT_CHANNEL_R_MM, BATT_CHANNEL_ANGLE_DEG = 3.0, 13.0, 135.0   # = the boards' potting hole (continuous channel)
 # Headroom (2026-11-14, user): the compartment is the cell length + a
 # headroom above the cells; there the holder is just its EDGE RING
@@ -588,7 +588,7 @@ BATT_PART_CLEARANCE_MM = 0.2
 
 SLOT_W_MM = 2.0                               # notch width (tangential)
 NOTCH_DEPTH_MM = 0.5                          # notch depth (axial), top + bottom edge
-SLOT_ANGLES_DEG = (0.0, 180.0)                # = castellation reserved sectors
+SLOT_ANGLES_DEG = (105.0, 285.0)              # = sleeve seams / feed + vent grooves
 STANDOFF_D_MM, STANDOFF_R_MM = 1.2, 15.8
 STANDOFF_ANGLES_DEG = (45.0, 135.0, 225.0, 315.0)   # symmetric under fold + 180° turn
 

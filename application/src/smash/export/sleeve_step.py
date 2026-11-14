@@ -26,7 +26,7 @@ SLEEVE_GAP_MM = 0.1            # board edge → sleeve inner wall (solder gap)
 SLEEVE_WALL_MM = 0.8           # LCP wall (vias need ≤ 0.6 mm local wall: double-cone spot-face, not modelled)
 SLEEVE_VIA_D_MM = 0.5
 GROOVE_W_MM, GROOVE_D_MM = 2.0, 0.4      # inner feed (0°) / vent (180°) grooves
-GROOVE_ANGLES_DEG = (0.0, 180.0)
+GROOVE_ANGLES_DEG = (105.0, 285.0)   # = the half-shell seams (castellations.SEAM_ANGLES_DEG)
 SLEEVE_MATERIAL = "glass-filled LCP, LDS grade (e.g. Vectra E840i LDS)"
 
 MOULD_R_OUT_MM = 25.0
@@ -126,13 +126,17 @@ def build_sleeve(boards: dict, chain: list, contract: dict | None):
                     n_vias += 1
         if vias is not None:
             body = body.cut(vias)
+    # Split plane through the axis along the seams (105° / 285°): rotate the
+    # y ≥ 0 / y ≤ 0 half-spaces by (seam − 0°) so the cut lies on the seams.
+    from smash.parts.castellations import SEAM_ANGLES_DEG
     big = 60.0
-    half_a = body.intersect(cq.Workplane("XY").box(big, big / 2, z_top + 2,
-                                                   centered=(True, False, False))
-                            .translate((0, 0, -1)))
-    half_b = body.intersect(cq.Workplane("XY").box(big, big / 2, z_top + 2,
-                                                   centered=(True, False, False))
-                            .translate((0, -big / 2, -1)))
+    rot = SEAM_ANGLES_DEG[0]
+    hs_a = (cq.Workplane("XY").box(big, big / 2, z_top + 2, centered=(True, False, False))
+            .translate((0, 0, -1)).rotate((0, 0, 0), (0, 0, 1), rot))
+    hs_b = (cq.Workplane("XY").box(big, big / 2, z_top + 2, centered=(True, False, False))
+            .translate((0, -big / 2, -1)).rotate((0, 0, 0), (0, 0, 1), rot))
+    half_a = body.intersect(hs_a)
+    half_b = body.intersect(hs_b)
     return half_a, half_b, n_vias, segs
 
 
@@ -149,22 +153,25 @@ def build_potting_mould(segs: list):
              .extrude(z1 - z0).translate((0, 0, z0)))
         clamp = t if clamp is None else clamp.union(t)
     big = 2 * MOULD_R_OUT_MM + 10
+    from smash.parts.castellations import SEAM_ANGLES_DEG
+    rot = SEAM_ANGLES_DEG[0]           # clamp split ⟂ to the sleeve seams
     left = clamp.intersect(cq.Workplane("XY").box(big / 2, big, z_top + 2,
                                                   centered=(False, True, False))
-                           .translate((-big / 2, 0, -1)))
+                           .translate((-big / 2, 0, -1)).rotate((0, 0, 0), (0, 0, 1), rot))
     right = clamp.intersect(cq.Workplane("XY").box(big / 2, big, z_top + 2,
                                                    centered=(False, True, False))
-                            .translate((0, 0, -1)))
+                            .translate((0, 0, -1)).rotate((0, 0, 0), (0, 0, 1), rot))
     r_port = segs[0][2] + GROOVE_D_MM / 2.0
+    fa, va = (math.radians(GROOVE_ANGLES_DEG[0]), math.radians(GROOVE_ANGLES_DEG[1]))
     bottom = (cq.Workplane("XY").circle(MOULD_R_OUT_MM).extrude(MOULD_CAP_T_MM)
               .translate((0, 0, -MOULD_CAP_T_MM)))
-    bottom = bottom.cut(cq.Workplane("XY").center(r_port, 0)
+    bottom = bottom.cut(cq.Workplane("XY").center(r_port * math.cos(fa), r_port * math.sin(fa))
                         .circle(MOULD_PORT_D_MM / 2.0).extrude(MOULD_CAP_T_MM)
                         .translate((0, 0, -MOULD_CAP_T_MM)))
     r_vent = segs[-1][2] + GROOVE_D_MM / 2.0
     top = (cq.Workplane("XY").circle(MOULD_R_OUT_MM).extrude(MOULD_CAP_T_MM)
            .translate((0, 0, z_top)))
-    top = top.cut(cq.Workplane("XY").center(-r_vent, 0)
+    top = top.cut(cq.Workplane("XY").center(r_vent * math.cos(va), r_vent * math.sin(va))
                   .circle(MOULD_PORT_D_MM / 2.0).extrude(MOULD_CAP_T_MM)
                   .translate((0, 0, z_top)))
     return {"mould_clamp_left": left, "mould_clamp_right": right,
@@ -191,8 +198,8 @@ def write_sleeve_and_mould(boards: dict, chain: list, contract: dict | None,
                      for z0, z1, r in segs)
     (sd / "sleeve_cam.md").write_text(
         f"# LDS sleeve (generated)\n\nMaterial: {SLEEVE_MATERIAL}. Two axial "
-        "half-shells split on the y = 0 plane (seams in the 0° / 180° feed + "
-        "vent groove sectors, which carry no traces).\n\n"
+        "half-shells split through the axis at 105° / 285° (seams = feed + vent "
+        "grooves; 105° is the signal/antenna sector edge, 285° a lane-free stripe).\n\n"
         "| z (mm) | ID | OD |\n|---|---|---|\n" + prof + "\n\n"
         f"- Wall {SLEEVE_WALL_MM} mm; vias Ø{SLEEVE_VIA_D_MM} mm × {n_vias}, one per "
         "castellation at its board's mid-thickness (model: straight holes; real: "
