@@ -1106,6 +1106,10 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
         circle(0, 0, S.RING_R_OUT_MM, 0.2)
         circle(0, 0, S.RING_R_IN_MM, 0.2)
         text(f"ALUMINIUM RING {board.thickness_mm:.1f} mm (not a PCB)", -S.RING_R_OUT_MM - 2.0)
+        for ang in S.STANDOFF_ANGLES_DEG:
+            a = math.radians(ang)
+            circle(S.STANDOFF_R_MM * math.cos(a), S.STANDOFF_R_MM * math.sin(a),
+                   S.STANDOFF_D_MM / 2.0, 0.2)
     else:
         circle(0, 0, 17.0, 0.08)
         for ang in S.STANDOFF_ANGLES_DEG:

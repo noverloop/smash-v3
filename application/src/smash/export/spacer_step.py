@@ -555,8 +555,11 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 #     fills the rest.
 # Frame: PHYSICAL (the aft_end_board / chain[0] frame), +Z toward the nose.
 
-GAP_RING_GAPS = ("spacer_aft_end_board_activation_interface",
-                 "spacer_activation_interface_cell_floor_board")
+# (2026-11-15) After the aft reorder the battery holder sits on aft_end, so
+# the aft-most PLAIN gap — activation_interface ↔ fin_ble — carries the Al
+# ring (the old names pointed at gaps that no longer exist, which silently
+# dropped the rings). PEEK standoffs sit INSIDE the ring in the same gap.
+GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
 RING_R_IN_MM, RING_R_OUT_MM = 15.2, 16.2      # 1.0 mm wall, OD 32.4
 RING_CLEARANCE_MM = 0.2                       # silk "standoff distance" each side
 # Battery HOLDER (2026-11-14, replaces the Ø38 battery ring): a 7075-T6
@@ -730,7 +733,8 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
         return _battery_holder_body(cq, h), h, "battery_holder", kind
     h = b.thickness_mm
     if kind == "ring":
-        return _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h), h, name, kind
+        return (_ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
+                .union(_standoffs_body(cq, h))), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
 
 
@@ -766,10 +770,13 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     "extensions bend across it to P_CELL_CONTACTS")
         elif kind == "ring":
             h = b.thickness_mm
-            body = _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
-            label, mat = name, "7075-T6 aluminium, hard anodised (anodise = insulation)"
+            body = (_ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
+                    .union(_standoffs_body(cq, h)))
+            label, mat = name, ("7075-T6 aluminium ring, hard anodised (anodise = "
+                                "insulation) + PEEK standoffs inside it")
             dims = (f"ring ID Ø{2*RING_R_IN_MM:.1f} / OD Ø{2*RING_R_OUT_MM:.1f}"
-                    f" × {h:.2f} mm")
+                    f" × {h:.2f} mm; {len(STANDOFF_ANGLES_DEG)} × Ø{STANDOFF_D_MM} "
+                    f"PEEK standoffs at r = {STANDOFF_R_MM} mm")
         else:
             h = b.thickness_mm
             body = _standoffs_body(cq, h)

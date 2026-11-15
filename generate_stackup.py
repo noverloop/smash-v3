@@ -5568,6 +5568,11 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                 ov.append((layer, circle(0, 0, RING_R_IN_MM - RING_CLEARANCE_MM),
                            f"AL RING r{RING_R_IN_MM:g}-{RING_R_OUT_MM:g} "
                            f"+{RING_CLEARANCE_MM:g} KEEPOUT"))
+                for k, ang in enumerate(STANDOFF_ANGLES_DEG):   # standoffs inside it
+                    x, y = _local_xy(fold_M[nbr], ang, STANDOFF_R_MM)
+                    ov.append((layer, circle(x, y, STANDOFF_D_MM / 2.0
+                                             + RING_CLEARANCE_MM, 24),
+                               "PEEK STANDOFF" if k == 0 else ""))
             elif kind == "battery_holder":
                 # cell cavity outline: the holder's end face bears on the
                 # board everywhere OUTSIDE it (E top: cell tabs only inside);

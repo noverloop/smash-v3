@@ -304,3 +304,12 @@ def test_peek_standoffs_stay_inside_the_aluminium_rings():
     edge = S.STANDOFF_R_MM + S.STANDOFF_D_MM / 2.0
     assert edge <= S.RING_R_IN_MM - S.RING_CLEARANCE_MM + 1e-9
     assert edge < S.BATT_TOP_RING_R_IN_MM
+
+
+def test_aluminium_ring_gap_exists_in_the_chain():
+    """The ring gap names must match a real gap (they silently went stale
+    after the aft reorder)."""
+    from smash.layout.boards.smash_evb_v1 import build_panel
+    from smash.export.spacer_step import GAP_RING_GAPS
+    panel, boards = build_panel()
+    assert set(GAP_RING_GAPS) <= set(panel.snake_chain)
