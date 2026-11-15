@@ -440,3 +440,132 @@ def add_nrf21540_qdaa_r7(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Semtech LR2021IMLTRT — LoRa Plus multi-band transceiver (sub-GHz +
+# 2.4 GHz), QFN-32 5×5 mm + exposed pad
+# ═════════════════════════════════════════════════════════════════════════
+
+_LR2021_NOTE = """\
+Datasheet: Semtech LR2021 Preliminary Rev 0.1 (03/01/25) — high-level only:
+NO pin table, NO reference-design values. Pin names / numbers are the
+SamacSys symbol (v1.1, 2026-06-16); pin types below are inferred from the
+names and the LR11xx/SX126x lineage — CONFIRM against the final DS.
+
+Headline (DS p1-6): 150-960 MHz + 1.6-2.5 GHz; sub-GHz +22 dBm (two PAs:
+RFO_LF1 / RFO_LF2), 2.4 GHz +12 dBm (RFO_HF); separate RX inputs RFI_LF /
+RFI_HF ("switchless" direct-tie topology possible); LoRa / FLRC up to
+2.6 Mbps / (G)FSK / O-QPSK / BLE PHY; Rx ~5 mA, sleep 500 nA; 1.8-3.7 V;
+-40…+85 °C; SPI host + BUSY. Integrated DC-DC (LXA/LXB inductor) can be
+disabled for LDO-only operation (no inductor). Reference: XTAL on XTA/XTB
+or TCXO into XTA powered from VTCXO (pin 6, shared with the NTC bias).
+"""
+
+
+def add_lr2021imltrt(design, ref: str, **overrides) -> Chip:
+    """Semtech LR2021IMLTRT — LoRa Plus sub-GHz + 2.4 GHz transceiver,
+    SPI host interface, QFN-32 5×5 mm (QFN50P500X500X100-33N-D)."""
+    pn = "LR2021IMLTRT"
+    fp = _samacsys_qfn_footprint(
+        pn, "QFN50P500X500X100-33N-D.kicad_mod",
+        name="QFN50P500X500X100-33N-D", package_class="QFN-32 5x5 + EP",
+        pitch_mm=0.5, size_mm=(5.0, 5.0), height_mm=1.0)
+    P = Pin
+    pins = [
+        P(num="1",  name="VR_PA",   type="power",  note="Regulated PA supply (internal; decouple)"),
+        P(num="2",  name="VPAX2",   type="power",  note="PA supply 2 (2.4 GHz / LF2 PA)"),
+        P(num="3",  name="NTC",     type="passive", note="Reference-temperature NTC sense (optional)"),
+        P(num="4",  name="XTA",     type="passive", note="Crystal / TCXO input"),
+        P(num="5",  name="XTB",     type="passive", note="Crystal (NC with TCXO)"),
+        P(num="6",  name="VTCXO/VNTC", type="power", aliases=["VTCXO"], note="Programmable TCXO / NTC supply output"),
+        P(num="7",  name="DIO11",   type="io"),
+        P(num="8",  name="DIO10",   type="io"),
+        P(num="9",  name="DIO9",    type="io"),
+        P(num="10", name="DIO8",    type="io"),
+        P(num="11", name="DIO7",    type="io"),
+        P(num="12", name="VDCC1",   type="power",  note="Regulator (DC-DC/LDO) output 1"),
+        P(num="13", name="VPAX1",   type="power",  note="PA supply 1 (sub-GHz HP PA)"),
+        P(num="14", name="LXB",     type="passive", note="DC-DC inductor B (NC in LDO mode)"),
+        P(num="15", name="GND_DCC", type="ground"),
+        P(num="16", name="LXA",     type="passive", note="DC-DC inductor A (NC in LDO mode)"),
+        P(num="17", name="VBAT",    type="power",  note="Main supply 1.8-3.7 V"),
+        P(num="18", name="DIO6",    type="io"),
+        P(num="19", name="DIO5",    type="io"),
+        P(num="20", name="NRESET",  type="input",  note="Reset, active low"),
+        P(num="21", name="MISO",    type="output"),
+        P(num="22", name="MOSI",    type="input"),
+        P(num="23", name="SCK",     type="input"),
+        P(num="24", name="NSS",     type="input"),
+        P(num="25", name="BUSY",    type="output", note="Busy indicator — poll low before each SPI command"),
+        P(num="26", name="VDCC2",   type="power",  note="Regulator output 2"),
+        P(num="27", name="RFO_LF2", type="output", note="Sub-GHz PA 2 (low-power)"),
+        P(num="28", name="RFO_LF1", type="output", note="Sub-GHz PA 1 (high-power, +22 dBm)"),
+        P(num="29", name="RFI_LF",  type="input",  note="Sub-GHz RX input"),
+        P(num="30", name="GND",     type="ground"),
+        P(num="31", name="RFI_HF",  type="input",  note="2.4 GHz RX input"),
+        P(num="32", name="RFO_HF",  type="output", note="2.4 GHz PA output (+12 dBm)"),
+        P(num="33", name="EP",      type="ground", aliases=["GND_EP"], note="Exposed ground pad"),
+    ]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Semtech", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("LoRa Plus multi-band transceiver: 150-960 MHz (+22 dBm) "
+                     "+ 1.6-2.5 GHz (+12 dBm), LoRa/FLRC/FSK/O-QPSK, SPI, "
+                     "QFN-32 5×5 mm"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=["RoHS"], eccn=None, itar=None,
+        package="QFN-32 5x5", size_mm=(5.0, 5.0), height_mm=1.0,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=3.7, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=pins, footprint=fp, note=_LR2021_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def _tcxo_2016_footprint() -> Footprint:
+    """Generic 2.0 × 1.6 mm 4-pad TCXO land (JEDEC-style, pads 1-4 CCW)."""
+    pads = [Pad(num=n, position_mm=(x, y), size_mm=(0.65, 0.55), shape="rect", layer="F.Cu")
+            for n, x, y in (("1", -0.725, 0.525), ("2", 0.725, 0.525),
+                            ("3", 0.725, -0.525), ("4", -0.725, -0.525))]
+    return Footprint(
+        name="TCXO_2016_4PAD", package_class="SMD 2016 4-pad",
+        pads=pads,
+        body_outline=[(-1.0, -0.8), (1.0, -0.8), (1.0, 0.8), (-1.0, 0.8)],
+        courtyard=[(-1.3, -1.1), (1.3, -1.1), (1.3, 1.1), (-1.3, 1.1)],
+        pitch_mm=1.45, size_mm=(2.0, 1.6), height_mm=0.8, source="project")
+
+
+def add_tcxo_32m_2016(design, ref: str, **overrides) -> Chip:
+    """32 MHz clipped-sine TCXO, 2016 package — GENERIC PLACEHOLDER (no part
+    chosen yet; e.g. a ±0.5 ppm 1.8 V clipped-sine 2016 TCXO). Pin 1 VC/NC,
+    2 GND, 3 OUT, 4 VDD."""
+    pn = "TCXO_32M_2016"
+    fields = dict(
+        manf="TBD", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value="32MHz TCXO",
+        description="32 MHz clipped-sine TCXO, 2.0×1.6 mm — PLACEHOLDER part",
+        datasheet=None,
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=[], eccn=None, itar=None,
+        package="SMD 2016", size_mm=(2.0, 1.6), height_mm=0.8,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=3.6, vcc_nominal_v=1.8,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=[Pin(num="1", name="VC", type="input", note="NC / control voltage (tie per DS)"),
+              Pin(num="2", name="GND", type="ground"),
+              Pin(num="3", name="OUT", type="output", note="clipped sine, AC-couple"),
+              Pin(num="4", name="VDD", type="power")],
+        footprint=_tcxo_2016_footprint(),
+        note="PLACEHOLDER — choose a real 32 MHz clipped-sine TCXO (LR2021 VTCXO supply).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

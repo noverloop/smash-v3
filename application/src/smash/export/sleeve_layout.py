@@ -123,7 +123,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     lanes = contract.get("lanes", {})
     for net, lane in lanes.items():
         kind = lane.get("kind", "signal")
-        n = nid("GND" if kind == "gnd_plane" else net)
+        n = nid("GND" if kind == "gnd_plane" else lane.get("net", net))
         zs = sorted(sum(zmap[b]) / 2.0 for b in lane["boards"] if b in zmap)
         for ang in lane["angles"]:
             x = X(_x_of(ang, r_out))
@@ -131,7 +131,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 items.append(f'\t(via (at {x} {Y(zc)}) (size {VIA_PAD_MM}) '
                              f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1
-            if kind in ("signal", "power") and len(zs) >= 2:
+            if kind in ("signal", "power", "gnd_guard") and len(zs) >= 2:
                 w = lane.get("width_mm", 0.2)
                 items.append(f'\t(segment (start {x} {Y(zs[0])}) (end {x} {Y(zs[-1])}) '
                              f'(width {w}) (layer "F.Cu") (net {n}))')
@@ -363,7 +363,7 @@ def write_sleeve_copper_step(boards: dict, chain: list, contract: dict,
         bodies.append(sec.intersect(wedge))
 
     for net, lane in contract.get("lanes", {}).items():
-        if lane.get("kind", "signal") not in ("signal", "power"):
+        if lane.get("kind", "signal") not in ("signal", "power", "gnd_guard"):
             continue
         zs = sorted(sum(zmap[b]) / 2.0 for b in lane["boards"] if b in zmap)
         if len(zs) < 2:

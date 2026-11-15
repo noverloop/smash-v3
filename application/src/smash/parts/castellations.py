@@ -56,6 +56,15 @@ ANTENNA_FEED_ANGLES_DEG = {"ANT_2G4_FEED": 135.0, "ANT_SUBG_FEED": 205.0}
 # on the sleeve's plug ring instead of on the board face. Each interface pad
 # gets an EXIT castellation on the aft board (any free angle, both sectors),
 # allocated in group order so each group stays contiguous round the ring.
+# Guarded buses (2026-11-15): nets that cross as ONE contiguous block of
+# lanes interleaved with GND guard lanes (G S G S … G) over the bus span —
+# a coplanar-ish return path right next to every line on the sleeve's
+# outer face. key → (nets in order, guard lane key). The LR2021 SPI +
+# control crossing from the WBA55 (wakeup) to the radio (fin_ble).
+GUARDED_BUSES = {
+    "LR": (("LR_SPI_SCK", "LR_SPI_MOSI", "LR_SPI_MISO", "LR_NSS",
+            "LR_BUSY", "LR_IRQ", "LR_NRESET"), "GND_GUARD_LR"),
+}
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -174,8 +183,51 @@ def castellation_contract(design, panel, boards, plug_groups=None) -> dict:
             feeds[fname] = {"angles": [fang], "boards": ["fin_ble_board"],
                             "kind": "antenna_feed"}
 
+    # Guarded buses first: one contiguous run of angles (in ring order, so
+    # the block is physically adjacent) free over the bus span.
+    guarded = set()
+    ring = sorted(angles, key=lambda a: (a - SIGNAL_SECTOR_CENTRE_DEG + 180.0) % 360.0)
+    for _bus, (bus_nets, guard_key) in GUARDED_BUSES.items():
+        nets_ = [design.net_by_name(n) for n in bus_nets]
+        if any(n is None for n in nets_) or gnd is None:
+            continue
+        bset = set()
+        for net in nets_:
+            bset |= {tag.get(rf) for rf, _p in net.pins} & set(rigid)
+        if len(bset) < 2:
+            continue
+        idx = sorted(pos[b] for b in bset)
+        lo, hi = idx[0], idx[-1]
+        span = [b for b in rigid if lo <= pos[b] <= hi]
+        need = 2 * len(nets_) + 1
+        # candidate runs nearest the sector centre first
+        starts = sorted(range(len(ring) - need + 1),
+                        key=lambda k: abs(((ring[k + need // 2] + 180.0) % 360.0) - 180.0))
+        for k in starts:
+            run = ring[k:k + need]
+            step = math.degrees(CAST_PITCH_MM / r) * 1.5
+            if any(abs(b - a) > step for a, b in zip(run, run[1:])):
+                continue                   # not physically contiguous
+            if all(free(a, lo, hi) for a in run):
+                break
+        else:
+            print(f"  WARNING: castellations: no contiguous block for guarded "
+                  f"bus {_bus}", file=sys.stderr)
+            continue
+        for a in run:
+            occupied[a].append((lo, hi))
+        for i, net in enumerate(nets_):
+            lanes[net.name] = {"angles": [run[2 * i + 1]], "boards": span,
+                               "kind": "signal", "width_mm": SIGNAL_LANE_WIDTH_MM,
+                               "guarded_by": guard_key}
+            guarded.add(net.name)
+        lanes[guard_key] = {"angles": run[0::2], "boards": span, "net": gnd.name,
+                            "kind": "gnd_guard", "width_mm": SIGNAL_LANE_WIDTH_MM}
+
     todo = []
     for net in design.nets:
+        if net.name in guarded:
+            continue
         if gnd is not None and net is gnd:
             continue
         if is_off_backbone(net.name):
@@ -301,7 +353,8 @@ def place_castellations(design, panel, boards, *, connect,
             note=("plated half-holes on the board outline; each lane is a "
                   "fixed physical angle on the stack — the LDS sleeve's via "
                   "lands here"))
-        for k, (_a, net_name) in enumerate(items):
+        for k, (_a, key) in enumerate(items):
+            net_name = contract["lanes"].get(key, {}).get("net", key)
             if design.net_by_name(net_name) is not None or any(
                     net_name in (n.aliases or []) for n in design.nets):
                 connect(net_name, chip.pin(str(k + 1)))

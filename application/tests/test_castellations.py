@@ -137,8 +137,35 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
         kind = lane.get("kind", "signal")
         kinds.add(kind)
         for a in lane["angles"]:
-            if kind in ("signal", "power", "plug_exit"):
+            if kind in ("signal", "power", "plug_exit", "gnd_guard"):
                 assert in_signal(a), (net, a)
             else:
                 assert not in_signal(a), (net, a)
     assert {"gnd_plane", "antenna_feed"} <= kinds
+
+
+def test_lr_bus_crosses_as_one_gnd_guarded_block(built):
+    """The 7 LR2021 lines (WBA55 on wakeup → fin_ble) take one physically
+    contiguous run of lanes, interleaved G S G S … G with GND guards that
+    connect to GND on both boards."""
+    from smash.parts.castellations import GUARDED_BUSES
+    d, _p, _b, contract, _n, _M = built
+    bus_nets, guard = GUARDED_BUSES["LR"]
+    lanes = contract["lanes"]
+    g = lanes[guard]
+    assert g["kind"] == "gnd_guard" and g["net"] in ("GND", "FLEX_GND")
+    assert {"wakeup_board", "fin_ble_board"} <= set(g["boards"])
+    sig = [lanes[n]["angles"][0] for n in bus_nets]
+    block = sorted(g["angles"] + sig, key=lambda a: (a + 180) % 360)
+    assert len(block) == 2 * len(bus_nets) + 1
+    assert set(block[0::2]) == set(g["angles"])          # guards on the outside + between
+    assert set(block[1::2]) == set(sig)
+    step = math.degrees(contract["pitch_mm"] / contract["radius_mm"])
+    for a, b in zip(block, block[1:]):
+        assert abs(((b - a) + 180) % 360 - 180) < 1.5 * step   # no gaps
+    # every guard pad is a real GND connection
+    for c in _cast_chips(d):
+        for pin in c.pins:
+            if pin.name.startswith(guard + "@"):
+                net = d.net_by_name(pin.net) if isinstance(pin.net, str) else pin.net
+                assert net is not None and {net.name, *(net.aliases or [])} & {"GND", "FLEX_GND"}, (c.ref, pin.name)

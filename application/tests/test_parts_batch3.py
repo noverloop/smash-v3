@@ -260,3 +260,15 @@ class TestHelperParserUsed:
                 # has a name)
                 assert p.name != "", \
                     f"{factory.__name__}: pin {p.num} has empty name"
+
+
+def test_lr2021_pins_match_samacsys_footprint():
+    from smash.parts.rf import add_lr2021imltrt, add_tcxo_32m_2016
+    d = Design()
+    c = add_lr2021imltrt(d, ref="U_LR")
+    assert c.manf_pn == "LR2021IMLTRT" and len(c.footprint.pads) == 33
+    for name in ("SCK", "MOSI", "MISO", "NSS", "BUSY", "NRESET",
+                 "RFO_LF1", "RFI_LF", "RFO_HF", "RFI_HF", "XTA", "VTCXO"):
+        c.pin(name)
+    t = add_tcxo_32m_2016(d, ref="Y")
+    assert {p.num for p in t.pins} == {p.num for p in t.footprint.pads}

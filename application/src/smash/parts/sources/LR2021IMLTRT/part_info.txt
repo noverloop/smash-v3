@@ -1,0 +1,9 @@
+Manufacturer=SEMTECH
+PartNumber=LR2021IMLTRT
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=33
+Version=1.1
+Released=2026-06-16 08:54:56
+Downloaded=2026-11-15 19:31:23
+3D=Y

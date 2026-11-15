@@ -77,7 +77,7 @@ from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: 
 from smash.parts.transceivers import add_tcan1042gvdq1                  # noqa: E402
 from smash.parts.mcus import (                                          # noqa: E402
     add_stm32mp255fal3, add_stm32g0b1rei6n,
-    add_stm32wba55hgf6tr, add_stm32wba55ugi7, add_stm32h562aii6, add_stm32wle5ccu6,
+    add_stm32wba55hgf6tr, add_stm32wba55ugi7, add_stm32h562aii6,
 
 )
 from smash.parts.flash import (                                         # noqa: E402
@@ -103,7 +103,7 @@ from smash.parts.comparators import add_tlv3691idpfr                      # noqa
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
 from smash.parts.hall_sensors import add_drv5032fcqdbzr, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
-from smash.parts.rf import (add_sx1280, add_nrf21540_qdaa_r7,          # noqa: E402
+from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
                             add_bgs12wn6e6327xtsa1)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
@@ -1535,63 +1535,50 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
 
 
 def _build_lr_radio(d: Design, g, BTAG: str) -> None:
-    """Long-range radio cluster on fin_ble_board's BOTTOM face (2026-11-14).
+    """Long-range radio on fin_ble_board's BOTTOM face (2026-11-15).
 
-    Architecture — mLRS dual band (mirrors mLRS target
-    rx-hal-easysolder-e77-e28-dualband-wle5cc.h, so the firmware is a
-    near-stock custom target):
-      • U_LR_MCU  STM32WLE5CC (UFQFPN-48, the E77's package) — runs mLRS; its integrated SX126x-class radio
-        is the sub-GHz LoRa transceiver (868–923 MHz, RFO_HP up to +22 dBm).
-      • U_LR      SX1280 on the WLE5's SPI1 — 2.4 GHz LoRa / FLRC.
-      • U_LR_FEM  nRF21540 PA/LNA after the SX1280 (+20 dBm).
-      • U_ANTSW_2G4  BGS12 SPDT at the 2.4 GHz antenna: RF1 (CTRL=0, the
-        pulled-down DEFAULT) = BLE_RF from the WBA55 on wakeup_board, RF2 =
-        FEM ANT1. BLE is GROUND-ONLY, so it BYPASSES the FEM (no per-packet
-        FEM timing from the WBA needed); ownership flips by MODE (ground =
-        BLE, flight = mLRS). Powered from 3V3_AON so BLE works with the main
-        rails dark.
-      • U_ANTSW_SUBG BGS12 SPDT = the WLE5's TX/RX switch (RF2 = RFO_HP TX,
-        RF1 = RFI balun RX), CTRL = mLRS SX_TX_EN (PA6).
-    Antennas: conformal elements against the PEEK compartment wall —
-    crescent 2 = 2.4 GHz (ANT_2G4), crescent 3 = sub-GHz (ANT_SUBG).
+    Semtech LR2021 (LoRa Plus, sub-GHz +22 dBm and 2.4 GHz +12 dBm in one
+    QFN-32) REPLACES the mLRS cluster (STM32WLE5 + SX1280 + nRF21540 FEM).
+    Host = the WBA55 on wakeup_board over SPI1 — seven lines cross the
+    wakeup↔fin_ble joint as a GND-guarded lane block on the sleeve
+    (castellations.GUARDED_BUSES["LR"]: G S G S … G):
+      LR_SPI_SCK  WBA PB4  (SPI1_SCK,  AF5)   → SCK
+      LR_SPI_MOSI WBA PA15 (SPI1_MOSI, AF5)   → MOSI
+      LR_SPI_MISO WBA PB3  (SPI1_MISO, AF5)   ← MISO
+      LR_NSS      WBA PA4  (GPIO, software NSS) → NSS
+      LR_BUSY     WBA PB0  (GPIO in)          ← BUSY
+      LR_IRQ      WBA PB13 (EXTI13)           ← DIO7 (IRQ, firmware-mapped)
+      LR_NRESET   WBA PA3  (GPIO out)         → NRESET
+    The LR2021's own DIOs drive its RF switches (firmware RF-switch table):
+      DIO5 → U_LR_SW_LF CTRL (1 = TX RFO_LF1, 0 = RX RFI_LF)
+      DIO6 → U_LR_SW_HF CTRL (1 = TX RFO_HF,  0 = RX RFI_HF)
 
-    Host link: mLRS serial (WLE5 USART1 PB6/PB7) ↔ the fin node G0B1 USART1
-    (PA9/PA10), which bridges to the MP25 over the existing SYS_SPI — ZERO
-    new backbone nets. The G0B1 also owns: WLE5 reflash (SWD bit-bang +
-    NRST), FEM power-down (PDN) and the 2.4 GHz antenna owner (CTRL).
+    RF:
+      • Sub-GHz (865-928 MHz): RFO_LF1 (HP PA) → choke from VR_PA, π
+        low-pass, DC block → U_LR_SW_LF RF2; RFI_LF → L-match, DC block →
+        RF1; switch common → π harmonic low-pass → ANT_SUBG_FEED.
+        RFO_LF2 (low-power PA) unused.
+      • 2.4 GHz: RFO_HF → series-L / shunt-C match + low-pass, DC block →
+        U_LR_SW_HF RF2; RFI_HF → L-match, DC block → RF1; switch common →
+        DC block → U_ANTSW_2G4 RF2. U_ANTSW_2G4 (BLE vs LR owner switch,
+        CTRL from the fin G0B1 PB9, default RF1 = BLE_RF) → ANT_2G4_FEED.
+      • 32 MHz TCXO (Y_LR_TCXO, placeholder part) powered from VTCXO,
+        AC-coupled into XTA; XTB NC. NTC NC.
+    Power: VBAT / VPAX1 / VPAX2 on 3V3; LDO mode (DC-DC inductor LXA/LXB
+    NC — the DS allows it); VDCC1/VDCC2 decoupled.
 
-    WLE5 pin map (mLRS E77+E28 dual-band HAL):
-      SPI1 SCK PA5 · MISO PA11 · MOSI PA12 · NSS PB2 → SX1280
-      SX1280 NRESET PA1 · BUSY PA0 · DIO1 PB8 (EXTI8)
-      FEM TX_EN PA4 · RX_EN PB12   (sx2_amp_transmit / _receive)
-      sub-GHz SX_TX_EN PA6 → U_ANTSW_SUBG CTRL · SX_RX_EN PA7 (NC)
-      serial USART1 TX PB6 / RX PB7 · SWD PA13/PA14 · debug SWUART TX PA9.
-    G0B1 pins: USART1 TX PA9 / RX PA10, SWCLK PB14, SWDIO PB15, NRST PB12,
-    FEM PDN PB8, ANTSW_2G4 CTRL PB9 (AFs checked against cubemx.xml).
-
-    Power: WLE5 in LDO mode (no SMPS coil, VLXSMPS NC; VFBSMPS = VDDRF1V55
-    internal 1.55 V, decoupled). SX1280 LDO-only (no 15 µH). FIRMWARE MUST
-    CAP SX1280 OUTPUT ≤ 0 dBm (nRF21540 TRX abs max +5 dBm) — mLRS's own
-    POWER2_SX1280_MAX = SX1280_POWER_0_DBM already does.
-
-    ⚠ OPEN: (1) 52 MHz reference for the SX1280 and 32 MHz TCXO for the
-    WLE5 (PB0-VDD_TCXO → TCXO VDD, OSC_IN) — no parts in the library.
-    (2) Sub-GHz match / low-pass / RX balun values are PLACEHOLDERS (ST
-    AN5457 reference to transcribe); nRF21540 port matching per its PS
-    schematic image still to transcribe. (3) BLE_RF crosses the M joint as
-    a plain LGA land — needs a GND-ringed 50 Ω transition. (4) Conformal
-    antenna elements are modelled as feed pads only."""
-    # Whole cluster on L's BOTTOM face — the compartment-facing ceiling,
-    # free since the PEEK holder + L↔E flex replace the battery LGA column;
-    # also keeps the +20 dBm PA away from the high-Z PIEZO_P column on top.
+    ⚠ OPEN: the LR2021 DS is Preliminary Rev 0.1 with NO pin table and NO
+    reference values — every match / filter value here is a PLACEHOLDER,
+    and VPAX/VDCC/VR_PA wiring follows the pin names only. Re-transcribe
+    from the final DS / Semtech reference design. FIRMWARE: the WBA is on
+    3V3_AON and the LR2021 on 3V3 — hold the seven lines low/Hi-Z while
+    3V3 is off (no back-power through the LR2021's IO clamps)."""
     F = "bottom"
-    # UFQFPN-48 CCU6 (2026-11-14, was the UFBGA-73 JCI6): the exact package
-    # of mLRS's wle5cc target; no HDI needed on fin_ble_board.
-    mcu = add_stm32wle5ccu6(d, ref="U_LR_MCU", board_tag=BTAG, feature=F)
-    lr  = add_sx1280(d, ref="U_LR", board_tag=BTAG, feature=F)
-    fem = add_nrf21540_qdaa_r7(d, ref="U_LR_FEM", board_tag=BTAG, feature=F)
+    lr = add_lr2021imltrt(d, ref="U_LR", board_tag=BTAG, feature=F)
+    tcxo = add_tcxo_32m_2016(d, ref="Y_LR_TCXO", board_tag=BTAG, feature=F)
+    swlf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_LF", board_tag=BTAG, feature=F)
+    swhf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_HF", board_tag=BTAG, feature=F)
     sw24 = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_2G4", board_tag=BTAG, feature=F)
-    swsg = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_SUBG", board_tag=BTAG, feature=F)
 
     def C0G(net, val, ref, pin=None):
         cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
@@ -1603,87 +1590,85 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
             **_as_built_0402(val, "C0G/NP0"))
         _net(d, n1).connect(c.pin("1")); _net(d, n2).connect(c.pin("2"))
 
-    # ── STM32WLE5 supplies (DS13105 §3.9.1, LDO mode) ────────────────
-    for pn in ("VSSSMPS", "EP"):              # UFQFPN-48: ground = EP + VSSSMPS
-        _net(d, "GND").connect(mcu.pin(pn))
-    for pn in ("VDD_1", "VDD_2", "VDDSMPS", "VDDA", "VDDRF", "VBAT", "VDDPA"):
-        _net(d, "3V3").connect(mcu.pin(pn))   # (no VREF+ pin in this package)
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDD1", board_tag=BTAG, pin=mcu.pin("VDD_1"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDD2", board_tag=BTAG, pin=mcu.pin("VDD_2"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_MCU_VDDRF", board_tag=BTAG, pin=mcu.pin("VDDRF"))
-    cap_to_gnd(d, "3V3", "2.2uF", ref="C_LR_MCU_VDDPA", board_tag=BTAG, pin=mcu.pin("VDDPA"))
-    # VFBSMPS = main-regulator input (1.55 V from the internal LDO in LDO
-    # mode); VDDRF1V55 "must be connected externally to VFBSMPS".
-    _net(d, "LR_MCU_1V55").connect(mcu.pin("VFBSMPS"))
-    _net(d, "LR_MCU_1V55").connect(mcu.pin("VDDRF1V55"))
-    cap_to_gnd(d, "LR_MCU_1V55", "1uF", ref="C_LR_MCU_1V55", board_tag=BTAG, pin=mcu.pin("VFBSMPS"))
-    _net(d, "LR_MCU_VR_PA").connect(mcu.pin("VR_PA"))
-    cap_to_gnd(d, "LR_MCU_VR_PA", "100nF", ref="C_LR_MCU_VRPA", board_tag=BTAG, pin=mcu.pin("VR_PA"))
-    # PH3-BOOT0 low = boot from flash; NRST from the G0B1 (reflash), RC'd.
-    res_between(d, "LR_MCU_BOOT0", "GND", "10k", ref="R_LR_MCU_BOOT0", board_tag=BTAG)
-    _net(d, "LR_MCU_BOOT0").connect(mcu.pin("PH3-BOOT0"))
-    _net(d, "LR_MCU_NRST").connect(mcu.pin("NRST"))
-    _net(d, "LR_MCU_NRST").connect(g.pin("PB12"))
-    cap_to_gnd(d, "LR_MCU_NRST", "100nF", ref="C_LR_MCU_NRST", board_tag=BTAG, pin=mcu.pin("NRST"))
-    _net(d, "LR_MCU_SWCLK").connect(mcu.pin("PA14")); _net(d, "LR_MCU_SWCLK").connect(g.pin("PB14"))
-    _net(d, "LR_MCU_SWDIO").connect(mcu.pin("PA13")); _net(d, "LR_MCU_SWDIO").connect(g.pin("PB15"))
-    # mLRS serial ↔ G0B1 bridge (crossed TX/RX).
-    _net(d, "LR_UART_TX").connect(mcu.pin("PB6")); _net(d, "LR_UART_TX").connect(g.pin("PA10"))
-    _net(d, "LR_UART_RX").connect(mcu.pin("PB7")); _net(d, "LR_UART_RX").connect(g.pin("PA9"))
+    def L(n1, n2, val, ref):
+        ind_between(d, n1, n2, val, ref=ref, board_tag=BTAG, feature=F)
 
-    # ── SX1280 on WLE5 SPI1 ──────────────────────────────────────────
-    for gp in ("5", "13", "20", "21", "23", "24", "25"):
-        _net(d, "GND").connect(lr.pin(gp))
-    _net(d, "3V3").connect(lr.pin("VBAT"))
-    _net(d, "3V3").connect(lr.pin("VBAT_IO"))
+    # ── LR2021 supplies (LDO mode) ───────────────────────────────────
+    for pn in ("GND", "GND_DCC", "EP"):
+        _net(d, "GND").connect(lr.pin(pn))
+    for pn in ("VBAT", "VPAX1", "VPAX2"):
+        _net(d, "3V3").connect(lr.pin(pn))
     cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBATIO", board_tag=BTAG, pin=lr.pin("VBAT_IO"))
-    _net(d, "LR_VREG").connect(lr.pin("DCC_FB"))      # VDD_IN "Connect to Pin 12"
-    _net(d, "LR_VREG").connect(lr.pin("VDD_IN"))
-    cap_to_gnd(d, "LR_VREG", "470nF", ref="C_LR_VREG", board_tag=BTAG, pin=lr.pin("DCC_FB"))
+    cap_to_gnd(d, "3V3", "4.7uF", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VPAX1", board_tag=BTAG, pin=lr.pin("VPAX1"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VPAX2", board_tag=BTAG, pin=lr.pin("VPAX2"))
+    _net(d, "LR_VDCC").connect(lr.pin("VDCC1")); _net(d, "LR_VDCC").connect(lr.pin("VDCC2"))
+    cap_to_gnd(d, "LR_VDCC", "1uF", ref="C_LR_VDCC1", board_tag=BTAG, pin=lr.pin("VDCC1"))
+    cap_to_gnd(d, "LR_VDCC", "100nF", ref="C_LR_VDCC2", board_tag=BTAG, pin=lr.pin("VDCC2"))
     _net(d, "LR_VR_PA").connect(lr.pin("VR_PA"))
-    cap_to_gnd(d, "LR_VR_PA", "10nF", ref="C_LR_VRPA1", board_tag=BTAG, pin=lr.pin("VR_PA"))
-    cap_to_gnd(d, "LR_VR_PA", "10nF", ref="C_LR_VRPA2", board_tag=BTAG, pin=lr.pin("VR_PA"))
-    for net, mpin, lpin in (("LR_SPI_SCK",  "PA5",  "SCK_RTSN"),
-                            ("LR_SPI_MISO", "PA11", "MISO_TX"),
-                            ("LR_SPI_MOSI", "PA12", "MOSI_RX"),
-                            ("LR_NSS",      "PB2",  "NSS_CTS"),
-                            ("LR_NRESET",   "PA1",  "NRESET"),
-                            ("LR_BUSY",     "PA0",  "BUSY"),
-                            ("LR_DIO1",     "PB8",  "DIO1")):
-        _net(d, net).connect(mcu.pin(mpin)); _net(d, net).connect(lr.pin(lpin))
+    cap_to_gnd(d, "LR_VR_PA", "47nF", ref="C_LR_VRPA", board_tag=BTAG, pin=lr.pin("VR_PA"))
+
+    # ── 32 MHz TCXO on VTCXO → AC-coupled into XTA ───────────────────
+    _net(d, "LR_VTCXO").connect(lr.pin("VTCXO")); _net(d, "LR_VTCXO").connect(tcxo.pin("VDD"))
+    cap_to_gnd(d, "LR_VTCXO", "100nF", ref="C_LR_VTCXO", board_tag=BTAG, pin=tcxo.pin("VDD"))
+    _net(d, "GND").connect(tcxo.pin("GND"))
+    _net(d, "LR_TCXO_OUT").connect(tcxo.pin("OUT"))
+    series_cap("LR_TCXO_OUT", "LR_XTA", "10pF", "C_LR_TCXO_AC")
+    _net(d, "LR_XTA").connect(lr.pin("XTA"))
+
+    # ── Host link: the 7 crossing lines (WBA side wired in wakeup) ───
+    for net, lpin in (("LR_SPI_SCK", "SCK"), ("LR_SPI_MOSI", "MOSI"),
+                      ("LR_SPI_MISO", "MISO"), ("LR_NSS", "NSS"),
+                      ("LR_BUSY", "BUSY"), ("LR_IRQ", "DIO7"),
+                      ("LR_NRESET", "NRESET")):
+        _net(d, net).connect(lr.pin(lpin))
     res_between(d, "3V3", "LR_NSS", "100k", ref="R_LR_NSS_PU", board_tag=BTAG)
 
-    # SX1280 RFIO → Semtech ref match (C0 shunt, L1, PI C1/L2/C2) → 100 pF
-    # DC block → FEM TRX. (Ref C4 0.5 pF is an antenna tweak — omitted.)
-    _net(d, "LR_RFIO").connect(lr.pin("RFIO"))
-    C0G("LR_RFIO", "0.8pF", "C_LR_M0", pin=lr.pin("RFIO"))
-    ind_between(d, "LR_RFIO", "LR_RF_M1", "3.0nH", ref="L_LR_M1", board_tag=BTAG, feature=F)
-    C0G("LR_RF_M1", "1.2pF", "C_LR_M1")
-    ind_between(d, "LR_RF_M1", "LR_RF_M2", "2.5nH", ref="L_LR_M2", board_tag=BTAG, feature=F)
-    C0G("LR_RF_M2", "1.2pF", "C_LR_M2")
-    series_cap("LR_RF_M2", "LR_FEM_TRX", "100pF", "C_LR_DCBLK")
-    _net(d, "LR_FEM_TRX").connect(fem.pin("TRX"))
+    # ── RF switches (BGS12: CTRL 0 → RF1 = RX, 1 → RF2 = TX) ────────
+    for sw, ctl, dio, tag in ((swlf, "LR_SW_LF_CTRL", "DIO5", "LF"),
+                              (swhf, "LR_SW_HF_CTRL", "DIO6", "HF")):
+        _net(d, "GND").connect(sw.pin("GND"))
+        _net(d, "3V3").connect(sw.pin("VDD"))
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_LR_SW_{tag}_VDD", board_tag=BTAG, pin=sw.pin("VDD"))
+        _net(d, ctl).connect(lr.pin(dio)); _net(d, ctl).connect(sw.pin("CTRL"))
+        res_between(d, ctl, "GND", "100k", ref=f"R_LR_SW_{tag}_PD", board_tag=BTAG)
 
-    # ── nRF21540 FEM (GPIO mode) ─────────────────────────────────────
-    for gp in ("1", "16", "17"):
-        _net(d, "GND").connect(fem.pin(gp))
-    _net(d, "3V3").connect(fem.pin("5")); _net(d, "3V3").connect(fem.pin("6"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_FEM_VDD", board_tag=BTAG, pin=fem.pin("5"))
-    cap_to_gnd(d, "3V3", "2.2uF", ref="C_LR_FEM_BULK", board_tag=BTAG, pin=fem.pin("6"))
-    _net(d, "GND").connect(fem.pin("SCK"))       # SPI unused → VSS (PS pin table)
-    _net(d, "GND").connect(fem.pin("MOSI"))
-    _net(d, "3V3").connect(fem.pin("CSN"))       # SPI unused → VDD; MISO NC
-    _net(d, "GND").connect(fem.pin("MODE"))      # TX power mode — fixed (⚠ confirm POUTA/B)
-    _net(d, "GND").connect(fem.pin("ANT_SEL"))   # ANT1 only; ANT2 NC
-    _net(d, "LR_FEM_TX_EN").connect(mcu.pin("PA4"));  _net(d, "LR_FEM_TX_EN").connect(fem.pin("TX_EN"))
-    _net(d, "LR_FEM_RX_EN").connect(mcu.pin("PB12")); _net(d, "LR_FEM_RX_EN").connect(fem.pin("RX_EN"))
-    _net(d, "LR_FEM_PDN").connect(g.pin("PB8"));      _net(d, "LR_FEM_PDN").connect(fem.pin("PDN"))
-    # Pull-downs: the PA can never key up while its drivers are in reset.
-    res_between(d, "LR_FEM_PDN",   "GND", "100k", ref="R_LR_FEM_PDN_PD",  board_tag=BTAG)
-    res_between(d, "LR_FEM_TX_EN", "GND", "100k", ref="R_LR_FEM_TXEN_PD", board_tag=BTAG)
-    _net(d, "LR_FEM_ANT1").connect(fem.pin("ANT1"))
-    series_cap("LR_FEM_ANT1", "LR_ANTSW_LR", "100pF", "C_LR_FEM_ANTBLK")
+    # ── Sub-GHz (865-928 MHz) — ⚠ values PLACEHOLDERS ────────────────
+    _net(d, "LR_LF_RFO").connect(lr.pin("RFO_LF1"))
+    L("LR_VR_PA", "LR_LF_RFO", "47nH", "L_LR_LF_CHOKE")
+    C0G("LR_LF_RFO", "6.8pF", "C_LR_LF_TX1", pin=lr.pin("RFO_LF1"))
+    L("LR_LF_RFO", "LR_LF_TX_M", "8.2nH", "L_LR_LF_TX1")
+    C0G("LR_LF_TX_M", "10pF", "C_LR_LF_TX2")
+    L("LR_LF_TX_M", "LR_LF_TX_F", "8.2nH", "L_LR_LF_TX2")
+    C0G("LR_LF_TX_F", "6.8pF", "C_LR_LF_TX3")
+    series_cap("LR_LF_TX_F", "LR_LF_TX", "100pF", "C_LR_LF_TXBLK")
+    _net(d, "LR_LF_TX").connect(swlf.pin("RF2"))
+    _net(d, "LR_LF_RFI").connect(lr.pin("RFI_LF"))
+    L("LR_LF_RFI", "LR_LF_RX_M", "15nH", "L_LR_LF_RX")
+    C0G("LR_LF_RX_M", "3.3pF", "C_LR_LF_RX")
+    series_cap("LR_LF_RX_M", "LR_LF_RX", "100pF", "C_LR_LF_RXBLK")
+    _net(d, "LR_LF_RX").connect(swlf.pin("RF1"))
+    # switch common → π harmonic low-pass → antenna feed
+    _net(d, "LR_LF_ANT").connect(swlf.pin("RFIN"))
+    C0G("LR_LF_ANT", "4.7pF", "C_LR_LF_LPF1")
+    L("LR_LF_ANT", "ANT_SUBG_FEED", "10nH", "L_LR_LF_LPF")
+    C0G("ANT_SUBG_FEED", "4.7pF", "C_LR_LF_LPF2")
+
+    # ── 2.4 GHz — ⚠ values PLACEHOLDERS ──────────────────────────────
+    _net(d, "LR_HF_RFO").connect(lr.pin("RFO_HF"))
+    L("LR_HF_RFO", "LR_HF_TX_M", "2.7nH", "L_LR_HF_TX1")
+    C0G("LR_HF_TX_M", "1.2pF", "C_LR_HF_TX1")
+    L("LR_HF_TX_M", "LR_HF_TX_F", "2.2nH", "L_LR_HF_TX2")
+    C0G("LR_HF_TX_F", "1.0pF", "C_LR_HF_TX2")
+    series_cap("LR_HF_TX_F", "LR_HF_TX", "100pF", "C_LR_HF_TXBLK")
+    _net(d, "LR_HF_TX").connect(swhf.pin("RF2"))
+    _net(d, "LR_HF_RFI").connect(lr.pin("RFI_HF"))
+    L("LR_HF_RFI", "LR_HF_RX_M", "3.3nH", "L_LR_HF_RX")
+    C0G("LR_HF_RX_M", "0.8pF", "C_LR_HF_RX")
+    series_cap("LR_HF_RX_M", "LR_HF_RX", "100pF", "C_LR_HF_RXBLK")
+    _net(d, "LR_HF_RX").connect(swhf.pin("RF1"))
+    _net(d, "LR_HF_TRX").connect(swhf.pin("RFIN"))
+    series_cap("LR_HF_TRX", "LR_ANTSW_LR", "100pF", "C_LR_HF_ANTBLK")
 
     # ── 2.4 GHz antenna owner switch (BGS12: CTRL 0 → RF1, 1 → RF2) ──
     _net(d, "GND").connect(sw24.pin("GND"))
@@ -1691,37 +1676,13 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_ANTSW_2G4_VDD", board_tag=BTAG, pin=sw24.pin("VDD"))
     series_cap("BLE_RF", "LR_ANTSW_BLE", "100pF", "C_BLE_DCBLK")   # no DC on BGS12 ports
     _net(d, "LR_ANTSW_BLE").connect(sw24.pin("RF1"))    # default (CTRL=0): BLE
-    _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: nRF21540 / mLRS
+    _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: LR2021 2.4 GHz
     _net(d, "ANT_2G4_FEED").connect(sw24.pin("RFIN"))
     _net(d, "ANTSW_2G4_CTRL").connect(g.pin("PB9")); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
     res_between(d, "ANTSW_2G4_CTRL", "GND", "100k", ref="R_ANTSW_2G4_PD", board_tag=BTAG)
 
-    # ── WLE5 sub-GHz front end (868–923 MHz) — ⚠ values PLACEHOLDERS ──
-    _net(d, "LR_SG_RFO").connect(mcu.pin("RFO_HP"))
-    ind_between(d, "LR_MCU_VR_PA", "LR_SG_RFO", "47nH", ref="L_LR_SG_CHOKE", board_tag=BTAG, feature=F)
-    C0G("LR_SG_RFO", "6.8pF", "C_LR_SG_TX1", pin=mcu.pin("RFO_HP"))
-    ind_between(d, "LR_SG_RFO", "LR_SG_TX_M", "8.2nH", ref="L_LR_SG_TX", board_tag=BTAG, feature=F)
-    C0G("LR_SG_TX_M", "6.8pF", "C_LR_SG_TX2")
-    series_cap("LR_SG_TX_M", "LR_SG_TX", "100pF", "C_LR_SG_TXBLK")
-    # RX: lattice LC balun RFI_P/RFI_N → single-ended LR_SG_RX.
-    _net(d, "LR_SG_RFI_P").connect(mcu.pin("RFI_P"))
-    _net(d, "LR_SG_RFI_N").connect(mcu.pin("RFI_N"))
-    series_cap("LR_SG_RFI_P", "LR_SG_RX", "3.3pF", "C_LR_SG_BAL1")
-    ind_between(d, "LR_SG_RFI_N", "LR_SG_RX", "10nH", ref="L_LR_SG_BAL1", board_tag=BTAG, feature=F)
-    ind_between(d, "LR_SG_RFI_P", "GND", "10nH", ref="L_LR_SG_BAL2", board_tag=BTAG, feature=F)
-    C0G("LR_SG_RFI_N", "3.3pF", "C_LR_SG_BAL2", pin=mcu.pin("RFI_N"))
-    _net(d, "GND").connect(swsg.pin("GND"))
-    _net(d, "3V3").connect(swsg.pin("VDD"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_ANTSW_SUBG_VDD", board_tag=BTAG, pin=swsg.pin("VDD"))
-    series_cap("LR_SG_RX", "LR_SG_RX_SW", "100pF", "C_LR_SG_RXBLK")
-    _net(d, "LR_SG_RX_SW").connect(swsg.pin("RF1"))     # CTRL=0: RX (default)
-    _net(d, "LR_SG_TX").connect(swsg.pin("RF2"))        # CTRL=1: TX
-    _net(d, "ANT_SUBG_FEED").connect(swsg.pin("RFIN"))
-    _net(d, "LR_SG_TX_EN").connect(mcu.pin("PA6")); _net(d, "LR_SG_TX_EN").connect(swsg.pin("CTRL"))
-    res_between(d, "LR_SG_TX_EN", "GND", "100k", ref="R_LR_SG_TXEN_PD", board_tag=BTAG)
-
-    # ── Antenna feeds (2026-11-14): ANT_2G4_FEED / ANT_SUBG_FEED leave the
-    # board through dedicated castellations in the sleeve's ANTENNA sector
+    # ── Antenna feeds: ANT_2G4_FEED / ANT_SUBG_FEED leave the board through
+    # dedicated castellations in the sleeve's ANTENNA sector
     # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → antenna copper on
     # the sleeve's outer face, over its inner GND plane. No pads on the board.
 
@@ -1822,7 +1783,7 @@ def build_fins_module(d: Design) -> None:
     _hall_switch(d, ref="J_HALL_FIN", board_tag=BTAG, out_net="FIN_HALL",
                  gpio_chip=g, gpio_pin="PB13")
 
-    # Long-range radio cluster (mLRS: WLE5 + SX1280 + nRF21540), bridged by this G0B1
+    # Long-range radio: LR2021 (host = WBA55 over SPI1); G0B1 owns the 2.4 GHz antenna switch
     _build_lr_radio(d, g, BTAG)
 
     # ── Fin VM rail: merged onto COMP_5V ──────────────────────────────
@@ -3738,8 +3699,22 @@ def build_wakeup_board(d: Design) -> None:
     # I²C1 → ST25DV. PA15=I2C1_SCL, PB3=I2C1_SDA (only SDA option in
     # WLCSP41). The ST25DV block above keeps the legacy I2C2_SCL/SDA
     # net names — wiring stable across the chip swap.
-    _net(d, "I2C2_SCL").connect(wba.pin("PA15"))  # F3
-    _net(d, "I2C2_SDA").connect(wba.pin("PB3"))   # G2
+    # 2026-11-15: moved PA15/PB3 → PB2/PB1 (I2C1 AF4 on UFBGA59) to free
+    # SPI1 (PB4/PB3/PA15) for the LR2021 on fin_ble.
+    _net(d, "I2C2_SCL").connect(wba.pin("PB2"))   # I2C1_SCL (AF4)
+    _net(d, "I2C2_SDA").connect(wba.pin("PB1"))   # I2C1_SDA (AF4)
+
+    # SPI1 + control → LR2021 on fin_ble_board (7 lines, GND-guarded lane
+    # block on the sleeve — castellations.GUARDED_BUSES["LR"]). AFs per
+    # DS14127 Table 25 (SPI1 exists only on PB4/PB3/PA15/PA12; NSS is a
+    # software GPIO so PA12 stays IR_WAKE).
+    _net(d, "LR_SPI_SCK") .connect(wba.pin("PB4"))   # SPI1_SCK  (AF5)
+    _net(d, "LR_SPI_MISO").connect(wba.pin("PB3"))   # SPI1_MISO (AF5)
+    _net(d, "LR_SPI_MOSI").connect(wba.pin("PA15"))  # SPI1_MOSI (AF5)
+    _net(d, "LR_NSS")     .connect(wba.pin("PA4"))   # GPIO (software NSS)
+    _net(d, "LR_BUSY")    .connect(wba.pin("PB0"))   # GPIO in
+    _net(d, "LR_IRQ")     .connect(wba.pin("PB13"))  # EXTI13 ← LR2021 DIO7
+    _net(d, "LR_NRESET")  .connect(wba.pin("PA3"))   # GPIO out
 
     # PA6/PA7 (freed by the H3LIS→M33 move) re-tasked for the optical
     # service link (2026-07-27):
@@ -3780,7 +3755,7 @@ def build_wakeup_board(d: Design) -> None:
     cap_to_gnd(d, "IR_WAKE", "10nF", ref="C_IR_WAKE", board_tag=BTAG, pin=wba.pin("PA12"))
     _net(d, "IR_WAKE").connect(wba.pin("PA12"))   # E6 — EXTI12, falling edge
 
-    _net(d, "WBA_WAKE").connect(wba.pin("PB4"))   # F5 — GPIO, push high to hold
+    _net(d, "WBA_WAKE").connect(wba.pin("PB5"))   # GPIO, push high to hold (was PB4 → SPI1_SCK)
     # AON hold — PB15 (poetically, the old AON_GATED enable pin) pushes
     # HIGH into the TPS7A02's EN through 1 k: holds the 3V3_AON domain
     # (= the WBA's own life support) after the NFC tap ends. Releasing
