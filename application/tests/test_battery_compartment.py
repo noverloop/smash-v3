@@ -297,3 +297,10 @@ def test_core_single_cell_compartment():
         assert max(thicks) - min(thicks) < 1e-9
     finally:
         gen._BATTERY_MODE = prev
+
+
+def test_peek_standoffs_stay_inside_the_aluminium_rings():
+    from smash.export import spacer_step as S
+    edge = S.STANDOFF_R_MM + S.STANDOFF_D_MM / 2.0
+    assert edge <= S.RING_R_IN_MM - S.RING_CLEARANCE_MM + 1e-9
+    assert edge < S.BATT_TOP_RING_R_IN_MM

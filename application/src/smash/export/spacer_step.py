@@ -589,7 +589,11 @@ BATT_PART_CLEARANCE_MM = 0.2
 SLOT_W_MM = 2.0                               # notch width (tangential)
 NOTCH_DEPTH_MM = 0.5                          # notch depth (axial), top + bottom edge
 SLOT_ANGLES_DEG = (105.0, 285.0)              # = sleeve seams / feed + vent grooves
-STANDOFF_D_MM, STANDOFF_R_MM = 1.2, 15.8
+STANDOFF_D_MM = 1.2
+# (2026-11-15) Standoffs sit fully INSIDE the aluminium rings' bore (incl. the
+# ring's clearance), so they never overlap a ring / the holder's top ring:
+# outer edge = RING_R_IN − RING_CLEARANCE  →  centre r = 14.4 mm.
+STANDOFF_R_MM = RING_R_IN_MM - RING_CLEARANCE_MM - STANDOFF_D_MM / 2.0
 STANDOFF_ANGLES_DEG = (45.0, 135.0, 225.0, 315.0)   # symmetric under fold + 180° turn
 
 
