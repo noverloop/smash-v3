@@ -385,3 +385,55 @@ def write_sleeve_copper_step(boards: dict, chain: list, contract: dict,
     out_path = pathlib.Path(out_path)
     asm.export(str(out_path))
     return {"path": out_path, "n_bodies": len(bodies)}
+
+
+def add_sleeve_schematic_parts(design, contract, connect) -> list:
+    """Add the LDS sleeve to `design` as schematic parts (board_tag "sleeve"):
+    J_SLEEVE — one pin per lane conductor, in UNROLLED order (x = R·θ from
+    the 105° seam, as in sleeve_unrolled.kicad_pcb), each tied to its net;
+    AE_2G4 / AE_SUBG — the antenna placeholders (feed + GND plane).
+    Meant for a schematic-only copy of the design. Returns the new refs."""
+    from smash.state import Pin, Pad, Footprint
+    r = contract["radius_mm"]
+    items = []
+    for key, lane in contract.get("lanes", {}).items():
+        if lane.get("kind") == "antenna_feed":
+            continue
+        net = "GND" if lane.get("kind") == "gnd_plane" else lane.get("net", key)
+        for a in lane["angles"]:
+            items.append((_x_of(a, r), a, key, net, lane.get("kind", "signal")))
+    items.sort()
+    pins, pads = [], []
+    for i, (x, a, key, _net, kind) in enumerate(items, 1):
+        pins.append(Pin(num=str(i), name=f"{key}@{a:g}deg", type="passive",
+                        note=f"sleeve {kind} lane, x={x:.2f} mm on the unroll"))
+        pads.append(Pad(num=str(i), position_mm=(round(x, 3), 0.0), size_mm=(0.3, 0.3),
+                        shape="rect", layer="F.Cu"))
+    W = 2 * math.pi * r
+    fp = Footprint(name="LDS_sleeve_unrolled", package_class="LDS sleeve (unrolled)",
+                   pads=pads, size_mm=(W, 1.0), height_mm=0.0, source="project")
+    sl = design.add_chip(ref="J_SLEEVE", board_tag="sleeve", manf="project",
+                         manf_pn="LDS_SLEEVE", name="LDS_SLEEVE", value="LDS sleeve",
+                         footprint=fp, pins=pins, weight_g=0.0, height_mm=0.0,
+                         note="2D unroll of the LDS sleeve: one pin per lane conductor "
+                              "(see sleeve/sleeve_unrolled.kicad_pcb)")
+    for i, (_x, _a, _k, net, _kind) in enumerate(items, 1):
+        connect(net, sl.pin(str(i)))
+    refs = ["J_SLEEVE"]
+    for ref, feed, label in (("AE_2G4", "ANT_2G4_FEED", "2.4 GHz PIFA"),
+                             ("AE_SUBG", "ANT_SUBG_FEED", "868-923 MHz PIFA")):
+        if feed not in contract.get("lanes", {}):
+            continue
+        afp = Footprint(name="sleeve_antenna", package_class="LDS antenna",
+                        pads=[Pad(num="1", position_mm=(0, 0), size_mm=(0.5, 0.5), shape="rect", layer="F.Cu"),
+                              Pad(num="2", position_mm=(1, 0), size_mm=(0.5, 0.5), shape="rect", layer="F.Cu")],
+                        size_mm=(1, 1), height_mm=0.0, source="project")
+        ae = design.add_chip(ref=ref, board_tag="sleeve", manf="project",
+                             manf_pn="LDS_ANTENNA", name="LDS_ANTENNA", value=f"{label} (PLACEHOLDER)",
+                             footprint=afp, weight_g=0.0, height_mm=0.0,
+                             pins=[Pin(num="1", name="FEED", type="passive"),
+                                   Pin(num="2", name="GND", type="passive", note="sleeve inner GND plane")],
+                             note=f"{label} on the sleeve outer face over the GND plane / Al holder")
+        connect(feed, ae.pin("1")); connect("GND", ae.pin("2"))
+        refs.append(ref)
+    return refs

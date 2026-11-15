@@ -1048,6 +1048,73 @@ def _emit_segments(
     return out
 
 
+
+def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
+                               offset_xy=(0.0, 0.0)) -> list:
+    """A gap tile is NOT a PCB (2026-11-15): draw its real hardware on
+    Dwgs.User instead of a spacer disc — the battery run's ONE aluminium
+    holder (outer Ø, cell cavity, potting notches, channel) on the run's
+    first tile, a plain ring / the PEEK standoffs elsewhere. No Edge.Cuts,
+    no footprints, no cavities. Physical frame, KiCad y-down."""
+    import math
+    from smash.export import spacer_step as S
+    kind = S.gap_kind(name)
+    ox, oy = offset_xy
+    out = []
+    k = [0]
+
+    def uid():
+        k[0] += 1
+        return _uid(name, "gap_hw", str(k[0]))
+
+    def circle(cx, cy, r, w=0.15):
+        out.append(f'\t(gr_circle (center {_fmt(ox + cx)} {_fmt(oy - cy)}) '
+                   f'(end {_fmt(ox + cx + r)} {_fmt(oy - cy)}) '
+                   f'(stroke (width {w}) (type default)) (fill no) '
+                   f'(layer "Dwgs.User") (uuid "{uid()}"))')
+
+    def poly(pts, w=0.12):
+        xy = " ".join(f"(xy {_fmt(ox + x)} {_fmt(oy - y)})" for x, y in pts)
+        out.append(f'\t(gr_poly (pts {xy}) (stroke (width {w}) (type default)) '
+                   f'(fill no) (layer "Dwgs.User") (uuid "{uid()}"))')
+
+    def text(s, dy):
+        out.append(f'\t(gr_text "{s}" (at {_fmt(ox)} {_fmt(oy + dy)} 0) '
+                   f'(layer "Dwgs.User") (effects (font (size 1 1) (thickness 0.15))) '
+                   f'(uuid "{uid()}"))')
+
+    if kind == "battery_holder":
+        run = [n for n in chain if n in boards and S.gap_kind(n) == "battery_holder"]
+        if run and name != run[0]:
+            return out                       # the run has ONE holder
+        h = sum(boards[n].thickness_mm for n in run)
+        circle(0, 0, S.BATT_HOLDER_R_OUT_MM, 0.2)
+        cav = S.battery_holder_cavity().simplify(0.02)
+        poly(list(cav.exterior.coords)[:-1])
+        cx, cy = S._batt_channel_xy()
+        circle(cx, cy, S.BATT_CHANNEL_D_MM / 2.0)
+        for ang in S.BATT_FEED_ANGLES_DEG:
+            a = math.radians(ang)
+            r0, r1 = S.BATT_NOTCH_R_IN_MM, S.BATT_HOLDER_R_OUT_MM
+            ux, uy = math.cos(a), math.sin(a)
+            vx, vy = -uy * S.SLOT_W_MM / 2, ux * S.SLOT_W_MM / 2
+            poly([(r0 * ux + vx, r0 * uy + vy), (r1 * ux + vx, r1 * uy + vy),
+                  (r1 * ux - vx, r1 * uy - vy), (r0 * ux - vx, r0 * uy - vy)])
+        text("ALUMINIUM BATTERY HOLDER (not a PCB)", -S.BATT_HOLDER_R_OUT_MM - 2.0)
+        text(f"{h:.1f} mm tall - spans {len(run)} gaps", S.BATT_HOLDER_R_OUT_MM + 2.0)
+    elif kind == "ring":
+        circle(0, 0, S.RING_R_OUT_MM, 0.2)
+        circle(0, 0, S.RING_R_IN_MM, 0.2)
+        text(f"ALUMINIUM RING {board.thickness_mm:.1f} mm (not a PCB)", -S.RING_R_OUT_MM - 2.0)
+    else:
+        circle(0, 0, 17.0, 0.08)
+        for ang in S.STANDOFF_ANGLES_DEG:
+            a = math.radians(ang)
+            circle(S.STANDOFF_R_MM * math.cos(a), S.STANDOFF_R_MM * math.sin(a),
+                   S.STANDOFF_D_MM / 2.0, 0.2)
+        text(f"PEEK STANDOFFS {board.thickness_mm:.1f} mm (not a PCB)", -19.0)
+    return out
+
 def _emit_substrate_callout(
     board: Board,
     *,
@@ -2229,6 +2296,13 @@ def write_kicad_panel(
         ox, oy = co_offsets.get(name, (0.0, 0.0))
         bx, by = branch_offsets.get(name, (0.0, 0.0))
         centre = (centre[0] + ox + bx, centre[1] + oy + by)
+        if getattr(board, "is_spacer", False):
+            # Gap hardware (Al holder / ring / PEEK standoffs) — a drawing,
+            # not a spacer PCB.
+            parts.extend(_emit_gap_hardware_drawing(
+                name, board, boards, list(panel.snake_chain or []),
+                offset_xy=centre))
+            continue
         cuts = _cutouts_for_tile(name, panel, flex_width_mm,
                                  link_widths_mm=link_widths_mm)
 

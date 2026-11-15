@@ -169,3 +169,23 @@ def test_lr_bus_crosses_as_one_gnd_guarded_block(built):
             if pin.name.startswith(guard + "@"):
                 net = d.net_by_name(pin.net) if isinstance(pin.net, str) else pin.net
                 assert net is not None and {net.name, *(net.aliases or [])} & {"GND", "FLEX_GND"}, (c.ref, pin.name)
+
+
+def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
+    """The 2D unroll's lanes + antennas become a 'sleeve' frame in the
+    system schematic, added to a copy only (PCB design untouched)."""
+    import copy
+    from smash.export.kicad_sch import write_kicad_schematic
+    from smash.export.sleeve_layout import add_sleeve_schematic_parts
+    d, _p, _b, contract, _n, _M = built
+    s = copy.deepcopy(d)
+    gen = sys.modules["generate_stackup"]
+    refs = add_sleeve_schematic_parts(
+        s, contract, connect=lambda net, pin: gen._net(s, net).connect(pin))
+    assert refs[0] == "J_SLEEVE" and {"AE_2G4", "AE_SUBG"} <= set(refs)
+    assert not any(c.ref == "J_SLEEVE" for c in d.chips)
+    sl = next(c for c in s.chips if c.ref == "J_SLEEVE")
+    xs = [p.position_mm[0] for p in sl.footprint.pads]
+    assert xs == sorted(xs)                       # unrolled order
+    write_kicad_schematic(s, tmp_path)
+    assert "J_SLEEVE" in (tmp_path / "smash.kicad_sch").read_text()

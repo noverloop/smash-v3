@@ -6210,7 +6210,16 @@ def main() -> int:
     # Whole-system schematic (documentation projection of the same netlist).
     sch_dir = _DIST / "schematic"
     shutil.rmtree(sch_dir, ignore_errors=True)
-    sch = write_kicad_schematic(d, sch_dir, pad_groups=_SCH_PAD_GROUPS)
+    # The LDS sleeve (2D unroll) joins the system schematic as its own
+    # "sleeve" frame — on a COPY, so the PCB / BOM outputs never see it.
+    import copy as _copy
+    from smash.export.sleeve_layout import add_sleeve_schematic_parts
+    _sch_d = _copy.deepcopy(d)
+    _sl_refs = add_sleeve_schematic_parts(
+        _sch_d, _cast_contract, connect=lambda net, pin: _net(_sch_d, net).connect(pin))
+    _sch_groups = dict(_SCH_PAD_GROUPS or {})
+    sch = write_kicad_schematic(_sch_d, sch_dir, pad_groups=_sch_groups)
+    print(f"  sleeve in schematic: {', '.join(_sl_refs)}")
     print(f"KiCad schematic written to {sch_dir.relative_to(REPO)}/smash.kicad_sch "
           f"({sch['n_boards']} boards, {sch['n_parts']} parts, "
           f"{sch['n_nets']} nets, {sch['n_symbols']} symbols)")
