@@ -685,9 +685,9 @@ def _battery_holder_body(cq, h):
 def gap_kind(name: str) -> str:
     if name.startswith("spacer_battery_"):
         return "battery_holder"
-    if name in GAP_RING_GAPS:
-        return "ring"
-    return "standoffs"
+    # (2026-11-15) EVERY non-battery gap is an Al ring (user: no gap without
+    # a ring) — the PEEK standoffs are retired; _standoffs_body is unused.
+    return "ring"
 
 
 def _ring_body(cq, r_in, r_out, h):

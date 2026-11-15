@@ -337,3 +337,11 @@ def test_peek_standoffs_clear_ring_keepout_and_potting_hole():
                 gap = (math.hypot(sx - hx, sy - hy) - S.STANDOFF_D_MM / 2
                        - POTTING_HOLE_DIA_MM / 2)
                 assert gap > 1.0, (sa, ha, turn, gap)
+
+
+def test_every_gap_is_battery_holder_or_ring():
+    from smash.layout.boards.smash_evb_v1 import build_panel
+    from smash.export.spacer_step import gap_kind
+    panel, boards = build_panel()
+    kinds = {gap_kind(n) for n in panel.snake_chain if boards[n].is_spacer}
+    assert kinds == {"battery_holder", "ring"}
