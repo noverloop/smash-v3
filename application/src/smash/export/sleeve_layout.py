@@ -218,6 +218,8 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     za1 = z_top - (n_lv + 1) * PLUG_LEVEL_STEP_MM - PLUG_LABEL_BAND_MM
     rows = [(za1, za1 - PLUG_PAD_H_MM)]
     ring_bottom = rows[0][1]                         # pads run to the aft edge
+    if not plug:
+        ring_bottom = 0.0                            # no plug ring
     n_plug = 0
     gbox = {}
     for t in placed:
@@ -261,7 +263,8 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                          f'(stroke (width 0.12) (type solid)) (layer "F.SilkS"))')
         items.append(f'\t(gr_text "{label}" (at {(bx0 + bx1) / 2:.3f} {by0 - 0.5 - 0.8 * (gi % 2):.2f}) '
                      f'(layer "F.SilkS") (effects (font (size 0.6 0.6) (thickness 0.09))))')
-    items.append(f'\t(gr_line (start {X(0)} {Y(0)}) (end {X(W)} {Y(0)}) (stroke (width 0.3) (type solid)) (layer "F.SilkS"))')
+    if plug:
+        items.append(f'\t(gr_line (start {X(0)} {Y(0)}) (end {X(W)} {Y(0)}) (stroke (width 0.3) (type solid)) (layer "F.SilkS"))')
     PLUG_H = -ring_bottom
 
     # Aluminium BEHIND the sleeve (battery holder, aft rings): outline bands

@@ -6130,8 +6130,10 @@ def main() -> int:
     # fixed physical angle (lane) on the stack. Spacers are no longer PCBs.
     _foldM = board_fold_transforms(panel, list(panel.snake_chain))
     _cast_contract, _cast = place_castellations(
-        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
-        plug_groups=_plug_groups(d))
+        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin))
+    # (2026-11-15) No plug ring: aft_end_board's bottom-face interface stays
+    # the external interface; `_plug_groups(d)` → place_castellations(…,
+    # plug_groups=…) would move it onto the sleeve.
     _launch = place_branch_flex_launches(
         d, boards, catalog=_FLEX_LAUNCH_CATALOG,
         connect=lambda net, pin: _net(d, net).connect(pin))
