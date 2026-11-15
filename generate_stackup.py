@@ -76,7 +76,7 @@ from smash.parts.pmics import add_stpmic25apqr                          # noqa: 
 from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: E402
 from smash.parts.transceivers import add_tcan1042gvdq1                  # noqa: E402
 from smash.parts.mcus import (                                          # noqa: E402
-    add_stm32mp255dal3, add_stm32g0b1rei6n,
+    add_stm32mp255fal3, add_stm32g0b1rei6n,
     add_stm32wba55hgf6tr, add_stm32h562aii6, add_stm32wle5ccu6,
 
 )
@@ -378,13 +378,13 @@ def build_companion_compute(d: Design) -> None:
     PAR, ALERT_n) are DERIVED — cross-check vs the DDR4 reference."""
     BTAG = "companion_compute"
 
-    # ── STM32MP255 — VFBGA-361 (10×10 mm), the AL/DAL3 variant ──────
-    # Wired against the DAL3 SamacSys ballout (per-package authority).
+    # ── STM32MP255 — VFBGA-361 (10×10 mm), the AL/FAL3 variant (secure boot + crypto) ──────
+    # Wired against the DAL3 SamacSys ballout (FAL3 identical) (per-package authority).
     # vs the FAK3 (VFBGA-424): pin names use single underscores
     # (DDR_Ax / CSI_x), DQS drops the underscore-N (DDR_DQS0N), and the
     # power-rail balls differ in count — so power/ground are wired by
     # whatever balls the package exposes rather than fixed loops.
-    mpu = add_stm32mp255dal3(d, ref="U_MPU", board_tag=BTAG)
+    mpu = add_stm32mp255fal3(d, ref="U_MPU", board_tag=BTAG)
 
     # Supply rails — the FULL power tree (closes the long-deferred
     # "STPMIC2 power-tree pass": VDDCORE + 49 other power/strap balls

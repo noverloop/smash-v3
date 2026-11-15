@@ -445,6 +445,14 @@
       "fab_country": "FR/IT",
       "_source": "octopart/nexar API, collected 2026-06-05"
     },
+    "stm32mp255fal3": {
+      "manf_pn": "STM32MP255FAL3",
+      "price_1pc": 10.647,
+      "price_20kpc": 10.647,
+      "currency": "USD",
+      "fab_country": "FR/IT",
+      "_source": "estimate - carried from STM32MP255DAL3 2026-11-15; F (secure) variant is priced higher, re-quote"
+    },
     "stm32mp255fak3": {
       "manf_pn": "STM32MP255FAK3",
       "price_1pc": 24.0,

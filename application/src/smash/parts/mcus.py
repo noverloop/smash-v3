@@ -588,3 +588,70 @@ def add_stm32mp255dal3(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_stm32mp255fal3(design, ref: str, **overrides) -> Chip:
+    """ST STM32MP255FAL3 — the security-enabled (F: secure boot +
+    hardware crypto) twin of the DAL3. Same dual Cortex-A35 (1.5 GHz) + Cortex-M33 +
+    Cortex-M0+ compute, 3D GPU and 1.35 TOPS NPU as the MP255F, in the
+    smaller 361-ball VFBGA (10×10 mm, 0.5 mm pitch).
+
+    Package vs the MP255FAK3 (VFBGA-424, 14×14): the AL/VFBGA361 keeps
+    the full 144-GPIO breakout and CSI-2/FMC/3×FDCAN, dropping only the
+    32-bit DDR option — this design runs 16-bit DDR3L, which AL supports
+    (up to 1 GByte single rank). ST's C/F lines add secure boot + crypto
+    over A/D; F and D are both the 1.5 GHz parts. Pinout and footprint
+    were checked identical to the DAL3 SamacSys model (2026-11-15).
+    The 10×10 body fits the Ø34 companion_compute tile with wide edge
+    margin (vs the 14×14 part's ~0.35 mm). DDR3 routing must be redone
+    against this ballout (ST VFBGA361/AL length-equalization data)."""
+    pn = "STM32MP255FAL3"
+    fp_mod = src(pn, f"{pn}.kicad_mod")
+    fields = dict(
+        manf="STMicroelectronics", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=(
+            "Application processor with secure boot + crypto: dual Cortex-A35 1.5 GHz + Cortex-M33 + "
+            "Cortex-M0+, 3D GPU, 1.35 TOPS NPU, DDR3L/DDR4/LPDDR4 "
+            "controller (16-bit on this package), 361-ball VFBGA"
+        ),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        package="VFBGA-361 (10×10 mm)",
+        size_mm=(10.0, 10.0), height_mm=1.16,
+        temp_range_c=(-40, 85),
+        clock_max_hz=1.5e9,
+        vcc_nominal_v=1.2,            # core supply; many other rails
+        # ── thermal (datasheet DS14284 Rev 5) ────────────────────────
+        # Same silicon as MP255FAK3 — power dissipation is dominated by
+        # the A35+M33+M0+GPU+NPU compute; the smaller 10×10 package is
+        # only thermally tighter (higher ΘJC). Smash splits the A35
+        # pair off-die for active flight — `p_active_w` accounts for
+        # the typical "A35-on + GPU/NPU on, M33+M0 idle" mix.
+        p_active_w=1.19,                    # aggregate run-mode active (DS Tabs 22-27)
+        p_max_w=1.65,                       # aggregate peak (full A35+M33+M0+GPU+NPU @ Tj=125°C)
+        rth_jc_cw=5.7,                      # VFBGA361 10×10 ΘJC, DS Tab 135 p226
+        tj_max_c=125.0,                     # absolute max TJ for suffix 3 die, DS Tab 16 p102
+        standards=["RoHS", "ECOPACK2"],
+        # FAL3 (like DAL3) ships no cubemx.xml; reuse the FAK3 table by pin name (same die).
+        pins=_overlay_cubemx_af(pn, build_pins(src(pn, f"{pn}.kicad_sym")),
+                                af_source_pn="STM32MP255FAK3"),
+        footprint=Footprint(
+            name=pn, package_class="VFBGA-361",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            pitch_mm=0.5, size_mm=(10.0, 10.0), height_mm=1.16,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note=(
+            "STM32MP255 (F: secure boot + crypto) SoC in the 10×10 VFBGA-361 (AL) package — A35 "
+            "cluster (2× @ 1.5 GHz) + M33 + M0+, 3D GPU, 1.35 TOPS NPU, "
+            "H.264/H.265 codec. 16-bit DDR3L only (no 32-bit on AL). "
+            "Routing follows ST AN5724; the AL ballout differs from the "
+            "VFBGA-424 (AK) reference, so DDR length-match data is "
+            "package-specific. 361-ball, 0.5 mm pitch — HDI/VIP escape."
+        ),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

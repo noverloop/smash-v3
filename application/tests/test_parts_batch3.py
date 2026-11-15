@@ -30,6 +30,7 @@ from smash.parts import (
     add_stm32g0b1kct6n, add_stm32g0b1kcu6n, add_stm32g0b1rei6n,
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
     # Round D (modules / PMIC / radar / PLL)
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
@@ -51,6 +52,7 @@ ALL_FACTORIES = [
     add_stm32g0b1kct6n, add_stm32g0b1kcu6n, add_stm32g0b1rei6n,
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
     add_adf4351bcpz,
@@ -139,6 +141,14 @@ class TestSTM32Family:
         c = add_stm32mp255fak3(Design(), ref="U1")
         assert len(c.footprint.pads) == 424
         assert "424" in c.package
+
+    def test_mp255fal3_matches_dal3_ballout(self):
+        f = add_stm32mp255fal3(Design(), ref="U1")
+        d = add_stm32mp255dal3(Design(), ref="U2")
+        assert f.manf_pn == "STM32MP255FAL3"
+        assert len(f.footprint.pads) == 361
+        assert ({p.num: p.name for p in f.pins}
+                == {p.num: p.name for p in d.pins})
 
     def test_mp255dal3_is_361_ball_10mm_bga(self):
         c = add_stm32mp255dal3(Design(), ref="U1")

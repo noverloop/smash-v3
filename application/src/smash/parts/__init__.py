@@ -122,6 +122,7 @@ from smash.parts.mcus import (
     add_stm32h562aii6,
     add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
 )
 from smash.parts.wireless import add_lbee5kl1yn_814
 from smash.parts.pmics import add_stpmic25apqr
@@ -240,7 +241,7 @@ __all__ = [
     # MCUs
     "add_stm32g0b1kct6n", "add_stm32g0b1kcu6n", "add_stm32g0b1rei6n",
     "add_stm32wle5jci6", "add_stm32wba52cgu7tr", "add_stm32wba55hgf6tr",
-    "add_stm32h562aii6", "add_stm32mp255fak3", "add_stm32mp255dal3",
+    "add_stm32h562aii6", "add_stm32mp255fak3", "add_stm32mp255dal3", "add_stm32mp255fal3",
     # wireless / PMIC / radar
     "add_lbee5kl1yn_814",
     "add_stpmic25apqr",
