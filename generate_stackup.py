@@ -2749,8 +2749,8 @@ def build_power_board(d: Design) -> None:
         # Two DISCRETE side solder-tab lands (placeholder footprint) at the
         # cell ends, locked on the N–S cell axis. Replaces the old single 2-pad
         # P_CELL_CONTACTS_1H, whose 27 mm span reserved the whole board centre.
-        pos = add_cell_solder_tab(d, ref="P_CELL_TAB_POS", board_tag="aft_end_board")
-        neg = add_cell_solder_tab(d, ref="P_CELL_TAB_NEG", board_tag="aft_end_board")
+        pos = add_cell_solder_tab(d, ref="P_CELL_TAB_POS", board_tag="activation_interface")
+        neg = add_cell_solder_tab(d, ref="P_CELL_TAB_NEG", board_tag="activation_interface")
         _net(d, "BAT_RAW").connect(pos.pin("1"))  # cell +
         _net(d, "GND").connect(neg.pin("1"))      # cell −
     else:
@@ -2768,13 +2768,16 @@ def build_power_board(d: Design) -> None:
         # the 2 mm headroom to three DISCRETE lands (one per cell centre) on
         # fin_ble's bottom face — was one 3-pad P_CELL_CONTACTS footprint whose
         # ~21 × 19 mm bounding box blanked the board centre for the packer.
+        # (2026-11-15 aft reorder) BOTH tab sets land on activation_interface's
+        # BOTTOM face — the compartment ceiling; aft_end's top (the floor) is
+        # bare for the glued + screwed Al compartment.
         for _k in (1, 2, 3):
             ptab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_POS{_k}",
-                                       board_tag="fin_ble_board")
+                                       board_tag="activation_interface")
             _net(d, f"BAT_CELL{_k}_POS").connect(ptab.pin("1"))
         for _k in (1, 2, 3):
             tab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_NEG{_k}",
-                                      board_tag="cell_floor_board")
+                                      board_tag="activation_interface")
             _net(d, "GND").connect(tab.pin("1"))
 
     # The 3× 200 mΩ iso resistors are UNCONDITIONAL: power_board is a
@@ -3958,7 +3961,7 @@ _BOARD_BUILDERS = {
 # (the STPMIC25 COMP_* rails) and radar_module (the RGMII bus); the adaptive
 # land densify widens the aft→hub runs across the intervening gaps as needed.
 _MASTER_SNAKE = [
-    "aft_end_board", "activation_interface", "cell_floor_board", "fin_ble_board",
+    "aft_end_board", "activation_interface", "fin_ble_board",
     "wakeup_board", "power_board", "companion_compute",
     "radar_module", "nose_cap",
 ]
@@ -4009,7 +4012,7 @@ _FLEX_LAUNCH_CATALOG = [
 # fins_module tile — its FINBOOST 12 V boost came along), so they are carried in
 # EVERY config: there is no unguided/guided split, and configs differ ONLY by
 # PAYLOAD / seeker (radar / qpd / camera). "core" IS the guided base.
-_CORE      = {"aft_end_board", "cell_floor_board", "power_board",
+_CORE      = {"aft_end_board", "power_board",
               "activation_interface", "fin_ble_board", "wakeup_board",
               "companion_compute"}
 # fin_ble_board is in EVERY config, core_radar included (2026-07-31 user
@@ -4890,6 +4893,10 @@ def _apply_activation_reference_layout(d, boards: dict) -> None:
     from smash.state.routing.track import Track
     from smash.state.routing.via import Via
     from smash.state.routing.zone import Zone
+    # (2026-11-15 aft reorder) aft_end's 28 top-face parts moved onto this
+    # board, so the EE's routed copper no longer matches it — placement is
+    # kept as a seed, copper is NOT imported until the board is re-routed.
+    data = dict(data, tracks=[], vias=[], zones=[])
     for t in data.get("tracks") or []:
         b.tracks.append(Track(
             net=t["net"], layer=t["layer"], width_mm=t["width"],
@@ -4912,8 +4919,7 @@ def _apply_activation_reference_layout(d, boards: dict) -> None:
     msg = (f"activation_interface: EE reference layout applied "
            f"({n_lock} placements locked, {moved} moved, {len(b.tracks)} "
            f"tracks, {len(b.vias)} vias, {len(b.zones)} zones; "
-           f"track widths {widths} mm — single-rule autoroute, re-derive "
-           f"power widths before fab)")
+           f"copper dropped — re-route after the 2026-11-15 aft reorder)")
     if refused:
         msg += (f"; REFUSED {len(refused)} that locked_placements.json pins "
                 f"with a recorded reason: {', '.join(sorted(refused))}")
@@ -5196,7 +5202,7 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                     ring_rects.append((run_start * STEP, gj * STEP,
                                        gi * STEP, (gj + 1) * STEP))
                     run_start = None
-        fb = boards.get("fin_ble_board")
+        fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
         if fb is not None and getattr(fb, "geometry", None) is not None:
             for (x0, y0, x1, y1) in ring_rects:
                 fb.geometry.keepouts.append(Keepout(
@@ -5459,6 +5465,22 @@ _AFT_SILK_PAD_R_MM = 1.0     # Ø2.0 pad → 1.0 half-width
 _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
                              # (kept tight: the caption for each row has
                              #  to fit in the gap to the row above)
+
+
+def _empty_aft_end_top(d) -> int:
+    """(2026-11-15 aft reorder) aft_end_board keeps ONLY its bottom-face
+    interface pads; every other part moves up to activation_interface (the
+    battery-compartment ceiling) and reaches the pads through castellations
+    + sleeve lanes. Its bare top face is where the Al compartment is glued
+    and screwed on."""
+    n = 0
+    for c in d.chips:
+        ref = getattr(c, "ref", "")
+        if (getattr(c, "board_tag", None) == "aft_end_board"
+                and not ref.startswith(("TP_", "P_ACT", "J_CAST_"))):
+            c.board_tag = "activation_interface"
+            n += 1
+    return n
 
 
 def _plug_groups(d) -> list:
@@ -5919,6 +5941,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         for leaf in _BRANCH_PARENT
         if leaf in board_set and _BRANCH_PARENT[leaf][0] in board_set
     ]
+    _empty_aft_end_top(d)
     panel, boards = build_config_panel(snake, branches=branches,
                                        straight=_STRAIGHT_SNAKE,
                                        battery_length_mm=_compartment_mm())
@@ -6059,8 +6082,7 @@ def main() -> int:
     build_nose_cap(d)
     build_camera_module(d)
     build_aft_end_board(d)
-    if _BATTERY_MODE != "single":     # single drops cell_floor (cell on aft_end)
-        build_cell_floor_board(d)
+    # (2026-11-15) cell_floor_board dropped in every mode (aft reorder).
     build_activation_interface(d)
     build_radar_module_awr1843aop(d)
     build_companion_compute(d)
@@ -6073,6 +6095,8 @@ def main() -> int:
     # Build the panel first: the fold optimiser picks the snake order and
     # materialises one spacer Board per gap, so the spacer chips can only
     # be created once those Boards exist.
+    _moved = _empty_aft_end_top(d)
+    print(f"aft reorder: {_moved} aft_end top-face parts → activation_interface")
     panel, boards = build_panel(straight=_STRAIGHT_SNAKE,
                                 single_cell=_BATTERY_MODE == "single",
                                 battery_length_mm=_compartment_mm())

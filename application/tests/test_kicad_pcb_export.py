@@ -377,7 +377,8 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # branches (qpd, camera; nfc deleted) = 24. (The 2 Yagi antenna flex
     # tiles were removed 2026-11-14 — BLE shares the conformal 2.4 GHz
     # antenna in the PEEK battery compartment.)
-    assert r["n_tiles"] == 24
+    # → 22 (2026-11-15 aft reorder): cell_floor_board and its spacer gone.
+    assert r["n_tiles"] == 22
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
@@ -915,7 +916,8 @@ def test_full_twin_exports_clean(tmp_path):
     # → 573: the antenna feed pads on fin_ble (ANT_2G4, ANT_SUBG + their GND
     #   pads, −4) replaced by feed castellations into the sleeve's antenna
     #   sector (antennas now LDS copper on the sleeve).
-    assert total_fps == 573
+    # → 572: cell_floor_board's castellation chip gone (aft reorder).
+    assert total_fps == 572
 
 
 

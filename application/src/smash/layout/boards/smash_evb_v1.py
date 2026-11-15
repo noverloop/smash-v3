@@ -340,9 +340,13 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
             radar_module, nose_cap,
         ]
     else:
-        cell_floor_board = Board(_CELL_FLOOR, copper_layers=6)
+        # (2026-11-15 aft reorder) cell_floor_board dropped: the Al battery
+        # compartment is glued + screwed straight onto aft_end_board's EMPTY
+        # top face; activation_interface (now also carrying aft_end's former
+        # top-face parts) is the compartment ceiling, under fin_ble.
+        cell_floor_board = None
         chain = [
-            aft_end_board, activation_interface, cell_floor_board,
+            aft_end_board, activation_interface,
             fin_ble_board, wakeup_board,
             power_board, companion_compute,
             radar_module, nose_cap,

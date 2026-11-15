@@ -51,8 +51,8 @@
    13.9
   ],
   "rotation_deg": 0,
-  "face": "top",
-  "reason": "Single-cell (+) SIDE SOLDER-TAB land on aft_end_board's TOP face at the NORTH cell end (0, +13.9). The cell is laid straight N–S (vertical in plan), so its side tabs bend down at the Y-axis bore ends. + -> BAT_RAW (no iso R — single cell). Cells are ordered with factory-welded side tabs, NOT end pins (2026-07-30) — the flat cell bottom rests on the aft floor. Real tab-land footprint TBD. (Swap with NEG if the physical cell's + end is South.)"
+  "face": "bottom",
+  "reason": "Single-cell (+) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was aft_end_board's top) at the NORTH cell end (0, +13.9). The cell is laid straight N–S (vertical in plan), so its side tabs bend down at the Y-axis bore ends. + -> BAT_RAW (no iso R — single cell). Cells are ordered with factory-welded side tabs, NOT end pins (2026-07-30) — the flat cell bottom rests on the aft floor. Real tab-land footprint TBD. (Swap with NEG if the physical cell's + end is South.)"
  },
  "P_CELL_TAB_NEG": {
   "position_mm": [
@@ -60,8 +60,8 @@
    -13.9
   ],
   "rotation_deg": 0,
-  "face": "top",
-  "reason": "Single-cell (−) SIDE SOLDER-TAB land on aft_end_board's TOP face at the SOUTH cell end (0, −13.9), 180° opposite P_CELL_TAB_POS on the vertical N–S cell axis. - -> GND. Side tabs, not end pins (2026-07-30). Real tab-land footprint TBD."
+  "face": "bottom",
+  "reason": "Single-cell (−) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was aft_end_board's top) at the SOUTH cell end (0, −13.9), 180° opposite P_CELL_TAB_POS on the vertical N–S cell axis. - -> GND. Side tabs, not end pins (2026-07-30). Real tab-land footprint TBD."
  },
  "P_CELL_TAB_NEG1": {
   "position_mm": [
@@ -69,8 +69,8 @@
    1.5
   ],
   "rotation_deg": 0,
-  "face": "top",
-  "reason": "Triple-mode cell 1 (-) SIDE SOLDER-TAB land on the thin cell_floor_board's TOP face, INSIDE the 90-deg cell's bore lobe near its axis-side edge (7.1 mm from the cell centre (0, 8.6), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 150-deg valley (r=12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
+  "face": "bottom",
+  "reason": "Triple-mode cell 1 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 90-deg cell's bore lobe near its axis-side edge (7.1 mm from the cell centre (0, 8.6), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 150-deg valley (r=12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
  },
  "P_CELL_TAB_NEG2": {
   "position_mm": [
@@ -78,8 +78,8 @@
    -2.0
   ],
   "rotation_deg": 0,
-  "face": "top",
-  "reason": "Triple-mode cell 2 (-) SIDE SOLDER-TAB land on the thin cell_floor_board's TOP face, INSIDE the 210-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (-7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley west seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
+  "face": "bottom",
+  "reason": "Triple-mode cell 2 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 210-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (-7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley west seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
  },
  "P_CELL_TAB_NEG3": {
   "position_mm": [
@@ -87,8 +87,8 @@
    -2.0
   ],
   "rotation_deg": 0,
-  "face": "top",
-  "reason": "Triple-mode cell 3 (-) SIDE SOLDER-TAB land on the thin cell_floor_board's TOP face, INSIDE the 330-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley east seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
+  "face": "bottom",
+  "reason": "Triple-mode cell 3 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 330-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley east seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
  },
  "P_ACTIVATE_COMMON": {
   "position_mm": [
@@ -341,15 +341,6 @@
   "rotation_deg": 0.0,
   "face": "top",
   "reason": "Burn-wire boost WE-PD 744043100 on the activation_interface tile. Position adopted 2026-09-03 from the EE's ROUTED board (Finalized/activation_interface, Freerouting-assisted): the inductor was nudged (-7.5,-4.0) -> (-7.21,-4.01) during routing, and the user chose the routed position over the previous lock so the 791 existing tracks stay valid. Because this is the LOCK (not a post-place override) the packer sees it before cavity generation, so the activation<->cell_floor spacer pocket is milled around the new spot; applying the same move after placement instead left the 2.8 mm body 0.14 mm (0.77 mm2) inside the spacer FR4. SUPERSEDES the 2026-07-31 lock at (-7.5,-4.0), whose reason was that pulling the part off the west rim toward the fire-bank cluster let its cavity MERGE with the cluster pocket rather than notch the perimeter interconnect ring on its own; re-verify that the merged pocket still holds at the new offset if the ring is ever tight. Earlier history: stack-height recovery lock since 2026-06-12 (a packer spot at (-5.2,2.5) once coincided with opposing-face caps and grew the spacer 2.2 mm); since the 2026-07-31 stack reorder the opposing face is cell_floor's nearly-bare bottom. Only this chip is locked on the tile - the rest of the fire bank stays packer-placed. The SW-node run to U_ACTIVATE_BOOST is accepted for the 600 kHz burn-wire boost (fires for seconds, potted)."
- },
- "C_CAN_GW": {
-  "position_mm": [
-   -11.5,
-   0.0
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "CAN-gateway 100nF C0402 X7R decoupling. Hand-placed + locked by EE in the activation_interface tile at the west rim (rot 90, top face)."
  },
  "U_COMP_PZ": {
   "position_mm": [
@@ -2961,249 +2952,6 @@
   "face": "bottom",
   "reason": "Francesco's final routed wakeup_board (WIP/Finalized from Francesco/wakeup_board 2, 2026-09-20) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter)."
  },
- "U_CAN_GW": {
-  "position_mm": [
-   0.0,
-   3.101
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "U_ACTIVATE_DEC": {
-  "position_mm": [
-   7.651,
-   3.101
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_ACTIVATE_MON1": {
-  "position_mm": [
-   0.0,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_JUMP_PAD": {
-  "position_mm": [
-   2.902,
-   -1.151
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N13": {
-  "position_mm": [
-   4.402,
-   -7.203
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N3": {
-  "position_mm": [
-   3.701,
-   -3.702
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N1": {
-  "position_mm": [
-   -3.601,
-   -2.001
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_ACTIVATE_BLEED": {
-  "position_mm": [
-   1.601,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N12": {
-  "position_mm": [
-   0.0,
-   7.602
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N5": {
-  "position_mm": [
-   -7.102,
-   -3.602
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N6": {
-  "position_mm": [
-   -5.476,
-   5.902
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N10": {
-  "position_mm": [
-   0.701,
-   -10.704
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_PARACHUTE_CUTTER_ACTIVATE_L": {
-  "position_mm": [
-   2.201,
-   -1.151
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N7": {
-  "position_mm": [
-   0.0,
-   -5.602
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N0": {
-  "position_mm": [
-   5.576,
-   8.952
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_ACTIVATE_MON2": {
-  "position_mm": [
-   4.053,
-   -1.601
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_PARACHUTE_CUTTER_ACTIVATE_LS": {
-  "position_mm": [
-   -3.426,
-   -5.352
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N4": {
-  "position_mm": [
-   -3.701,
-   -9.103
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_PARACHUTE_CUTTER_ACTIVATE": {
-  "position_mm": [
-   7.252,
-   -3.377
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N15": {
-  "position_mm": [
-   -5.376,
-   9.503
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N11": {
-  "position_mm": [
-   -8.977,
-   2.201
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_PARACHUTE_CUTTER_ACTIVATE_H": {
-  "position_mm": [
-   2.201,
-   -6.253
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N2": {
-  "position_mm": [
-   0.0,
-   -2.101
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N8": {
-  "position_mm": [
-   8.003,
-   -7.303
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N9": {
-  "position_mm": [
-   -8.977,
-   5.902
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "R_EXT_CAN_TERM": {
-  "position_mm": [
-   -5.702,
-   -0.951
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
- "Q_ACTIVATE_N14": {
-  "position_mm": [
-   -5.476,
-   2.201
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed aft_end_board (Review/aft_end_board, NCAB 14L HDI layout + fab package 2026-09-11) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Routed under the older names FIRE→ACTIVATE / ACTIVATE_ARM→PARACHUTE_CUTTER_ACTIVATE. Bottom-face rotation_deg = -KiCad rotation."
- },
  "U_NAND_B": {
   "position_mm": [
    3.273,
@@ -3220,7 +2968,7 @@
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Cell 1 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 90° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+  "reason": "Cell 1 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 90° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
  },
  "P_CELL_TAB_POS2": {
   "position_mm": [
@@ -3229,7 +2977,7 @@
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Cell 2 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 210° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+  "reason": "Cell 2 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 210° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
  },
  "P_CELL_TAB_POS3": {
   "position_mm": [
@@ -3238,7 +2986,7 @@
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Cell 3 (+) TAB-EXTENSION land on fin_ble_board's BOTTOM face at r 12.5, 330° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+  "reason": "Cell 3 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 330° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
  },
  "U_G0B1_FIN": {
   "position_mm": [

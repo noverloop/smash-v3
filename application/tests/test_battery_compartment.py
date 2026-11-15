@@ -40,12 +40,13 @@ def built():
     gen._prime_power_rails(d)
     for fn in (gen.build_qpd_module,
                gen.build_nose_cap, gen.build_camera_module,
-               gen.build_aft_end_board, gen.build_cell_floor_board,
+               gen.build_aft_end_board,
                gen.build_activation_interface,
                gen.build_radar_module, gen.build_fins_module,
                gen.build_companion_compute, gen.build_power_board,
                gen.build_wakeup_board):
         fn(d)
+    gen._empty_aft_end_top(d)            # 2026-11-15 aft reorder
     panel, boards = build_panel()
     gen.build_spacers(d, boards)
     place_design(d, panel, boards)
@@ -83,23 +84,30 @@ def test_six_battery_spacers_sum_to_cell_length(built):
 
 # ── snake topology ────────────────────────────────────────────────────
 
-def test_compartment_sits_between_cell_floor_and_fin_ble(built):
+def test_compartment_sits_between_aft_end_and_activation(built):
+    """(2026-11-15 aft reorder) cell_floor_board is gone: the Al compartment
+    is glued + screwed straight onto aft_end_board's bare top face, and
+    activation_interface (carrying aft_end's former top-face parts) is the
+    ceiling, under fin_ble_board."""
     _gen, _d, panel, boards = built
     chain = [c for c in panel.snake_chain]
-    # aft_end_board is the snake start; activation_interface moved down
-    # between aft_end and cell_floor (2026-07-31 stack reorder), then the
-    # THIN cell_floor_board (side-solder-tab battery floor), then the
-    # battery compartment, then fin_ble_board (the compartment ceiling).
     assert chain[0] == "aft_end_board"
-    assert "cell_floor_board" in chain
-    i_act = chain.index("activation_interface")
-    assert i_act < chain.index("cell_floor_board")
+    assert "cell_floor_board" not in chain
     bat = [c for c in chain if "battery" in c]
     assert len(bat) == battery_spacer_count()
-    # Contiguous run, between cell_floor_board and fin_ble_board.
     i0 = chain.index(bat[0])
-    assert chain[i0 - 1] == "cell_floor_board"
-    assert chain[i0 + len(bat)] == "fin_ble_board"
+    assert chain[i0 - 1] == "aft_end_board"
+    assert chain[i0 + len(bat)] == "activation_interface"
+
+
+def test_aft_end_top_face_is_empty(built):
+    """Only the bottom-face interface pads (+ castellations) stay on aft_end."""
+    _gen, _d, _panel, boards = built
+    for pl in boards["aft_end_board"].chip_placements:
+        ref = pl.item.ref
+        if ref.startswith("J_") and "spacer" in ref:
+            continue                     # legacy LGA land chip (this fixture only)
+        assert ref.startswith(("TP_", "P_ACT", "J_CAST_")), ref
 
 
 # ── merged through-cut (no unsustainable centre web) ──────────────────
@@ -136,22 +144,15 @@ def _placement(board, ref):
 
 
 def test_cell_contacts_3cell_split(built):
-    """Maximalist (3-cell superset): + contacts on fin_ble_board (bottom —
-    the compartment ceiling since the 2026-07-31 stack reorder), − side
-    solder-tab lands on the thin cell_floor_board (top, one per cell in the
-    trefoil valleys); no single-cell P_CELL_CONTACTS_1H, and no
-    P_CELL_CONTACTS_AFT centre cluster (side tabs since 2026-07-30)."""
+    """(2026-11-15) Both tab sets (+ and −, one per cell) land on
+    activation_interface's BOTTOM face — the compartment ceiling."""
     _gen, _d, _panel, boards = built
-    # + : three discrete tab-extension lands (2026-11-14 headroom) — the
-    # cells' tab extensions bend across the 2 mm gap to them
-    assert _placement(boards["fin_ble_board"], "P_CELL_CONTACTS") is None
+    act = boards["activation_interface"]
+    assert _placement(act, "P_CELL_CONTACTS") is None
     for k in (1, 2, 3):
-        plus = _placement(boards["fin_ble_board"], f"P_CELL_TAB_POS{k}")
-        assert plus is not None and plus.face == "bottom", f"P_CELL_TAB_POS{k}"
-    for k in (1, 2, 3):
-        tab = _placement(boards["cell_floor_board"], f"P_CELL_TAB_NEG{k}")
-        assert tab is not None and tab.face == "top", f"P_CELL_TAB_NEG{k}"
-    assert _placement(boards["cell_floor_board"], "P_CELL_CONTACTS_AFT") is None
+        for pol in ("POS", "NEG"):
+            pl = _placement(act, f"P_CELL_TAB_{pol}{k}")
+            assert pl is not None and pl.face == "bottom", f"P_CELL_TAB_{pol}{k}"
 
 
 # ── no structural Cu coins remain anywhere ────────────────────────────
@@ -167,10 +168,7 @@ def test_no_cu_coins_anywhere(built):
     # standard board stackup (2026-11-14): cell_floor is the same 8L board as
     # every other rigid tile (was a thin 6L floor, and before that a 3.3 mm
     # 20L coin host)
-    from smash.layout.boards.smash_evb_v1 import STANDARD_COPPER_LAYERS
-    assert boards["cell_floor_board"].copper_layers == STANDARD_COPPER_LAYERS
-    assert (boards["cell_floor_board"].thickness_mm
-            == boards["fin_ble_board"].thickness_mm)
+    assert "cell_floor_board" not in boards     # dropped 2026-11-15
 
 
 def test_piezo_disc_smd_no_pocket(built):
@@ -232,14 +230,8 @@ def test_no_lga_lands_on_piezo_disc(built):
 def test_potting_holes_on_activation_not_aft(built):
     _gen, _d, _panel, boards = built
     aft = boards["aft_end_board"].geometry
-    floor = boards["cell_floor_board"].geometry
     act = boards["activation_interface"].geometry
-    assert (aft.holes or []) == []          # piezo board — sealed aft face
-    # cell_floor passes the potting through (2026-07-30) so the
-    # aft_end↔cell_floor gap (piezo + comparator) fills from the
-    # activation-side channels — it is no longer sealed.
-    assert len(floor.holes or []) == 1   # one potting hole per board (2026-11-14)
-    assert all(h.tag == "potting" for h in floor.holes)
+    assert (aft.holes or []) == []          # sealed aft floor
     assert len(act.holes or []) == 1        # potting enters here
     assert all(h.tag == "potting" for h in act.holes)
 
@@ -278,9 +270,9 @@ def test_core_single_cell_compartment():
         assert len(cells) == 1
         assert cells[0].manf_pn == "TLM-1530M/S"
         assert cells[0].capacity_mah == 200.0
-        # cell side solder-tab lands sit on aft_end_board (N–S cell axis)
+        # cell side-tab lands on the ceiling (activation_interface, 2026-11-15)
         tabs = [c for c in d.chips if c.ref in ("P_CELL_TAB_POS", "P_CELL_TAB_NEG")]
-        assert len(tabs) == 2 and all(t.board_tag == "aft_end_board" for t in tabs)
+        assert len(tabs) == 2 and all(t.board_tag == "activation_interface" for t in tabs)
         # the single-cell opt-in DROPS cell_floor_board (cell lies on aft_end)
         bs = gen._config_boards("core_1cell", gen.CONFIGS["core_1cell"])
         assert "cell_floor_board" not in bs

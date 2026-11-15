@@ -183,7 +183,8 @@ def test_twin_link_widths_have_expected_range():
     # gaps carry the backbone. (The radar↔nose_cap USB leaf is one of the
     # wider links, ~5.25; not the min.) 20 if the UJ20-emptied nose_cap leaf
     # carries no crossing nets and drops out of the width count.
-    assert len(widths) in (20, 21)
+    # (2026-11-15 aft reorder: cell_floor + one spacer gone → 2 fewer links)
+    assert len(widths) in (18, 19)
     # Narrowest is now the battery-compartment gaps: little crosses → just
     # margin + GND.
     assert min(widths.values()) >= 3.0
