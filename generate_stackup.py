@@ -5202,6 +5202,46 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                          "_mark_battery_chip_clearance."))
 
 
+def _mark_ring_band_keepouts(panel, boards: dict) -> int:
+    """(2026-11-15) Every non-battery gap is an Al ring (r 16-17): block the
+    ring band (r > RING_R_IN - clearance) on both faces it bears on — the
+    lower board's TOP, the upper board's BOTTOM — as packer keepouts (the
+    packer only takes axis-aligned rects, so the band is rasterized like the
+    battery ring's). Returns the number of faces marked."""
+    from smash.state.board_geometry import Keepout
+    from smash.export.spacer_step import (gap_kind, RING_R_IN_MM,
+                                          RING_CLEARANCE_MM)
+    r_free = RING_R_IN_MM - RING_CLEARANCE_MM
+    STEP, k = 1.0, 17
+    rects = []
+    for gj in range(-k, k):
+        run_start = None
+        for gi in range(-k, k + 1):
+            x0, y0 = gi * STEP, gj * STEP
+            blocked = gi < k and any(x * x + y * y > r_free ** 2 for x, y in (
+                (x0, y0), (x0 + STEP, y0), (x0, y0 + STEP), (x0 + STEP, y0 + STEP)))
+            if blocked and run_start is None:
+                run_start = gi
+            elif not blocked and run_start is not None:
+                rects.append((run_start * STEP, y0, gi * STEP, y0 + STEP))
+                run_start = None
+    n = 0
+    for sp, before, after in _gap_neighbours(list(panel.snake_chain or []), boards):
+        if gap_kind(sp) != "ring":
+            continue
+        for nbr, cu in ((before, "F.Cu"), (after, "B.Cu")):
+            b = boards.get(nbr) if nbr else None
+            if b is None or getattr(b, "geometry", None) is None:
+                continue
+            for (x0, y0, x1, y1) in rects:
+                b.geometry.keepouts.append(Keepout(
+                    polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                    layers=(cu,), scope="component", tag="al_ring_band",
+                    note=f"Al ring of {sp} (r {RING_R_IN_MM:g}-17) bears here"))
+            n += 1
+    return n
+
+
 def _set_dynamic_spacer_thickness(d: Design, boards: dict) -> None:
     """Size the radar↔nose_cap spacer so the nose_cap's OUTER face clears the AWR
     top by `_AWR_AIR_GAP_MM`: spacer = AWR_height − nose_cap_thickness + air_gap.
@@ -5928,6 +5968,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     build_spacers(d, boards)
     _set_dynamic_spacer_thickness(d, boards)   # radar↔nose_cap = AWR − nose_cap
     _mark_preplace_keepouts(d, boards)         # AWR aperture + USB column (pre-place)
+    _mark_ring_band_keepouts(panel, boards)    # Al ring bands (every non-battery gap)
     # Economies of scale: shared chips lock to their maximalist positions,
     # so every config packs (and later mills/cuts) the identical board.
     ref = _MAX_REF or {}
@@ -6083,6 +6124,7 @@ def main() -> int:
     build_spacers(d, boards)
     _set_dynamic_spacer_thickness(d, boards)   # radar↔nose_cap = AWR − nose_cap
     _mark_preplace_keepouts(d, boards)         # AWR aperture + USB column (pre-place)
+    _mark_ring_band_keepouts(panel, boards)    # Al ring bands (every non-battery gap)
 
     # ── place + export KiCad PCBs ────────────────────────────────────
     report = place_design(d, panel, boards)
@@ -6300,6 +6342,10 @@ def main() -> int:
                                                 write_sleeve_copper_step)
         _ul = write_unrolled_sleeve(boards, list(panel.snake_chain), _cast_contract,
                                     _sl["sleeve_dir"] / "sleeve_unrolled.kicad_pcb")
+        from smash.export.sleeve_layout import merge_unrolled_sleeve_into_panel
+        _mg = merge_unrolled_sleeve_into_panel(
+            _sl["sleeve_dir"] / "sleeve_unrolled.kicad_pcb", panel_path)
+        print(f"  2D unroll merged into {panel_path.name} ({_mg['n_items']} items, below the tiles)")
         _cu = write_sleeve_copper_step(boards, list(panel.snake_chain), _cast_contract,
                                        _sl["sleeve_dir"] / "sleeve_copper.step")
         print(f"  unrolled sleeve layout: {_ul['width_mm']:.1f} × {_ul['height_mm']:.1f} mm, "

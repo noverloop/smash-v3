@@ -437,3 +437,46 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
         connect(feed, ae.pin("1")); connect("GND", ae.pin("2"))
         refs.append(ref)
     return refs
+
+
+def merge_unrolled_sleeve_into_panel(sleeve_pcb, panel_pcb, gap_mm: float = 15.0) -> dict:
+    """Append the 2D unroll (`sleeve_pcb`, written by write_unrolled_sleeve)
+    to the stackup panel `panel_pcb`, placed below every existing item.
+    Numeric net ids → the panel's named-net form; all coordinates shifted.
+    Idempotent per panel write (the panel is regenerated each build)."""
+    import re
+    import pathlib
+    sleeve_pcb, panel_pcb = pathlib.Path(sleeve_pcb), pathlib.Path(panel_pcb)
+    s = sleeve_pcb.read_text()
+    p = panel_pcb.read_text()
+    nets = dict(re.findall(r'^\t\(net (\d+) "([^"]*)"\)', s, re.M))
+    keep = ("gr_line", "gr_rect", "gr_text", "gr_poly", "gr_circle",
+            "segment", "via", "zone")
+    items = [ln for ln in s.splitlines()
+             if ln.startswith("\t(") and ln[2:].split(" ", 1)[0] in keep]
+    coord = re.compile(r'\((at|start|end|xy|center|mid) (-?[\d.]+) (-?[\d.]+)')
+    ys = [float(m.group(3)) for m in coord.finditer(p)]
+    xs = [float(m.group(2)) for m in coord.finditer(p)]
+    sy = [float(m.group(3)) for ln in items for m in coord.finditer(ln)]
+    sx = [float(m.group(2)) for ln in items for m in coord.finditer(ln)]
+    dx = (min(xs) if xs else 0.0) - (min(sx) if sx else 0.0)
+    dy = (max(ys) if ys else 0.0) + gap_mm - (min(sy) if sy else 0.0)
+
+    def shift(m):
+        return f"({m.group(1)} {float(m.group(2)) + dx:.4f} {float(m.group(3)) + dy:.4f}"
+
+    out = []
+    for ln in items:
+        ln = coord.sub(shift, ln)
+        ln = re.sub(r'\(net (\d+)\) \(net_name "[^"]*"\)',
+                    lambda m: f'(net "{nets.get(m.group(1), "")}")', ln)
+        ln = re.sub(r'\(net (\d+)\)', lambda m: f'(net "{nets.get(m.group(1), "")}")', ln)
+        out.append(ln)
+    title = (f'\t(gr_text "LDS SLEEVE - 2D UNROLL (outer face F.Cu, inner GND B.Cu)" '
+             f'(at {min(sx) + dx:.4f} {min(sy) + dy - 4:.4f} 0) (layer "F.SilkS") '
+             f'(effects (font (size 2 2) (thickness 0.3)) (justify left)))')
+    body = p.rstrip()
+    assert body.endswith(")")
+    body = body[:-1].rstrip() + "\n" + "\n".join([title] + out) + "\n)\n"
+    panel_pcb.write_text(body)
+    return {"n_items": len(out), "offset_mm": (dx, dy)}
