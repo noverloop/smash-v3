@@ -4799,6 +4799,9 @@ def _fin_ble_pinned_lands() -> dict:
 
 
 
+_ACTIVATION_EE_REFERENCE_ACTIVE = False
+
+
 def _apply_activation_reference_layout(d, boards: dict) -> None:
     """Adopt the EE's component placement for activation_interface.
 
@@ -4837,6 +4840,11 @@ def _apply_activation_reference_layout(d, boards: dict) -> None:
     there is no unplaced-pile problem to work around here."""
     b = boards.get("activation_interface")
     if b is None or not _ACTIVATION_EE_JSON.exists():
+        return
+    # (2026-11-15) Retired: the board is re-laid-out from scratch after the
+    # aft reorder (28 aft_end parts joined it); the EE placement only
+    # fragmented the face and re-locked parts over freshly packed ones.
+    if not _ACTIVATION_EE_REFERENCE_ACTIVE:
         return
     from smash.layout.locked import load_locked_placements
     data = json.loads(_ACTIVATION_EE_JSON.read_text())
@@ -5128,6 +5136,7 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     if radar is not None and getattr(radar, "geometry", None) is not None:
         radar.geometry.keepouts.append(Keepout(
             polygon=[(-6.0, 7.5), (6.0, 7.5), (6.0, 17.0), (-6.0, 17.0)],
+            layers=("F.Cu",),       # only the face toward nose_cap (was both faces)
             scope="both", tag="usb_zone",
             note="nose_cap USB-C lands here when folded — keep tall chips out."))
 
@@ -5166,22 +5175,7 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
         # the holder's edge ring (r < 15.8) — only the ring band is blocked.
         from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
                                               BATT_PART_CLEARANCE_MM)
-        r_free = BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM
-        ring_rects = []
-        for gj in range(-k, k):
-            run_start = None
-            for gi in range(-k, k + 1):
-                cx0, cy0 = gi * STEP, gj * STEP
-                corners = [(cx0, cy0), (cx0 + STEP, cy0), (cx0, cy0 + STEP),
-                           (cx0 + STEP, cy0 + STEP)]
-                blocked = gi < k and any(x * x + y * y > r_free ** 2
-                                         for x, y in corners)
-                if blocked and run_start is None:
-                    run_start = gi
-                elif not blocked and run_start is not None:
-                    ring_rects.append((run_start * STEP, gj * STEP,
-                                       gi * STEP, (gj + 1) * STEP))
-                    run_start = None
+        ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
         fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
         if fb is not None and getattr(fb, "geometry", None) is not None:
             for (x0, y0, x1, y1) in ring_rects:
@@ -5202,6 +5196,27 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                          "_mark_battery_chip_clearance."))
 
 
+def _ring_band_rects(r_free: float, step: float = 0.5, k_mm: float = 17.0) -> list:
+    """Axis-aligned rects covering r > r_free inside the ±k_mm tile, on a fine
+    grid (a cell is blocked only if one of its corners lies past r_free), row
+    runs merged. The old 1 mm grid over-blocked ~70 mm² per face."""
+    n = int(round(k_mm / step))
+    rects = []
+    for gj in range(-n, n):
+        y0 = gj * step
+        run_start = None
+        for gi in range(-n, n + 1):
+            x0 = gi * step
+            blocked = gi < n and any(x * x + y * y > r_free ** 2 for x, y in (
+                (x0, y0), (x0 + step, y0), (x0, y0 + step), (x0 + step, y0 + step)))
+            if blocked and run_start is None:
+                run_start = x0
+            elif not blocked and run_start is not None:
+                rects.append((run_start, y0, x0, y0 + step))
+                run_start = None
+    return rects
+
+
 def _mark_ring_band_keepouts(panel, boards: dict) -> int:
     """(2026-11-15) Every non-battery gap is an Al ring (r 16-17): block the
     ring band (r > RING_R_IN - clearance) on both faces it bears on — the
@@ -5211,20 +5226,7 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
     from smash.state.board_geometry import Keepout
     from smash.export.spacer_step import (gap_kind, RING_R_IN_MM,
                                           RING_CLEARANCE_MM)
-    r_free = RING_R_IN_MM - RING_CLEARANCE_MM
-    STEP, k = 1.0, 17
-    rects = []
-    for gj in range(-k, k):
-        run_start = None
-        for gi in range(-k, k + 1):
-            x0, y0 = gi * STEP, gj * STEP
-            blocked = gi < k and any(x * x + y * y > r_free ** 2 for x, y in (
-                (x0, y0), (x0 + STEP, y0), (x0, y0 + STEP), (x0 + STEP, y0 + STEP)))
-            if blocked and run_start is None:
-                run_start = gi
-            elif not blocked and run_start is not None:
-                rects.append((run_start * STEP, y0, gi * STEP, y0 + STEP))
-                run_start = None
+    rects = _ring_band_rects(RING_R_IN_MM - RING_CLEARANCE_MM)
     n = 0
     for sp, before, after in _gap_neighbours(list(panel.snake_chain or []), boards):
         if gap_kind(sp) != "ring":
@@ -5661,13 +5663,17 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                     getattr(c, "footprint", None), "size_mm", None) or (0, 0)
                 x, y = p.position_mm
                 if kind == "ring":
-                    half = _m.hypot(*sz) / 2.0
-                    r = _m.hypot(x, y)
+                    # farthest corner of the ROTATED body rect (the old
+                    # half-diagonal circle flagged parts that sit clear)
+                    th = _m.radians(getattr(p, "rotation_deg", 0.0) or 0.0)
+                    w2, h2 = sz[0] / 2.0, sz[1] / 2.0
+                    rmax = max(_m.hypot(x + u * _m.cos(th) - v * _m.sin(th),
+                                        y + u * _m.sin(th) + v * _m.cos(th))
+                               for u in (-w2, w2) for v in (-h2, h2))
                     lo = RING_R_IN_MM - RING_CLEARANCE_MM
-                    hi = RING_R_OUT_MM + RING_CLEARANCE_MM
-                    if r + half > lo and r - half < hi:
+                    if rmax > lo:
                         issues.append(f"{nbr}/{face}: {c.ref} reaches the Al ring "
-                                      f"band of {sp} (r {r:.1f} ± {half:.1f})")
+                                      f"band of {sp} (corner at r {rmax:.2f} > {lo:g})")
                     continue
                 ref = getattr(c, "ref", "")
                 if ref.startswith(("P_", "TP_", "J_")):

@@ -67,7 +67,7 @@ def _antenna_placeholders(contract, zmap, r, width):
     #            label,                 length, box_w, box_h, step, dir(+1 nose / -1 aft)
     # Both hang AFT-ward from fin_ble over the aluminium battery holder, which
     # is their ground (PIFA-style over a backplane ~0.9 mm behind).
-    specs = {"ANT_2G4_FEED": ("2.4 GHz PIFA (mLRS + BLE)", 24.0, 10.0, 12.0, 2.0, -1),
+    specs = {"ANT_2G4_FEED": ("2.4 GHz PIFA (LR2021 + BLE)", 24.0, 10.0, 12.0, 2.0, -1),
              "ANT_SUBG_FEED": ("868-923 MHz PIFA (LoRa)", 80.0, 26.0, 16.0, 2.0, -1)}
     for net, (label, length_mm, bw, bh, step, sgn) in specs.items():
         lane = lanes.get(net)
@@ -271,7 +271,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     # across the full width at their height, so antennas / lanes over metal
     # are visible. (Al = ground right behind the antenna copper: fine for a
     # patch / PIFA, kills a Yagi.)
-    from smash.export.spacer_step import gap_kind
+    from smash.export.spacer_step import gap_kind, RING_R_IN_MM, RING_R_OUT_MM
     metal = {}
     for n, (z0, z1) in zmap.items():
         if n in boards and boards[n].is_spacer and gap_kind(n) in ("battery_holder", "ring"):
@@ -280,7 +280,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             metal[key] = (min(a, z0), max(b_, z1))
     for key, (z0, z1) in metal.items():
         label = ("AL BATTERY HOLDER BEHIND (r 17.0, GND)" if key == "battery_holder"
-                 else "AL RING BEHIND (r 15.2-16.2)")
+                 else f"AL RING BEHIND (r {RING_R_IN_MM:g}-{RING_R_OUT_MM:g})")
         pts = [(X(0), Y(z1)), (X(W), Y(z1)), (X(W), Y(z0)), (X(0), Y(z0))]
         for (xa, ya), (xb, yb) in zip(pts, pts[1:] + pts[:1]):
             items.append(f'\t(gr_line (start {xa} {ya}) (end {xb} {yb}) '
