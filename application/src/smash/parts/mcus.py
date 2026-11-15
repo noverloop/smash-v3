@@ -429,6 +429,46 @@ def add_stm32wba55hgf6tr(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_stm32wba55ugi7(design, ref: str, **overrides) -> Chip:
+    """ST STM32WBA55UGI7 — same die as the WBA55HGF6TR (Cortex-M33
+    100 MHz + 2.4 GHz BLE 5.4 / 802.15.4, SMPS, 1 MB flash, 128 KB SRAM)
+    in the **UFBGA59 (5 × 5 mm, 0.5 mm pitch)** with the extended
+    temperature range (suffix 7 = -40 to +105 °C).
+
+    Versus the WLCSP41 it brings back 15 GPIOs (PA3/4/9/10/11,
+    PB0/1/2/5/6/7/11/13/14, PC13) and adds VDD_3/4 + VSS_3/4 balls;
+    VSSRF_3 is gone and SamacSys spells a few pins differently
+    (VDD_RFPA, PH3__BOOT0, PC14__OSC32__IN). The overmoulded UFBGA is
+    far more shock-tolerant than bare WLCSP, but it is still underfilled
+    alongside the other BGAs."""
+    fields = _stm32(
+        pn="STM32WBA55UGI7",
+        ds_name="STM32WBA55UGI7.pdf",
+        fp_mod_name="BGA59C50P8X8_500X500X60.kicad_mod",
+        fp_class="UFBGA-59 (5 × 5 mm, 0.50 mm pitch)",
+        package="UFBGA59",
+        description=(
+            "Cortex-M33 100 MHz w/ TrustZone + 2.4 GHz BLE 5.4 / "
+            "802.15.4 / direction-finding, integrated SMPS, 1 MB flash, "
+            "128 KB SRAM, UFBGA59, -40 to +105 °C"
+        ),
+        clock_max_hz=100e6,
+        vcc_nominal_v=3.3,
+        size_mm=(5.0, 5.0), height_mm=0.60, pitch_mm=0.50,
+        temp_range_c=(-40, 105),
+        note=(
+            "STM32WBA55UGI7: UG = 1 MB flash + 128 KB SRAM, I = UFBGA59, "
+            "7 = -40 to +105 °C. Same radio/SMPS die as the HGF6TR; "
+            "native RF_ANTSW0/1 on PA12/PA11. No FDCAN (G0B1 bridges). "
+            "Underfilled with the other BGAs (Hysol FP4549)."
+        ),
+        standards=["RoHS", "ECOPACK2"],
+    )
+    fields["underfill"] = "Hysol_FP4549_capillary_die_area"
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ─── STM32H562 — Cortex-M33 250 MHz ──────────────────────────────────────
 
 def add_stm32h562aii6(design, ref: str, **overrides) -> Chip:

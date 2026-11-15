@@ -31,6 +31,7 @@ from smash.parts import (
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
     add_stm32mp255fal3,
+    add_stm32wba55ugi7,
     # Round D (modules / PMIC / radar / PLL)
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
@@ -53,6 +54,7 @@ ALL_FACTORIES = [
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
     add_stm32mp255fal3,
+    add_stm32wba55ugi7,
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
     add_adf4351bcpz,
@@ -141,6 +143,14 @@ class TestSTM32Family:
         c = add_stm32mp255fak3(Design(), ref="U1")
         assert len(c.footprint.pads) == 424
         assert "424" in c.package
+
+    def test_wba55ugi7_is_59_ball_ufbga_105c(self):
+        c = add_stm32wba55ugi7(Design(), ref="U1")
+        assert c.manf_pn == "STM32WBA55UGI7"
+        assert len(c.footprint.pads) == 59
+        assert c.temp_range_c == (-40, 105)
+        names = {p.name for p in c.pins}
+        assert {"VDD_RFPA", "PH3__BOOT0", "PC14__OSC32__IN"} <= names
 
     def test_mp255fal3_matches_dal3_ballout(self):
         f = add_stm32mp255fal3(Design(), ref="U1")

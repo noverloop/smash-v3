@@ -77,7 +77,7 @@ from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: 
 from smash.parts.transceivers import add_tcan1042gvdq1                  # noqa: E402
 from smash.parts.mcus import (                                          # noqa: E402
     add_stm32mp255fal3, add_stm32g0b1rei6n,
-    add_stm32wba55hgf6tr, add_stm32h562aii6, add_stm32wle5ccu6,
+    add_stm32wba55hgf6tr, add_stm32wba55ugi7, add_stm32h562aii6, add_stm32wle5ccu6,
 
 )
 from smash.parts.flash import (                                         # noqa: E402
@@ -3634,7 +3634,7 @@ def build_wakeup_board(d: Design) -> None:
     # which frees PC14/PC15 as plain spare GPIOs.
     # Mandatory: die-area underfill (Hysol FP4549) — captured on the
     # Chip record; an assembly-process validator enforces it.
-    wba = add_stm32wba55hgf6tr(d, ref="U_WBA", board_tag=BTAG)
+    wba = add_stm32wba55ugi7(d, ref="U_WBA", board_tag=BTAG)
 
     # Power pins — all VDD variants → 3V3_AON (the nanopower standby
     # domain: the WBA must run in Standby with the eFuse + main path
@@ -3644,14 +3644,18 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "3V3_AON").connect(wba.pin("VDD_1"))     # A10 — digital
     _net(d, "3V3_AON").connect(wba.pin("VDD_2"))     # G4
     _net(d, "3V3_AON").connect(wba.pin("VDDRF"))     # A6  — radio digital
-    _net(d, "3V3_AON").connect(wba.pin("VDDRF_PA"))  # C6  — radio PA (needs ≥2.5 V for +9.5 dBm)
+    _net(d, "3V3_AON").connect(wba.pin("VDD_RFPA"))  #  — radio PA (needs ≥2.5 V for +9.5 dBm)
     _net(d, "3V3_AON").connect(wba.pin("VDD_HPA"))   # C4  — high-power PA
     _net(d, "GND").connect(wba.pin("VSS_1"))     # B9
     _net(d, "GND").connect(wba.pin("VSS_2"))     # G6
     _net(d, "GND").connect(wba.pin("VSSA"))      # D13
     _net(d, "GND").connect(wba.pin("VSSRF_1"))   # D1
     _net(d, "GND").connect(wba.pin("VSSRF_2"))   # D3
-    _net(d, "GND").connect(wba.pin("VSSRF_3"))   # D5
+    # UFBGA59 extras: VDD_3/4, VSS_3/4 (no VSSRF_3 on this package).
+    _net(d, "3V3_AON").connect(wba.pin("VDD_3"))
+    _net(d, "3V3_AON").connect(wba.pin("VDD_4"))
+    _net(d, "GND").connect(wba.pin("VSS_3"))
+    _net(d, "GND").connect(wba.pin("VSS_4"))
 
     # SMPS step-down for digital core (cuts Run current by ~30 % vs LDO
     # mode). Reference network from RM0497 §6.10: VDDSMPS = 3V3 input,
@@ -3671,7 +3675,8 @@ def build_wakeup_board(d: Design) -> None:
     # absorbs the per-pin caps; the bulk stays discrete for ESR.
     for tag, vdd_pin in (("VDDA", "VDDA"), ("VDDANA", "VDD_ANA"),
                          ("VDD1", "VDD_1"), ("VDD2", "VDD_2"),
-                         ("VDDRF", "VDDRF"), ("VDDRFPA", "VDDRF_PA"),
+                         ("VDD3", "VDD_3"), ("VDD4", "VDD_4"),
+                         ("VDDRF", "VDDRF"), ("VDDRFPA", "VDD_RFPA"),
                          ("VDDHPA", "VDD_HPA"), ("VDDSMPS", "VDD_SMPS")):
         cap_to_gnd(d, "3V3_AON", "100nF", ref=f"C_WBA_{tag}",
                    embedded_cap_absorbs=True, board_tag=BTAG,
@@ -3703,7 +3708,7 @@ def build_wakeup_board(d: Design) -> None:
                 ref="R_WBARST_PD", board_tag=BTAG)
 
     # BOOT0 — pull-down for normal flash boot. (Recovery uses BLE OTA.)
-    _net(d, "WBA_BOOT0").connect(wba.pin("PH3-_BOOT0"))   # C8
+    _net(d, "WBA_BOOT0").connect(wba.pin("PH3__BOOT0"))
     res_between(d, "WBA_BOOT0", "GND", "10k",
                 ref="R_WBA_BOOT0", board_tag=BTAG)
 
@@ -3760,7 +3765,7 @@ def build_wakeup_board(d: Design) -> None:
     # pattern — any EXTI-capable GPIO wakes the WBA from Stop1, same
     # mechanism as the IR photodiode on EXTI12. PC14 was the freed
     # OSC32 spare (LSE = internal LSI); PC15 remains spare.
-    _net(d, "MAG_WAKE_N").connect(wba.pin("PC14-_OSC32__IN"))  # A4 — EXTI wake
+    _net(d, "MAG_WAKE_N").connect(wba.pin("PC14__OSC32__IN"))  # EXTI wake
 
     # IR_WAKE ← D_IR_WAKE photodiode cathode on radar_module (see the
     # radar builder for the full rationale). Bias + filter live HERE, next
