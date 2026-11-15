@@ -558,9 +558,10 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 # (2026-11-15) After the aft reorder the battery holder sits on aft_end, so
 # the aft-most PLAIN gap — activation_interface ↔ fin_ble — carries the Al
 # ring (the old names pointed at gaps that no longer exist, which silently
-# dropped the rings). PEEK standoffs sit INSIDE the ring in the same gap.
+# dropped the rings). The ring IS the gap's spacer: no standoffs in it.
 GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
-RING_R_IN_MM, RING_R_OUT_MM = 15.2, 16.2      # 1.0 mm wall, OD 32.4
+RING_R_IN_MM, RING_R_OUT_MM = 16.0, 17.0      # 1.0 mm wall, OD 34 = board edge (2026-11-15); bears on the
+                                              # mask-tented castellation annuli (mask + anodise = 2× insulation)
 RING_CLEARANCE_MM = 0.2                       # silk "standoff distance" each side
 # Battery HOLDER (2026-11-14, replaces the Ø38 battery ring): a 7075-T6
 # hard-anodised block inside the Ø34 envelope with three cell bores. Cells
@@ -595,9 +596,12 @@ SLOT_ANGLES_DEG = (105.0, 285.0)              # = sleeve seams / feed + vent gro
 STANDOFF_D_MM = 1.2
 # (2026-11-15) Standoffs sit fully INSIDE the aluminium rings' bore (incl. the
 # ring's clearance), so they never overlap a ring / the holder's top ring:
-# outer edge = RING_R_IN − RING_CLEARANCE  →  centre r = 14.4 mm.
-STANDOFF_R_MM = RING_R_IN_MM - RING_CLEARANCE_MM - STANDOFF_D_MM / 2.0
-STANDOFF_ANGLES_DEG = (45.0, 135.0, 225.0, 315.0)   # symmetric under fold + 180° turn
+# standoff keepout (edge + clearance) ends where the ring keepout starts → r 14.2 mm.
+STANDOFF_R_MM = RING_R_IN_MM - 2 * RING_CLEARANCE_MM - STANDOFF_D_MM / 2.0   # keepouts touch, never overlap
+# (2026-11-15) 75/165/255/345°: still symmetric under the fold + 180° turn,
+# 30° clear of the boards' Ø3 potting hole at 135° (r 13) and of the sleeve
+# seams at 105/285°.
+STANDOFF_ANGLES_DEG = (75.0, 165.0, 255.0, 345.0)
 
 
 def battery_holder_cavity():
@@ -733,8 +737,7 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
         return _battery_holder_body(cq, h), h, "battery_holder", kind
     h = b.thickness_mm
     if kind == "ring":
-        return (_ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
-                .union(_standoffs_body(cq, h))), h, name, kind
+        return _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
 
 
@@ -770,13 +773,10 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     "extensions bend across it to P_CELL_CONTACTS")
         elif kind == "ring":
             h = b.thickness_mm
-            body = (_ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
-                    .union(_standoffs_body(cq, h)))
-            label, mat = name, ("7075-T6 aluminium ring, hard anodised (anodise = "
-                                "insulation) + PEEK standoffs inside it")
+            body = _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
+            label, mat = name, "7075-T6 aluminium, hard anodised (anodise = insulation)"
             dims = (f"ring ID Ø{2*RING_R_IN_MM:.1f} / OD Ø{2*RING_R_OUT_MM:.1f}"
-                    f" × {h:.2f} mm; {len(STANDOFF_ANGLES_DEG)} × Ø{STANDOFF_D_MM} "
-                    f"PEEK standoffs at r = {STANDOFF_R_MM} mm")
+                    f" × {h:.2f} mm (no standoffs: the ring is the spacer)")
         else:
             h = b.thickness_mm
             body = _standoffs_body(cq, h)

@@ -313,3 +313,27 @@ def test_aluminium_ring_gap_exists_in_the_chain():
     from smash.export.spacer_step import GAP_RING_GAPS
     panel, boards = build_panel()
     assert set(GAP_RING_GAPS) <= set(panel.snake_chain)
+
+
+def test_peek_standoffs_clear_ring_keepout_and_potting_hole():
+    import math
+    from smash.export import spacer_step as S
+    from smash.layout.cavities import (BOARD_POTTING_HOLE_ANGLES_DEG,
+                                       BOARD_POTTING_HOLE_RADIUS_MM,
+                                       POTTING_HOLE_DIA_MM)
+    # standoff keepout stays inside the ring keepout
+    assert (S.STANDOFF_R_MM + S.STANDOFF_D_MM / 2 + S.RING_CLEARANCE_MM
+            <= S.RING_R_IN_MM - S.RING_CLEARANCE_MM + 1e-9)
+    # 180°-symmetric set (nose-ward boards are turned 180°)
+    angs = {a % 360 for a in S.STANDOFF_ANGLES_DEG}
+    assert {(a + 180) % 360 for a in angs} == angs
+    for sa in S.STANDOFF_ANGLES_DEG:
+        sx = S.STANDOFF_R_MM * math.cos(math.radians(sa))
+        sy = S.STANDOFF_R_MM * math.sin(math.radians(sa))
+        for ha in BOARD_POTTING_HOLE_ANGLES_DEG:
+            for turn in (0.0, 180.0):
+                hx = BOARD_POTTING_HOLE_RADIUS_MM * math.cos(math.radians(ha + turn))
+                hy = BOARD_POTTING_HOLE_RADIUS_MM * math.sin(math.radians(ha + turn))
+                gap = (math.hypot(sx - hx, sy - hy) - S.STANDOFF_D_MM / 2
+                       - POTTING_HOLE_DIA_MM / 2)
+                assert gap > 1.0, (sa, ha, turn, gap)
