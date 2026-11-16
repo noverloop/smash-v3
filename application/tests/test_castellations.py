@@ -149,31 +149,39 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
     assert {"gnd_plane", "antenna_feed"} <= kinds
 
 
-def test_lr_bus_crosses_as_one_gnd_guarded_block(built):
-    """The 7 LR2021 lines (WBA55 on wakeup → fin_ble) take one physically
-    contiguous run of lanes, interleaved G S G S … G with GND guards that
-    connect to GND on both boards."""
-    from smash.parts.castellations import GUARDED_BUSES
+def test_radio_is_wakeup_local(built):
+    """The LR2021 sits next to its WBA host on wakeup (2026-11-16): none of
+    its host / RF-switch / owner-switch nets crosses a joint, so none gets a
+    lane; BLE_RF stays on wakeup too."""
     d, _p, _b, contract, _n, _M = built
-    bus_nets, guard = GUARDED_BUSES["LR"]
-    lanes = contract["lanes"]
-    g = lanes[guard]
-    assert g["kind"] == "gnd_guard" and g["net"] in ("GND", "FLEX_GND")
-    assert {"wakeup_board", "fin_ble_board"} <= set(g["boards"])
-    sig = [lanes[n]["angles"][0] for n in bus_nets]
-    block = sorted(g["angles"] + sig, key=lambda a: (a + 180) % 360)
-    assert len(block) == 2 * len(bus_nets) + 1
-    assert set(block[0::2]) == set(g["angles"])          # guards on the outside + between
-    assert set(block[1::2]) == set(sig)
-    step = math.degrees(contract["pitch_mm"] / contract["radius_mm"])
-    for a, b in zip(block, block[1:]):
-        assert abs(((b - a) + 180) % 360 - 180) < 1.5 * step   # no gaps
-    # every guard pad is a real GND connection
-    for c in _cast_chips(d):
-        for pin in c.pins:
-            if pin.name.startswith(guard + "@"):
-                net = d.net_by_name(pin.net) if isinstance(pin.net, str) else pin.net
-                assert net is not None and {net.name, *(net.aliases or [])} & {"GND", "FLEX_GND"}, (c.ref, pin.name)
+    lr = next(c for c in d.chips if c.ref == "U_LR")
+    assert lr.board_tag == "wakeup_board"
+    for ref in ("U_LR_SW_LF", "U_LR_SW_HF", "U_ANTSW_2G4", "Y_LR_TCXO"):
+        assert next(c for c in d.chips if c.ref == ref).board_tag == "wakeup_board", ref
+    local = ("LR_SPI_SCK", "LR_SPI_MOSI", "LR_SPI_MISO", "LR_NSS", "LR_BUSY",
+             "LR_IRQ", "LR_NRESET", "LR_RFSW_TX", "ANTSW_2G4_CTRL", "BLE_RF")
+    for name in local:
+        assert name not in contract["lanes"], name
+        net = d.net_by_name(name)
+        boards = {next(c for c in d.chips if c.ref == rf).board_tag
+                  for rf, _pin in net.pins}
+        assert boards == {"wakeup_board"}, (name, boards)
+
+
+def test_feed_lane_on_radio_board(built):
+    """Antenna feed castellations sit on the board that carries the feed
+    net's chips (the radio board), not on a hard-coded tile."""
+    d, _p, _b, contract, _n, _M = built
+    from smash.parts.castellations import ANTENNA_FEED_ANGLES_DEG
+    for fname in ANTENNA_FEED_ANGLES_DEG:
+        lane = contract["lanes"][fname]
+        assert lane["kind"] == "antenna_feed"
+        net = d.net_by_name(fname)
+        chip_boards = {next(c for c in d.chips if c.ref == rf).board_tag
+                       for rf, _pin in net.pins
+                       if not rf.startswith("J_CAST_")}
+        assert lane["boards"] == ["wakeup_board"] and chip_boards == {"wakeup_board"}
+
 
 
 def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):

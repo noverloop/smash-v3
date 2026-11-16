@@ -48,8 +48,9 @@ RESERVED_SECTORS_DEG = tuple((a, SEAM_HALF_WIDTH_DEG) for a in SEAM_ANGLES_DEG)
 # GND: no lanes — fixed castellations in the antenna sector, near its edges
 # (antenna centre stays free), on every rigid board, tied to the inner plane.
 GND_CAST_ANGLES_DEG = (113.0, 120.0, 240.0, 247.0)
-# Antenna feeds: single-board nets that leave fin_ble_board through a
-# castellation + sleeve via to the antenna copper on the sleeve's outer face.
+# Antenna feeds: single-board nets that leave the RADIO board (the board
+# their chips sit on — wakeup since 2026-11-16) through a castellation +
+# sleeve via to the antenna copper on the sleeve's outer face.
 ANTENNA_FEED_ANGLES_DEG = {"ANT_2G4_FEED": 135.0, "ANT_SUBG_FEED": 205.0}
 # Plug ring (2026-11-14): the aft board's bottom-face bench/harness interface
 # (SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES, …) is UNCHANGED — it is now reached
@@ -61,10 +62,9 @@ ANTENNA_FEED_ANGLES_DEG = {"ANT_2G4_FEED": 135.0, "ANT_SUBG_FEED": 205.0}
 # a coplanar-ish return path right next to every line on the sleeve's
 # outer face. key → (nets in order, guard lane key). The LR2021 SPI +
 # control crossing from the WBA55 (wakeup) to the radio (fin_ble).
-GUARDED_BUSES = {
-    "LR": (("LR_SPI_SCK", "LR_SPI_MOSI", "LR_SPI_MISO", "LR_NSS",
-            "LR_BUSY", "LR_IRQ", "LR_NRESET"), "GND_GUARD_LR"),
-}
+# (2026-11-16) Empty: the LR2021 moved next to its WBA host on wakeup, so its
+# SPI + control lines are board-local. The mechanism stays for future buses.
+GUARDED_BUSES: dict = {}
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -180,8 +180,12 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # Antenna feeds: fin_ble only, at fixed antenna-sector angles.
     feeds = {}
     for fname, fang in ANTENNA_FEED_ANGLES_DEG.items():
-        if design.net_by_name(fname) is not None and "fin_ble_board" in rigid:
-            feeds[fname] = {"angles": [fang], "boards": ["fin_ble_board"],
+        fnet = design.net_by_name(fname)
+        if fnet is None:
+            continue
+        fb = sorted({tag.get(rf) for rf, _p in fnet.pins} & set(rigid), key=pos.get)
+        if fb:
+            feeds[fname] = {"angles": [fang], "boards": fb[:1],
                             "kind": "antenna_feed"}
 
     # Guarded buses first: one contiguous run of angles (in ring order, so

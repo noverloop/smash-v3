@@ -71,10 +71,10 @@ def _antenna_placeholders(contract, zmap, r, width):
              "ANT_SUBG_FEED": ("868-923 MHz PIFA (LoRa)", 80.0, 26.0, 16.0, 2.0, -1)}
     for net, (label, length_mm, bw, bh, step, sgn) in specs.items():
         lane = lanes.get(net)
-        if not lane or "fin_ble_board" not in zmap:
+        if not lane or not lane.get("boards") or lane["boards"][0] not in zmap:
             continue
         x0 = _x_of(lane["angles"][0], r)
-        z0 = sum(zmap["fin_ble_board"]) / 2.0
+        z0 = sum(zmap[lane["boards"][0]]) / 2.0          # the radio board
         # (2026-11-15) The holder no longer sits right under fin_ble (the
         # aft reorder put activation_interface + a ring gap in between): a
         # straight feed line runs down to the holder's top, and the meander

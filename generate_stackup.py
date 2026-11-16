@@ -1534,14 +1534,15 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
     _net(d, out_net).connect(gpio_chip.pin(gpio_pin))
 
 
-def _build_lr_radio(d: Design, g, BTAG: str) -> None:
-    """Long-range radio on fin_ble_board's BOTTOM face (2026-11-15).
+def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
+                    ctrl_pin: str = "PA7") -> None:
+    """Long-range radio, built on `BTAG` next to its host MCU (2026-11-16:
+    wakeup_board, top face beside the WBA's RF π-match — the whole radio is
+    board-local, no host or RF line crosses a joint).
 
     Semtech LR2021 (LoRa Plus, sub-GHz +22 dBm and 2.4 GHz +12 dBm in one
     QFN-32) REPLACES the mLRS cluster (STM32WLE5 + SX1280 + nRF21540 FEM).
-    Host = the WBA55 on wakeup_board over SPI1 — seven lines cross the
-    wakeup↔fin_ble joint as a GND-guarded lane block on the sleeve
-    (castellations.GUARDED_BUSES["LR"]: G S G S … G):
+    Host = the WBA55 (same board) over SPI1:
       LR_SPI_SCK  WBA PB4  (SPI1_SCK,  AF5)   → SCK
       LR_SPI_MOSI WBA PA15 (SPI1_MOSI, AF5)   → MOSI
       LR_SPI_MISO WBA PB3  (SPI1_MISO, AF5)   ← MISO
@@ -1567,8 +1568,10 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
       • 2.4 GHz: RFO_HF (choke from VR_PA, Fig 1-4) → series-L / shunt-C
         match + low-pass, DC block → U_LR_SW_HF RF2; RFI_HF → L-match, DC
         block → RF1; switch common → DC block → U_ANTSW_2G4 RF2.
-        U_ANTSW_2G4 (BLE vs LR owner switch, CTRL from the fin G0B1 PB9,
-        default RF1 = BLE_RF) → ANT_2G4_FEED.
+        U_ANTSW_2G4 (BLE vs LR owner switch, CTRL from a host GPIO
+        (`ctrl_pin`, WBA PA7), default RF1 = BLE_RF) → ANT_2G4_FEED. The
+        owner switch is on 3V3_AON (BLE works with the main rails dark) and
+        sits at the antenna end, so BLE never passes through an LR part.
       • 32 MHz TCXO (Y_LR_TCXO, placeholder part) powered from VTCXO,
         AC-coupled into XTA; XTB NC. NTC NC.
     Power — LDO mode (DS v2.2 Fig 1-14, user 2026-11-16; no SIMO coil,
@@ -1584,7 +1587,7 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     transcribed. FIRMWARE: the WBA is on 3V3_AON and the LR2021 on 3V3 —
     hold the host lines low/Hi-Z while 3V3 is off (no back-power through
     the LR2021's IO clamps)."""
-    F = "bottom"
+    F = face
     lr = add_lr2021imltrt(d, ref="U_LR", board_tag=BTAG, feature=F)
     tcxo = add_tcxo_32m_2016(d, ref="Y_LR_TCXO", board_tag=BTAG, feature=F)
     swlf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_LF", board_tag=BTAG, feature=F)
@@ -1699,7 +1702,7 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     _net(d, "LR_ANTSW_BLE").connect(sw24.pin("RF1"))    # default (CTRL=0): BLE
     _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: LR2021 2.4 GHz
     _net(d, "ANT_2G4_FEED").connect(sw24.pin("RFIN"))
-    _net(d, "ANTSW_2G4_CTRL").connect(g.pin("PB9")); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
+    _net(d, "ANTSW_2G4_CTRL").connect(host.pin(ctrl_pin)); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
     res_between(d, "ANTSW_2G4_CTRL", "GND", "100k", ref="R_ANTSW_2G4_PD", board_tag=BTAG)
 
     # ── Antenna feeds: ANT_2G4_FEED / ANT_SUBG_FEED leave the board through
@@ -1804,8 +1807,8 @@ def build_fins_module(d: Design) -> None:
     _hall_switch(d, ref="J_HALL_FIN", board_tag=BTAG, out_net="FIN_HALL",
                  gpio_chip=g, gpio_pin="PB13")
 
-    # Long-range radio: LR2021 (host = WBA55 over SPI1); G0B1 owns the 2.4 GHz antenna switch
-    _build_lr_radio(d, g, BTAG)
+    # (2026-11-16) The long-range radio moved to wakeup_board, next to its
+    # WBA55 host (build_wakeup_board → _build_lr_radio).
 
     # ── Fin VM rail: merged onto COMP_5V ──────────────────────────────
     # The standalone U_FINBOOST (BAT_PROT->5V) is GONE — the DRV8428E VM now
@@ -2519,7 +2522,8 @@ def build_spacers(d: Design, boards: dict | None = None) -> None:
         _net(d, "GND").connect(sp.pin("1"))
 
 
-def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
+def build_flight_board(d: Design, board_tag: str = "flight_board",
+                       imu_tag: str | None = None) -> None:
     """IMU / magnetometer sensor cluster. As of the wakeup+flight consolidation
     this FOLDS INTO wakeup_board: build_wakeup_board calls it with
     board_tag="wakeup_board". The two aft tiles merged because each was left with
@@ -2532,8 +2536,13 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
     blocks created here are tagged to their OWN tiles (placement follows the tag,
     not `board_tag`): the EXT_CAN TCAN1042 (aft_end_board, by the TP_CAN pads)
     and the 4 QPD transimpedance amps (qpd_module, behind the photodiode). The
-    launch-detect comparator itself lives on fin_ble_board (by the piezo)."""
+    launch-detect comparator itself lives on aft_end_board (by the piezo).
+
+    `imu_tag` (2026-11-16): the 3x ISM330DHCX + their passives / test points
+    go on that tile instead (fin_ble_board), freeing wakeup for the radio;
+    the IIS2MDC and the I2C2/3 + SYS_I2C pull-ups stay on `board_tag`."""
     BTAG = board_tag
+    ITAG = imu_tag or board_tag
 
     # ── System control bus pull-ups (SYS_I2C; the M33 is master) ─────
     # (boot-transient pre-charge through the MP25 TT clamps — see the
@@ -2579,7 +2588,8 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
                 ref="R_EXT_CAN_TERM", board_tag=_CAN_TAG)
 
     # ── IIS2MDC magnetometer on I2C2 (DRDY -> M33 EXTI) ──────────────
-    mag = add_iis2mdctr(d, ref="U_MAG", board_tag=BTAG)
+    # bottom face: the LR2021 PA (≈110 mA bursts) is on wakeup's top face.
+    mag = add_iis2mdctr(d, ref="U_MAG", board_tag=BTAG, feature="bottom")
     _net(d, "3V3")     .connect(mag.pin("VDD"))
     _net(d, "3V3")     .connect(mag.pin("VDD_IO"))
     _net(d, "GND")     .connect(mag.pin("GND_1"))
@@ -2618,7 +2628,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
     for idx, scl, sda, sa0 in [(1, "I2C2_SCL", "I2C2_SDA", "GND"),
                                (2, "I2C3_SCL", "I2C3_SDA", "GND"),
                                (3, "I2C3_SCL", "I2C3_SDA", "3V3")]:
-        imu = add_ism330dhcxtr(d, ref=f"U_IMU{idx}", board_tag=BTAG)
+        imu = add_ism330dhcxtr(d, ref=f"U_IMU{idx}", board_tag=ITAG)
         _net(d, "3V3").connect(imu.pin("VDD"))
         _net(d, "3V3").connect(imu.pin("VDDIO"))
         _net(d, "GND").connect(imu.pin("GND_1"))
@@ -2631,16 +2641,16 @@ def build_flight_board(d: Design, board_tag: str = "flight_board") -> None:
         _net(d, sa0).connect(imu.pin("SA0"))
         _net(d, f"IMU{idx}_SCX").connect(imu.pin("SCX"))
         _net(d, f"IMU{idx}_SDX").connect(imu.pin("SDX"))
-        res_between(d, "3V3", f"IMU{idx}_SCX", "10k", ref=f"R_IMU{idx}_SCX_PU", board_tag=BTAG)
-        res_between(d, "3V3", f"IMU{idx}_SDX", "10k", ref=f"R_IMU{idx}_SDX_PU", board_tag=BTAG)
+        res_between(d, "3V3", f"IMU{idx}_SCX", "10k", ref=f"R_IMU{idx}_SCX_PU", board_tag=ITAG)
+        res_between(d, "3V3", f"IMU{idx}_SDX", "10k", ref=f"R_IMU{idx}_SDX_PU", board_tag=ITAG)
         # Aux-SPI unused — DS13012 pin table: OCS_Aux "leave unconnected"
         # (it's the aux-interface enable; the old GND tie was an
         # unsanctioned strap), SDO_Aux "connect to Vdd_IO or leave
         # unconnected" (GND not allowed). Both left floating.
-        cap_to_gnd(d, "3V3", "100nF", ref=f"C_IMU{idx}_1", embedded_cap_absorbs=True, board_tag=BTAG, pin=(imu.ref, None))
-        cap_to_gnd(d, "3V3", "2.2uF", ref=f"C_IMU{idx}_2", board_tag=BTAG, pin=(imu.ref, None))
-        cap_to_gnd(d, "3V3", "10nF",  ref=f"C_IMU{idx}_3", embedded_cap_absorbs=True, board_tag=BTAG, pin=(imu.ref, None))
-        tp_int = _add_testpoint(d, ref=f"TP_IMU{idx}_INT", board_tag=BTAG)
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_IMU{idx}_1", embedded_cap_absorbs=True, board_tag=ITAG, pin=(imu.ref, None))
+        cap_to_gnd(d, "3V3", "2.2uF", ref=f"C_IMU{idx}_2", board_tag=ITAG, pin=(imu.ref, None))
+        cap_to_gnd(d, "3V3", "10nF",  ref=f"C_IMU{idx}_3", embedded_cap_absorbs=True, board_tag=ITAG, pin=(imu.ref, None))
+        tp_int = _add_testpoint(d, ref=f"TP_IMU{idx}_INT", board_tag=ITAG)
         _net(d, f"IMU{idx}_INT").connect(tp_int.pin("1"))
 
     # ── flex bus alias merges (FLEX_* -> rigid rails; bench I2C -> SYS_I2C) ─
@@ -3725,8 +3735,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "I2C2_SCL").connect(wba.pin("PB2"))   # I2C1_SCL (AF4)
     _net(d, "I2C2_SDA").connect(wba.pin("PB1"))   # I2C1_SDA (AF4)
 
-    # SPI1 + control → LR2021 on fin_ble_board (7 lines, GND-guarded lane
-    # block on the sleeve — castellations.GUARDED_BUSES["LR"]). AFs per
+    # SPI1 + control → LR2021 on this board (local since 2026-11-16). AFs per
     # DS14127 Table 25 (SPI1 exists only on PB4/PB3/PA15/PA12; NSS is a
     # software GPIO so PA12 stays IR_WAKE).
     _net(d, "LR_SPI_SCK") .connect(wba.pin("PB4"))   # SPI1_SCK  (AF5)
@@ -3810,6 +3819,12 @@ def build_wakeup_board(d: Design) -> None:
                **_as_built_0402("0.5pF", "C0G/NP0"), pin=wba.pin("RF"))
     cap_to_gnd(d, "BLE_RF", "0.5pF", ref="C_WBA_PI2",
                board_tag=BTAG, feature="rf")
+
+    # ── LR2021 long-range radio — on THIS board, top face beside the WBA RF
+    # (2026-11-16): host lines, BLE_RF and the owner-switch CTRL are local;
+    # only the two antenna feeds leave (castellations in the antenna sector).
+    # The IIS2MDC sits on the opposite (bottom) face, away from the PA bursts.
+    _build_lr_radio(d, wba, BTAG, face="rf", ctrl_pin="PA7")
 
     # WLE5 LSE oscillator removed — WBA55 uses internal LSI (±5 %); LSE
     # crystal not needed for periodic BLE-scan timing accuracy.
@@ -3914,7 +3929,7 @@ def _prime_power_rails(d: Design) -> None:
     # tags the sensors board_tag="wakeup_board"; its TCAN (activation_interface)
     # and QPD TIAs (qpd_module) keep their own tags. Sensor INT/I2C nets that used
     # to cross the wakeup↔flight gap are now local to this tile.
-    build_flight_board(d, board_tag="wakeup_board")
+    build_flight_board(d, board_tag="wakeup_board", imu_tag="fin_ble_board")
 
     for name in _AUTO_GROUND_NETS:
         _net(d, name, kind="ground")
@@ -4771,17 +4786,8 @@ _ACCEPTED_LOCKED_OVERLAPS = (
     ("power_board", "D_BOOST_COMP", "C_BOOST_OUT2_4"),
     ("power_board", "C_USB_VBUS_1", "Q_USB_WAKE"),
     ("power_board", "C_USB_VBUS_2", "Q_USB_WAKE"),
-    # Francesco's wakeup_board (WIP/Finalized from Francesco/wakeup_board 2).
-    ("wakeup_board", "U_IMU1", "R_IMU1_SDX_PU"),
-    ("wakeup_board", "U_IMU2", "R_IMU2_SCX_PU"),
-    ("wakeup_board", "QMAIN", "L_WBA_PI"),
-    ("wakeup_board", "D_JUMP_WAKE", "L_WBA_SMPS"),
-    ("wakeup_board", "U_WBA", "L_WBA_PI"),
-    ("wakeup_board", "TP_IMU2_INT", "RHOLD_G"),
-    ("wakeup_board", "R_BOOST_FB1", "CBOOST_IN1_3"),
-    ("wakeup_board", "CBOOST_IN1_4", "C_WBA_VDDRF"),
-    ("wakeup_board", "C_WBA_BULK_1", "C_WBA_HSE_VDD"),
-    ("wakeup_board", "C_WBA_NRST", "Q_WBA_RST"),
+    # (Francesco's wakeup_board entries dropped 2026-11-16: every wakeup
+    # lock was released for the re-route, so nothing there is locked.)
 )
 
 
