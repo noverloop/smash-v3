@@ -918,8 +918,10 @@ def test_full_twin_exports_clean(tmp_path):
     #   pads, −4) replaced by feed castellations into the sleeve's antenna
     #   sector (antennas now LDS copper on the sleeve).
     # → 572: cell_floor_board castellation chip gone (aft reorder); → 574:
-    # C_WBA_VDD3/4 decaps for the UFBGA59 WBA55UGI7.
-    assert total_fps == 574
+    # C_WBA_VDD3/4 decaps for the UFBGA59 WBA55UGI7. → 580: LR2021 per the
+    # final DS v2.2 — 6 host-line series R + the RFO_HF VR_PA choke, the two
+    # TX/RX switch pull-downs merged into one (single RF-switch DIO8).
+    assert total_fps == 580
 
 
 

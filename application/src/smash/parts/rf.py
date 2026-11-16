@@ -448,18 +448,32 @@ def add_nrf21540_qdaa_r7(design, ref: str, **overrides) -> Chip:
 # ═════════════════════════════════════════════════════════════════════════
 
 _LR2021_NOTE = """\
-Datasheet: Semtech LR2021 Preliminary Rev 0.1 (03/01/25) — high-level only:
-NO pin table, NO reference-design values. Pin names / numbers are the
-SamacSys symbol (v1.1, 2026-06-16); pin types below are inferred from the
-names and the LR11xx/SX126x lineage — CONFIRM against the final DS.
+Datasheet: Semtech LR20xx FINAL Datasheet Rev 2.2 (DS.LR20xx, 29/07/26).
+Pin names / numbers (SamacSys symbol v1.1) match Table 2-1.
 
-Headline (DS p1-6): 150-960 MHz + 1.6-2.5 GHz; sub-GHz +22 dBm (two PAs:
-RFO_LF1 / RFO_LF2), 2.4 GHz +12 dBm (RFO_HF); separate RX inputs RFI_LF /
-RFI_HF ("switchless" direct-tie topology possible); LoRa / FLRC up to
-2.6 Mbps / (G)FSK / O-QPSK / BLE PHY; Rx ~5 mA, sleep 500 nA; 1.8-3.7 V;
--40…+85 °C; SPI host + BUSY. Integrated DC-DC (LXA/LXB inductor) can be
-disabled for LDO-only operation (no inductor). Reference: XTAL on XTA/XTB
-or TCXO into XTA powered from VTCXO (pin 6, shared with the NTC bias).
+Headline: 150-960 MHz LF path (RFO_LF1/2, RFI_LF; PA_LF up to +22 dBm) +
+1500-2500 MHz HF path (RFO_HF, RFI_HF; PA_HF up to +12 dBm); LoRa, FLRC,
+(G)FSK, OOK, 4-FSK, O-QPSK, LR-FHSS (TX only); SPI up to 16 MHz + BUSY;
+ambient -40…+85 °C (Table "Top"); 1.8-3.7 V.
+
+Supply (§1.8.4, Fig 1-13/1-14): SIMO DC-DC (2.2 µH coil LXB-LXA, §3.6) or
+LDO mode (no coil, LXA/LXB NC). Either way VDCC1 (output) -> VDCC2 (input)
+and VPAX1 (output) -> VPAX2 (PA-regulator input) on the PCB, each
+decoupled; VPAX1 is NEVER tied to VBAT. VR_PA (regulated PA supply,
+ramped by REG_PA) feeds a CHOKE to each PA output (§1.5, Fig 1-4).
+RFO_LF1 and RFO_LF2 MUST be connected together (one single-ended LF PA).
+
+DIO5-DIO11: IRQ / RF-switch / GPIO / clock / TX-RX trigger, set with
+SetDioFunction in Standby RC only. After POR/reset DIO5 and DIO6 are
+PULLED UP (others Hi-Z) - don't put a switch control on them unless that
+default is safe (§5.1.1, §6.8.1). SetDioRfSwitchConfig masks: standby,
+rx_lf, tx_lf, rx_hf, tx_hf.
+
+Reference design (§23.4, Fig 23-1): switchless direct-tie, 32 MHz crystal
++ NTC, series R on host lines (220-470 ohm); RF L/C values only in the
+Semtech ref BOM. A TCXO is "essential" below -20 °C / above +70 °C (§23.3).
+Calibration: image cal needed for >10 MHz or >10 °C change; PLL/AAF for
+>50 MHz or ±20 °C; CalibFE (0x0123) up to 3 frequencies, 4 MHz steps.
 """
 
 
@@ -473,38 +487,38 @@ def add_lr2021imltrt(design, ref: str, **overrides) -> Chip:
         pitch_mm=0.5, size_mm=(5.0, 5.0), height_mm=1.0)
     P = Pin
     pins = [
-        P(num="1",  name="VR_PA",   type="power",  note="Regulated PA supply (internal; decouple)"),
-        P(num="2",  name="VPAX2",   type="power",  note="PA supply 2 (2.4 GHz / LF2 PA)"),
+        P(num="1",  name="VR_PA",   type="power",  note="Regulated supply for all PAs: feeds a choke to each PA output; decouple"),
+        P(num="2",  name="VPAX2",   type="power",  note="Supply input of the PA regulator - connect to VPAX1"),
         P(num="3",  name="NTC",     type="passive", note="Reference-temperature NTC sense (optional)"),
-        P(num="4",  name="XTA",     type="passive", note="Crystal / TCXO input"),
-        P(num="5",  name="XTB",     type="passive", note="Crystal (NC with TCXO)"),
-        P(num="6",  name="VTCXO/VNTC", type="power", aliases=["VTCXO"], note="Programmable TCXO / NTC supply output"),
+        P(num="4",  name="XTA",     type="passive", note="32 MHz crystal or external reference (TCXO) input"),
+        P(num="5",  name="XTB",     type="passive", note="32 MHz crystal (NC with a TCXO)"),
+        P(num="6",  name="VTCXO/VNTC", type="power", aliases=["VTCXO"], note="TCXO supply output (REG_TCXO) / NTC supply"),
         P(num="7",  name="DIO11",   type="io"),
         P(num="8",  name="DIO10",   type="io"),
         P(num="9",  name="DIO9",    type="io"),
         P(num="10", name="DIO8",    type="io"),
         P(num="11", name="DIO7",    type="io"),
-        P(num="12", name="VDCC1",   type="power",  note="Regulator (DC-DC/LDO) output 1"),
-        P(num="13", name="VPAX1",   type="power",  note="PA supply 1 (sub-GHz HP PA)"),
-        P(num="14", name="LXB",     type="passive", note="DC-DC inductor B (NC in LDO mode)"),
+        P(num="12", name="VDCC1",   type="power",  note="SIMO/LDO output - connect to VDCC2"),
+        P(num="13", name="VPAX1",   type="power",  note="SIMO/LDO output for the PA supply - connect to VPAX2 (never to VBAT)"),
+        P(num="14", name="LXB",     type="passive", note="SIMO coil (2.2 µH to LXA); NC in LDO mode"),
         P(num="15", name="GND_DCC", type="ground"),
-        P(num="16", name="LXA",     type="passive", note="DC-DC inductor A (NC in LDO mode)"),
+        P(num="16", name="LXA",     type="passive", note="SIMO coil (2.2 µH to LXB); NC in LDO mode"),
         P(num="17", name="VBAT",    type="power",  note="Main supply 1.8-3.7 V"),
-        P(num="18", name="DIO6",    type="io"),
-        P(num="19", name="DIO5",    type="io"),
+        P(num="18", name="DIO6",    type="io", note="pulled UP after POR/reset (DS §5.1.1)"),
+        P(num="19", name="DIO5",    type="io", note="pulled UP after POR/reset (DS §5.1.1)"),
         P(num="20", name="NRESET",  type="input",  note="Reset, active low"),
         P(num="21", name="MISO",    type="output"),
         P(num="22", name="MOSI",    type="input"),
         P(num="23", name="SCK",     type="input"),
         P(num="24", name="NSS",     type="input"),
         P(num="25", name="BUSY",    type="output", note="Busy indicator — poll low before each SPI command"),
-        P(num="26", name="VDCC2",   type="power",  note="Regulator output 2"),
-        P(num="27", name="RFO_LF2", type="output", note="Sub-GHz PA 2 (low-power)"),
-        P(num="28", name="RFO_LF1", type="output", note="Sub-GHz PA 1 (high-power, +22 dBm)"),
+        P(num="26", name="VDCC2",   type="power",  note="Regulated supply input - from VDCC1"),
+        P(num="27", name="RFO_LF2", type="output", note="LF PA output - MUST be tied to RFO_LF1 (single-ended)"),
+        P(num="28", name="RFO_LF1", type="output", note="LF PA output (up to +22 dBm) - tied to RFO_LF2"),
         P(num="29", name="RFI_LF",  type="input",  note="Sub-GHz RX input"),
         P(num="30", name="GND",     type="ground"),
-        P(num="31", name="RFI_HF",  type="input",  note="2.4 GHz RX input"),
-        P(num="32", name="RFO_HF",  type="output", note="2.4 GHz PA output (+12 dBm)"),
+        P(num="31", name="RFI_HF",  type="input",  note="HF RX input (1.5-2.5 GHz)"),
+        P(num="32", name="RFO_HF",  type="output", note="HF PA output (1.5-2.5 GHz, up to +12 dBm); needs a VR_PA choke"),
         P(num="33", name="EP",      type="ground", aliases=["GND_EP"], note="Exposed ground pad"),
     ]
     _check_pins_vs_pads(pn, pins, fp)

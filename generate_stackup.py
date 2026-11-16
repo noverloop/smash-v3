@@ -1549,30 +1549,41 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
       LR_BUSY     WBA PB0  (GPIO in)          ← BUSY
       LR_IRQ      WBA PB13 (EXTI13)           ← DIO7 (IRQ, firmware-mapped)
       LR_NRESET   WBA PA3  (GPIO out)         → NRESET
-    The LR2021's own DIOs drive its RF switches (firmware RF-switch table):
-      DIO5 → U_LR_SW_LF CTRL (1 = TX RFO_LF1, 0 = RX RFI_LF)
-      DIO6 → U_LR_SW_HF CTRL (1 = TX RFO_HF,  0 = RX RFI_HF)
+    Series R on the host lines as in the Semtech reference design (Fig 23-1):
+    220 Ω on SCK / MOSI / NSS, 470 Ω on BUSY / IRQ / NRESET (MISO direct).
+
+    ONE LR2021 DIO drives BOTH TX/RX switches (net LR_RFSW_TX): DIO8 set to
+    DIO_FUNCTION_RF_SWITCH with mask TX_LF|TX_HF (mLRS
+    SX_USE_RFSW_DIO_CONFIG), BGS12 CTRL 1 = RF2 = TX, 0 = RF1 = RX; 100 k
+    pull-down → RX after reset. NOT DIO5/DIO6: those come up PULLED HIGH
+    after POR/reset (DS v2.2 §5.1.1) and would park the switches on TX;
+    firmware forces DIO5/6 to DIO_FUNCTION_NONE on cold start (§6.8.1).
 
     RF:
-      • Sub-GHz (865-928 MHz): RFO_LF1 (HP PA) → choke from VR_PA, π
-        low-pass, DC block → U_LR_SW_LF RF2; RFI_LF → L-match, DC block →
-        RF1; switch common → π harmonic low-pass → ANT_SUBG_FEED.
-        RFO_LF2 (low-power PA) unused.
-      • 2.4 GHz: RFO_HF → series-L / shunt-C match + low-pass, DC block →
-        U_LR_SW_HF RF2; RFI_HF → L-match, DC block → RF1; switch common →
-        DC block → U_ANTSW_2G4 RF2. U_ANTSW_2G4 (BLE vs LR owner switch,
-        CTRL from the fin G0B1 PB9, default RF1 = BLE_RF) → ANT_2G4_FEED.
+      • Sub-GHz (865-928 MHz): RFO_LF1 + RFO_LF2 TIED (DS §1.5: "must be
+        connected together at PCB level"), choke from VR_PA, π low-pass,
+        DC block → U_LR_SW_LF RF2; RFI_LF → L-match, DC block → RF1; switch
+        common → π harmonic low-pass → ANT_SUBG_FEED.
+      • 2.4 GHz: RFO_HF (choke from VR_PA, Fig 1-4) → series-L / shunt-C
+        match + low-pass, DC block → U_LR_SW_HF RF2; RFI_HF → L-match, DC
+        block → RF1; switch common → DC block → U_ANTSW_2G4 RF2.
+        U_ANTSW_2G4 (BLE vs LR owner switch, CTRL from the fin G0B1 PB9,
+        default RF1 = BLE_RF) → ANT_2G4_FEED.
       • 32 MHz TCXO (Y_LR_TCXO, placeholder part) powered from VTCXO,
         AC-coupled into XTA; XTB NC. NTC NC.
-    Power: VBAT / VPAX1 / VPAX2 on 3V3; LDO mode (DC-DC inductor LXA/LXB
-    NC — the DS allows it); VDCC1/VDCC2 decoupled.
+    Power — LDO mode (DS v2.2 Fig 1-14, user 2026-11-16; no SIMO coil,
+    LXA/LXB NC): VBAT on 3V3 (100 nF + 4.7 µF); VDCC1→VDCC2 on LR_VDCC;
+    VPAX1→VPAX2 on their OWN net LR_VPAX (2.2 µF each — never on VBAT/3V3,
+    VPAX1 is the internal regulator's output); VR_PA 1 nF (ref C28) feeding
+    both PA chokes. ⚠ VBAT ferrite bead (ref FB14) not fitted: no bead part
+    in the library yet.
 
-    ⚠ OPEN: the LR2021 DS is Preliminary Rev 0.1 with NO pin table and NO
-    reference values — every match / filter value here is a PLACEHOLDER,
-    and VPAX/VDCC/VR_PA wiring follows the pin names only. Re-transcribe
-    from the final DS / Semtech reference design. FIRMWARE: the WBA is on
-    3V3_AON and the LR2021 on 3V3 — hold the seven lines low/Hi-Z while
-    3V3 is off (no back-power through the LR2021's IO clamps)."""
+    ⚠ OPEN: pins and supply wiring follow the FINAL DS (LR20xx Rev 2.2), but
+    the reference schematic carries no RF L/C values — every match / filter
+    value here is a PLACEHOLDER until the Semtech ref BOM / AN1200.66 is
+    transcribed. FIRMWARE: the WBA is on 3V3_AON and the LR2021 on 3V3 —
+    hold the host lines low/Hi-Z while 3V3 is off (no back-power through
+    the LR2021's IO clamps)."""
     F = "bottom"
     lr = add_lr2021imltrt(d, ref="U_LR", board_tag=BTAG, feature=F)
     tcxo = add_tcxo_32m_2016(d, ref="Y_LR_TCXO", board_tag=BTAG, feature=F)
@@ -1593,20 +1604,21 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     def L(n1, n2, val, ref):
         ind_between(d, n1, n2, val, ref=ref, board_tag=BTAG, feature=F)
 
-    # ── LR2021 supplies (LDO mode) ───────────────────────────────────
+    # ── LR2021 supplies (LDO mode, DS v2.2 Fig 1-14) ─────────────────
     for pn in ("GND", "GND_DCC", "EP"):
         _net(d, "GND").connect(lr.pin(pn))
-    for pn in ("VBAT", "VPAX1", "VPAX2"):
-        _net(d, "3V3").connect(lr.pin(pn))
+    _net(d, "3V3").connect(lr.pin("VBAT"))
     cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
     cap_to_gnd(d, "3V3", "4.7uF", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VPAX1", board_tag=BTAG, pin=lr.pin("VPAX1"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VPAX2", board_tag=BTAG, pin=lr.pin("VPAX2"))
+    # VPAX1 (regulator OUTPUT for the PAs) → VPAX2 (PA-regulator input).
+    _net(d, "LR_VPAX").connect(lr.pin("VPAX1")); _net(d, "LR_VPAX").connect(lr.pin("VPAX2"))
+    cap_to_gnd(d, "LR_VPAX", "2.2uF", ref="C_LR_VPAX1", board_tag=BTAG, pin=lr.pin("VPAX1"))
+    cap_to_gnd(d, "LR_VPAX", "2.2uF", ref="C_LR_VPAX2", board_tag=BTAG, pin=lr.pin("VPAX2"))
     _net(d, "LR_VDCC").connect(lr.pin("VDCC1")); _net(d, "LR_VDCC").connect(lr.pin("VDCC2"))
     cap_to_gnd(d, "LR_VDCC", "1uF", ref="C_LR_VDCC1", board_tag=BTAG, pin=lr.pin("VDCC1"))
-    cap_to_gnd(d, "LR_VDCC", "100nF", ref="C_LR_VDCC2", board_tag=BTAG, pin=lr.pin("VDCC2"))
+    cap_to_gnd(d, "LR_VDCC", "1uF", ref="C_LR_VDCC2", board_tag=BTAG, pin=lr.pin("VDCC2"))
     _net(d, "LR_VR_PA").connect(lr.pin("VR_PA"))
-    cap_to_gnd(d, "LR_VR_PA", "47nF", ref="C_LR_VRPA", board_tag=BTAG, pin=lr.pin("VR_PA"))
+    cap_to_gnd(d, "LR_VR_PA", "1nF", ref="C_LR_VRPA", board_tag=BTAG, pin=lr.pin("VR_PA"))
 
     # ── 32 MHz TCXO on VTCXO → AC-coupled into XTA ───────────────────
     _net(d, "LR_VTCXO").connect(lr.pin("VTCXO")); _net(d, "LR_VTCXO").connect(tcxo.pin("VDD"))
@@ -1616,25 +1628,33 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
     series_cap("LR_TCXO_OUT", "LR_XTA", "10pF", "C_LR_TCXO_AC")
     _net(d, "LR_XTA").connect(lr.pin("XTA"))
 
-    # ── Host link: the 7 crossing lines (WBA side wired in wakeup) ───
-    for net, lpin in (("LR_SPI_SCK", "SCK"), ("LR_SPI_MOSI", "MOSI"),
-                      ("LR_SPI_MISO", "MISO"), ("LR_NSS", "NSS"),
-                      ("LR_BUSY", "BUSY"), ("LR_IRQ", "DIO7"),
-                      ("LR_NRESET", "NRESET")):
-        _net(d, net).connect(lr.pin(lpin))
+    # ── Host link (WBA side wired in build_wakeup_board) ─────────────
+    # Series R at the radio, values from the ref design (Fig 23-1); MISO
+    # direct (ref 0 Ω). The host-side nets keep their names.
+    for net, lpin, r_val in (("LR_SPI_SCK", "SCK", "220"), ("LR_SPI_MOSI", "MOSI", "220"),
+                             ("LR_NSS", "NSS", "220"), ("LR_BUSY", "BUSY", "470"),
+                             ("LR_IRQ", "DIO7", "470"), ("LR_NRESET", "NRESET", "470")):
+        pin_net = f"{net}_L"
+        res_between(d, net, pin_net, r_val, ref=f"R_{net}", board_tag=BTAG, feature=F)
+        _net(d, pin_net).connect(lr.pin(lpin))
+    _net(d, "LR_SPI_MISO").connect(lr.pin("MISO"))
     res_between(d, "3V3", "LR_NSS", "100k", ref="R_LR_NSS_PU", board_tag=BTAG)
 
-    # ── RF switches (BGS12: CTRL 0 → RF1 = RX, 1 → RF2 = TX) ────────
-    for sw, ctl, dio, tag in ((swlf, "LR_SW_LF_CTRL", "DIO5", "LF"),
-                              (swhf, "LR_SW_HF_CTRL", "DIO6", "HF")):
+    # ── TX/RX switches (BGS12: CTRL 0 → RF1 = RX, 1 → RF2 = TX) ──────
+    # One RF-switch DIO (DIO8, mask TX_LF|TX_HF) drives both CTRLs; the
+    # idle path's switch toggling is harmless. DIO5/DIO6 stay unconnected.
+    _net(d, "LR_RFSW_TX").connect(lr.pin("DIO8"))
+    res_between(d, "LR_RFSW_TX", "GND", "100k", ref="R_LR_RFSW_PD", board_tag=BTAG)
+    for sw, tag in ((swlf, "LF"), (swhf, "HF")):
         _net(d, "GND").connect(sw.pin("GND"))
         _net(d, "3V3").connect(sw.pin("VDD"))
         cap_to_gnd(d, "3V3", "100nF", ref=f"C_LR_SW_{tag}_VDD", board_tag=BTAG, pin=sw.pin("VDD"))
-        _net(d, ctl).connect(lr.pin(dio)); _net(d, ctl).connect(sw.pin("CTRL"))
-        res_between(d, ctl, "GND", "100k", ref=f"R_LR_SW_{tag}_PD", board_tag=BTAG)
+        _net(d, "LR_RFSW_TX").connect(sw.pin("CTRL"))
 
     # ── Sub-GHz (865-928 MHz) — ⚠ values PLACEHOLDERS ────────────────
+    # RFO_LF1 and RFO_LF2 are ONE single-ended LF PA output (DS §1.5).
     _net(d, "LR_LF_RFO").connect(lr.pin("RFO_LF1"))
+    _net(d, "LR_LF_RFO").connect(lr.pin("RFO_LF2"))
     L("LR_VR_PA", "LR_LF_RFO", "47nH", "L_LR_LF_CHOKE")
     C0G("LR_LF_RFO", "6.8pF", "C_LR_LF_TX1", pin=lr.pin("RFO_LF1"))
     L("LR_LF_RFO", "LR_LF_TX_M", "8.2nH", "L_LR_LF_TX1")
@@ -1656,6 +1676,7 @@ def _build_lr_radio(d: Design, g, BTAG: str) -> None:
 
     # ── 2.4 GHz — ⚠ values PLACEHOLDERS ──────────────────────────────
     _net(d, "LR_HF_RFO").connect(lr.pin("RFO_HF"))
+    L("LR_VR_PA", "LR_HF_RFO", "10nH", "L_LR_HF_CHOKE")    # PA_HF bias (Fig 1-4, ref L7)
     L("LR_HF_RFO", "LR_HF_TX_M", "2.7nH", "L_LR_HF_TX1")
     C0G("LR_HF_TX_M", "1.2pF", "C_LR_HF_TX1")
     L("LR_HF_TX_M", "LR_HF_TX_F", "2.2nH", "L_LR_HF_TX2")
