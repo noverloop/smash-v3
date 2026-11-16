@@ -159,6 +159,7 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 holder="al", cell_rot_deg: float = 90.0, rings="al",
                 ring_free_sector=None, keepout_depth_mm: float = 0.0,
                 keepout_halfwidth_mm: float = 4.0, sleeve_inner_gnd: bool = False,
+                skin: str = "sector", skin_margin_mm: float = 4.0,
                 coating_mm: float = 0.0, housing=None) -> TowerModel:
     """Assemble the tower.
 
@@ -166,6 +167,10 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     ring_free_sector: (a0, a1) where Al rings are cut away (rings="al" only).
     keepout_*: copper-free wedge cut into every board under each slot
     (radial depth from the edge, ± half-width around the slot line).
+    skin: "sector" — copper over the whole antenna sector (forms a closed
+    parallel-plate cavity with the tower metal 0.4–1 mm below); "local" — a
+    narrow copper patch per slot, `skin_margin_mm` beyond the slot on every
+    side (2026-11-16, after the sector skin trapped the energy).
     housing: None (uncovered sleeve, option D) or dict(window=(z0, z1, a0, a1))
     for a metal tube Ø(sleeve OD + coating)… with an open window.
     """
@@ -227,8 +232,20 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     # outer copper skin over the antenna sector, slots cut through it.
     skin_z = (min(zb) - BOARD_T_MM / 2, max(zb) + BOARD_T_MM / 2)
     skin_r_in = SLEEVE_R_OUT_MM - 0.4          # ≥ 1 FDTD cell so the sheet survives meshing
-    S.append(Sector("skin", "pec", skin_r_in, SLEEVE_R_OUT_MM, *skin_z,
-                    *ANTENNA_SECTOR_DEG, priority=9))
+    if skin == "sector":
+        S.append(Sector("skin", "pec", skin_r_in, SLEEVE_R_OUT_MM, *skin_z,
+                        *ANTENNA_SECTOR_DEG, priority=9))
+    elif skin == "local":
+        dm = math.degrees(skin_margin_mm / SLEEVE_R_OUT_MM)
+        for sl in slots:
+            for sec in sl.sectors(skin_r_in, SLEEVE_R_OUT_MM, "pec", 9):
+                S.append(dataclasses.replace(
+                    sec, name=f"skin_{sec.name}",
+                    z0=max(sec.z0 - skin_margin_mm, skin_z[0]),
+                    z1=min(sec.z1 + skin_margin_mm, skin_z[1]),
+                    a0=sec.a0 - dm, a1=sec.a1 + dm))
+    else:
+        raise ValueError(f"skin={skin!r}")
     ports = []
     for sl in slots:
         S.extend(sl.sectors(skin_r_in, SLEEVE_R_OUT_MM, "lds_lcp", 12))
