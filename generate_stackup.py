@@ -2016,23 +2016,23 @@ def build_activation_interface(d: Design) -> None:
     # activation_interface): the H3LIS gives the quantitative ±400 g over
     # I²C, the piezo the fast edge.
     piezo = add_piezo_disc_smd10t04r111(d, ref="P_PIEZO",
-                                        board_tag="fin_ble_board")
+                                        board_tag="aft_end_board")
     _net(d, "PIEZO_P").connect(piezo.pin("1"))   # MAIN (bottom electrode)
     _net(d, "GND")    .connect(piezo.pin("2"))   # WRAP (top electrode, wrapped)
     res_between(d, "PIEZO_P", "GND", "1M", ref="R_PIEZO_BLEED",
-                board_tag="fin_ble_board")   # DC return + charge bleed
+                board_tag="aft_end_board")   # DC return + charge bleed
     res_between(d, "PIEZO_P",  "COMP_INP", "100k", ref="R_COMP_SER",
-                board_tag="fin_ble_board")
+                board_tag="aft_end_board")
     res_between(d, "3V3_AON",  "COMP_INM", "1M",   ref="R_THR1",
-                board_tag="fin_ble_board")
+                board_tag="aft_end_board")
     res_between(d, "COMP_INM", "GND",      "100k", ref="R_THR2",
-                board_tag="fin_ble_board")
+                board_tag="aft_end_board")
     # TLV3691 nanopower comparator (~0.15 µA Iq) — replaces the LMV331 so the
     # launch detector can stay on the always-on 3V3 without being an ~80 µA shelf
     # load. Push-pull output → NO pull-up (the LMV331's R_COMP_PU is gone, which
     # would otherwise sink ~33 µA whenever COMP_OUT is low ≈ always). V+ is pin 6
     # (pin 5 is NC). COMP_OUT drives the M33 PD5 EXTI directly.
-    comp = add_tlv3691idpfr(d, ref="U_COMP_PZ", board_tag="fin_ble_board")
+    comp = add_tlv3691idpfr(d, ref="U_COMP_PZ", board_tag="aft_end_board")
     _net(d, "COMP_INP").connect(comp.pin("1"))   # IN+
     _net(d, "GND")     .connect(comp.pin("2"))   # GND / V−
     _net(d, "COMP_INM").connect(comp.pin("3"))   # IN−
@@ -2040,7 +2040,7 @@ def build_activation_interface(d: Design) -> None:
     # pin 5 = NC (no connect)
     _net(d, "3V3_AON") .connect(comp.pin("6"))   # VCC (launch detector active from Standby on)
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_COMP_PZ",
-               board_tag="fin_ble_board", pin=comp.pin("6"))   # local comparator decoupling
+               board_tag="aft_end_board", pin=comp.pin("6"))   # local comparator decoupling
 
     _build_activation_array(d)
 
@@ -4041,7 +4041,7 @@ _RADAR     = {"radar_module", "nose_cap"}
 # calls _set_battery_mode.
 _BATTERY_MODES = {
     "single": {"compartment_mm": 15.1},   # 1× TLM-1530M/S horizontal (opt-in)
-    "triple": {"compartment_mm": 23.0},   # 21 mm cells + 2 mm headroom under
+    "triple": {"compartment_mm": 24.2},   # +1.2 mm closed floor (piezo pocket, 2026-11-15)   # 21 mm cells + 2 mm headroom under
                                           #   fin_ble (holder = edge ring there)
                                           # 3× TLM-1520HPM/S vertical on
                                           #   cell_floor_board (DEFAULT)
@@ -5136,7 +5136,6 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     if radar is not None and getattr(radar, "geometry", None) is not None:
         radar.geometry.keepouts.append(Keepout(
             polygon=[(-6.0, 7.5), (6.0, 7.5), (6.0, 17.0), (-6.0, 17.0)],
-            layers=("F.Cu",),       # only the face toward nose_cap (was both faces)
             scope="both", tag="usb_zone",
             note="nose_cap USB-C lands here when folded — keep tall chips out."))
 
@@ -5489,6 +5488,12 @@ _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
                              #  to fit in the gap to the row above)
 
 
+# (2026-11-15) The launch piezo + comparator column live on aft_end's TOP,
+# in the battery holder floor's underside pocket (spacer_step.piezo_pocket).
+_PIEZO_POCKET_REFS = ("P_PIEZO", "R_PIEZO_BLEED", "R_COMP_SER", "R_THR1",
+                      "R_THR2", "U_COMP_PZ", "C_COMP_PZ")
+
+
 def _empty_aft_end_top(d) -> int:
     """(2026-11-15 aft reorder) aft_end_board keeps ONLY its bottom-face
     interface pads; every other part moves up to activation_interface (the
@@ -5499,7 +5504,8 @@ def _empty_aft_end_top(d) -> int:
     for c in d.chips:
         ref = getattr(c, "ref", "")
         if (getattr(c, "board_tag", None) == "aft_end_board"
-                and not ref.startswith(("TP_", "P_ACT", "J_CAST_"))):
+                and not ref.startswith(("TP_", "P_ACT", "J_CAST_"))
+                and ref not in _PIEZO_POCKET_REFS):
             c.board_tag = "activation_interface"
             n += 1
     return n
@@ -5615,11 +5621,14 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                 # board everywhere OUTSIDE it (E top: cell tabs only inside);
                 # on the upper board (fin_ble bottom) the crescent POCKETS are
                 # the only part space (≤ pocket depth − 0.2 mm tall).
-                cav = battery_holder_cavity()
+                # lower board (aft_end top): the holder's CLOSED FLOOR bears
+                # everywhere except its piezo pocket (2026-11-15).
+                from smash.export.spacer_step import piezo_pocket
+                pk = piezo_pocket().simplify(0.02)
                 ov.append((layer, [_local_xy(fold_M[nbr], _m.degrees(_m.atan2(y, x)),
                                              _m.hypot(x, y))
-                                   for x, y in list(cav.exterior.coords)[:-1]],
-                           "BATT HOLDER bears outside cell bores"))
+                                   for x, y in list(pk.exterior.coords)[:-1]],
+                           "PIEZO POCKET in holder floor; Al bears elsewhere"))
                 if layer == "B.SilkS":
                     from smash.export.spacer_step import (
                         BATT_TOP_RING_R_IN_MM, BATT_PART_CLEARANCE_MM,
@@ -5629,7 +5638,7 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                                              - BATT_PART_CLEARANCE_MM),
                                f"BATT RING r{BATT_TOP_RING_R_IN_MM:g}-17 KEEPOUT; "
                                f"PARTS <= {BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:.1f} mm"))
-            else:
+            elif kind == "standoffs":
                 for k, ang in enumerate(STANDOFF_ANGLES_DEG):
                     x, y = _local_xy(fold_M[nbr], ang, STANDOFF_R_MM)
                     ov.append((layer, circle(x, y, STANDOFF_D_MM / 2.0
@@ -5678,6 +5687,13 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                 ref = getattr(c, "ref", "")
                 if ref.startswith(("P_", "TP_", "J_")):
                     continue                       # pads: cell tabs / contacts
+                if face == "top" and ref in _PIEZO_POCKET_REFS:
+                    from smash.export.spacer_step import piezo_pocket
+                    from shapely.geometry import box as _bx
+                    w, h = (sz[0], sz[1]) if sz else (0.5, 0.5)
+                    if not piezo_pocket().contains(_bx(x - w / 2, y - h / 2, x + w / 2, y + h / 2)):
+                        issues.append(f"{nbr}/top: {ref} outside the holder's piezo pocket")
+                    continue
                 if face == "top":
                     issues.append(f"{nbr}/top: {ref} under the battery holder / "
                                   "cells (only cell-tab pads allowed)")

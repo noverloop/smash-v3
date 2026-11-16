@@ -1060,6 +1060,8 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
     from smash.export import spacer_step as S
     kind = S.gap_kind(name)
     ox, oy = offset_xy
+    if kind == "none":
+        return []
     out = []
     k = [0]
 
@@ -1100,7 +1102,11 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
             vx, vy = -uy * S.SLOT_W_MM / 2, ux * S.SLOT_W_MM / 2
             poly([(r0 * ux + vx, r0 * uy + vy), (r1 * ux + vx, r1 * uy + vy),
                   (r1 * ux - vx, r1 * uy - vy), (r0 * ux - vx, r0 * uy - vy)])
+        pk = S.piezo_pocket().simplify(0.02)
+        poly(list(pk.exterior.coords)[:-1], 0.2)
         text("ALUMINIUM BATTERY HOLDER (not a PCB)", -S.BATT_HOLDER_R_OUT_MM - 2.0)
+        text(f"closed {S.BATT_FLOOR_MM:g} mm floor; piezo pocket {S.BATT_PZ_POCKET_DEPTH_MM:g} mm deep underneath",
+             S.BATT_HOLDER_R_OUT_MM + 3.5)
         text(f"{h:.1f} mm tall - spans {len(run)} gaps", S.BATT_HOLDER_R_OUT_MM + 2.0)
     elif kind == "ring":
         circle(0, 0, S.RING_R_OUT_MM, 0.2)

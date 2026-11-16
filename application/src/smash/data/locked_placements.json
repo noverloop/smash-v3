@@ -313,7 +313,7 @@
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "SMD10T04R111 launch piezo: pinned dead-centre on the projectile spin axis, on fin_ble_board's TOP face (2026-07-31 stack reorder — the disc + comparator column swapped off the saturated aft_end top; fin_ble is the battery-compartment ceiling now). TOP (nose-facing) is the hard mechanical rule: rapid deceleration loads the ceramic in COMPRESSION against rigid FR4 (far below its >500 MPa compressive strength); an aft-facing mount would put the disc's inertial load on the In52 joints in tension or bend it over potting voids — never move the disc to an aft-facing face. ⚠ open assembly item: PZT depoles >~160 C, so the final In52/Sn48 118 C attach step needs the fin_ble↔wakeup gap still open (attach, close the fold, pot) — verify the fold/pot sequence. _mark_battery_chip_clearance's P_PIEZO branch is inert while the disc rides a non-bracket face."
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
  "L_PMIC_BUCK2": {
   "position_mm": [
@@ -335,57 +335,57 @@
  },
  "U_COMP_PZ": {
   "position_mm": [
-   8.97,
-   -7.15
+   7.8,
+   0.0
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
  "C_COMP_PZ": {
   "position_mm": [
-   8.5,
-   4.0
+   7.8,
+   1.5
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 0,
   "face": "top",
-  "reason": "Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
  "R_PIEZO_BLEED": {
   "position_mm": [
-   8.5,
-   2.0
+   6.0,
+   1.4
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 0,
   "face": "top",
-  "reason": "Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
  "R_THR1": {
   "position_mm": [
-   8.5,
+   7.8,
+   -1.5
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
+ },
+ "R_COMP_SER": {
+  "position_mm": [
+   6.0,
+   -1.4
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
+ },
+ "R_THR2": {
+  "position_mm": [
+   9.5,
    0.0
   ],
   "rotation_deg": 90,
   "face": "top",
-  "reason": "Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
- },
- "R_COMP_SER": {
-  "position_mm": [
-   7.225,
-   -1.64
-  ],
-  "rotation_deg": 0,
-  "face": "top",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
- },
- "R_THR2": {
-  "position_mm": [
-   7.21,
-   -4.035
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "Final routed fin_ble_board (Review/fin_ble_board2, 2026-10-12: SYS_SPI moved SPI3 -> SPI2) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). Previously: Piezo launch-comparator / threshold part, hand-placed + locked by EE in the comparator column (x~8.5) beside the piezo disc — keeps the high-Z PIEZO_P sensing unit together on one face (no via stub). On fin_ble_board TOP since the 2026-07-31 stack reorder (the column followed the disc off the saturated aft_end top; fin_ble is the battery-compartment ceiling, and the packer fits the fins cluster around these locks)."
+  "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
  "TP_SPI_MOSI": {
   "position_mm": [

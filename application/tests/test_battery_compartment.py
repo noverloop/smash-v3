@@ -101,13 +101,15 @@ def test_compartment_sits_between_aft_end_and_activation(built):
 
 
 def test_aft_end_top_face_is_empty(built):
-    """Only the bottom-face interface pads (+ castellations) stay on aft_end."""
-    _gen, _d, _panel, boards = built
+    """Only the bottom-face interface pads (+ castellations) and the piezo
+    cluster in the holder floor pocket stay on aft_end."""
+    gen, _d, _panel, boards = built
     for pl in boards["aft_end_board"].chip_placements:
         ref = pl.item.ref
         if ref.startswith("J_") and "spacer" in ref:
             continue                     # legacy LGA land chip (this fixture only)
-        assert ref.startswith(("TP_", "P_ACT", "J_CAST_")), ref
+        assert (ref.startswith(("TP_", "P_ACT", "J_CAST_"))
+                or ref in gen._PIEZO_POCKET_REFS), ref
 
 
 # ── merged through-cut (no unsustainable centre web) ──────────────────
@@ -184,7 +186,7 @@ def test_piezo_disc_smd_no_pocket(built):
     for bname in ("aft_end_board", "fin_ble_board"):
         cavs = boards[bname].cavity_placements or []
         assert "piezo_disk_pocket" not in [c.item.name for c in cavs]
-    pl = _placement(boards["fin_ble_board"], "P_PIEZO")
+    pl = _placement(boards["aft_end_board"], "P_PIEZO")   # 2026-11-15: holder-floor pocket
     assert pl is not None and pl.face == "top"
     assert pl.position_mm == (0.0, 0.0)          # locked on the spin axis
     assert pl.item.footprint.name == "PiezoDisc_SMD10T04R111"
@@ -344,4 +346,23 @@ def test_every_gap_is_battery_holder_or_ring():
     from smash.export.spacer_step import gap_kind
     panel, boards = build_panel()
     kinds = {gap_kind(n) for n in panel.snake_chain if boards[n].is_spacer}
-    assert kinds == {"battery_holder", "ring"}
+    assert kinds == {"battery_holder", "ring", "none"}   # no PEEK standoffs anywhere
+    from smash.export.spacer_step import NO_HARDWARE_GAPS
+    assert {n for n in panel.snake_chain
+            if boards[n].is_spacer and gap_kind(n) == "none"} == set(NO_HARDWARE_GAPS)
+
+
+def test_piezo_cluster_sits_in_the_holder_floor_pocket():
+    import json, pathlib
+    from shapely.geometry import box
+    from smash.export.spacer_step import piezo_pocket, BATT_PZ_POCKET_DEPTH_MM
+    from smash.parts.mechanical import add_piezo_disc_smd10t04r111
+    from smash import Design
+    L = json.loads((pathlib.Path(__file__).parents[1] / "src/smash/data/locked_placements.json").read_text())
+    pk = piezo_pocket()
+    assert L["P_PIEZO"]["position_mm"] == [0.0, 0.0] and L["P_PIEZO"]["face"] == "top"
+    disc = add_piezo_disc_smd10t04r111(Design(), ref="P")
+    assert disc.height_mm < BATT_PZ_POCKET_DEPTH_MM
+    for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_THR1", "R_THR2", "U_COMP_PZ", "C_COMP_PZ"):
+        x, y = L[ref]["position_mm"]
+        assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref

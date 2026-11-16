@@ -75,11 +75,19 @@ def _antenna_placeholders(contract, zmap, r, width):
             continue
         x0 = _x_of(lane["angles"][0], r)
         z0 = sum(zmap["fin_ble_board"]) / 2.0
+        # (2026-11-15) The holder no longer sits right under fin_ble (the
+        # aft reorder put activation_interface + a ring gap in between): a
+        # straight feed line runs down to the holder's top, and the meander
+        # starts THERE so the whole radiator lies over the aluminium.
+        batt = [zmap[n] for n in zmap if n.startswith("spacer_battery_")]
+        z_top = (max(z1 for _z0, z1 in batt) - 1.0) if batt else z0 + sgn * 1.5
+        bh = min(bh, (z_top - min(zb for zb, _z1 in batt) - 1.0)) if batt else bh
         pts = [(x0, z0)]
-        z = z0 + sgn * 1.5                       # short riser off the feed
+        z = z_top
         pts.append((x0, z))
-        used, x, go_right = 1.5, x0, True
-        while used < length_mm and abs(z - z0) + step <= bh:
+        used, x, go_right = 0.0, x0, True        # feed line = transmission line, not radiator
+        zs = z
+        while used < length_mm and abs(z - zs) + step <= bh:
             nx = x0 + (bw / 2 if go_right else -bw / 2)
             run = min(abs(nx - x), length_mm - used)
             x = x + (run if nx > x else -run)

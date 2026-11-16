@@ -560,6 +560,8 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 # ring (the old names pointed at gaps that no longer exist, which silently
 # dropped the rings). The ring IS the gap's spacer: no standoffs in it.
 GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
+# radar ↔ nose_cap: NO hardware — the nose_cap is itself the spacer.
+NO_HARDWARE_GAPS = ("spacer_radar_module_nose_cap",)
 RING_R_IN_MM, RING_R_OUT_MM = 16.0, 17.0      # 1.0 mm wall, OD 34 = board edge (2026-11-15); bears on the
                                               # mask-tented castellation annuli (mask + anodise = 2× insulation)
 RING_CLEARANCE_MM = 0.2                       # silk "standoff distance" each side
@@ -586,6 +588,13 @@ BATT_CHANNEL_D_MM, BATT_CHANNEL_R_MM, BATT_CHANNEL_ANGLE_DEG = 3.0, 13.0, 135.0 
 # for parts ≤ headroom − 0.2 mm. The cells' existing + tab extensions are
 # bent across the headroom to the P_CELL_CONTACTS pads on fin_ble.
 BATT_CELL_LENGTH_MM = 21.0
+# (2026-11-15) CLOSED FLOOR under the cells: they stand on it, and its
+# underside carries a shallow POCKET for the launch piezo (Ø10 × 0.4 disc on
+# aft_end's top, on the spin axis) + its comparator column (0402s + X2SON).
+BATT_FLOOR_MM = 1.2
+BATT_PZ_POCKET_DEPTH_MM = 0.6
+BATT_PZ_DISC_POCKET_R_MM = 5.4                  # Ø10 disc + 0.4 radial clearance
+BATT_PZ_SLOT_MM = (4.6, -2.4, 10.4, 2.4)        # comparator column slot (x0, y0, x1, y1)
 BATT_HEADROOM_MM = 2.0
 BATT_TOP_RING_R_IN_MM = 16.0
 BATT_PART_CLEARANCE_MM = 0.2
@@ -653,21 +662,31 @@ def _poly_extrude(cq, poly, h, z0=0.0):
     return wp
 
 
+def piezo_pocket():
+    """Shapely outline of the floor-underside pocket (physical frame)."""
+    from shapely.geometry import Point, box
+    return Point(0, 0).buffer(BATT_PZ_DISC_POCKET_R_MM, 96).union(box(*BATT_PZ_SLOT_MM))
+
+
 def _battery_holder_body(cq, h):
-    """Cell-locating block (z 0 … cell length) + a 1 mm EDGE RING above it
-    (up to h = cell length + headroom). Potting: edge notches at the bottom
-    (feed) and the ring's top edge (vent) at 0° / 180°, + the axial channel."""
+    """Closed FLOOR (with the piezo pocket in its underside) + cell-locating
+    block above it + a 1 mm EDGE RING up to h. Potting: edge notches at the
+    bottom (feed) and the ring's top edge (vent), + the axial channel."""
     import math
-    hc = min(BATT_CELL_LENGTH_MM, h)
-    body = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(hc)
-    body = body.cut(_poly_extrude(cq, battery_holder_cavity(), hc))
+    f = BATT_FLOOR_MM
+    hc = min(BATT_CELL_LENGTH_MM, h - f)
+    floor = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(f)
+    floor = floor.cut(_poly_extrude(cq, piezo_pocket(), BATT_PZ_POCKET_DEPTH_MM))
+    block = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(hc).translate((0, 0, f))
+    block = block.cut(_poly_extrude(cq, battery_holder_cavity(), hc, z0=f))
+    body = floor.union(block)
     cx, cy = _batt_channel_xy()
     body = body.cut(cq.Workplane("XY").center(cx, cy)
-                    .circle(BATT_CHANNEL_D_MM / 2.0).extrude(hc))
-    if h > hc + 1e-6:
+                    .circle(BATT_CHANNEL_D_MM / 2.0).extrude(f + hc))
+    if h > f + hc + 1e-6:
         ring = (cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM)
-                .circle(BATT_TOP_RING_R_IN_MM).extrude(h - hc)
-                .translate((0, 0, hc)))
+                .circle(BATT_TOP_RING_R_IN_MM).extrude(h - f - hc)
+                .translate((0, 0, f + hc)))
         body = body.union(ring)
     for ang in BATT_FEED_ANGLES_DEG:
         a = math.radians(ang)
@@ -685,8 +704,10 @@ def _battery_holder_body(cq, h):
 def gap_kind(name: str) -> str:
     if name.startswith("spacer_battery_"):
         return "battery_holder"
-    # (2026-11-15) EVERY non-battery gap is an Al ring (user: no gap without
-    # a ring) — the PEEK standoffs are retired; _standoffs_body is unused.
+    # (2026-11-15) Every non-battery gap is an Al ring, except radar ↔
+    # nose_cap, which has none (the nose_cap is the spacer). No PEEK standoffs.
+    if name in NO_HARDWARE_GAPS:
+        return "none"
     return "ring"
 
 
@@ -736,6 +757,8 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
         h = sum(boards[n].thickness_mm for n in batt)
         return _battery_holder_body(cq, h), h, "battery_holder", kind
     h = b.thickness_mm
+    if kind == "none":
+        return None
     if kind == "ring":
         return _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
@@ -754,6 +777,8 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
         if b is None or not getattr(b, "is_spacer", False):
             continue
         kind = gap_kind(name)
+        if kind == "none":
+            continue
         if kind == "battery_holder":
             if name != (batt[0] if batt else None):
                 continue
