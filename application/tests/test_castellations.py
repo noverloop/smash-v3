@@ -37,7 +37,8 @@ def built():
     M = board_fold_transforms(panel, list(panel.snake_chain))
     contract, counts = place_castellations(
         d, panel, boards,
-        connect=lambda net, pin: gen._net(d, net).connect(pin))
+        connect=lambda net, pin: gen._net(d, net).connect(pin),
+        cone_exits=gen._CONE_EXITS)
     return d, panel, boards, contract, counts, M
 
 
@@ -50,7 +51,8 @@ def test_every_rigid_snake_board_gets_castellations(built):
     rigid = [n for n in panel.snake_chain if n in boards
              and not getattr(boards[n], "is_spacer", False)
              and getattr(boards[n], "kind", "rigid") != "flex"]
-    assert set(counts) == set(rigid)
+    leaves = {dst for _src, dst in (panel.branches or []) if dst in boards}
+    assert set(counts) == set(rigid) | leaves
 
 
 def test_no_lane_shared_on_a_board(built):
@@ -75,9 +77,9 @@ def test_lanes_avoid_reserved_sectors(built):
 
 
 def test_pads_sit_on_the_outline(built):
-    d, _p, _b, contract, _n, _M = built
-    r = contract["radius_mm"]
+    d, _p, boards, contract, _n, _M = built
     for c in _cast_chips(d):
+        r = boards[c.board_tag].geometry.outline_radius_mm or contract["radius_mm"]
         for pad in c.footprint.pads:
             assert math.hypot(*pad.position_mm) == pytest.approx(r, abs=1e-3)
             assert pad.drill_mm and pad.note == "castellated"
@@ -87,8 +89,9 @@ def test_each_lane_is_one_physical_angle_through_the_fold(built):
     """Map every pad back from its board's folded frame to the physical
     frame: all pads of a net land on that net's lane angles."""
     d, _p, _b, contract, _n, M = built
+    parent = dict((dst, src) for src, dst in (_p.branches or []))
     for c in _cast_chips(d):
-        Mb = M[c.board_tag]
+        Mb = M.get(c.board_tag) or M[parent[c.board_tag]]
         for pin, pad in zip(c.pins, c.footprint.pads):
             net, ang = pin.name.rsplit("@", 1)
             ang = float(ang.removesuffix("deg"))
@@ -137,6 +140,8 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
         kind = lane.get("kind", "signal")
         kinds.add(kind)
         for a in lane["angles"]:
+            if kind == "cone_exit":
+                continue                     # nose-cone exits: antenna sector (cone over GND)
             if kind in ("signal", "power", "plug_exit", "gnd_guard"):
                 assert in_signal(a), (net, a)
             else:
@@ -189,3 +194,19 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     assert xs == sorted(xs)                       # unrolled order
     write_kicad_schematic(s, tmp_path)
     assert "J_SLEEVE" in (tmp_path / "smash.kicad_sch").read_text()
+
+
+def test_nose_cone_exits_replace_the_branch_flex(built):
+    """QPD / camera links leave companion_compute through castellations (one
+    angle per net, free above compute) and land on the leaf PCB at the
+    same angle; GND rides the GND castellations on the leaves too."""
+    d, _p, boards, contract, counts, _M = built
+    cone = {k: v for k, v in contract["lanes"].items() if v["kind"] == "cone_exit"}
+    assert cone
+    for k, v in cone.items():
+        assert v["boards"][0] == "companion_compute"
+        assert v["boards"][1] in ("qpd_module", "camera_module")
+    for leaf in ("qpd_module", "camera_module"):
+        assert counts.get(leaf, 0) >= 1
+    assert not any(c.ref.startswith("J_FLEX") or "LAUNCH" in c.ref.upper()
+                   for c in d.chips)

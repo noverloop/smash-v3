@@ -384,8 +384,9 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # joined by the board-to-board LGA lands through the spacers, so the
     # snake links draw NO strips. Only the 2 perpendicular branch/module
     # flexes remain (qpd, camera; nfc deleted 2026-07-30, the Yagi-A/B
-    # flexes 2026-11-14).
-    assert r["n_flex_strips"] == 2
+    # flexes 2026-11-14). Since 2026-11-15 the qpd / camera links run on the
+    # LDS nose cone (castellations), so NO flex strips remain.
+    assert r["n_flex_strips"] == 0
     # Round-trip parses
     sexp = _parse_sexp(out.read_text())
     assert sexp[0] == "kicad_pcb"

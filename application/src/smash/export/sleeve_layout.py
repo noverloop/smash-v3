@@ -139,7 +139,12 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 items.append(f'\t(via (at {x} {Y(zc)}) (size {VIA_PAD_MM}) '
                              f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1
-            if kind in ("signal", "power", "gnd_guard") and len(zs) >= 2:
+            if kind == "cone_exit" and zs:
+                # runs up to the sleeve's nose rim → continues on the LDS cone
+                items.append(f'\t(segment (start {x} {Y(zs[0])}) (end {x} {Y(H)}) '
+                             f'(width {lane.get("width_mm", 0.2)}) (layer "F.Cu") (net {n}))')
+                n_lanes += 1
+            elif kind in ("signal", "power", "gnd_guard") and len(zs) >= 2:
                 w = lane.get("width_mm", 0.2)
                 items.append(f'\t(segment (start {x} {Y(zs[0])}) (end {x} {Y(zs[-1])}) '
                              f'(width {w}) (layer "F.Cu") (net {n}))')

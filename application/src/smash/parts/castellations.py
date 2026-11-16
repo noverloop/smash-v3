@@ -140,7 +140,8 @@ def _lane_angles(r: float) -> list:
     return out
 
 
-def castellation_contract(design, panel, boards, plug_groups=None) -> dict:
+def castellation_contract(design, panel, boards, plug_groups=None,
+                          cone_exits=None) -> dict:
     """Compute the lane contract for this (maximalist) build."""
     from smash.parts.connectors import is_off_backbone
     chain = [n for n in (panel.snake_chain or []) if n in boards]
@@ -287,6 +288,43 @@ def castellation_contract(design, panel, boards, plug_groups=None) -> dict:
                 k += 1
                 if src is h1:
                     n1 += 1
+    # (2026-11-15) NOSE-CONE exits: the QPD / camera leaves sit in a custom
+    # LDS nose cone that continues the sleeve above the parent. Each leaf net
+    # (GND excluded — it rides the GND castellations) gets its own angle on
+    # the parent, free from the parent to the top of the stack (where the
+    # cone traces run), and a castellation at the same angle on the leaf PCB.
+    # Allocated in the ANTENNA sector: above the parent, in the configs that
+    # carry a cone (qpd / camera — never with radar + nose_cap), the sleeve
+    # is empty there, and a cone trace over the sleeve's inner GND plane is a
+    # microstrip. Clear of the GND castellations and the antenna feeds.
+    half = 0.5 * math.degrees(CAST_PITCH_MM / r)
+    fixed = list(GND_CAST_ANGLES_DEG) + list(ANTENNA_FEED_ANGLES_DEG.values())
+    cone_slots = sorted(
+        (a for a in _ring_angles(r) if not _in_signal_sector(a)
+         and all(min(abs(a - f), 360 - abs(a - f)) > 2 * half for f in fixed)),
+        key=lambda a: abs(a - 180.0))
+    cone_used = set()
+    cone_over = []
+    for parent, leaf, nets in (cone_exits or []):
+        if parent not in pos:
+            continue
+        for n in nets:
+            net = design.net_by_name(n)
+            if net is None or (gnd is not None and (net is gnd or _is_gnd(net))):
+                continue
+            a = next((a for a in cone_slots if a not in cone_used), None)
+            if a is None:
+                cone_over.append(n)
+                continue
+            cone_used.add(a)
+            lanes[f"CONE:{leaf}:{n}"] = {"angles": [a], "boards": [parent, leaf],
+                                         "net": net.name, "kind": "cone_exit",
+                                         "width_mm": SIGNAL_LANE_WIDTH_MM}
+        if gnd is not None and gnd.name in lanes and leaf in boards:
+            lanes[gnd.name]["boards"] = list(dict.fromkeys(lanes[gnd.name]["boards"] + [leaf]))
+    if cone_over:
+        print(f"  WARNING: castellations: {len(cone_over)} nose-cone net(s) short "
+              f"of angles: {', '.join(cone_over)}", file=sys.stderr)
     used = sum(1 for a in angles if occupied[a])
     lanes.update(feeds)
     if overflow:
@@ -304,16 +342,26 @@ def castellation_contract(design, panel, boards, plug_groups=None) -> dict:
 
 
 def place_castellations(design, panel, boards, *, connect,
-                        contract: dict | None = None, plug_groups=None) -> tuple:
+                        contract: dict | None = None, plug_groups=None,
+                        cone_exits=None) -> tuple:
     """Emit one CASTELLATIONS chip per rigid snake board (pads on the outline
     at the contract's lanes, mapped into the board's folded frame). Computes
     the contract when none is given. Returns (contract, {board: n_pads})."""
     from smash.state.topology.placement import Placement
     if contract is None:
-        contract = castellation_contract(design, panel, boards, plug_groups)
+        contract = castellation_contract(design, panel, boards, plug_groups,
+                                         cone_exits=cone_exits)
     chain = [n for n in (panel.snake_chain or []) if n in boards]
     M = board_fold_transforms(panel, chain)
+    # Branch leaves (nose-cone PCBs) take their parent's frame, own radius.
+    for src, dst in (getattr(panel, "branches", None) or []):
+        if src in M and dst in boards:
+            M.setdefault(dst, M[src])
     r = contract["radius_mm"]
+
+    def r_of(b):
+        g = getattr(boards[b], "geometry", None)
+        return getattr(g, "outline_radius_mm", None) or r
     per_board: dict = {}
     for net_name, lane in contract["lanes"].items():
         for b in lane["boards"]:
@@ -329,7 +377,7 @@ def place_castellations(design, panel, boards, *, connect,
         items.sort()
         pads = []
         for i, (a, _n) in enumerate(items):
-            pads.append(Pad(num=str(i + 1), position_mm=_local_xy(M[b], a, r),
+            pads.append(Pad(num=str(i + 1), position_mm=_local_xy(M[b], a, r_of(b)),
                             size_mm=(CAST_PAD_MM, CAST_PAD_MM), shape="round",
                             layer="*.Cu", drill_mm=CAST_DRILL_MM, paste=False,
                             # Face annulus TENTED by solder mask: the sleeve
@@ -342,7 +390,7 @@ def place_castellations(design, panel, boards, *, connect,
                             note="castellated"))
         fp = Footprint(name=f"Castellations_{b}",
                        package_class="board-edge castellations",
-                       pads=pads, size_mm=(2 * r, 2 * r), height_mm=0.0,
+                       pads=pads, size_mm=(2 * r_of(b), 2 * r_of(b)), height_mm=0.0,
                        source="project")
         chip = design.add_chip(
             ref=f"J_CAST_{b}", board_tag=b, manf="project",

@@ -3969,6 +3969,13 @@ _BRANCH_PARENT = {
 # net list is validated against the live census whenever the leaf IS
 # in the build, so a leaf-builder net change breaks generation loudly
 # instead of silently moving pads.
+# (2026-11-15) The QPD / camera flex leaves are replaced by LDS traces on a
+# custom nose cone; the sensors stay PCBs. Their links leave the parent via
+# castellations — same net lists as the old launch contract.
+def _cone_exits():
+    return [(p, leaf, nets) for p, leaf, _side, nets in _FLEX_LAUNCH_CATALOG]
+
+
 _FLEX_LAUNCH_CATALOG = [
     ("companion_compute", "qpd_module", "N",
      ["3V3", "FLEX_GND", "QPD_TIA_A", "QPD_TIA_B", "QPD_TIA_C",
@@ -3978,6 +3985,8 @@ _FLEX_LAUNCH_CATALOG = [
       "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK", "COMP_1V2",
       "COMP_1V8", "COMP_2V8", "FLEX_GND"]),
 ]
+
+_CONE_EXITS = _cone_exits()
 
 # Canonical order configurations, from components.md "Order
 # Configurations" + the config matrix. Board names mapped to twin tags;
@@ -6018,12 +6027,8 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     _, _cast = place_castellations(
         d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
         contract=ref.get("castellations"))
-    _launch = place_branch_flex_launches(
-        d, boards, catalog=_FLEX_LAUNCH_CATALOG,
-        connect=lambda net, pin: _net(d, net).connect(pin))
-    if _launch:
-        print("Branch-flex launch strips: "
-              + ", ".join(f"{p_}→{c_}={n_}" for (p_, c_), n_ in _launch.items()))
+    # (2026-11-15) No branch-flex launch strips: the QPD / camera links run on
+    # the LDS nose cone from castellations (_CONE_EXITS → castellation contract).
     _drop_radar_nose_spacer(d, panel, boards)   # scaffold spacer → discard
     _apply_companion_reference_layout(d, boards)
     _apply_activation_reference_layout(d, boards)
@@ -6198,16 +6203,13 @@ def main() -> int:
     # fixed physical angle (lane) on the stack. Spacers are no longer PCBs.
     _foldM = board_fold_transforms(panel, list(panel.snake_chain))
     _cast_contract, _cast = place_castellations(
-        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin))
+        d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
+        cone_exits=_CONE_EXITS)
     # (2026-11-15) No plug ring: aft_end_board's bottom-face interface stays
     # the external interface; `_plug_groups(d)` → place_castellations(…,
     # plug_groups=…) would move it onto the sleeve.
-    _launch = place_branch_flex_launches(
-        d, boards, catalog=_FLEX_LAUNCH_CATALOG,
-        connect=lambda net, pin: _net(d, net).connect(pin))
-    if _launch:
-        print("Branch-flex launch strips: "
-              + ", ".join(f"{p_}→{c_}={n_}" for (p_, c_), n_ in _launch.items()))
+    # (2026-11-15) No branch-flex launch strips: the QPD / camera links run on
+    # the LDS nose cone from castellations (_CONE_EXITS → castellation contract).
     _drop_radar_nose_spacer(d, panel, boards)   # scaffold spacer → discard
     _apply_companion_reference_layout(d, boards)
     _apply_activation_reference_layout(d, boards)

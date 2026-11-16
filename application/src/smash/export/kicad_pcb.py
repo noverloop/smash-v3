@@ -1584,7 +1584,7 @@ def _branch_leaf_offsets(panel, boards, canvas_origin_mm, tile_pitch_mm):
     lengths = panel.branch_flex_lengths or {}
     s_fold = panel.branch_s_fold or set()
     offs: dict = {}
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if parent not in panel.tiles or child not in panel.tiles:
             continue
         if parent not in boards or child not in boards:
@@ -1657,7 +1657,7 @@ def _cutouts_for_tile(
     s_fold = panel.branch_s_fold or set()
     sfold_skip_nbr = None
     sfold_combined = None     # (world centre angle, width)
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold and name == parent and child in tiles:
             run_hat, offset_hat = _s_fold_axes(panel, parent, child)
             snk = _s_fold_run_neighbor(panel, parent, run_hat)
@@ -1700,7 +1700,7 @@ def _cutouts_for_tile(
 
     # Branch neighbours (extra flex tails outside the snake) — these
     # don't carry the snake bus, so use the fallback width
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold:
             # S-turn cutouts: parent exits through ONE merged opening
             # (snake link + branch) that forks in the gap; leaf opening
@@ -2360,6 +2360,15 @@ def write_kicad_panel(
     }
 
 
+# (2026-11-15) The QPD / camera branches run on the LDS nose cone, not on
+# flex: no branch flex strips and no flex-mouth cutouts in the parent outline.
+BRANCH_FLEX_ON_LDS = True
+
+
+def _flex_branches(panel) -> list:
+    return [] if BRANCH_FLEX_ON_LDS else list(panel.branches or [])
+
+
 def _emit_flex_strips_for_panel(
     panel, boards: dict, out_parts: list,
     *,
@@ -2387,7 +2396,7 @@ def _emit_flex_strips_for_panel(
     # so suppress its plain strip here.
     s_fold = panel.branch_s_fold or set()
     fork_links = {}      # frozenset({parent, snk}) -> (parent, child)
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold and parent in panel.tiles:
             run_hat, _oh = _s_fold_axes(panel, parent, child)
             snk = _s_fold_run_neighbor(panel, parent, run_hat)
@@ -2426,7 +2435,7 @@ def _emit_flex_strips_for_panel(
         n += 1
 
     # Branches
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         p_info = _centre_board(parent)
         c_info = _centre_board(child)
         if p_info is None or c_info is None:
