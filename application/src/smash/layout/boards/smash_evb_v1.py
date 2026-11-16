@@ -220,8 +220,7 @@ def _standardize_board_stackups(boards: dict) -> None:
         b.target_thickness_mm = STANDARD_BOARD_THICKNESS_MM
 
 
-def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
-                single_cell: bool = False):
+def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # ── rigid tiles ───────────────────────────────────────────────────
     power_board       = Board("power_board")
     wakeup_board      = Board("wakeup_board")   # also carries the IMU/mag (flight folded in)
@@ -329,28 +328,20 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # contacts on the bottom face; piezo disc + comparator column on its
     # top). Potting injects from the fin_ble/wakeup-side channels and the
     # pass-through holes on cell_floor + activation fill the two thin aft
-    # gaps. Single-cell mode drops cell_floor (horizontal cell on aft_end;
-    # see the battery-compartment header).
+    # gaps.
     aft_end_board = Board(_AFT_END)
-    if single_cell:
-        cell_floor_board = None
-        chain = [
-            aft_end_board, activation_interface, fin_ble_board, wakeup_board,
-            power_board, companion_compute,
-            radar_module, nose_cap,
-        ]
-    else:
-        # (2026-11-15 aft reorder) cell_floor_board dropped: the Al battery
-        # compartment is glued + screwed straight onto aft_end_board's EMPTY
-        # top face; activation_interface (now also carrying aft_end's former
-        # top-face parts) is the compartment ceiling, under fin_ble.
-        cell_floor_board = None
-        chain = [
-            aft_end_board, activation_interface,
-            fin_ble_board, wakeup_board,
-            power_board, companion_compute,
-            radar_module, nose_cap,
-        ]
+    # (2026-11-15 aft reorder) cell_floor_board dropped: the Al battery
+    # compartment is glued + screwed straight onto aft_end_board's EMPTY
+    # top face; activation_interface (now also carrying aft_end's former
+    # top-face parts) is the compartment ceiling, under fin_ble.
+    # (2026-11-16) the single-cell variant is gone — always 3 cells.
+    cell_floor_board = None
+    chain = [
+        aft_end_board, activation_interface,
+        fin_ble_board, wakeup_board,
+        power_board, companion_compute,
+        radar_module, nose_cap,
+    ]
     chain_cells, spacers, edges = _interleave(chain, battery_length_mm)
 
     # Deploy branches (nfc/camera/qpd) all S-fold off their parent's snake

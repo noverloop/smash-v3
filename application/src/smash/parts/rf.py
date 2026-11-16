@@ -543,6 +543,87 @@ def add_lr2021imltrt(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+# ═════════════════════════════════════════════════════════════════════════
+# pSemi (Murata) PE42442A-Z — UltraCMOS SP4T absorptive RF switch,
+# 30 MHz–6 GHz, QFN-24 4×4 mm + exposed pad
+# ═════════════════════════════════════════════════════════════════════════
+
+_PE42442_NOTE = """\
+Datasheet: pSemi PE42442 Product Specification DOC-33414-9.01 (10/2025),
+vendored. SamacSys LIB v1.1 (2020-08-20) checked against it: all 24 pins +
+EP identical; footprint 0.5 mm pitch, 0.30 mm pads, EP 2.75 mm match the
+recommended land pattern (SamacSys pads 0.8 mm long vs 0.6 mm in the DS -
+0.2 mm longer toe outward, inner edge identical). SamacSys lists the maker
+as "Peregrine Semiconductor" (pSemi's former name).
+
+Absorptive: unselected RF ports are terminated in 50 ohm. Operating range
+30-6000 MHz, -40…+125 °C, VDD 2.3-5.5 V (110 µA), VIH 1.17-3.6 V (3.3 V
+GPIO OK). RF input 33 dBm CW at 105 °C (terminated ports 24 dBm). IL 0.85 /
+0.90 / 1.10 / 1.15 dB at 450 / 900 / 2100 / 2700 MHz (+25 °C; 1.18 / 1.50 dB
+at 900 / 2700 MHz at 125 °C). Isolation RFC-RFx 61 / 55 / 52 dB at 900 /
+2100 / 2700 MHz. Switching 255 ns.
+
+Control (DS Tables 5/6): 2-pin control recommended for new designs -
+V3 (pin 19) to GND; V2 V1 = 01 RF1, 10 RF2, 11 RF3, 00 RF4 (so pull-downs
+park it on RF4). 3-pin control adds ALL-OFF (V3=1 with V2V1 != 00).
+VSS_EXT (pin 20) to GND = internal negative-voltage generator (max 25 kHz
+switching rate, ~-120 dBm spur). RF pins must sit at 0 VDC (DC blocks
+only if DC is present). EVK: each control line 0 ohm + 100 pF + 1 Mohm
+pull-down; VDD 100 pF + 1 µF. MSL1.
+"""
+
+
+def add_pe42442a_z(design, ref: str, **overrides) -> Chip:
+    """pSemi (Murata) PE42442A-Z — absorptive SP4T RF switch, 30 MHz–6 GHz,
+    2/3-pin CMOS control, QFN-24 4×4 mm (QFN50P400X400X80-25N-D)."""
+    pn = "PE42442A-Z"
+    fp = _samacsys_qfn_footprint(
+        pn, "QFN50P400X400X80-25N-D.kicad_mod",
+        name="QFN50P400X400X80-25N-D", package_class="QFN-24 4x4 + EP",
+        pitch_mm=0.5, size_mm=(4.0, 4.0), height_mm=0.8)
+    P = Pin
+    gnd = {"1", "2", "3", "4", "6", "7", "9", "10", "12", "13", "15", "21", "23", "24"}
+    named = {
+        "5":  P(num="5",  name="RF4", type="io", note="RF port 4 (V2V1=00, the pull-down default); 0 VDC"),
+        "8":  P(num="8",  name="RF3", type="io", note="RF port 3 (V2V1=11); 0 VDC"),
+        "11": P(num="11", name="RF2", type="io", note="RF port 2 (V2V1=10); 0 VDC"),
+        "14": P(num="14", name="RF1", type="io", note="RF port 1 (V2V1=01); 0 VDC"),
+        "16": P(num="16", name="VDD", type="power", note="Supply 2.3-5.5 V"),
+        "17": P(num="17", name="V1", type="input", note="Control logic input 1"),
+        "18": P(num="18", name="V2", type="input", note="Control logic input 2"),
+        "19": P(num="19", name="V3", type="input", note="Control logic input 3 - GND for 2-pin control"),
+        "20": P(num="20", name="VSS_EXT", type="power", aliases=["VSSEXT"],
+                note="GND = internal negative supply; or external -3.2…-3.6 V (bypass mode)"),
+        "22": P(num="22", name="RFC", type="io", note="RF common; 0 VDC"),
+        "25": P(num="25", name="EP", type="ground", aliases=["GND_EP"], note="Exposed ground pad"),
+    }
+    pins = []
+    for n in sorted({p.num for p in fp.pads}, key=int):
+        if n in named:
+            pins.append(named[n])
+        elif n in gnd:
+            pins.append(P(num=n, name=f"GND_{n}", type="ground"))
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="pSemi (Murata)", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("SP4T absorptive RF switch, 30 MHz-6 GHz, high isolation, "
+                     "33 dBm, 2/3-pin CMOS control, QFN-24 4×4 mm"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=["RoHS", "MSL1"], eccn=None, itar=None,
+        package="QFN-24 4x4", size_mm=(4.0, 4.0), height_mm=0.8,
+        temp_range_c=(-40, 125),
+        body_material=None, lead_material=None,
+        voltage_rating_v=5.5, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=pins, footprint=fp, note=_PE42442_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 def _tcxo_2016_footprint() -> Footprint:
     """Generic 2.0 × 1.6 mm 4-pad TCXO land (JEDEC-style, pads 1-4 CCW)."""
     pads = [Pad(num=n, position_mm=(x, y), size_mm=(0.65, 0.55), shape="rect", layer="F.Cu")

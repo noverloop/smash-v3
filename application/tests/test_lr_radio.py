@@ -89,3 +89,70 @@ def test_host_lines_have_series_resistors(design):
         bridges = [c for c in design.chips if c.ref.startswith("R_")
                    and {_net(design, c, "1"), _net(design, c, "2")} == {host, pin_net}]
         assert bridges, f"no series R between {host} and LR2021 {pin}"
+
+
+# ── HF band switch, slot feeds, LF connection, VBAT bead (2026-11-16) ──
+
+_GND = {"GND", "FLEX_GND"}   # the ground net's canonical name / alias
+
+
+def _two_ended(d, c):
+    return {_net(d, c, "1"), _net(d, c, "2")}
+
+
+def _gndize(nets):
+    return {"GND" if n in _GND else n for n in nets}
+
+
+def test_vbat_through_ferrite_bead(design):
+    lr = _chip(design, "U_LR")
+    fb = _chip(design, "FB_LR_VBAT")
+    assert fb.manf_pn == "BLM18PG221SN1D"
+    vbat = _net(design, lr, "VBAT")
+    assert vbat not in _names(design, "3V3")
+    assert _two_ended(design, fb) == {_net(design, fb, "1"), vbat}
+    assert _net(design, fb, "1") in _names(design, "3V3")
+
+
+def test_band_switch_two_pin_control(design):
+    sw = _chip(design, "U_LR_BAND")
+    wba = _chip(design, "U_WBA")
+    assert sw.manf_pn == "PE42442A-Z"
+    for p in ("V3", "VSS_EXT", "EP"):
+        assert _net(design, sw, p) in _GND
+    assert _net(design, sw, "V1") == _net(design, wba, "PA8") == "LR_BAND_SEL0"
+    assert _net(design, sw, "V2") == _net(design, wba, "PA9") == "LR_BAND_SEL1"
+    for sel in ("LR_BAND_SEL0", "LR_BAND_SEL1"):   # EVK pull-down → reset = RF4
+        pd = [c for c in design.chips if c.ref.startswith("R_")
+              and _gndize(_two_ended(design, c)) == {sel, "GND"}]
+        assert pd, f"no pull-down on {sel}"
+    # common port fed (DC-blocked) from the HF TX/RX switch
+    rfc = _net(design, sw, "RFC")
+    blk = _chip(design, "C_LR_HF_ANTBLK")
+    assert _two_ended(design, blk) == {_net(design, _chip(design, "U_LR_SW_HF"), "RFIN"), rfc}
+
+
+def test_band_switch_routes_to_slots_and_load(design):
+    sw = _chip(design, "U_LR_BAND")
+    feeds = {}
+    for port, tag in (("RF1", "S1"), ("RF2", "S2"), ("RF3", "S3")):
+        inn = _net(design, sw, port)
+        lpf = _chip(design, f"L_LR_HF_{tag}_LPF")
+        assert inn in _two_ended(design, lpf)
+        feeds[tag] = (_two_ended(design, lpf) - {inn}).pop()
+    assert feeds["S1"] == "ANT_HF_S1" and feeds["S2"] == "ANT_HF_S2"
+    # S3 shares the antenna with BLE through the owner switch
+    own = _chip(design, "U_ANTSW_2G4")
+    assert feeds["S3"] == _net(design, own, "RF2")
+    assert _net(design, own, "RFIN") == "ANT_HF_S3"
+    # RF4 (reset default) → 49.9 Ω dummy load
+    load = _chip(design, "R_LR_HF_LOAD")
+    assert _gndize(_two_ended(design, load)) == {_net(design, sw, "RF4"), "GND"}
+
+
+def test_lf_path_ends_at_external_connection(design):
+    assert design.net_by_name("RF_LF_EXT") is not None
+    assert design.net_by_name("ANT_SUBG_FEED") is None
+    assert design.net_by_name("ANT_2G4_FEED") is None
+    lpf = _chip(design, "L_LR_LF_LPF")
+    assert "RF_LF_EXT" in _two_ended(design, lpf)

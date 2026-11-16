@@ -57,7 +57,7 @@ from smash.parts.castellations import (place_castellations,             # noqa: 
                                        board_fold_transforms)
 from smash.parts.connectors import (place_lga_lands,                    # noqa: E402
                                     place_branch_flex_launches)
-from smash.parts.batteries import add_tlm_1520hpms, add_tlm_1530m       # noqa: E402
+from smash.parts.batteries import add_tlm_1520hpms                      # noqa: E402
 from smash.parts.cameras import add_ar0234cssm00suka0_cp               # noqa: E402
 from smash.parts.radar import (                                        # noqa: E402
     add_awr2944abgaltrq1, add_awr2e44pbgamxrq1, add_awr1843aop,
@@ -95,7 +95,7 @@ from smash.parts.oscillators import (                                    # noqa:
 )
 from smash.parts.passives import (                                       # noqa: E402
     add_capacitor_c0g_0603_avx_sqcs, add_capacitor_x7r_0402_kemet,
-    add_we_744043100,
+    add_we_744043100, add_blm18pg221sn1d,
 )
 from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa: E402
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
@@ -104,7 +104,7 @@ from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa:
 from smash.parts.hall_sensors import add_drv5032fcqdbzr, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
 from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
-                            add_bgs12wn6e6327xtsa1)
+                            add_bgs12wn6e6327xtsa1, add_pe42442a_z)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
 from smash.export import (                                              # noqa: E402
@@ -1535,7 +1535,8 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
 
 
 def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
-                    ctrl_pin: str = "PA7") -> None:
+                    ctrl_pin: str = "PA7",
+                    band_pins: tuple = ("PA8", "PA9")) -> None:
     """Long-range radio, built on `BTAG` next to its host MCU (2026-11-16:
     wakeup_board, top face beside the WBA's RF π-match — the whole radio is
     board-local, no host or RF line crosses a joint).
@@ -1564,12 +1565,26 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
       • Sub-GHz (865-928 MHz): RFO_LF1 + RFO_LF2 TIED (DS §1.5: "must be
         connected together at PCB level"), choke from VR_PA, π low-pass,
         DC block → U_LR_SW_LF RF2; RFI_LF → L-match, DC block → RF1; switch
-        common → π harmonic low-pass → ANT_SUBG_FEED.
-      • 2.4 GHz: RFO_HF (choke from VR_PA, Fig 1-4) → series-L / shunt-C
-        match + low-pass, DC block → U_LR_SW_HF RF2; RFI_HF → L-match, DC
-        block → RF1; switch common → DC block → U_ANTSW_2G4 RF2.
+        common → π harmonic low-pass → RF_LF_EXT: an RF CONNECTION for an
+        external sub-GHz antenna (2026-11-16 decision: no sub-GHz radiator
+        on the 48 mm tower — a flat 50 Ω launch pad on the sleeve, mated by
+        a housing-side spring contact).
+      • HF 1.5-2.5 GHz (2026-11-16: HF is the hopping band): RFO_HF (choke
+        from VR_PA, Fig 1-4) → series-L / shunt-C match + low-pass, DC block
+        → U_LR_SW_HF RF2; RFI_HF → L-match, DC block → RF1; switch common →
+        DC block → U_LR_BAND (pSemi PE42442 absorptive SP4T, 2-pin control:
+        V3 + VSS_EXT to GND; V1 = LR_BAND_SEL0 / V2 = LR_BAND_SEL1 from host
+        GPIOs `band_pins` (WBA PA8 / PA9), each with the pSemi EVK 100 pF +
+        1 MΩ pull-down):
+          V2V1 01 → RF1 → π LPF/match → ANT_HF_S1 (slot S1 ≈ 1.75 GHz)
+          V2V1 10 → RF2 → π LPF/match → ANT_HF_S2 (slot S2 ≈ 2.0 GHz)
+          V2V1 11 → RF3 → π LPF/match → U_ANTSW_2G4 RF2 → ANT_HF_S3
+                    (slot S3 ≈ 2.4 GHz, shared with BLE)
+          V2V1 00 → RF4 → 49.9 Ω on-board load (the reset default: an
+                    unconfigured TX lands in a dummy load, and the same
+                    state is the calibration / test load).
         U_ANTSW_2G4 (BLE vs LR owner switch, CTRL from a host GPIO
-        (`ctrl_pin`, WBA PA7), default RF1 = BLE_RF) → ANT_2G4_FEED. The
+        (`ctrl_pin`, WBA PA7), default RF1 = BLE_RF) → ANT_HF_S3. The
         owner switch is on 3V3_AON (BLE works with the main rails dark) and
         sits at the antenna end, so BLE never passes through an LR part.
       • 32 MHz TCXO (Y_LR_TCXO, placeholder part) powered from VTCXO,
@@ -1578,8 +1593,8 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     LXA/LXB NC): VBAT on 3V3 (100 nF + 4.7 µF); VDCC1→VDCC2 on LR_VDCC;
     VPAX1→VPAX2 on their OWN net LR_VPAX (2.2 µF each — never on VBAT/3V3,
     VPAX1 is the internal regulator's output); VR_PA 1 nF (ref C28) feeding
-    both PA chokes. ⚠ VBAT ferrite bead (ref FB14) not fitted: no bead part
-    in the library yet.
+    both PA chokes. VBAT through ferrite bead FB_LR_VBAT (Murata
+    BLM18PG221SN1D, ref design FB14) from 3V3 onto LR_VBAT.
 
     ⚠ OPEN: pins and supply wiring follow the FINAL DS (LR20xx Rev 2.2), but
     the reference schematic carries no RF L/C values — every match / filter
@@ -1593,6 +1608,7 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     swlf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_LF", board_tag=BTAG, feature=F)
     swhf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_HF", board_tag=BTAG, feature=F)
     sw24 = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_2G4", board_tag=BTAG, feature=F)
+    band = add_pe42442a_z(d, ref="U_LR_BAND", board_tag=BTAG, feature=F)
 
     def C0G(net, val, ref, pin=None):
         cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
@@ -1610,9 +1626,11 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     # ── LR2021 supplies (LDO mode, DS v2.2 Fig 1-14) ─────────────────
     for pn in ("GND", "GND_DCC", "EP"):
         _net(d, "GND").connect(lr.pin(pn))
-    _net(d, "3V3").connect(lr.pin("VBAT"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
-    cap_to_gnd(d, "3V3", "4.7uF", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
+    fb = add_blm18pg221sn1d(d, ref="FB_LR_VBAT", board_tag=BTAG, feature=F)
+    _net(d, "3V3").connect(fb.pin("1")); _net(d, "LR_VBAT").connect(fb.pin("2"))
+    _net(d, "LR_VBAT").connect(lr.pin("VBAT"))
+    cap_to_gnd(d, "LR_VBAT", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
+    cap_to_gnd(d, "LR_VBAT", "4.7uF", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
     # VPAX1 (regulator OUTPUT for the PAs) → VPAX2 (PA-regulator input).
     _net(d, "LR_VPAX").connect(lr.pin("VPAX1")); _net(d, "LR_VPAX").connect(lr.pin("VPAX2"))
     cap_to_gnd(d, "LR_VPAX", "2.2uF", ref="C_LR_VPAX1", board_tag=BTAG, pin=lr.pin("VPAX1"))
@@ -1674,10 +1692,10 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     # switch common → π harmonic low-pass → antenna feed
     _net(d, "LR_LF_ANT").connect(swlf.pin("RFIN"))
     C0G("LR_LF_ANT", "4.7pF", "C_LR_LF_LPF1")
-    L("LR_LF_ANT", "ANT_SUBG_FEED", "10nH", "L_LR_LF_LPF")
-    C0G("ANT_SUBG_FEED", "4.7pF", "C_LR_LF_LPF2")
+    L("LR_LF_ANT", "RF_LF_EXT", "10nH", "L_LR_LF_LPF")
+    C0G("RF_LF_EXT", "4.7pF", "C_LR_LF_LPF2")
 
-    # ── 2.4 GHz — ⚠ values PLACEHOLDERS ──────────────────────────────
+    # ── HF 1.5-2.5 GHz — ⚠ values PLACEHOLDERS ───────────────────────
     _net(d, "LR_HF_RFO").connect(lr.pin("RFO_HF"))
     L("LR_VR_PA", "LR_HF_RFO", "10nH", "L_LR_HF_CHOKE")    # PA_HF bias (Fig 1-4, ref L7)
     L("LR_HF_RFO", "LR_HF_TX_M", "2.7nH", "L_LR_HF_TX1")
@@ -1692,7 +1710,40 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     series_cap("LR_HF_RX_M", "LR_HF_RX", "100pF", "C_LR_HF_RXBLK")
     _net(d, "LR_HF_RX").connect(swhf.pin("RF1"))
     _net(d, "LR_HF_TRX").connect(swhf.pin("RFIN"))
-    series_cap("LR_HF_TRX", "LR_ANTSW_LR", "100pF", "C_LR_HF_ANTBLK")
+    series_cap("LR_HF_TRX", "LR_HF_RFC", "100pF", "C_LR_HF_ANTBLK")
+
+    # ── HF band switch: PE42442 SP4T, 2-pin control (DS Table 6) ──────
+    # V3 + VSS_EXT to GND (2-pin mode, internal negative supply); V1/V2
+    # from host GPIOs with the pSemi EVK network (100 pF + 1 MΩ pull-down;
+    # the EVK's 0 Ω series links are omitted). RF ports sit at 0 VDC: the
+    # only DC source on this path (the switch side of the BGS12) is
+    # blocked by C_LR_HF_ANTBLK; the branch filters are DC-free.
+    _net(d, "LR_HF_RFC").connect(band.pin("RFC"))
+    for pn in [p.name for p in band.pins if p.type == "ground"] + ["V3", "VSS_EXT"]:
+        _net(d, "GND").connect(band.pin(pn))
+    _net(d, "3V3").connect(band.pin("VDD"))
+    cap_to_gnd(d, "3V3", "100pF", ref="C_LR_BAND_VDD_HF", board_tag=BTAG, feature=F,
+               **_as_built_0402("100pF", "C0G/NP0"), pin=band.pin("VDD"))
+    cap_to_gnd(d, "3V3", "1uF", ref="C_LR_BAND_VDD", board_tag=BTAG, pin=band.pin("VDD"))
+    for bit, (vpin, hpin) in enumerate((("V1", band_pins[0]), ("V2", band_pins[1]))):
+        sel = f"LR_BAND_SEL{bit}"
+        _net(d, sel).connect(host.pin(hpin)); _net(d, sel).connect(band.pin(vpin))
+        cap_to_gnd(d, sel, "100pF", ref=f"C_LR_BAND_SEL{bit}", board_tag=BTAG, feature=F,
+                   **_as_built_0402("100pF", "C0G/NP0"), pin=band.pin(vpin))
+        res_between(d, sel, "GND", "1M", ref=f"R_LR_BAND_SEL{bit}_PD", board_tag=BTAG)
+    # RF4 = reset default (V2V1 = 00) → 49.9 Ω on-board dummy / test load.
+    _net(d, "LR_HF_LOAD").connect(band.pin("RF4"))
+    res_between(d, "LR_HF_LOAD", "GND", "49.9", ref="R_LR_HF_LOAD", board_tag=BTAG, feature=F)
+    # Per-slot branches: π C-L-C harmonic low-pass / match (⚠ PLACEHOLDER
+    # values — set from the antenna sim's slot impedances).
+    for port, tag, out, (c_v, l_v) in (("RF1", "S1", "ANT_HF_S1", ("1.5pF", "3.3nH")),
+                                       ("RF2", "S2", "ANT_HF_S2", ("1.2pF", "2.7nH")),
+                                       ("RF3", "S3", "LR_ANTSW_LR", ("1.0pF", "2.2nH"))):
+        n_in = f"LR_HF_{tag}_IN"
+        _net(d, n_in).connect(band.pin(port))
+        C0G(n_in, c_v, f"C_LR_HF_{tag}_LPF1", pin=band.pin(port))
+        L(n_in, out, l_v, f"L_LR_HF_{tag}_LPF")
+        C0G(out, c_v, f"C_LR_HF_{tag}_LPF2")
 
     # ── 2.4 GHz antenna owner switch (BGS12: CTRL 0 → RF1, 1 → RF2) ──
     _net(d, "GND").connect(sw24.pin("GND"))
@@ -1701,14 +1752,15 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     series_cap("BLE_RF", "LR_ANTSW_BLE", "100pF", "C_BLE_DCBLK")   # no DC on BGS12 ports
     _net(d, "LR_ANTSW_BLE").connect(sw24.pin("RF1"))    # default (CTRL=0): BLE
     _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: LR2021 2.4 GHz
-    _net(d, "ANT_2G4_FEED").connect(sw24.pin("RFIN"))
+    _net(d, "ANT_HF_S3").connect(sw24.pin("RFIN"))
     _net(d, "ANTSW_2G4_CTRL").connect(host.pin(ctrl_pin)); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
     res_between(d, "ANTSW_2G4_CTRL", "GND", "100k", ref="R_ANTSW_2G4_PD", board_tag=BTAG)
 
-    # ── Antenna feeds: ANT_2G4_FEED / ANT_SUBG_FEED leave the board through
-    # dedicated castellations in the sleeve's ANTENNA sector
-    # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → antenna copper on
-    # the sleeve's outer face, over its inner GND plane. No pads on the board.
+    # ── Antenna feeds: ANT_HF_S1/S2/S3 (slot feeds) and RF_LF_EXT (the
+    # external sub-GHz connection) leave the board through dedicated
+    # castellations in the sleeve's ANTENNA sector
+    # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → inner-face slot
+    # feed / launch-pad trace on the sleeve. No pads on the board.
 
 
 def build_fins_module(d: Design) -> None:
@@ -2728,49 +2780,33 @@ def build_power_board(d: Design) -> None:
     # pinned-contact scheme is gone, 2026-07-30). Triple: cells stand in the
     # compartment between the THIN cell_floor_board and fin_ble_board (the
     # ceiling since the 2026-07-31 stack reorder — activation_interface
-    # moved down between aft_end and cell_floor). Single: the one horizontal
-    # cell lies on aft_end_board (no floor tile). Only the tab-landing pads
-    # (+ iso resistors, triple mode) live on the tiles.
-    if _BATTERY_MODE == "single":
-        # opt-in (core_1cell): ONE horizontal TLM-1530M/S laid flat on
-        # aft_end_board. Both side-tab lands are on that tile; + → BAT_RAW
-        # directly (single cell ⇒ no isolation resistor), − → GND. The Battery
-        # record carries the 200 mAh / $61.52 / 12 g for the BOM (no footprint
-        # — see the tab lands).
-        add_tlm_1530m(d, ref="BT_CELL")   # BOM record only — cell sits in the compartment, not placed on a board
-        # Two DISCRETE side solder-tab lands (placeholder footprint) at the
-        # cell ends, locked on the N–S cell axis. Replaces the old single 2-pad
-        # P_CELL_CONTACTS_1H, whose 27 mm span reserved the whole board centre.
-        pos = add_cell_solder_tab(d, ref="P_CELL_TAB_POS", board_tag="activation_interface")
-        neg = add_cell_solder_tab(d, ref="P_CELL_TAB_NEG", board_tag="activation_interface")
-        _net(d, "BAT_RAW").connect(pos.pin("1"))  # cell +
-        _net(d, "GND").connect(neg.pin("1"))      # cell −
-    else:
-        # DEFAULT: 3× TLM-1520HPM/S stood VERTICAL, triangle around the spin
-        # axis, bases flat on cell_floor_board. + tab lands on
-        # fin_ble_board's bottom face (one per cell, at the cell centres —
-        # the compartment ceiling), − side tabs bend down to three discrete
-        # lands on cell_floor_board inside the cell bore circles (locked —
-        # battery-facing faces keep everything inside the 3 bores so the
-        # compartment spacers give up no extra cutout), each
-        # + → 200 mΩ iso resistor → BAT_RAW.
-        # (The cells themselves are not board-tagged parts, just the pads +
-        # iso resistors.)
-        # (2026-11-14) + side: the cells' existing TAB EXTENSIONS bend up across
-        # the 2 mm headroom to three DISCRETE lands (one per cell centre) on
-        # fin_ble's bottom face — was one 3-pad P_CELL_CONTACTS footprint whose
-        # ~21 × 19 mm bounding box blanked the board centre for the packer.
-        # (2026-11-15 aft reorder) BOTH tab sets land on activation_interface's
-        # BOTTOM face — the compartment ceiling; aft_end's top (the floor) is
-        # bare for the glued + screwed Al compartment.
-        for _k in (1, 2, 3):
-            ptab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_POS{_k}",
-                                       board_tag="activation_interface")
-            _net(d, f"BAT_CELL{_k}_POS").connect(ptab.pin("1"))
-        for _k in (1, 2, 3):
-            tab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_NEG{_k}",
-                                      board_tag="activation_interface")
-            _net(d, "GND").connect(tab.pin("1"))
+    # moved down between aft_end and cell_floor). Only the tab-landing pads
+    # live on the tiles.
+    # DEFAULT: 3× TLM-1520HPM/S stood VERTICAL, triangle around the spin
+    # axis, bases flat on cell_floor_board. + tab lands on
+    # fin_ble_board's bottom face (one per cell, at the cell centres —
+    # the compartment ceiling), − side tabs bend down to three discrete
+    # lands on cell_floor_board inside the cell bore circles (locked —
+    # battery-facing faces keep everything inside the 3 bores so the
+    # compartment spacers give up no extra cutout), each
+    # + → 200 mΩ iso resistor → BAT_RAW.
+    # (The cells themselves are not board-tagged parts, just the pads +
+    # iso resistors.)
+    # (2026-11-14) + side: the cells' existing TAB EXTENSIONS bend up across
+    # the 2 mm headroom to three DISCRETE lands (one per cell centre) on
+    # fin_ble's bottom face — was one 3-pad P_CELL_CONTACTS footprint whose
+    # ~21 × 19 mm bounding box blanked the board centre for the packer.
+    # (2026-11-15 aft reorder) BOTH tab sets land on activation_interface's
+    # BOTTOM face — the compartment ceiling; aft_end's top (the floor) is
+    # bare for the glued + screwed Al compartment.
+    for _k in (1, 2, 3):
+        ptab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_POS{_k}",
+                                   board_tag="activation_interface")
+        _net(d, f"BAT_CELL{_k}_POS").connect(ptab.pin("1"))
+    for _k in (1, 2, 3):
+        tab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_NEG{_k}",
+                                  board_tag="activation_interface")
+        _net(d, "GND").connect(tab.pin("1"))
 
     # The 3× 200 mΩ iso resistors are UNCONDITIONAL: power_board is a
     # shared part across every config (economies of scale), so its copper
@@ -4067,8 +4103,8 @@ _RADAR     = {"radar_module", "nose_cap"}
 # requirement with useful shelf life (tools/simulate_battery_mission.py: 1 h
 # to ~5 y shelf on the best single cell vs ~12 y on the pack). The old
 # default — 1× TLM-1530M/S laid HORIZONTAL (15.1 mm compartment, ~15 g
-# lighter, rated for rapid deceleration) — survives as the `core_1cell` opt-in
-# for no-radar optical builds. ⚠ The TLM-1520HPM's own rapid-deceleration rating is
+# lighter) — was kept as the `core_1cell` opt-in until 2026-11-16, when it was
+# DROPPED (user: there will always be 3 cells). ⚠ The TLM-1520HPM's own rapid-deceleration rating is
 # NOT datasheet-confirmed (Preliminary 2016) — open Tadiran qualification item.
 # BATTERY REWORK 2026-07-30: the cells are ordered with SIDE solder tabs (no
 # end pins). Triple mode: the pack stands on the reinstated THIN
@@ -4077,21 +4113,19 @@ _RADAR     = {"radar_module", "nose_cap"}
 # comparator off the piezo's face); its − tab lands sit inside the cell bore
 # circles, the + contacts ride the fin_ble_board ceiling (2026-07-31 stack
 # reorder), and the tile passes the potting channels through to the thin
-# aft gaps (activate boost / activate bank). Single mode still drops the tile
-# (horizontal cell on aft_end). The active mode is a module global
-# ("triple" default);
+# aft gaps (activate boost / activate bank). The active mode is a module
+# global (only "triple" since the single-cell mode was dropped 2026-11-16);
 # build_power_board (tab lands), _mark_battery_pockets (cavity), the
 # compartment depth, and _config_boards (cell_floor drop) all read it. Any
 # code that builds a config's boards/panel (config_costs, config_heights)
 # calls _set_battery_mode.
 _BATTERY_MODES = {
-    "single": {"compartment_mm": 15.1},   # 1× TLM-1530M/S horizontal (opt-in)
     "triple": {"compartment_mm": 24.2},   # +1.2 mm closed floor (piezo pocket, 2026-11-15)   # 21 mm cells + 2 mm headroom under
                                           #   fin_ble (holder = edge ring there)
                                           # 3× TLM-1520HPM/S vertical on
                                           #   cell_floor_board (DEFAULT)
 }
-_BATTERY_BY_CONFIG = {"core_1cell": "single"}  # everything else = triple
+_BATTERY_BY_CONFIG: dict = {}   # every config = triple (core_1cell dropped 2026-11-16: always 3 cells)
 _BATTERY_MODE = "triple"                          # default = maximalist 3-cell superset
 
 
@@ -4104,13 +4138,9 @@ def _set_battery_mode(config_name: str) -> str:
 
 
 def _config_boards(config_name: str, board_set) -> set:
-    """Boards actually built for a config. Single-cell mode (core_1cell)
-    drops cell_floor_board: the one horizontal cell lies on aft_end_board
-    directly, so there is no battery-floor tile."""
-    bs = set(board_set)
-    if _BATTERY_BY_CONFIG.get(config_name, "triple") == "single":
-        bs.discard("cell_floor_board")
-    return bs
+    """Boards actually built for a config (the board set itself since the
+    single-cell mode, which dropped cell_floor_board, went 2026-11-16)."""
+    return set(board_set)
 
 
 def _compartment_mm() -> float:
@@ -4131,14 +4161,8 @@ CONFIGS: dict[str, set[str]] = {
     "core_radar":   _CORE | _RADAR,   # RF-dark = firmware/DNP (no RF leaves since 2026-11-14)
     "core_qpd":     _CORE | {"qpd_module"},
     "core_camera":  _CORE | {"camera_module"},
-    # Same boards as "core", but OPTS IN to the legacy single horizontal
-    # TLM-1530M/S (200 mAh, 15.1 mm compartment) instead of the 3-cell
-    # default — for no-radar optical builds where the Ready floor
-    # stays µA-to-25 mA class. Keyed by name in _BATTERY_BY_CONFIG, not by
-    # the board set. (Default flip 2026-07-28: `core_3cell` and
-    # `core_radar_3cell` are gone — every config is 3-cell now, so those
-    # names became aliases of `core` / `core_radar`.)
-    "core_1cell":   _CORE,
+    # (2026-11-16) `core_1cell` (the legacy single horizontal TLM-1530M/S)
+    # dropped: every build carries the 3-cell pack.
 }
 
 
@@ -4372,7 +4396,7 @@ def _battery_column_conforms(panel, ref) -> bool:
     context as the maximalist reference: identical spacer list AND identical
     end boards. The column is all-or-nothing — its guarantee is ONE shared
     land pattern up the whole run (through-vias stack pad-to-pad), so a
-    config whose column moved or shrank (core_1cell) must recompute EVERY
+    config whose column moved or shrank must recompute EVERY
     battery joint from its own bore rather than mix replayed and fresh
     patterns mid-column."""
     max_chain = ref.get("chain") or []
@@ -4424,7 +4448,7 @@ def _replay_absent_joint_fields(d, panel, boards, ref) -> int:
     omits (chain truncation): the shared board still fabs the identical
     copper, so the field is emitted from the reference verbatim (its nets
     become stubs where the mating board is absent). A face already claimed
-    by a DIFFERENT joint in this config (novel adjacency, e.g. core_1cell's
+    by a DIFFERENT joint in this config (novel adjacency, e.g. a
     re-ordered battery column) is skipped with a warning — that board
     cannot stay identical to the maximalist part. Call right after
     place_lga_lands (before _drop_radar_nose_spacer prunes the chain)."""
@@ -5188,47 +5212,46 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     #    unless fully inside bore−0.7 mm, so a packed body (+0.3 mm clearance
     #    box) always lands ≥0.4 mm inside the through-cut and the clearance
     #    pass drops every pocket.
-    if _BATTERY_MODE != "single":
-        from shapely.geometry import box as _box
-        bore_in = _battery_bore_polygon().buffer(-0.7)
-        STEP = 1.0
-        rects = []
-        k = 17                      # grid spans ±17 mm (the Ø34 tile)
-        for gj in range(-k, k):
-            run_start = None        # merge each row's blocked cells into runs
-            for gi in range(-k, k + 1):
-                blocked = gi < k and not bore_in.contains(
-                    _box(gi * STEP, gj * STEP,
-                         (gi + 1) * STEP, (gj + 1) * STEP))
-                if blocked and run_start is None:
-                    run_start = gi
-                elif not blocked and run_start is not None:
-                    rects.append((run_start * STEP, gj * STEP,
-                                  gi * STEP, (gj + 1) * STEP))
-                    run_start = None
-        # fin_ble's bottom: since the 2026-11-14 headroom it is FREE inside
-        # the holder's edge ring (r < 15.8) — only the ring band is blocked.
-        from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
-                                              BATT_PART_CLEARANCE_MM)
-        ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
-        fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
-        if fb is not None and getattr(fb, "geometry", None) is not None:
-            for (x0, y0, x1, y1) in ring_rects:
-                fb.geometry.keepouts.append(Keepout(
-                    polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
-                    layers=("B.Cu",), scope="component", tag="battery_ring_band",
-                    note="battery holder edge ring (r 16–17) bears here"))
-        for bname, cu in (("cell_floor_board", "F.Cu"),):
-            b = boards.get(bname)
-            if b is None or getattr(b, "geometry", None) is None:
-                continue
-            for (x0, y0, x1, y1) in rects:
-                b.geometry.keepouts.append(Keepout(
-                    polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
-                    layers=(cu,), scope="component", tag="battery_bore_tuck",
-                    note="battery-facing face: parts stay INSIDE the cell "
-                         "bore (compartment headroom) — see "
-                         "_mark_battery_chip_clearance."))
+    from shapely.geometry import box as _box
+    bore_in = _battery_bore_polygon().buffer(-0.7)
+    STEP = 1.0
+    rects = []
+    k = 17                      # grid spans ±17 mm (the Ø34 tile)
+    for gj in range(-k, k):
+        run_start = None        # merge each row's blocked cells into runs
+        for gi in range(-k, k + 1):
+            blocked = gi < k and not bore_in.contains(
+                _box(gi * STEP, gj * STEP,
+                     (gi + 1) * STEP, (gj + 1) * STEP))
+            if blocked and run_start is None:
+                run_start = gi
+            elif not blocked and run_start is not None:
+                rects.append((run_start * STEP, gj * STEP,
+                              gi * STEP, (gj + 1) * STEP))
+                run_start = None
+    # fin_ble's bottom: since the 2026-11-14 headroom it is FREE inside
+    # the holder's edge ring (r < 15.8) — only the ring band is blocked.
+    from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
+                                          BATT_PART_CLEARANCE_MM)
+    ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
+    fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
+    if fb is not None and getattr(fb, "geometry", None) is not None:
+        for (x0, y0, x1, y1) in ring_rects:
+            fb.geometry.keepouts.append(Keepout(
+                polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                layers=("B.Cu",), scope="component", tag="battery_ring_band",
+                note="battery holder edge ring (r 16–17) bears here"))
+    for bname, cu in (("cell_floor_board", "F.Cu"),):
+        b = boards.get(bname)
+        if b is None or getattr(b, "geometry", None) is None:
+            continue
+        for (x0, y0, x1, y1) in rects:
+            b.geometry.keepouts.append(Keepout(
+                polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                layers=(cu,), scope="component", tag="battery_bore_tuck",
+                note="battery-facing face: parts stay INSIDE the cell "
+                     "bore (compartment headroom) — see "
+                     "_mark_battery_chip_clearance."))
 
 
 def _ring_band_rects(r_free: float, step: float = 0.5, k_mm: float = 17.0) -> list:
@@ -5355,22 +5378,6 @@ def _battery_bore_polygon():
         return [(cx + r * _m.cos(2 * _m.pi * i / n),
                  cy + r * _m.sin(2 * _m.pi * i / n)) for i in range(n)]
 
-    if _BATTERY_MODE == "single":
-        # one horizontal cell → a RECTANGLE (its true top-down projection — the
-        # cylinder has FLAT ends, so the silhouette is L×Ø, not a stadium). Laid
-        # with its LONG axis along the potting-hole axis (the two activation
-        # holes are 180° apart) so the cell bore and potting channel coincide.
-        CELL_D, CELL_L, CLR = 15.1, 27.4, 0.4
-        # Cell long axis VERTICAL (N–S). The compartment was meant to follow the
-        # potting axis, but that potting channel is gone from the battery spacers
-        # (see _apply_battery_bore), and KiCad handles an axis-aligned cell far
-        # better than a diagonal one — so the cell is laid straight N–S. Its
-        # end-tab via-tabs P_CELL_TAB_POS/NEG sit at the N/S ends (0, ±13.9).
-        theta = _m.radians(90.0)
-        L2, W2 = (CELL_L + CLR) / 2.0, (CELL_D + CLR) / 2.0
-        _ct, _st = _m.cos(theta), _m.sin(theta)
-        return _ShPoly([(x * _ct - y * _st, x * _st + y * _ct)
-                        for x, y in [(-L2, -W2), (L2, -W2), (L2, W2), (-L2, W2)]])
     CELL_R, CLUSTER_R = 7.6, 8.6     # Ø14.8 cell + ~0.4 clr; triangle radius
     centres = [(CLUSTER_R * _m.cos(_m.pi / 2 + 2 * _m.pi * k / 3),
                 CLUSTER_R * _m.sin(_m.pi / 2 + 2 * _m.pi * k / 3))
@@ -5449,15 +5456,8 @@ def _apply_battery_bore(boards: dict, bore) -> None:
     # drill to the NEAREST bore edge (a small breach into the compartment, NOT the
     # long diagonal centre finger). Multi-cell: the original centre finger.
     if channels:
-        if _BATTERY_MODE == "single":
-            fingers = []
-            for xy in channels:
-                near = bore.exterior.interpolate(bore.exterior.project(_ShPt(*xy)))
-                fingers.append(_LS([xy, (near.x, near.y)]).buffer(_PW / 2.0))
-            fingered = unary_union([bore] + fingers)
-        else:
-            fingered = unary_union([bore] + [_LS([(0.0, 0.0), xy]).buffer(_PW / 2.0)
-                                             for xy in channels])
+        fingered = unary_union([bore] + [_LS([(0.0, 0.0), xy]).buffer(_PW / 2.0)
+                                         for xy in channels])
         if fingered.geom_type != "Polygon":
             fingered = fingered.convex_hull
         bore_fingered = [(x, y) for x, y in fingered.exterior.coords][:-1]
@@ -6004,7 +6004,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     """Build, place, and export one board configuration to
     dist/<name>/ (per-board folders + <name>.kicad_pcb). Splits the
     board set into a fold-ordered snake + branch stubs (nfc/qpd/camera)."""
-    _set_battery_mode(name)            # triple (default) or single (core_1cell)
+    _set_battery_mode(name)            # always triple (single-cell mode dropped 2026-11-16)
     board_set = _config_boards(name, board_set)   # single drops cell_floor_board
     d = Design()
     _prime_power_rails(d)
@@ -6063,7 +6063,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     # cavities verbatim (they were milled from the same inherited chip
     # placements, but the maximalist copy is authoritative — panel-fold and
     # flex-chord clipping must not re-diverge them). Non-conforming boards
-    # (novel adjacency, e.g. core_1cell's re-ordered battery column) keep
+    # (novel adjacency, e.g. a re-ordered battery column) keep
     # their own and are reported.
     _conform, _nonconform = _reference_conforming(panel, boards, ref)
     _cav_n = 0
@@ -6173,7 +6173,6 @@ def main() -> int:
     _moved = _empty_aft_end_top(d)
     print(f"aft reorder: {_moved} aft_end top-face parts → activation_interface")
     panel, boards = build_panel(straight=_STRAIGHT_SNAKE,
-                                single_cell=_BATTERY_MODE == "single",
                                 battery_length_mm=_compartment_mm())
     build_spacers(d, boards)
     _set_dynamic_spacer_thickness(d, boards)   # radar↔nose_cap = AWR − nose_cap

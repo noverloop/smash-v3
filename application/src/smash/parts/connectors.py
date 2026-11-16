@@ -984,7 +984,7 @@ def place_lga_lands(design, panel, boards, *, connect,
         # A joint the maximalist build already carries, mating the SAME
         # two neighbours, is replayed verbatim — pattern, nets, and the
         # folded tile projections — so this config fabs the identical
-        # spacer + tile faces. A neighbour mismatch (e.g. core_1cell's
+        # spacer + tile faces. A neighbour mismatch (e.g. a
         # re-ordered battery column) falls through to fresh computation.
         ref_j = (reference or {}).get(name)
         if ref_j is not None and \

@@ -67,8 +67,15 @@ def _antenna_placeholders(contract, zmap, r, width):
     #            label,                 length, box_w, box_h, step, dir(+1 nose / -1 aft)
     # Both hang AFT-ward from fin_ble over the aluminium battery holder, which
     # is their ground (PIFA-style over a backplane ~0.9 mm behind).
-    specs = {"ANT_2G4_FEED": ("2.4 GHz PIFA (LR2021 + BLE)", 24.0, 10.0, 12.0, 2.0, -1),
-             "ANT_SUBG_FEED": ("868-923 MHz PIFA (LoRa)", 80.0, 26.0, 16.0, 2.0, -1)}
+    # (2026-11-16) The radiators are now three printed HF SLOTS (S1/S2/S3,
+    # ≈1.75 / 2.0 / 2.4 GHz) in an outer-face copper skin; their length,
+    # direction and the board keep-out depth come from the antenna sim
+    # (application/src/smash/sim/antenna). Until then each feed keeps a
+    # small marker meander so the feed position stays visible. RF_LF_EXT is
+    # a launch pad for an external antenna, not a radiator — no copper here.
+    specs = {"ANT_HF_S1": ("HF slot S1 ~1.75 GHz - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1),
+             "ANT_HF_S2": ("HF slot S2 ~2.0 GHz - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1),
+             "ANT_HF_S3": ("HF slot S3 ~2.4 GHz (+BLE) - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1)}
     for net, (label, length_mm, bw, bh, step, sgn) in specs.items():
         lane = lanes.get(net)
         if not lane or not lane.get("boards") or lane["boards"][0] not in zmap:
@@ -404,7 +411,8 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
     """Add the LDS sleeve to `design` as schematic parts (board_tag "sleeve"):
     J_SLEEVE — one pin per lane conductor, in UNROLLED order (x = R·θ from
     the 105° seam, as in sleeve_unrolled.kicad_pcb), each tied to its net;
-    AE_2G4 / AE_SUBG — the antenna placeholders (feed + GND plane).
+    AE_S1/S2/S3 — the HF slot placeholders, J_LF_EXT — the sub-GHz launch pad
+    (feed + GND).
     Meant for a schematic-only copy of the design. Returns the new refs."""
     from smash.state import Pin, Pad, Footprint
     r = contract["radius_mm"]
@@ -433,8 +441,10 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
     for i, (_x, _a, _k, net, _kind) in enumerate(items, 1):
         connect(net, sl.pin(str(i)))
     refs = ["J_SLEEVE"]
-    for ref, feed, label in (("AE_2G4", "ANT_2G4_FEED", "2.4 GHz PIFA"),
-                             ("AE_SUBG", "ANT_SUBG_FEED", "868-923 MHz PIFA")):
+    for ref, feed, label in (("AE_S1", "ANT_HF_S1", "HF slot S1 ~1.75 GHz"),
+                             ("AE_S2", "ANT_HF_S2", "HF slot S2 ~2.0 GHz"),
+                             ("AE_S3", "ANT_HF_S3", "HF slot S3 ~2.4 GHz + BLE"),
+                             ("J_LF_EXT", "RF_LF_EXT", "sub-GHz 50 ohm launch pad (external antenna)")):
         if feed not in contract.get("lanes", {}):
             continue
         afp = Footprint(name="sleeve_antenna", package_class="LDS antenna",

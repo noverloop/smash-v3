@@ -238,67 +238,18 @@ def test_potting_holes_on_activation_not_aft(built):
     assert all(h.tag == "potting" for h in act.holes)
 
 
-# ── core: single horizontal TLM-1530M/S ─────────────────────────
+# ── single-cell variant dropped (2026-11-16: always 3 cells) ─────
 
-def test_core_single_cell_compartment():
-    """The core_1cell opt-in swaps the 3× vertical TLM-1520 pack for ONE
-    horizontal TLM-1530M/S: a 15.1 mm compartment (4 spacers vs 6), single-cell
-    tab lands with no isolation resistors, and the TLM-1530M cell record."""
+def test_single_cell_config_is_gone():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
         gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
-    prev = gen._BATTERY_MODE
-    gen._set_battery_mode("core_1cell")
-    try:
-        # 15.1 mm compartment depth → 4 spacers (vs 21 mm → 6, unchanged)
-        assert gen._compartment_mm() == 15.1
-        assert battery_spacer_count(15.1) == 4
-        assert battery_spacer_count(21.0) == 6      # 3-cell (default) depth
-        # power_board battery wiring: 2 tab lands; the per-cell 200 mΩ
-        # isolation resistors fab UNCONDITIONALLY (power_board is one
-        # shared part across every config — economies of scale; single
-        # mode leaves them as BAT_CELLx_POS stubs, DNP at assembly)
-        d = gen.Design(); gen._prime_power_rails(d); gen.build_power_board(d)
-        refs = [c.ref for c in d.chips]
-        assert "P_CELL_TAB_POS" in refs and "P_CELL_TAB_NEG" in refs
-        assert "P_CELL_CONTACTS" not in refs and "P_CELL_CONTACTS_AFT" not in refs
-        assert [r for r in refs if r.startswith("R_BAT") and r.endswith("_ISO")] \
-            == ["R_BAT1_ISO", "R_BAT2_ISO", "R_BAT3_ISO"]
-        # the TLM-1530M/S cell record carries 200 mAh for the BOM
-        cells = [b for b in d.batteries if b.ref == "BT_CELL"]
-        assert len(cells) == 1
-        assert cells[0].manf_pn == "TLM-1530M/S"
-        assert cells[0].capacity_mah == 200.0
-        # cell side-tab lands on the ceiling (activation_interface, 2026-11-15)
-        tabs = [c for c in d.chips if c.ref in ("P_CELL_TAB_POS", "P_CELL_TAB_NEG")]
-        assert len(tabs) == 2 and all(t.board_tag == "activation_interface" for t in tabs)
-        # the single-cell opt-in DROPS cell_floor_board (cell lies on aft_end)
-        bs = gen._config_boards("core_1cell", gen.CONFIGS["core_1cell"])
-        assert "cell_floor_board" not in bs
-        d2 = gen.Design(); gen._prime_power_rails(d2)
-        for bn in bs:
-            gen._BOARD_BUILDERS[bn](d2)
-        snake = [b for b in gen._MASTER_SNAKE if b in bs]
-        _panel, boards = gen.build_config_panel(
-            snake, straight=gen._STRAIGHT_SNAKE,
-            battery_length_mm=gen._compartment_mm())
-        assert "cell_floor_board" not in boards
-        bat = _battery_spacers(boards)
-        assert len(bat) == 4
-        thicks = [b.thickness_mm for b in bat.values()]
-        assert sum(thicks) == pytest.approx(15.1, abs=1e-6)
-        # compartment sits between aft_end_board and activation_interface
-        chain = list(_panel.snake_chain)
-        i0 = chain.index([c for c in chain if "battery" in c][0])
-        assert chain[i0 - 1] == "aft_end_board"
-        assert chain[i0 + len(bat)] == "activation_interface"
-        assert all(t <= MAX_SPACER_THICKNESS_MM + 1e-9 for t in thicks)
-        assert max(thicks) - min(thicks) < 1e-9
-    finally:
-        gen._BATTERY_MODE = prev
+    assert "core_1cell" not in gen.CONFIGS
+    assert set(gen._BATTERY_MODES) == {"triple"}
+    assert all(gen._set_battery_mode(n) == "triple" for n in gen.CONFIGS)
 
 
 def test_peek_standoffs_stay_inside_the_aluminium_rings():

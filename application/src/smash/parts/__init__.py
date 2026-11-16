@@ -81,10 +81,12 @@ from smash.parts.opamps import (
 )
 from smash.parts.rf import (
     add_bgs12wn6e6327xtsa1,
+    add_pe42442a_z,
     add_adf4351bcpz,
 )
 from smash.parts.passives import (
     add_we_744043100,
+    add_blm18pg221sn1d,
     # Family-parameterized passive factories (Group D)
     add_resistor_0402_vishay,
     add_capacitor_x7r_0402_kemet,
@@ -212,9 +214,11 @@ __all__ = [
     "add_ad8603aujz_r2_dual_supply",
     # RF parts
     "add_bgs12wn6e6327xtsa1",
+    "add_pe42442a_z",
     "add_adf4351bcpz",
     # passives
     "add_we_744043100",
+    "add_blm18pg221sn1d",
     # Group D — family-parameterized passives
     "add_resistor_0402_vishay",
     "add_capacitor_x7r_0402_kemet",

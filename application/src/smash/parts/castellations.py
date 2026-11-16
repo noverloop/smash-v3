@@ -50,8 +50,14 @@ RESERVED_SECTORS_DEG = tuple((a, SEAM_HALF_WIDTH_DEG) for a in SEAM_ANGLES_DEG)
 GND_CAST_ANGLES_DEG = (113.0, 120.0, 240.0, 247.0)
 # Antenna feeds: single-board nets that leave the RADIO board (the board
 # their chips sit on — wakeup since 2026-11-16) through a castellation +
-# sleeve via to the antenna copper on the sleeve's outer face.
-ANTENNA_FEED_ANGLES_DEG = {"ANT_2G4_FEED": 135.0, "ANT_SUBG_FEED": 205.0}
+# sleeve via to the sleeve's antenna copper. (2026-11-16) HF-only radiators:
+# three printed slots S1/S2/S3 (≈1.75 / 2.0 / 2.4 GHz, S3 shared with BLE)
+# fed from the PE42442 band switch, plus RF_LF_EXT — the sub-GHz path to a
+# flat 50 Ω launch pad for an EXTERNAL antenna (no sub-GHz radiator on the
+# tower). Slot angles keep ≥ 20° from the GND castellations; slot geometry
+# (length / direction / keep-out depth) is pending the antenna sim.
+ANTENNA_FEED_ANGLES_DEG = {"RF_LF_EXT": 130.0, "ANT_HF_S1": 150.0,
+                           "ANT_HF_S2": 180.0, "ANT_HF_S3": 210.0}
 # Plug ring (2026-11-14): the aft board's bottom-face bench/harness interface
 # (SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES, …) is UNCHANGED — it is now reached
 # on the sleeve's plug ring instead of on the board face. Each interface pad
@@ -177,7 +183,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     if gnd is not None and len(rigid) >= 2:
         lanes[gnd.name] = {"angles": list(GND_CAST_ANGLES_DEG),
                            "boards": list(rigid), "kind": "gnd_plane"}
-    # Antenna feeds: fin_ble only, at fixed antenna-sector angles.
+    # Antenna feeds: on the radio board (wakeup), at fixed antenna-sector angles.
     feeds = {}
     for fname, fang in ANTENNA_FEED_ANGLES_DEG.items():
         fnet = design.net_by_name(fname)

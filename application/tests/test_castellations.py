@@ -195,7 +195,7 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     gen = sys.modules["generate_stackup"]
     refs = add_sleeve_schematic_parts(
         s, contract, connect=lambda net, pin: gen._net(s, net).connect(pin))
-    assert refs[0] == "J_SLEEVE" and {"AE_2G4", "AE_SUBG"} <= set(refs)
+    assert refs[0] == "J_SLEEVE" and {"AE_S1", "AE_S2", "AE_S3", "J_LF_EXT"} <= set(refs)
     assert not any(c.ref == "J_SLEEVE" for c in d.chips)
     sl = next(c for c in s.chips if c.ref == "J_SLEEVE")
     xs = [p.position_mm[0] for p in sl.footprint.pads]
@@ -218,3 +218,12 @@ def test_nose_cone_exits_replace_the_branch_flex(built):
         assert counts.get(leaf, 0) >= 1
     assert not any(c.ref.startswith("J_FLEX") or "LAUNCH" in c.ref.upper()
                    for c in d.chips)
+
+
+def test_feed_angles_clear_of_gnd_castellations():
+    from smash.parts.castellations import (ANTENNA_FEED_ANGLES_DEG,
+                                           GND_CAST_ANGLES_DEG)
+    assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S2", "ANT_HF_S3", "RF_LF_EXT"}
+    for a in ANTENNA_FEED_ANGLES_DEG.values():
+        assert 105.0 < a < 255.0
+        assert all(abs(a - g) >= 5.0 for g in GND_CAST_ANGLES_DEG)

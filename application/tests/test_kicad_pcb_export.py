@@ -921,7 +921,11 @@ def test_full_twin_exports_clean(tmp_path):
     # C_WBA_VDD3/4 decaps for the UFBGA59 WBA55UGI7. → 580: LR2021 per the
     # final DS v2.2 — 6 host-line series R + the RFO_HF VR_PA choke, the two
     # TX/RX switch pull-downs merged into one (single RF-switch DIO8).
-    assert total_fps == 580
+    # → 598: HF band switch + VBAT bead (2026-11-16, +18): U_LR_BAND
+    #   (PE42442) + VDD 100 pF/1 µF + 2× BAND_SEL 100 pF + 2× 1 MΩ pull-down
+    #   + R_LR_HF_LOAD (RF4 dummy load) + 3 slot branches × (2 C + 1 L) +
+    #   FB_LR_VBAT.
+    assert total_fps == 598
 
 
 

@@ -83,6 +83,52 @@ def add_we_744043100(design, ref: str, **overrides) -> Chip:
 
 
 # ═════════════════════════════════════════════════════════════════════════
+# Murata BLM18PG221SN1D — chip ferrite bead, 220 Ω @ 100 MHz, 0603
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_blm18pg221sn1d(design, ref: str, **overrides) -> Chip:
+    """Murata BLM18PG221SN1D — chip ferrite bead for power lines, 0603
+    (1608M), 220 Ω ±25 % at 100 MHz, rated 1400 mA at 85 °C / 1000 mA at
+    125 °C, DCR ≤ 0.10 Ω (initial). Murata reference spec JENF243A-0003AJ-01
+    (vendored). Footprint + symbol from SamacSys LIB v1.3 (2023-03-07); the
+    SamacSys footprint file is named for the shared BLM18 land pattern."""
+    pn = "BLM18PG221SN1D"
+    fp_mod = src(pn, "BLM18SP221SN1B.kicad_mod")
+    fields = dict(
+        manf="Murata",
+        manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn,
+        value="220R@100MHz",
+        description="Chip ferrite bead, 220 Ω @ 100 MHz, 1.4 A, 0603 (BLM18PG)",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        package="0603 (1608M)",
+        size_mm=(1.6, 0.8),
+        height_mm=0.8,
+        temp_range_c=(-55, 125),
+        i_rms_a=1.4,
+        pins=_two_pin(),
+        footprint=Footprint(
+            name="BLM18SP221SN1B",
+            package_class="SMD-FerriteBead",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            size_mm=(1.6, 0.8), height_mm=0.8,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note=(
+            "BLM18PG = power-line ferrite bead. Rated current 1400 mA at "
+            "85 °C, 1000 mA at 125 °C (derate between); DCR 0.10 Ω max "
+            "initial / 0.14 Ω after testing. Used as the LR2021 VBAT input "
+            "filter (Semtech LR20xx reference design FB14)."
+        ),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # Family-parameterized factories — generic R/C/L positions
 # ═════════════════════════════════════════════════════════════════════════
 
