@@ -30,11 +30,20 @@ class Dielectric:
 AIR = Dielectric("air", 1.0, 0.0)
 LDS_LCP = Dielectric("lds_lcp", 3.5, 0.005,
                      "LDS-grade glass-filled LCP, typical class value — confirm grade")
+LDS_PEEK = Dielectric("lds_peek", 3.6, 0.002,
+                      "Ensinger TECACOMP PEEK LDS (black / MED grey), 1 GHz vendor values")
 POTTING_BLACK = Dielectric("potting_black", 3.5, 0.02,
                            "black filled epoxy (Stycast 2651MM class) — RF loss unknown, "
                            "0.02 is a pessimistic guess")
 POTTING_RF = Dielectric("potting_rf", 3.0, 0.005,
                         "unfilled / RF-grade epoxy potting — typical class value")
+# 2026-11-17: the two real Stycast 2651MM candidates (TDS values at 1 MHz —
+# no GHz data; GHz loss is usually lower, εr similar). 23LV = worst case.
+POTTING_23LV = Dielectric("potting_23lv", 4.8, 0.03,
+                          "Stycast 2651MM + Cat 23LV, TDS 1 MHz εr 4.8 / DF 0.06 → "
+                          "0.03 assumed at 2 GHz (see the potting-rf search)")
+POTTING_CAT11 = Dielectric("potting_cat11", 3.7, 0.02,
+                           "Stycast 2651MM + Catalyst 11, TDS 1 MHz εr 3.7 / DF 0.02")
 FR4 = Dielectric("fr4", 4.3, 0.017, "standard FR-4 laminate")
 PEEK = Dielectric("peek", 3.2, 0.004, "unfilled PEEK")
 COMPOSITE = Dielectric("composite", 4.0, 0.01,
@@ -47,5 +56,6 @@ COATING_PTFE = Dielectric("coating_ptfe", 2.1, 0.0005,
 # second-order term next to the potting tanδ at these thicknesses.
 LDS_COPPER_SIGMA = 3.0e7
 
-ALL = {m.name: m for m in (AIR, LDS_LCP, POTTING_BLACK, POTTING_RF, FR4, PEEK,
+ALL = {m.name: m for m in (AIR, LDS_LCP, LDS_PEEK, POTTING_BLACK, POTTING_RF, POTTING_23LV,
+                           POTTING_CAT11, FR4, PEEK,
                            COMPOSITE, COATING_PTFE)}

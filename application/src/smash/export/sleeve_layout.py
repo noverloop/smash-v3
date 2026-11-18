@@ -12,14 +12,14 @@ Unrolled frame
       silkscreen stripe at x = π·R_OUT.
   y (KiCad, down) = H − z, z = stack height from the aft face (+Z → nose).
   F.Cu = sleeve OUTER face: signal / power lanes, via pads, antenna copper.
-  B.Cu = sleeve INNER face: GND plane in the antenna sector (+ via pads).
+  B.Cu = sleeve INNER face: GND plane in the antenna sector (+ via pads),
+         CUT AWAY behind the slot antennas (metal behind a slot shorts it).
   Inner-face x uses the outer radius too (vias must line up on both faces);
   the real inner face is 4.5 % shorter — irrelevant for a plane.
 
-Antennas are PLACEHOLDERS (outline + feed + a meander of roughly the right
-electrical length): final geometry needs EM simulation with the sleeve, the
-GND plane and the potted tower. They sit at fin_ble_board's level, fed from
-its feed castellations (castellations.ANTENNA_FEED_ANGLES_DEG).
+Antennas (2026-11-17): the simulated ARC SLOTS of smash.parts.antenna_slots
+— each a slot in a local GND copper patch on the outer face, fed by a CPW
+from the radio board's feed castellation (castellations.ANTENNA_FEED_ANGLES_DEG).
 """
 from __future__ import annotations
 
@@ -57,55 +57,53 @@ def _x_of(theta_deg: float, r: float) -> float:
     return r * math.radians(d)
 
 
-def _antenna_placeholders(contract, zmap, r, width):
-    """[(net, [(x, z), …] polyline, width_mm, label)] — a meander folded into a
-    bounded box beside each feed (fin_ble level, inside the antenna sector).
-    Horizontal (circumferential) runs of the box width, stepping axially, until
-    the target electrical length is used up or the box is full."""
+def _board_mid(boards, zmap) -> dict:
+    return {n: 0.5 * (z0 + z1) for n, (z0, z1) in zmap.items()
+            if n in boards and not boards[n].is_spacer}
+
+
+def _rect_cells(polys) -> list:
+    """Decompose a shapely (Multi)Polygon into axis-aligned rectangles
+    (x0, z0, x1, z1): grid split at every vertex, cells merged along x."""
+    from shapely.geometry import box as _box
+    geoms = getattr(polys, "geoms", [polys])
+    xs = sorted({round(x, 4) for g in geoms for x, _z in g.exterior.coords}
+                | {round(x, 4) for g in geoms for i in g.interiors for x, _z in i.coords})
+    zs = sorted({round(z, 4) for g in geoms for _x, z in g.exterior.coords}
+                | {round(z, 4) for g in geoms for i in g.interiors for _x, z in i.coords})
     out = []
-    lanes = contract.get("lanes", {})
-    #            label,                 length, box_w, box_h, step, dir(+1 nose / -1 aft)
-    # Both hang AFT-ward from fin_ble over the aluminium battery holder, which
-    # is their ground (PIFA-style over a backplane ~0.9 mm behind).
-    # (2026-11-16) The radiators are now three printed HF SLOTS (S1/S2/S3,
-    # ≈1.75 / 2.0 / 2.4 GHz) in an outer-face copper skin; their length,
-    # direction and the board keep-out depth come from the antenna sim
-    # (application/src/smash/sim/antenna). Until then each feed keeps a
-    # small marker meander so the feed position stays visible. RF_LF_EXT is
-    # a launch pad for an external antenna, not a radiator — no copper here.
-    specs = {"ANT_HF_S1": ("HF slot S1 ~1.75 GHz - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1),
-             "ANT_HF_S2": ("HF slot S2 ~2.0 GHz - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1),
-             "ANT_HF_S3": ("HF slot S3 ~2.4 GHz (+BLE) - geometry pending sim", 12.0, 6.0, 6.0, 2.0, -1)}
-    for net, (label, length_mm, bw, bh, step, sgn) in specs.items():
-        lane = lanes.get(net)
-        if not lane or not lane.get("boards") or lane["boards"][0] not in zmap:
-            continue
-        x0 = _x_of(lane["angles"][0], r)
-        z0 = sum(zmap[lane["boards"][0]]) / 2.0          # the radio board
-        # (2026-11-15) The holder no longer sits right under fin_ble (the
-        # aft reorder put activation_interface + a ring gap in between): a
-        # straight feed line runs down to the holder's top, and the meander
-        # starts THERE so the whole radiator lies over the aluminium.
-        batt = [zmap[n] for n in zmap if n.startswith("spacer_battery_")]
-        z_top = (max(z1 for _z0, z1 in batt) - 1.0) if batt else z0 + sgn * 1.5
-        bh = min(bh, (z_top - min(zb for zb, _z1 in batt) - 1.0)) if batt else bh
-        pts = [(x0, z0)]
-        z = z_top
-        pts.append((x0, z))
-        used, x, go_right = 0.0, x0, True        # feed line = transmission line, not radiator
-        zs = z
-        while used < length_mm and abs(z - zs) + step <= bh:
-            nx = x0 + (bw / 2 if go_right else -bw / 2)
-            run = min(abs(nx - x), length_mm - used)
-            x = x + (run if nx > x else -run)
-            pts.append((x, z)); used += run
-            if used >= length_mm:
-                break
-            z += sgn * step
-            pts.append((x, z)); used += step
-            go_right = not go_right
-        out.append((net, pts, 0.5, label))
+    for za, zb in zip(zs, zs[1:]):
+        run = None
+        for xa, xb in zip(xs, xs[1:]):
+            c = _box(xa, za, xb, zb)
+            inside = polys.intersection(c).area > 0.99 * c.area
+            if inside:
+                run = (run[0], xb) if run else (xa, xb)
+            elif run:
+                out.append((run[0], za, run[1], zb)); run = None
+        if run:
+            out.append((run[0], za, run[1], zb))
     return out
+
+
+def _antenna_copper(boards, zmap, H):
+    """(gnd_cells, strips, feeds, labels, slot_rects, window_rects) of the
+    slot antennas in the unrolled frame (x from the 105° seam, z up)."""
+    from shapely.geometry import box as _box
+    from shapely.ops import unary_union
+    from smash.parts import antenna_slots as AS
+    geo = AS.unrolled_geometry(_board_mid(boards, zmap), SEAM_ANGLES_DEG[0], (0.5, H - 0.5))
+    if not geo["copper"]:
+        return [], [], [], [], [], []
+    cu = unary_union([_box(*r) for r in geo["copper"]])
+    cuts = unary_union([_box(*r) for r in geo["cutouts"]])
+    gnd = cu.difference(cuts)
+    slot_rects = [r for r in geo["cutouts"]]
+    windows = [(x0 - ANT_WINDOW_MARGIN_MM, z0 - ANT_WINDOW_MARGIN_MM,
+                x1 + ANT_WINDOW_MARGIN_MM, z1 + ANT_WINDOW_MARGIN_MM)
+               for x0, z0, x1, z1 in geo["copper"]]
+    return (_rect_cells(gnd), geo["strips"], geo["feeds"], geo["labels"],
+            slot_rects, windows)
 
 
 def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
@@ -157,18 +155,36 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                              f'(width {w}) (layer "F.Cu") (net {n}))')
                 n_lanes += 1
 
-    ants = _antenna_placeholders(contract, zmap, r_out, W)
-    windows = []
-    for net, pts, w, label in ants:
+    # Slot antennas: GND patch copper (pre-filled zones), CPW strips, the
+    # feed vias the contract lacks (S4: reserved, no board castellation yet).
+    cells, strips, feeds, labels, slot_rects, windows = _antenna_copper(boards, zmap, H)
+    g_ant = nid("GND")
+    for x0, z0, x1, z1 in cells:
+        poly = (f'(xy {X(x0)} {Y(z1)}) (xy {X(x1)} {Y(z1)}) '
+                f'(xy {X(x1)} {Y(z0)}) (xy {X(x0)} {Y(z0)})')
+        items.append(f'\t(zone (net {g_ant}) (net_name "GND") (layer "F.Cu") (hatch none 0.5) '
+                     f'(connect_pads yes (clearance 0.2)) (min_thickness 0.1) (fill yes) '
+                     f'(polygon (pts {poly})) (filled_polygon (layer "F.Cu") (pts {poly})))')
+    for net, (x0, z0, x1, z1) in strips:
         n = nid(net)
-        for (xa, za), (xb, zb) in zip(pts, pts[1:]):
-            items.append(f'\t(segment (start {X(xa)} {Y(za)}) (end {X(xb)} {Y(zb)}) '
-                         f'(width {w}) (layer "F.Cu") (net {n}))')
-        xs = [p[0] for p in pts]; zs = [p[1] for p in pts]
-        wx0, wz1 = min(xs), min(zs) - 0.4
-        # no plane window: over the Al holder the antenna is a PIFA on that ground
-        items.append(f'\t(gr_text "{label} - PLACEHOLDER" (at {X(wx0)} {Y(wz1) + 1.0:.2f}) '
-                     f'(layer "F.SilkS") (effects (font (size 1 1) (thickness 0.15)) (justify left)))')
+        xc = 0.5 * (x0 + x1)
+        items.append(f'\t(segment (start {X(xc)} {Y(z0)}) (end {X(xc)} {Y(z1)}) '
+                     f'(width {round(x1 - x0, 3)}) (layer "F.Cu") (net {n}))')
+    for net, xf, zb in feeds:
+        if net not in lanes:
+            items.append(f'\t(via (at {X(xf)} {Y(zb)}) (size {VIA_PAD_MM}) (drill {CAST_DRILL_MM}) '
+                         f'(layers "F.Cu" "B.Cu") (net {nid(net)}))')
+            items.append(f'\t(gr_text "{net} feed - RESERVED (no board castellation yet)" '
+                         f'(at {X(xf)} {Y(zb) - 1.2:.2f}) (layer "F.SilkS") '
+                         f'(effects (font (size 0.5 0.5) (thickness 0.08))))')
+    for x0, z0, x1, z1 in slot_rects:
+        for (xa, za, xb, zb) in ((x0, z0, x1, z0), (x1, z0, x1, z1), (x1, z1, x0, z1), (x0, z1, x0, z0)):
+            items.append(f'\t(gr_line (start {X(xa)} {Y(za)}) (end {X(xb)} {Y(zb)}) '
+                         f'(stroke (width 0.05) (type solid)) (layer "F.SilkS"))')
+    for text, xm, zl in labels:
+        items.append(f'\t(gr_text "{text}" (at {X(xm)} {Y(zl):.2f}) (layer "F.SilkS") '
+                     f'(effects (font (size 0.7 0.7) (thickness 0.1))))')
+    ants = labels
 
     # Inner GND plane over the antenna sector, minus the antenna windows —
     # written PRE-FILLED (rectangles from a grid split at the window edges)
@@ -291,7 +307,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     # across the full width at their height, so antennas / lanes over metal
     # are visible. (Al = ground right behind the antenna copper: fine for a
     # patch / PIFA, kills a Yagi.)
-    from smash.export.spacer_step import gap_kind, RING_R_IN_MM, RING_R_OUT_MM
+    from smash.export.spacer_step import gap_kind, ring_open_sector, ring_spec
     metal = {}
     for n, (z0, z1) in zmap.items():
         if n in boards and boards[n].is_spacer and gap_kind(n) in ("battery_holder", "ring"):
@@ -300,7 +316,9 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             metal[key] = (min(a, z0), max(b_, z1))
     for key, (z0, z1) in metal.items():
         label = ("AL BATTERY HOLDER BEHIND (r 17.0, GND)" if key == "battery_holder"
-                 else f"AL RING BEHIND (r {RING_R_IN_MM:g}-{RING_R_OUT_MM:g})")
+                 else f"{ring_spec(key).label} BEHIND (r {ring_spec(key).r_in:g}-{ring_spec(key).r_out:g})"
+                      + (f", OPEN {ring_open_sector(key)[0]:g}-{ring_open_sector(key)[1]:g} deg"
+                         if ring_open_sector(key) else ""))
         pts = [(X(0), Y(z1)), (X(W), Y(z1)), (X(W), Y(z0)), (X(0), Y(z0))]
         for (xa, ya), (xb, yb) in zip(pts, pts[1:] + pts[:1]):
             items.append(f'\t(gr_line (start {xa} {ya}) (end {xb} {yb}) '
@@ -322,7 +340,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             if 0.0 <= xs_ <= W:
                 items.append(f'\t(gr_line (start {X(xs_)} {Y(H)}) (end {X(xs_)} {Y(0)}) '
                              f'(stroke (width 0.15) (type solid)) (layer "F.SilkS"))')
-    items.append(f'\t(gr_text "ANTENNA SECTOR (inner face = GND plane)" '
+    items.append(f'\t(gr_text "ANTENNA SECTOR (slots on outer face; inner GND cut behind them)" '
                  f'(at {X((gx0 + gx1) / 2)} {Y(H) - 2:.2f}) (layer "F.SilkS") '
                  f'(effects (font (size 1.2 1.2) (thickness 0.18))))')
     items.append(f'\t(gr_text "SIGNAL SECTOR (outer-face lanes)" '
@@ -355,7 +373,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
 
 def write_sleeve_copper_step(boards: dict, chain: list, contract: dict,
                              out_path, thickness_mm: float = 0.03) -> dict:
-    """Wrap the outer-face copper (lanes + antenna placeholders) back onto the
+    """Wrap the outer-face copper (lanes + slot-antenna patches / feeds) back onto the
     cylinder as thin solids (exaggerated to `thickness_mm` so it shows)."""
     import cadquery as cq
     zmap = stack_z_map(boards, chain)
@@ -390,15 +408,12 @@ def write_sleeve_copper_step(boards: dict, chain: list, contract: dict,
             continue
         for ang in lane["angles"]:
             strip(ang, zs[0], zs[-1], lane.get("width_mm", 0.2))
-    for net, pts, w, _label in _antenna_placeholders(contract, zmap, r_out, 0):
-        theta0 = SEAM_ANGLES_DEG[0]
-        for (xa, za), (xb, zb) in zip(pts, pts[1:]):
-            ta = theta0 + math.degrees(xa / r_out)
-            tb = theta0 + math.degrees(xb / r_out)
-            if abs(xa - xb) < 1e-6:
-                strip(ta, min(za, zb), max(za, zb), w)
-            else:
-                arc(ta, tb, za, w)
+    H = max(z1 for _z0, z1 in zmap.values())
+    cells, strips, _feeds, _labels, _slots, _win = _antenna_copper(boards, zmap, H)
+    theta0 = SEAM_ANGLES_DEG[0]
+    for x0, z0, x1, z1 in cells + [r for _n, r in strips]:
+        arc(theta0 + math.degrees(x0 / r_out), theta0 + math.degrees(x1 / r_out),
+            0.5 * (z0 + z1), z1 - z0)
     asm = cq.Assembly()
     for k, b in enumerate(bodies):
         asm.add(b, name=f"cu{k}", color=cq.Color(0.85, 0.55, 0.2, 1.0))
@@ -411,8 +426,7 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
     """Add the LDS sleeve to `design` as schematic parts (board_tag "sleeve"):
     J_SLEEVE — one pin per lane conductor, in UNROLLED order (x = R·θ from
     the 105° seam, as in sleeve_unrolled.kicad_pcb), each tied to its net;
-    AE_S1/S2/S3 — the HF slot placeholders, J_LF_EXT — the sub-GHz launch pad
-    (feed + GND).
+    AE_<slot> — one per slot antenna in antenna_slots.SLOTS whose feed net exists (feed + GND).
     Meant for a schematic-only copy of the design. Returns the new refs."""
     from smash.state import Pin, Pad, Footprint
     r = contract["radius_mm"]
@@ -441,10 +455,8 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
     for i, (_x, _a, _k, net, _kind) in enumerate(items, 1):
         connect(net, sl.pin(str(i)))
     refs = ["J_SLEEVE"]
-    for ref, feed, label in (("AE_S1", "ANT_HF_S1", "HF slot S1 ~1.75 GHz"),
-                             ("AE_S2", "ANT_HF_S2", "HF slot S2 ~2.0 GHz"),
-                             ("AE_S3", "ANT_HF_S3", "HF slot S3 ~2.4 GHz + BLE"),
-                             ("J_LF_EXT", "RF_LF_EXT", "sub-GHz 50 ohm launch pad (external antenna)")):
+    from smash.parts.antenna_slots import SLOTS
+    for ref, feed, label in ((f"AE_{a.name}", a.net, a.label) for a in SLOTS):
         if feed not in contract.get("lanes", {}):
             continue
         afp = Footprint(name="sleeve_antenna", package_class="LDS antenna",
@@ -452,11 +464,12 @@ def add_sleeve_schematic_parts(design, contract, connect) -> list:
                               Pad(num="2", position_mm=(1, 0), size_mm=(0.5, 0.5), shape="rect", layer="F.Cu")],
                         size_mm=(1, 1), height_mm=0.0, source="project")
         ae = design.add_chip(ref=ref, board_tag="sleeve", manf="project",
-                             manf_pn="LDS_ANTENNA", name="LDS_ANTENNA", value=f"{label} (PLACEHOLDER)",
+                             manf_pn="LDS_ANTENNA", name="LDS_ANTENNA", value=label,
                              footprint=afp, weight_g=0.0, height_mm=0.0,
                              pins=[Pin(num="1", name="FEED", type="passive"),
-                                   Pin(num="2", name="GND", type="passive", note="sleeve inner GND plane")],
-                             note=f"{label} on the sleeve outer face over the GND plane / Al holder")
+                                   Pin(num="2", name="GND", type="passive", note="slot patch GND (GND castellations)")],
+                             note=f"{label}: printed arc slot in a GND copper patch on the sleeve outer face "
+                                  "(smash.parts.antenna_slots), CPW-fed from its feed castellation")
         connect(feed, ae.pin("1")); connect("GND", ae.pin("2"))
         refs.append(ref)
     return refs

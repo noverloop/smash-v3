@@ -1109,9 +1109,11 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
              S.BATT_HOLDER_R_OUT_MM + 3.5)
         text(f"{h:.1f} mm tall - spans {len(run)} gaps", S.BATT_HOLDER_R_OUT_MM + 2.0)
     elif kind == "ring":
-        circle(0, 0, S.RING_R_OUT_MM, 0.2)
-        circle(0, 0, S.RING_R_IN_MM, 0.2)
-        text(f"ALUMINIUM RING {board.thickness_mm:.1f} mm (not a PCB)", -S.RING_R_OUT_MM - 2.0)
+        rs = S.ring_spec(name)
+        circle(0, 0, rs.r_out, 0.2)
+        circle(0, 0, rs.r_in, 0.2)
+        text(f"{rs.label} {board.thickness_mm:.1f} mm, wall {rs.r_out - rs.r_in:g} mm (not a PCB)",
+             -rs.r_out - 2.0)
     else:
         circle(0, 0, 17.0, 0.08)
         for ang in S.STANDOFF_ANGLES_DEG:

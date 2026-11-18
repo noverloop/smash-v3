@@ -1,7 +1,7 @@
 """LDS sleeve + potting mould STEP generation (2026-11-14 architecture).
 
-The potted tower sits inside an injection-moulded LDS sleeve (glass-filled
-LCP, two axial half-shells). The sleeve is the potting container AND the
+The potted tower sits inside an injection-moulded LDS sleeve (PEEK-LDS since
+2026-11-17 — was glass-filled LCP; two axial half-shells). The sleeve is the potting container AND the
 outer skin; its outside carries the LDS side-wall traces + antennas, and a
 plated via through its wall lands on every board-edge castellation
 (`smash.parts.castellations`). The mould is the clamp fixture that holds the
@@ -23,11 +23,14 @@ import math
 import pathlib
 
 SLEEVE_GAP_MM = 0.1            # board edge → sleeve inner wall (solder gap)
-SLEEVE_WALL_MM = 0.8           # LCP wall (vias need ≤ 0.6 mm local wall: double-cone spot-face, not modelled)
+SLEEVE_WALL_MM = 0.8           # PEEK-LDS wall (vias need ≤ 0.6 mm local wall: double-cone spot-face, not modelled)
 SLEEVE_VIA_D_MM = 0.5
 GROOVE_W_MM, GROOVE_D_MM = 2.0, 0.4      # inner feed (0°) / vent (180°) grooves
 GROOVE_ANGLES_DEG = (105.0, 285.0)   # = the half-shell seams (castellations.SEAM_ANGLES_DEG)
-SLEEVE_MATERIAL = "glass-filled LCP, LDS grade (e.g. Vectra E840i LDS)"
+# (2026-11-17, user) PEEK-LDS: tougher / more isotropic than LCP (which was
+# "skin, not structure"), and low-loss at GHz for the slot antennas.
+SLEEVE_MATERIAL = ("PEEK, LDS grade (Ensinger TECACOMP PEEK LDS; εr 3.6, tanδ 0.002 "
+                   "@ 1 GHz per vendor — confirm grade/colour)")
 
 MOULD_R_OUT_MM = 25.0
 MOULD_CLEARANCE_MM = 0.05

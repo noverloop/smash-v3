@@ -151,15 +151,15 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
 
 def test_radio_is_wakeup_local(built):
     """The LR2021 sits next to its WBA host on wakeup (2026-11-16): none of
-    its host / RF-switch / owner-switch nets crosses a joint, so none gets a
-    lane; BLE_RF stays on wakeup too."""
+    its host / RF-switch nets crosses a joint, so none gets a lane; BLE_RF
+    stays on wakeup too."""
     d, _p, _b, contract, _n, _M = built
     lr = next(c for c in d.chips if c.ref == "U_LR")
     assert lr.board_tag == "wakeup_board"
-    for ref in ("U_LR_SW_LF", "U_LR_SW_HF", "U_ANTSW_2G4", "Y_LR_TCXO"):
+    for ref in ("U_LR_SW_HF", "Y_LR_TCXO"):
         assert next(c for c in d.chips if c.ref == ref).board_tag == "wakeup_board", ref
     local = ("LR_SPI_SCK", "LR_SPI_MOSI", "LR_SPI_MISO", "LR_NSS", "LR_BUSY",
-             "LR_IRQ", "LR_NRESET", "LR_RFSW_TX", "ANTSW_2G4_CTRL", "BLE_RF")
+             "LR_IRQ", "LR_NRESET", "LR_RFSW_TX", "BLE_RF")
     for name in local:
         assert name not in contract["lanes"], name
         net = d.net_by_name(name)
@@ -174,6 +174,9 @@ def test_feed_lane_on_radio_board(built):
     d, _p, _b, contract, _n, _M = built
     from smash.parts.castellations import ANTENNA_FEED_ANGLES_DEG
     for fname in ANTENNA_FEED_ANGLES_DEG:
+        if d.net_by_name(fname) is None:            # S4: reserved, no circuit yet
+            assert fname not in contract["lanes"]
+            continue
         lane = contract["lanes"][fname]
         assert lane["kind"] == "antenna_feed"
         net = d.net_by_name(fname)
@@ -195,7 +198,8 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     gen = sys.modules["generate_stackup"]
     refs = add_sleeve_schematic_parts(
         s, contract, connect=lambda net, pin: gen._net(s, net).connect(pin))
-    assert refs[0] == "J_SLEEVE" and {"AE_S1", "AE_S2", "AE_S3", "J_LF_EXT"} <= set(refs)
+    assert refs[0] == "J_SLEEVE" and "AE_S1" in refs and "AE_S3" not in refs
+    assert not {"AE_S2", "AE_S4", "J_LF_EXT"} & set(refs)     # S4: no circuit yet
     assert not any(c.ref == "J_SLEEVE" for c in d.chips)
     sl = next(c for c in s.chips if c.ref == "J_SLEEVE")
     xs = [p.position_mm[0] for p in sl.footprint.pads]
@@ -223,7 +227,13 @@ def test_nose_cone_exits_replace_the_branch_flex(built):
 def test_feed_angles_clear_of_gnd_castellations():
     from smash.parts.castellations import (ANTENNA_FEED_ANGLES_DEG,
                                            GND_CAST_ANGLES_DEG)
-    assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S2", "ANT_HF_S3", "RF_LF_EXT"}
+    from smash.parts.antenna_slots import SLOTS
+    assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S4"}
     for a in ANTENNA_FEED_ANGLES_DEG.values():
         assert 105.0 < a < 255.0
         assert all(abs(a - g) >= 5.0 for g in GND_CAST_ANGLES_DEG)
+    # every feed is flanked by a GND castellation on each side (grounded CPW)
+    for sl in SLOTS:
+        f = ANTENNA_FEED_ANGLES_DEG[sl.net]
+        assert any(g < f for g in GND_CAST_ANGLES_DEG if f - g < 8)
+        assert any(g > f for g in GND_CAST_ANGLES_DEG if g - f < 8)

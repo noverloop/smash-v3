@@ -63,6 +63,19 @@ def _add_sector(props, s, rot, f0):
                     priority=prio)
 
 
+NR_TS = 300000
+END_CRITERIA = 1e-3          # residual field energy, -30 dB
+CONVERGED_TAIL_DB = -30.0    # port-voltage ringing left at the end of the record
+
+
+def _tail_db(u) -> float:
+    """Peak |u| over the last 5 % of the port-voltage record vs the overall
+    peak [dB]: a run that hit the timestep cap still rings at the end."""
+    u = np.abs(np.asarray(u, dtype=float))
+    n = max(1, len(u) // 20)
+    return float(20 * np.log10(u[-n:].max() / (u.max() + 1e-30) + 1e-30))
+
+
 def _mesh_lines(lo, hi, fine_lo, fine_hi, fine, coarse, extra=()):
     from CSXCAD.SmoothMeshLines import SmoothMeshLines
     lines = list(np.arange(fine_lo, fine_hi + fine / 2, fine)) + [lo, hi] + list(extra)
@@ -79,7 +92,9 @@ def run(model: dict, out_dir: pathlib.Path, threads: int = 0) -> dict:
     exc = ports[model["excite"]]
     rot = -exc["angle_deg"]                     # excited feed onto +x
 
-    FDTD = openEMS(NrTS=120000, EndCriteria=1e-4)
+    # 2026-11-17: the 120k / -40 dB setting hit the timestep cap on almost
+    # every tower run; -30 dB with a 300k cap lets them finish.
+    FDTD = openEMS(NrTS=NR_TS, EndCriteria=END_CRITERIA)
     FDTD.SetGaussExcite(f0, fc)
     FDTD.SetBoundaryCond(["PML_8"] * 6)
     CSX = ContinuousStructure()
@@ -150,6 +165,11 @@ def run(model: dict, out_dir: pathlib.Path, threads: int = 0) -> dict:
            "zin_re": np.real(zin).tolist(), "zin_im": np.imag(zin).tolist(),
            "f_res_ghz": float(f[i_res] / 1e9), "s11_min_db": float(s11_db[i_res]),
            "coupling_db": coupling, "notes": model.get("notes", [])}
+    try:
+        res["u_tail_db"] = _tail_db(pe.u_data.ui_val[0])
+        res["converged"] = res["u_tail_db"] <= CONVERGED_TAIL_DB
+    except Exception:          # older openEMS python API without u_data
+        res["u_tail_db"], res["converged"] = None, None
     for thr in (-6.0, -10.0):
         ok = s11_db <= thr
         res[f"bw_{int(-thr)}db_mhz"] = float(_band_width(f, ok, i_res) / 1e6)
@@ -159,6 +179,9 @@ def run(model: dict, out_dir: pathlib.Path, threads: int = 0) -> dict:
         sl = next((s for s in model["slots"] if "P_" + s["name"] == exc["name"]), None)
         if sl and sl.get("f_design_ghz"):
             fr.append(sl["f_design_ghz"] * 1e9)
+        for fx in model.get("ff_extra_ghz") or ():          # e.g. band edges
+            if f[0] <= fx * 1e9 <= f[-1]:
+                fr.append(fx * 1e9)
         theta = np.arange(0.0, 181.0, 5.0)
         phi = np.arange(0.0, 361.0, 5.0)
         zc = 0.5 * (z0 + z1)
@@ -216,8 +239,8 @@ def main(argv=None):
         del argv[k:k + 2]
     model = json.loads(pathlib.Path(argv[0]).read_text())
     res = run(model, pathlib.Path(argv[1]), threads)
-    print(json.dumps({k: res[k] for k in ("excite", "f_res_ghz", "s11_min_db",
-                                          "bw_6db_mhz", "bw_10db_mhz")}))
+    print(json.dumps({k: res.get(k) for k in ("excite", "f_res_ghz", "s11_min_db",
+                                              "bw_6db_mhz", "bw_10db_mhz", "converged")}))
 
 
 if __name__ == "__main__":

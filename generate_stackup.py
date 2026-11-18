@@ -101,10 +101,10 @@ from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
 from smash.parts.comparators import add_tlv3691idpfr                      # noqa: E402
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
-from smash.parts.hall_sensors import add_drv5032fcqdbzr, add_rr123_1h02_612  # noqa: E402
+from smash.parts.hall_sensors import add_drv5032fcdbzt, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
 from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
-                            add_bgs12wn6e6327xtsa1, add_pe42442a_z)
+                            add_bgs12wn6e6327xtsa1, add_pe64906b_z)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
 from smash.export import (                                              # noqa: E402
@@ -1534,16 +1534,19 @@ def _hall_switch(d: Design, *, ref: str, board_tag: str, out_net: str,
     _net(d, out_net).connect(gpio_chip.pin(gpio_pin))
 
 
-def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
-                    ctrl_pin: str = "PA7",
-                    band_pins: tuple = ("PA8", "PA9")) -> None:
+def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     """Long-range radio, built on `BTAG` next to its host MCU (2026-11-16:
     wakeup_board, top face beside the WBA's RF π-match — the whole radio is
     board-local, no host or RF line crosses a joint).
 
-    Semtech LR2021 (LoRa Plus, sub-GHz +22 dBm and 2.4 GHz +12 dBm in one
-    QFN-32) REPLACES the mLRS cluster (STM32WLE5 + SX1280 + nRF21540 FEM).
-    Host = the WBA55 (same board) over SPI1:
+    Semtech LR2021, HF path ONLY (2026-11-17: sub-GHz dropped — no room for
+    a radiator on the tower, external-antenna pad removed). The LR2021 stays
+    (an SX1280 was considered) because its HF section tunes 1.5-2.5 GHz and
+    the only efficient sleeve slot, S1, resonates at ~2.15 GHz (openEMS C2:
+    57 % total efficiency, ~80 MHz -10 dB BW) — outside the SX1280's
+    2.400-2.500 GHz. The link HOPS inside S1's band.
+    Host = the WBA55 (same board) over SPI1 (host side wired in
+    build_wakeup_board):
       LR_SPI_SCK  WBA PB4  (SPI1_SCK,  AF5)   → SCK
       LR_SPI_MOSI WBA PA15 (SPI1_MOSI, AF5)   → MOSI
       LR_SPI_MISO WBA PB3  (SPI1_MISO, AF5)   ← MISO
@@ -1554,61 +1557,46 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     Series R on the host lines as in the Semtech reference design (Fig 23-1):
     220 Ω on SCK / MOSI / NSS, 470 Ω on BUSY / IRQ / NRESET (MISO direct).
 
-    ONE LR2021 DIO drives BOTH TX/RX switches (net LR_RFSW_TX): DIO8 set to
-    DIO_FUNCTION_RF_SWITCH with mask TX_LF|TX_HF (mLRS
-    SX_USE_RFSW_DIO_CONFIG), BGS12 CTRL 1 = RF2 = TX, 0 = RF1 = RX; 100 k
-    pull-down → RX after reset. NOT DIO5/DIO6: those come up PULLED HIGH
-    after POR/reset (DS v2.2 §5.1.1) and would park the switches on TX;
+    TX/RX switch U_LR_SW_HF (BGS12: CTRL 1 = RF2 = TX, 0 = RF1 = RX) on
+    LR2021 DIO8 (net LR_RFSW_TX), DIO_FUNCTION_RF_SWITCH with mask TX_HF;
+    100 k pull-down → RX after reset. NOT DIO5/DIO6: those come up PULLED
+    HIGH after POR/reset (DS v2.2 §5.1.1) and would park the switch on TX;
     firmware forces DIO5/6 to DIO_FUNCTION_NONE on cold start (§6.8.1).
 
-    RF:
-      • Sub-GHz (865-928 MHz): RFO_LF1 + RFO_LF2 TIED (DS §1.5: "must be
-        connected together at PCB level"), choke from VR_PA, π low-pass,
-        DC block → U_LR_SW_LF RF2; RFI_LF → L-match, DC block → RF1; switch
-        common → π harmonic low-pass → RF_LF_EXT: an RF CONNECTION for an
-        external sub-GHz antenna (2026-11-16 decision: no sub-GHz radiator
-        on the 48 mm tower — a flat 50 Ω launch pad on the sleeve, mated by
-        a housing-side spring contact).
-      • HF 1.5-2.5 GHz (2026-11-16: HF is the hopping band): RFO_HF (choke
-        from VR_PA, Fig 1-4) → series-L / shunt-C match + low-pass, DC block
-        → U_LR_SW_HF RF2; RFI_HF → L-match, DC block → RF1; switch common →
-        DC block → U_LR_BAND (pSemi PE42442 absorptive SP4T, 2-pin control:
-        V3 + VSS_EXT to GND; V1 = LR_BAND_SEL0 / V2 = LR_BAND_SEL1 from host
-        GPIOs `band_pins` (WBA PA8 / PA9), each with the pSemi EVK 100 pF +
-        1 MΩ pull-down):
-          V2V1 01 → RF1 → π LPF/match → ANT_HF_S1 (slot S1 ≈ 1.75 GHz)
-          V2V1 10 → RF2 → π LPF/match → ANT_HF_S2 (slot S2 ≈ 2.0 GHz)
-          V2V1 11 → RF3 → π LPF/match → U_ANTSW_2G4 RF2 → ANT_HF_S3
-                    (slot S3 ≈ 2.4 GHz, shared with BLE)
-          V2V1 00 → RF4 → 49.9 Ω on-board load (the reset default: an
-                    unconfigured TX lands in a dummy load, and the same
-                    state is the calibration / test load).
-        U_ANTSW_2G4 (BLE vs LR owner switch, CTRL from a host GPIO
-        (`ctrl_pin`, WBA PA7), default RF1 = BLE_RF) → ANT_HF_S3. The
-        owner switch is on 3V3_AON (BLE works with the main rails dark) and
-        sits at the antenna end, so BLE never passes through an LR part.
+    RF (2026-11-17: DEDICATED antennas, no band / owner switching):
+      • HF: RFO_HF (choke from VR_PA, Fig 1-4) → series-L / shunt-C match +
+        low-pass, DC block → U_LR_SW_HF RF2; RFI_HF → L-match, DC block →
+        RF1; switch common → DC block → tunable π (2 × PE64906 DTC, 3.9 nH) →
+        owner switch U_ANTSW_S1 RF2 → DC block → ANT_HF_S1 (sleeve slot S1,
+        activation↔fin_ble gap; 2.4 GHz ISM default, ~2.1-2.4 GHz authorised).
+      • BLE (WBA RF π-match in build_wakeup_board) → BLE_RF → DC block →
+        owner switch RF1 (default, 3V3_AON) → the SAME slot S1 (S3 merged
+        2026-11-17; LR2021 DIO9 selects the LR path).
+      • LF pins RFO_LF1/LF2 + RFI_LF left UNCONNECTED (DS v2.2 §23.5
+        "Unused RF pins: leave unconnected"). FIRMWARE: pa_lf_duty_cycle = 6,
+        pa_lf_slices = 7 (LF PA unused, §7).
+      • ⚠ No dummy load any more (the PE42442's RF4 reset default is gone):
+        firmware must NOT transmit before the LR2021 is configured.
       • 32 MHz TCXO (Y_LR_TCXO, placeholder part) powered from VTCXO,
         AC-coupled into XTA; XTB NC. NTC NC.
     Power — LDO mode (DS v2.2 Fig 1-14, user 2026-11-16; no SIMO coil,
     LXA/LXB NC): VBAT on 3V3 (100 nF + 4.7 µF); VDCC1→VDCC2 on LR_VDCC;
     VPAX1→VPAX2 on their OWN net LR_VPAX (2.2 µF each — never on VBAT/3V3,
     VPAX1 is the internal regulator's output); VR_PA 1 nF (ref C28) feeding
-    both PA chokes. VBAT through ferrite bead FB_LR_VBAT (Murata
+    the HF PA choke. VBAT through ferrite bead FB_LR_VBAT (Murata
     BLM18PG221SN1D, ref design FB14) from 3V3 onto LR_VBAT.
 
     ⚠ OPEN: pins and supply wiring follow the FINAL DS (LR20xx Rev 2.2), but
     the reference schematic carries no RF L/C values — every match / filter
     value here is a PLACEHOLDER until the Semtech ref BOM / AN1200.66 is
-    transcribed. FIRMWARE: the WBA is on 3V3_AON and the LR2021 on 3V3 —
-    hold the host lines low/Hi-Z while 3V3 is off (no back-power through
-    the LR2021's IO clamps)."""
+    transcribed and the slot impedances come from the antenna sim. FIRMWARE:
+    the WBA is on 3V3_AON and the LR2021 on 3V3 — hold the host lines
+    low/Hi-Z while 3V3 is off (no back-power through the LR2021's IO
+    clamps)."""
     F = face
     lr = add_lr2021imltrt(d, ref="U_LR", board_tag=BTAG, feature=F)
     tcxo = add_tcxo_32m_2016(d, ref="Y_LR_TCXO", board_tag=BTAG, feature=F)
-    swlf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_LF", board_tag=BTAG, feature=F)
     swhf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_HF", board_tag=BTAG, feature=F)
-    sw24 = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_2G4", board_tag=BTAG, feature=F)
-    band = add_pe42442a_z(d, ref="U_LR_BAND", board_tag=BTAG, feature=F)
 
     def C0G(net, val, ref, pin=None):
         cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
@@ -1661,39 +1649,14 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     _net(d, "LR_SPI_MISO").connect(lr.pin("MISO"))
     res_between(d, "3V3", "LR_NSS", "100k", ref="R_LR_NSS_PU", board_tag=BTAG)
 
-    # ── TX/RX switches (BGS12: CTRL 0 → RF1 = RX, 1 → RF2 = TX) ──────
-    # One RF-switch DIO (DIO8, mask TX_LF|TX_HF) drives both CTRLs; the
-    # idle path's switch toggling is harmless. DIO5/DIO6 stay unconnected.
+    # ── HF TX/RX switch (BGS12: CTRL 0 → RF1 = RX, 1 → RF2 = TX) ─────
+    # RF-switch DIO8 (mask TX_HF). DIO5/DIO6 stay unconnected.
     _net(d, "LR_RFSW_TX").connect(lr.pin("DIO8"))
     res_between(d, "LR_RFSW_TX", "GND", "100k", ref="R_LR_RFSW_PD", board_tag=BTAG)
-    for sw, tag in ((swlf, "LF"), (swhf, "HF")):
-        _net(d, "GND").connect(sw.pin("GND"))
-        _net(d, "3V3").connect(sw.pin("VDD"))
-        cap_to_gnd(d, "3V3", "100nF", ref=f"C_LR_SW_{tag}_VDD", board_tag=BTAG, pin=sw.pin("VDD"))
-        _net(d, "LR_RFSW_TX").connect(sw.pin("CTRL"))
-
-    # ── Sub-GHz (865-928 MHz) — ⚠ values PLACEHOLDERS ────────────────
-    # RFO_LF1 and RFO_LF2 are ONE single-ended LF PA output (DS §1.5).
-    _net(d, "LR_LF_RFO").connect(lr.pin("RFO_LF1"))
-    _net(d, "LR_LF_RFO").connect(lr.pin("RFO_LF2"))
-    L("LR_VR_PA", "LR_LF_RFO", "47nH", "L_LR_LF_CHOKE")
-    C0G("LR_LF_RFO", "6.8pF", "C_LR_LF_TX1", pin=lr.pin("RFO_LF1"))
-    L("LR_LF_RFO", "LR_LF_TX_M", "8.2nH", "L_LR_LF_TX1")
-    C0G("LR_LF_TX_M", "10pF", "C_LR_LF_TX2")
-    L("LR_LF_TX_M", "LR_LF_TX_F", "8.2nH", "L_LR_LF_TX2")
-    C0G("LR_LF_TX_F", "6.8pF", "C_LR_LF_TX3")
-    series_cap("LR_LF_TX_F", "LR_LF_TX", "100pF", "C_LR_LF_TXBLK")
-    _net(d, "LR_LF_TX").connect(swlf.pin("RF2"))
-    _net(d, "LR_LF_RFI").connect(lr.pin("RFI_LF"))
-    L("LR_LF_RFI", "LR_LF_RX_M", "15nH", "L_LR_LF_RX")
-    C0G("LR_LF_RX_M", "3.3pF", "C_LR_LF_RX")
-    series_cap("LR_LF_RX_M", "LR_LF_RX", "100pF", "C_LR_LF_RXBLK")
-    _net(d, "LR_LF_RX").connect(swlf.pin("RF1"))
-    # switch common → π harmonic low-pass → antenna feed
-    _net(d, "LR_LF_ANT").connect(swlf.pin("RFIN"))
-    C0G("LR_LF_ANT", "4.7pF", "C_LR_LF_LPF1")
-    L("LR_LF_ANT", "RF_LF_EXT", "10nH", "L_LR_LF_LPF")
-    C0G("RF_LF_EXT", "4.7pF", "C_LR_LF_LPF2")
+    _net(d, "GND").connect(swhf.pin("GND"))
+    _net(d, "3V3").connect(swhf.pin("VDD"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_SW_HF_VDD", board_tag=BTAG, pin=swhf.pin("VDD"))
+    _net(d, "LR_RFSW_TX").connect(swhf.pin("CTRL"))
 
     # ── HF 1.5-2.5 GHz — ⚠ values PLACEHOLDERS ───────────────────────
     _net(d, "LR_HF_RFO").connect(lr.pin("RFO_HF"))
@@ -1710,57 +1673,53 @@ def _build_lr_radio(d: Design, host, BTAG: str, *, face: str = "bottom",
     series_cap("LR_HF_RX_M", "LR_HF_RX", "100pF", "C_LR_HF_RXBLK")
     _net(d, "LR_HF_RX").connect(swhf.pin("RF1"))
     _net(d, "LR_HF_TRX").connect(swhf.pin("RFIN"))
-    series_cap("LR_HF_TRX", "LR_HF_RFC", "100pF", "C_LR_HF_ANTBLK")
+    # Switch common → DC block → TUNABLE π (LR branch only, 2026-11-17):
+    # shunt DTC U_LR_DTC1 – series 3.9 nH – shunt DTC U_LR_DTC2 → antenna
+    # owner switch. pSemi PE64906B-Z (0.9-4.6 pF, 32 states, Q 40→13 at
+    # 2 GHz), fitted to the openEMS S1 impedances; states set per unit at end
+    # of line (open loop, WBA flash) and optionally per hop (≤ 12 µs).
+    # Control from the WBA: shared SCL/SDA, one SEN per DTC (DS Fig 10).
+    series_cap("LR_HF_TRX", "LR_HF_ANT_IN", "100pF", "C_LR_HF_ANTBLK")
+    L("LR_HF_ANT_IN", "LR_HF_ANT_OUT", "3.9nH", "L_LR_HF_ANT_LPF")
+    for ref, rf_net, sen in (("U_LR_DTC1", "LR_HF_ANT_IN", "LR_DTC_SEN1"),
+                             ("U_LR_DTC2", "LR_HF_ANT_OUT", "LR_DTC_SEN2")):
+        dtc = add_pe64906b_z(d, ref=ref, board_tag=BTAG, feature=F)
+        for pn in ("RF+_1", "RF+_2"):
+            _net(d, rf_net).connect(dtc.pin(pn))
+        for pn in ("RF-_1", "RF-_2", "GND_1", "GND_2", "EP"):
+            _net(d, "GND").connect(dtc.pin(pn))
+        _net(d, "3V3").connect(dtc.pin("VDD"))
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref[2:]}_VDD", board_tag=BTAG, pin=dtc.pin("VDD"))
+        _net(d, "LR_DTC_SCL").connect(dtc.pin("SCL"))
+        _net(d, "LR_DTC_SDA").connect(dtc.pin("SDA"))
+        _net(d, sen).connect(dtc.pin("SEN"))
 
-    # ── HF band switch: PE42442 SP4T, 2-pin control (DS Table 6) ──────
-    # V3 + VSS_EXT to GND (2-pin mode, internal negative supply); V1/V2
-    # from host GPIOs with the pSemi EVK network (100 pF + 1 MΩ pull-down;
-    # the EVK's 0 Ω series links are omitted). RF ports sit at 0 VDC: the
-    # only DC source on this path (the switch side of the BGS12) is
-    # blocked by C_LR_HF_ANTBLK; the branch filters are DC-free.
-    _net(d, "LR_HF_RFC").connect(band.pin("RFC"))
-    for pn in [p.name for p in band.pins if p.type == "ground"] + ["V3", "VSS_EXT"]:
-        _net(d, "GND").connect(band.pin(pn))
-    _net(d, "3V3").connect(band.pin("VDD"))
-    cap_to_gnd(d, "3V3", "100pF", ref="C_LR_BAND_VDD_HF", board_tag=BTAG, feature=F,
-               **_as_built_0402("100pF", "C0G/NP0"), pin=band.pin("VDD"))
-    cap_to_gnd(d, "3V3", "1uF", ref="C_LR_BAND_VDD", board_tag=BTAG, pin=band.pin("VDD"))
-    for bit, (vpin, hpin) in enumerate((("V1", band_pins[0]), ("V2", band_pins[1]))):
-        sel = f"LR_BAND_SEL{bit}"
-        _net(d, sel).connect(host.pin(hpin)); _net(d, sel).connect(band.pin(vpin))
-        cap_to_gnd(d, sel, "100pF", ref=f"C_LR_BAND_SEL{bit}", board_tag=BTAG, feature=F,
-                   **_as_built_0402("100pF", "C0G/NP0"), pin=band.pin(vpin))
-        res_between(d, sel, "GND", "1M", ref=f"R_LR_BAND_SEL{bit}_PD", board_tag=BTAG)
-    # RF4 = reset default (V2V1 = 00) → 49.9 Ω on-board dummy / test load.
-    _net(d, "LR_HF_LOAD").connect(band.pin("RF4"))
-    res_between(d, "LR_HF_LOAD", "GND", "49.9", ref="R_LR_HF_LOAD", board_tag=BTAG, feature=F)
-    # Per-slot branches: π C-L-C harmonic low-pass / match (⚠ PLACEHOLDER
-    # values — set from the antenna sim's slot impedances).
-    for port, tag, out, (c_v, l_v) in (("RF1", "S1", "ANT_HF_S1", ("1.5pF", "3.3nH")),
-                                       ("RF2", "S2", "ANT_HF_S2", ("1.2pF", "2.7nH")),
-                                       ("RF3", "S3", "LR_ANTSW_LR", ("1.0pF", "2.2nH"))):
-        n_in = f"LR_HF_{tag}_IN"
-        _net(d, n_in).connect(band.pin(port))
-        C0G(n_in, c_v, f"C_LR_HF_{tag}_LPF1", pin=band.pin(port))
-        L(n_in, out, l_v, f"L_LR_HF_{tag}_LPF")
-        C0G(out, c_v, f"C_LR_HF_{tag}_LPF2")
+    # ── ONE 2.4 GHz slot (S1) shared by the LR2021 and BLE (2026-11-17,
+    # user: S3 merged into S1 — with PEEK gap rings S1 peaks at 2.44-2.48 GHz;
+    # the radios never use it at the same time). Owner switch U_ANTSW_S1
+    # (BGS12: CTRL 0 → RF1 = BLE, 1 → RF2 = LR2021) on 3V3_AON so BLE works
+    # with 3V3 off; CTRL from LR2021 DIO9 (DIO_FUNCTION_GPIO_OUTPUT_HIGH while
+    # the LR owns the antenna) with a 100 k pull-down → BLE by default and
+    # whenever the LR2021 is unpowered / in reset. FIRMWARE: drive DIO9 high
+    # before any LR RX/TX, low after. DC blocks: BGS12 ports carry no DC and
+    # the slot feed is a DC short.
+    swa = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_S1", board_tag=BTAG, feature=F)
+    _net(d, "GND").connect(swa.pin("GND"))
+    _net(d, "3V3_AON").connect(swa.pin("VDD"))
+    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_ANTSW_S1_VDD", board_tag=BTAG, pin=swa.pin("VDD"))
+    _net(d, "ANTSW_S1_LR").connect(lr.pin("DIO9"))
+    _net(d, "ANTSW_S1_LR").connect(swa.pin("CTRL"))
+    res_between(d, "ANTSW_S1_LR", "GND", "100k", ref="R_ANTSW_S1_PD", board_tag=BTAG)
+    _net(d, "LR_HF_ANT_OUT").connect(swa.pin("RF2"))
+    series_cap("BLE_RF", "BLE_ANT", "100pF", "C_BLE_DCBLK")
+    _net(d, "BLE_ANT").connect(swa.pin("RF1"))
+    _net(d, "ANT_S1_COM").connect(swa.pin("RFIN"))
+    series_cap("ANT_S1_COM", "ANT_HF_S1", "100pF", "C_ANT_S1_DCBLK")
 
-    # ── 2.4 GHz antenna owner switch (BGS12: CTRL 0 → RF1, 1 → RF2) ──
-    _net(d, "GND").connect(sw24.pin("GND"))
-    _net(d, "3V3_AON").connect(sw24.pin("VDD"))
-    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_ANTSW_2G4_VDD", board_tag=BTAG, pin=sw24.pin("VDD"))
-    series_cap("BLE_RF", "LR_ANTSW_BLE", "100pF", "C_BLE_DCBLK")   # no DC on BGS12 ports
-    _net(d, "LR_ANTSW_BLE").connect(sw24.pin("RF1"))    # default (CTRL=0): BLE
-    _net(d, "LR_ANTSW_LR").connect(sw24.pin("RF2"))     # CTRL=1: LR2021 2.4 GHz
-    _net(d, "ANT_HF_S3").connect(sw24.pin("RFIN"))
-    _net(d, "ANTSW_2G4_CTRL").connect(host.pin(ctrl_pin)); _net(d, "ANTSW_2G4_CTRL").connect(sw24.pin("CTRL"))
-    res_between(d, "ANTSW_2G4_CTRL", "GND", "100k", ref="R_ANTSW_2G4_PD", board_tag=BTAG)
-
-    # ── Antenna feeds: ANT_HF_S1/S2/S3 (slot feeds) and RF_LF_EXT (the
-    # external sub-GHz connection) leave the board through dedicated
-    # castellations in the sleeve's ANTENNA sector
-    # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → inner-face slot
-    # feed / launch-pad trace on the sleeve. No pads on the board.
+    # ── Antenna feeds: ANT_HF_S1 leaves the board through its dedicated
+    # castellation in the sleeve's ANTENNA sector
+    # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → CPW → slot S1.
+    # S4 (transverter high band) has a reserved angle but no circuit yet.
 
 
 def build_fins_module(d: Design) -> None:
@@ -1932,9 +1891,9 @@ def build_activation_interface(d: Design) -> None:
     contact pads (P_CELL_CONTACTS, built in build_power_board) now ride
     fin_ble_board's bottom face, the compartment ceiling. This tile's
     bottom face stays chip-free (lands only — a bottom-face part sees
-    rapid deceleration as joint TENSION, see the piezo block); its top also hosts
-    the H3LIS331 high-g accel (near the spin axis; built in
-    build_wakeup_board with board_tag="activation_interface"). The AON
+    rapid deceleration as joint TENSION, see the piezo block). The H3LIS331
+    high-g accel and the CAN PHY that used to share its top moved to
+    fin_ble_board on 2026-11-17 (the top was too busy). The AON
     latch moved to wakeup_board and the activate chain + CAN gateway to
     aft_end_board in the 2026-07-31 redistribution/swap. The function
     name is kept (many sims/tools enumerate it). Each pogo pad is a
@@ -2089,7 +2048,7 @@ def build_activation_interface(d: Design) -> None:
     # confirm AND-gate is gone. The comparator runs off the always-on bootstrap
     # 3V3 (exposed on the aft_end TP_VDD pogo) so the detector is alive while
     # the unit waits for launch. Complements the H3LIS331 high-G accel (on
-    # activation_interface): the H3LIS gives the quantitative ±400 g over
+    # fin_ble_board's top since 2026-11-17): the H3LIS gives the quantitative ±400 g over
     # I²C, the piezo the fast edge.
     piezo = add_piezo_disc_smd10t04r111(d, ref="P_PIEZO",
                                         board_tag="aft_end_board")
@@ -2610,10 +2569,17 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # activation→aft_end 2026-07-31 (activation chip redistribution): the PHY
     # + its 120 Ω terminator now sit directly at the CAN pads (CANH/CANL are
     # local vias), and only the digital TXD/RXD cross up to the MP25 FDCAN1.
-    # (Code lives here in build_flight_board for now; placement follows
-    # board_tag.)
-    _CAN_TAG = "aft_end_board"
-    can_gw = add_tcan1042gvdq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
+    # (2026-11-17, user) moved again → fin_ble_board: after the aft reorder
+    # _empty_aft_end_top had parked it on activation_interface, whose top is
+    # too busy. Lane-neutral: CANH/CANL now cross activation↔fin_ble instead
+    # of TXD/RXD (the PHY sits ~6 mm further from the TP_CAN pads — fine for
+    # CAN FD). (Code lives here in build_flight_board for now; placement
+    # follows board_tag.)
+    # BOTTOM face: the SOIC-8 is 1.75 mm tall; on fin_ble's top it faced
+    # wakeup's bottom and grew that ~3.0 mm gap to 3.5 mm (2026-11-17 build).
+    # The activation↔fin_ble gap below is already 4.4 mm.
+    _CAN_TAG = "fin_ble_board"
+    can_gw = add_tcan1042gvdq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG, feature="bottom")
     _net(d, "EXT_CAN_TX").connect(can_gw.pin("TXD"))
     _net(d, "EXT_CAN_RX").connect(can_gw.pin("RXD"))
     _net(d, "GND").connect(can_gw.pin("GND"))
@@ -3435,7 +3401,7 @@ def build_wakeup_board(d: Design) -> None:
     # sequence. NO power-OR legs: activation_unlock is WBA-orchestrated, never a
     # hardware power-pull, and fails CLOSED (no pattern → no activation_unlock). Shelf
     # wake is jumpstart/USB only.
-    hall = add_drv5032fcqdbzr(d, ref="U_MAG_WAKE", board_tag=BTAG)
+    hall = add_drv5032fcdbzt(d, ref="U_MAG_WAKE", board_tag=BTAG)
     _net(d, "3V3_AON")   .connect(hall.pin("VCC"))   # activation_unlock listener: alive from Standby, silent+free in Shelf
     _net(d, "GND")       .connect(hall.pin("GND"))
     _net(d, "MAG_WAKE_N").connect(hall.pin("OUT"))
@@ -3637,26 +3603,28 @@ def build_wakeup_board(d: Design) -> None:
     # consumer was the µA-class accel, which simply runs from 3V3 now. The
     # AON_EN GPIO on the WBA55 is freed.
 
-    # ── STM32WBA55HGF6TR wake orchestrator + BLE 2.4 GHz radio ─────────
-    # Thin WLCSP41 (2.98 × 2.76 mm) — 6× smaller area than the WBA52
-    # QFN48 it replaces. Pin allocation against datasheet Table 24
-    # (WLCSP41 column) — see DS14127 Rev 10. Consolidated roles:
+    # ── STM32WBA55UGI7 wake orchestrator + BLE 2.4 GHz radio ───────────
+    # UFBGA59 (was WLCSP41 HGF6TR; pin comments below still carry some
+    # WLCSP41 ball names). DS14127. Consolidated roles:
     #   - Wake orchestrator (RTC + EXTI from MAG_WAKE_N and IR_WAKE)
     #   - Optical service link (2026-07-27): IR_WAKE RX (PA12) + IR_TX
     #     keying (PA6). Standby is
     #     RF-SILENT — no standing BLE advertising; an IR/NFC
     #     interrogation wakes the WBA, which brings BLE up for a
     #     bounded session (IR-initiated BLE), then goes dark again.
-    #   - BLE Coded scan + 2 Mbps PHY for in-flight telemetry (UNCHANGED
-    #     — the Yagi pair + backward beam keep the flight datalink)
+    #   - BLE, GROUND-ONLY (programming / activation_unlock) on its own
+    #     sleeve slot S3 (2026-11-17; the Yagi pair is long gone)
+    #   - Host of the LR2021 long-range radio on this board (SPI1)
     #   - MAIN_SW_GATE driver (flight-rail PMOS gate)
-    #   - SPI3 HCI link to the MP25 application processor (SPI1 unusable
-    #     on WLCSP41 because SPI1_MISO is only on PB3 which we need for
-    #     I²C1_SDA → ST25DV)
+    #   - SPI3 HCI link to the MP25 application processor (SPI1 is the
+    #     LR2021's)
     #   - LPUART1 → MP25 M33 root (firmware bootloader + console — replaces the
     #     old G0B1/CAN bridge; WBA55 has no FDCAN, but UART to the root needs
     #     no transceiver)
-    #   - I²C1 → ST25DV (WBA I²C3 freed — H3LIS now on the M33's I2C3)
+    #   - I²C1 on the shared I2C2_* bus (mag / PMIC / TMP117; the MP25
+    #     is the other master — the ST25DV left with the NFC removal)
+    #   - S1 antenna tuner (2 × PE64906 DTC, 2026-11-17): PA7 SCL, PA8 SDA,
+    #     PA9 SEN1, PC15 SEN2 (bit-banged 3-wire; no spare pins left)
     # Lives directly on the always-on 3V3 rail (no dedicated nano-LDO).
     # 32 MHz HSE via MEMS resonator (survives rapid deceleration); LSE = internal LSI
     # which frees PC14/PC15 as plain spare GPIOs.
@@ -3781,6 +3749,12 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "LR_BUSY")    .connect(wba.pin("PB0"))   # GPIO in
     _net(d, "LR_IRQ")     .connect(wba.pin("PB13"))  # EXTI13 ← LR2021 DIO7
     _net(d, "LR_NRESET")  .connect(wba.pin("PA3"))   # GPIO out
+    # S1 tuner DTCs (U_LR_DTC1/2, on 3V3 like the LR2021 — hold these low
+    # while 3V3 is off). Bit-banged, ≥ 38.4 ns SCL period.
+    _net(d, "LR_DTC_SCL") .connect(wba.pin("PA7"))
+    _net(d, "LR_DTC_SDA") .connect(wba.pin("PA8"))
+    _net(d, "LR_DTC_SEN1").connect(wba.pin("PA9"))
+    _net(d, "LR_DTC_SEN2").connect(wba.pin("PC15__OSC32__OUT"))  # low-drive pin: fine for a latch line
 
     # PA6/PA7 (freed by the H3LIS→M33 move) re-tasked for the optical
     # service link (2026-07-27):
@@ -3805,7 +3779,7 @@ def build_wakeup_board(d: Design) -> None:
     # see the magnetic-wake block). Standby listener for the coded magnetic
     # pattern — any EXTI-capable GPIO wakes the WBA from Stop1, same
     # mechanism as the IR photodiode on EXTI12. PC14 was the freed
-    # OSC32 spare (LSE = internal LSI); PC15 remains spare.
+    # OSC32 spare (LSE = internal LSI); PC15 is the tuner's SEN2.
     _net(d, "MAG_WAKE_N").connect(wba.pin("PC14__OSC32__IN"))  # EXTI wake
 
     # IR_WAKE ← D_IR_WAKE photodiode cathode on radar_module (see the
@@ -3830,20 +3804,13 @@ def build_wakeup_board(d: Design) -> None:
     res_between(d, "WBA_AON_HOLD", "AON_EN", "1k",
                 ref="RHOLD_AON", board_tag=BTAG)
 
-    # Antenna pin → π-match → BLE_RF (down to fin_ble_board).
+    # Antenna pin → π-match → BLE_RF → DC block → owner switch → slot S1 (_build_lr_radio).
     _net(d, "WBA_RF").connect(wba.pin("RF"))  # C2
 
-    # ── WBA55 RF chain — π-match → BLE_RF → shared 2.4 GHz antenna ──
-    # (2026-11-14) The Yagi pair, its Wilkinson splitter + 90° hybrid
-    # (R_WILK_ISO, TP_WILK_A/B, TP_YAGI_RF_A/B) and the two Yagi flex tiles
-    # are GONE. BLE is GROUND-ONLY (programming / activation_unlock), so it
-    # shares the long-range 2.4 GHz antenna — a conformal element in a
-    # crescent gap of the PEEK battery compartment, fed from fin_ble_board's
-    # bottom face. BLE_RF crosses the wakeup↔fin_ble (M) joint as a 50 Ω
-    # vertical transition (signal land ringed by GND lands — ⚠ the LGA
-    # generator does not model the ground ring yet) and reaches U_ANTSW_2G4
-    # on fin_ble, which BYPASSES the nRF21540 FEM for BLE (default throw).
-    # See _build_lr_radio.
+    # ── WBA55 RF chain — π-match → BLE_RF → shared slot S1 (owner switch) ──
+    # (2026-11-17) BLE is GROUND-ONLY (programming / activation_unlock) and
+    # has its own sleeve slot S3 (2.40-2.48 GHz); no owner switch, no FEM.
+    # BLE_RF → C_BLE_DCBLK → U_ANTSW_S1 → ANT_HF_S1 is built in _build_lr_radio.
     #
     # π-match L + 2 shunt C. Values are placeholders; topology is locked.
     # `feature="rf"` keeps these on the top face (face_split's ECM-embedding
@@ -3857,10 +3824,10 @@ def build_wakeup_board(d: Design) -> None:
                board_tag=BTAG, feature="rf")
 
     # ── LR2021 long-range radio — on THIS board, top face beside the WBA RF
-    # (2026-11-16): host lines, BLE_RF and the owner-switch CTRL are local;
-    # only the two antenna feeds leave (castellations in the antenna sector).
+    # (2026-11-16): host lines and BLE_RF are local; only the two antenna
+    # feeds (S1, S3) leave (castellations in the antenna sector).
     # The IIS2MDC sits on the opposite (bottom) face, away from the PA bursts.
-    _build_lr_radio(d, wba, BTAG, face="rf", ctrl_pin="PA7")
+    _build_lr_radio(d, BTAG, face="rf")
 
     # WLE5 LSE oscillator removed — WBA55 uses internal LSI (±5 %); LSE
     # crystal not needed for periodic BLE-scan timing accuracy.
@@ -3912,10 +3879,14 @@ def build_wakeup_board(d: Design) -> None:
     # RPU_I2C3_* to 3V3 already exist on wakeup_board, so the dedicated
     # RPU_HACC_* pair is gone). Unpowered-on-dead-bus is the same
     # pattern as every 3V3 sensor in Standby. INT1 → M33 PD10 EXTI.
-    # board_tag=activation_interface: the H3LIS331 ±400g high-G accel is pinned
-    # to the activation tile dead-centre (on the spin axis) for clean axial
-    # rapid-deceleration sensing; I2C3/INT reach the M33 over the backbone.
-    acc = add_h3lis331dltr(d, ref="U_HACC", board_tag="activation_interface")
+    # board_tag=fin_ble_board (2026-11-17, user: activation_interface's top
+    # was too busy; was activation_interface): the H3LIS331 ±400g high-G
+    # accel keeps its locked 1.41 mm spin-axis offset, now on fin_ble's TOP
+    # face (its bottom centre is U_G0B1_FIN). Every one of its signals goes
+    # UP (I2C3 → fin_ble/wakeup/compute, INT1 → the M33), so the move takes
+    # 3 lanes out of the activation↔fin_ble gap.
+    _HACC_TAG = "fin_ble_board"
+    acc = add_h3lis331dltr(d, ref="U_HACC", board_tag=_HACC_TAG)
     _net(d, "3V3")       .connect(acc.pin("VDD_IO"))   # 1
     # 2, 3 = NC_1, NC_2 → leave floating per datasheet
     _net(d, "I2C3_SCL")  .connect(acc.pin("SCL"))      # 4
@@ -3935,8 +3906,8 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "GND")       .connect(acc.pin("GND_4"))    # 16
     # DS9012 §"Application hints": 100 nF ceramic + 10 µF bulk at pin 14
     cap_to_gnd(d, "3V3", "100nF", ref="C_HACC1",
-               embedded_cap_absorbs=True, board_tag="activation_interface", pin=acc.pin("VDD"))
-    cap_to_gnd(d, "3V3", "10uF",  ref="C_HACC2", board_tag="activation_interface", pin=acc.pin("VDD"))
+               embedded_cap_absorbs=True, board_tag=_HACC_TAG, pin=acc.pin("VDD"))
+    cap_to_gnd(d, "3V3", "10uF",  ref="C_HACC2", board_tag=_HACC_TAG, pin=acc.pin("VDD"))
 
     # ── 3 test points post-build (per system.py wakeup_board block end) ──
     tp_bat = _add_testpoint(d, ref="TP_BAT", board_tag=BTAG)
@@ -5282,22 +5253,37 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
     packer only takes axis-aligned rects, so the band is rasterized like the
     battery ring's). Returns the number of faces marked."""
     from smash.state.board_geometry import Keepout
-    from smash.export.spacer_step import (gap_kind, RING_R_IN_MM,
-                                          RING_CLEARANCE_MM)
-    rects = _ring_band_rects(RING_R_IN_MM - RING_CLEARANCE_MM)
+    from smash.export.spacer_step import (gap_kind, RING_CLEARANCE_MM,
+                                          ring_open_sector, ring_spec)
+    from smash.parts.castellations import board_fold_transforms
+    import math as _m
+    chain = list(panel.snake_chain or [])
+    fold_M = board_fold_transforms(panel, chain)
+
+    def in_opening(M, x, y, osec):     # C-ring (2026-11-17): no ring there
+        if not osec:
+            return False
+        px, py = M[0][0] * x + M[0][1] * y, M[1][0] * x + M[1][1] * y
+        return osec[0] + 3.0 <= _m.degrees(_m.atan2(py, px)) % 360.0 <= osec[1] - 3.0
+
     n = 0
-    for sp, before, after in _gap_neighbours(list(panel.snake_chain or []), boards):
+    for sp, before, after in _gap_neighbours(chain, boards):
         if gap_kind(sp) != "ring":
             continue
         for nbr, cu in ((before, "F.Cu"), (after, "B.Cu")):
             b = boards.get(nbr) if nbr else None
             if b is None or getattr(b, "geometry", None) is None:
                 continue
-            for (x0, y0, x1, y1) in rects:
+            M = fold_M.get(nbr, ((1, 0), (0, 1)))
+            rs = ring_spec(sp)
+            for (x0, y0, x1, y1) in _ring_band_rects(rs.r_in - RING_CLEARANCE_MM):
+                if all(in_opening(M, x, y, ring_open_sector(sp))
+                       for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))):
+                    continue
                 b.geometry.keepouts.append(Keepout(
                     polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
                     layers=(cu,), scope="component", tag="al_ring_band",
-                    note=f"Al ring of {sp} (r {RING_R_IN_MM:g}-17) bears here"))
+                    note=f"{rs.label} of {sp} (r {rs.r_in:g}-{rs.r_out:g}) bears here"))
             n += 1
     return n
 
@@ -5627,14 +5613,21 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
     windows: spacers are no longer milled PCBs)."""
     from smash.parts.castellations import _local_xy
     from smash.export.spacer_step import (
-        gap_kind, RING_R_IN_MM, RING_R_OUT_MM, RING_CLEARANCE_MM,
+        gap_kind, RING_CLEARANCE_MM,
         STANDOFF_D_MM, STANDOFF_R_MM, STANDOFF_ANGLES_DEG,
-        battery_holder_cavity)
+        ring_open_sector, ring_spec, battery_holder_cavity)
     import math as _m
 
     def circle(cx, cy, r, n=72):
         return [(cx + r * _m.cos(2 * _m.pi * k / n),
                  cy + r * _m.sin(2 * _m.pi * k / n)) for k in range(n)]
+
+    def sector(M, r_in, r_out, a0, a1, n=48):
+        """Closed annular-sector outline (physical angles a0 → a1) in the
+        board's local frame."""
+        fwd = [_local_xy(M, a0 + (a1 - a0) * k / n, r_out) for k in range(n + 1)]
+        back = [_local_xy(M, a1 - (a1 - a0) * k / n, r_in) for k in range(n + 1)]
+        return fwd + back
 
     for b in boards.values():
         if getattr(b, "silk_overlays", None):
@@ -5647,11 +5640,20 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                 continue
             ov = boards[nbr].silk_overlays
             if kind == "ring":
-                ov.append((layer, circle(0, 0, RING_R_OUT_MM + RING_CLEARANCE_MM),
-                           ""))
-                ov.append((layer, circle(0, 0, RING_R_IN_MM - RING_CLEARANCE_MM),
-                           f"AL RING r{RING_R_IN_MM:g}-{RING_R_OUT_MM:g} "
-                           f"+{RING_CLEARANCE_MM:g} KEEPOUT"))
+                rs = ring_spec(sp)
+                RING_R_IN_MM, RING_R_OUT_MM, RING_LABEL = rs.r_in, rs.r_out, rs.label
+                osec = ring_open_sector(sp)
+                if osec:            # C-ring (2026-11-17): open behind this gap's slot
+                    o0, o1 = osec
+                    ov.append((layer, sector(fold_M[nbr], RING_R_IN_MM - RING_CLEARANCE_MM,
+                                             RING_R_OUT_MM + RING_CLEARANCE_MM, o1, o0 + 360.0),
+                               f"{RING_LABEL} (C) r{RING_R_IN_MM:g}-{RING_R_OUT_MM:g} "
+                               f"+{RING_CLEARANCE_MM:g} KEEPOUT (open {o0:g}-{o1:g} deg)"))
+                else:
+                    ov.append((layer, circle(0, 0, RING_R_OUT_MM + RING_CLEARANCE_MM), ""))
+                    ov.append((layer, circle(0, 0, RING_R_IN_MM - RING_CLEARANCE_MM),
+                               f"{RING_LABEL} r{RING_R_IN_MM:g}-{RING_R_OUT_MM:g} "
+                               f"+{RING_CLEARANCE_MM:g} KEEPOUT"))
             elif kind == "battery_holder":
                 # cell cavity outline: the holder's end face bears on the
                 # board everywhere OUTSIDE it (E top: cell tabs only inside);
@@ -5680,6 +5682,22 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                     ov.append((layer, circle(x, y, STANDOFF_D_MM / 2.0
                                              + RING_CLEARANCE_MM, 24),
                                "PEEK STANDOFF" if k == 0 else ""))
+    # Slot-antenna board keep-outs (2026-11-17, antenna_slots.board_keepouts):
+    # copper-free board-edge wedges behind a slot that fills its gap (S4) —
+    # on the board face toward the slot, ALL copper layers.
+    from smash.export.sleeve_step import stack_z_map
+    from smash.parts.antenna_slots import board_keepouts
+    zmap = stack_z_map(boards, chain)
+    mids = {n: 0.5 * (z0 + z1) for n, (z0, z1) in zmap.items()
+            if n in boards and not boards[n].is_spacer}
+    ts = [z1 - z0 for n, (z0, z1) in zmap.items() if n in mids]
+    for b, face, a0, a1, r_in, sname in board_keepouts(mids, sum(ts) / len(ts) if ts else 1.315):
+        if b not in boards or b not in fold_M:
+            continue
+        boards[b].silk_overlays.append(
+            ("F.SilkS" if face == "top" else "B.SilkS",
+             sector(fold_M[b], r_in, 17.0, a0, a1),
+             f"ANT {sname} KEEPOUT: NO COPPER r>{r_in:g} (all layers)"))
 
 
 def _check_gap_hardware_clearance(panel, boards: dict) -> list:
@@ -5688,9 +5706,11 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
     lower board's top only pads may sit (cell tabs), on the upper board's
     bottom parts must lie inside a holder pocket."""
     from smash.export.spacer_step import (
-        gap_kind, RING_R_IN_MM, RING_R_OUT_MM, RING_CLEARANCE_MM)
+        gap_kind, RING_CLEARANCE_MM, ring_spec)
+    from smash.parts.castellations import board_fold_transforms
     import math as _m
     issues = []
+    fold_M = board_fold_transforms(panel, list(panel.snake_chain or []))
     for sp, before, after in _gap_neighbours(list(panel.snake_chain or []), boards):
         kind = gap_kind(sp)
         if kind == "standoffs":
@@ -5708,6 +5728,14 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                     getattr(c, "footprint", None), "size_mm", None) or (0, 0)
                 x, y = p.position_mm
                 if kind == "ring":
+                    # C-ring (2026-11-17): no ring over the antenna sector
+                    from smash.export.spacer_step import ring_open_sector as _ros
+                    _OS = _ros(sp)
+                    M = fold_M.get(nbr, ((1, 0), (0, 1)))
+                    px_, py_ = (M[0][0] * x + M[0][1] * y, M[1][0] * x + M[1][1] * y)
+                    ang = _m.degrees(_m.atan2(py_, px_)) % 360.0
+                    if _OS and _OS[0] + 5.0 <= ang <= _OS[1] - 5.0:
+                        continue
                     # farthest corner of the ROTATED body rect (the old
                     # half-diagonal circle flagged parts that sit clear)
                     th = _m.radians(getattr(p, "rotation_deg", 0.0) or 0.0)
@@ -5715,9 +5743,9 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                     rmax = max(_m.hypot(x + u * _m.cos(th) - v * _m.sin(th),
                                         y + u * _m.sin(th) + v * _m.cos(th))
                                for u in (-w2, w2) for v in (-h2, h2))
-                    lo = RING_R_IN_MM - RING_CLEARANCE_MM
+                    lo = ring_spec(sp).r_in - RING_CLEARANCE_MM
                     if rmax > lo:
-                        issues.append(f"{nbr}/{face}: {c.ref} reaches the Al ring "
+                        issues.append(f"{nbr}/{face}: {c.ref} reaches the gap ring "
                                       f"band of {sp} (corner at r {rmax:.2f} > {lo:g})")
                     continue
                 ref = getattr(c, "ref", "")

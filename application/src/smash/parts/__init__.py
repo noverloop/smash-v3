@@ -82,6 +82,7 @@ from smash.parts.opamps import (
 from smash.parts.rf import (
     add_bgs12wn6e6327xtsa1,
     add_pe42442a_z,
+    add_pe64906b_z,
     add_adf4351bcpz,
 )
 from smash.parts.passives import (
@@ -141,7 +142,7 @@ from smash.parts.radar import (
 )
 from smash.parts.diodes import add_bat64_06_tp
 from smash.parts.optical import add_sfh203fa, add_vbpw34fas, add_vsmb1940x01
-from smash.parts.hall_sensors import add_drv5023ajqlpg, add_drv5032fcqdbzr, add_rr123_1h02_612
+from smash.parts.hall_sensors import add_drv5023ajqlpg, add_drv5032fcdbzt, add_rr123_1h02_612
 from smash.parts.cameras import add_ar0234cssm00suka0_cp
 from smash.parts.usb import (
     add_uj31_ch_3_msmt_tr_67,
@@ -215,6 +216,7 @@ __all__ = [
     # RF parts
     "add_bgs12wn6e6327xtsa1",
     "add_pe42442a_z",
+    "add_pe64906b_z",
     "add_adf4351bcpz",
     # passives
     "add_we_744043100",
@@ -257,7 +259,7 @@ __all__ = [
     "add_awr2e44pbgamxrq1",
     # photodiode + Hall sensor + camera
     "add_sfh203fa", "add_vbpw34fas", "add_vsmb1940x01", "add_drv5023ajqlpg",
-    "add_drv5032fcqdbzr", "add_rr123_1h02_612",
+    "add_drv5032fcdbzt", "add_rr123_1h02_612",
     "add_ar0234cssm00suka0_cp",
     # USB-C connector
     "add_uj31_ch_3_msmt_tr_67",

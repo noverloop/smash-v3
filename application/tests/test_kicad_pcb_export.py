@@ -925,7 +925,16 @@ def test_full_twin_exports_clean(tmp_path):
     #   (PE42442) + VDD 100 pF/1 µF + 2× BAND_SEL 100 pF + 2× 1 MΩ pull-down
     #   + R_LR_HF_LOAD (RF4 dummy load) + 3 slot branches × (2 C + 1 L) +
     #   FB_LR_VBAT.
-    assert total_fps == 598
+    # → 566: HF-only radio, dedicated slots (2026-11-17, −32): sub-GHz dropped
+    #   (U_LR_SW_LF + its VDD cap + 13 LF choke/match/filter parts), band
+    #   switch gone (U_LR_BAND + 2 VDD caps + 2× SEL 100 pF + 2× pull-down +
+    #   R_LR_HF_LOAD + 3 slot branches × 3), owner switch gone (U_ANTSW_2G4 +
+    #   VDD cap + CTRL pull-down); +3 for the single S1 π low-pass.
+    # → 568: S1 π made tunable (2026-11-17, +2): the two shunt C0G caps
+    #   become 2× PE64906 DTC, each with a 100 nF VDD cap.
+    # → 572: S3 merged into S1 (2026-11-17, +4): owner switch U_ANTSW_S1
+    #   (BGS12) + its VDD cap + CTRL pull-down + the shared-feed DC block.
+    assert total_fps == 572
 
 
 

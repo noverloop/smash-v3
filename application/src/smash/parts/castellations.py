@@ -45,19 +45,21 @@ SIGNAL_SECTOR_HALF_DEG = 105.0
 SEAM_ANGLES_DEG = (105.0, 285.0)
 SEAM_HALF_WIDTH_DEG = 4.0
 RESERVED_SECTORS_DEG = tuple((a, SEAM_HALF_WIDTH_DEG) for a in SEAM_ANGLES_DEG)
-# GND: no lanes — fixed castellations in the antenna sector, near its edges
-# (antenna centre stays free), on every rigid board, tied to the inner plane.
-GND_CAST_ANGLES_DEG = (113.0, 120.0, 240.0, 247.0)
+# GND: no lanes — fixed castellations in the antenna sector on every rigid
+# board. (2026-11-17) One PAIR per slot antenna, flanking its feed in the
+# middle of the CPW ground bands (smash.parts.antenna_slots): they bond the
+# slot patch / CPW grounds to the boards (the sim's grounded feed).
+from smash.parts.antenna_slots import SLOTS as _ANT_SLOTS
+GND_CAST_ANGLES_DEG = tuple(sorted(a for s_ in _ANT_SLOTS for a in s_.gnd_flank_deg))
 # Antenna feeds: single-board nets that leave the RADIO board (the board
 # their chips sit on — wakeup since 2026-11-16) through a castellation +
-# sleeve via to the sleeve's antenna copper. (2026-11-16) HF-only radiators:
-# three printed slots S1/S2/S3 (≈1.75 / 2.0 / 2.4 GHz, S3 shared with BLE)
-# fed from the PE42442 band switch, plus RF_LF_EXT — the sub-GHz path to a
-# flat 50 Ω launch pad for an EXTERNAL antenna (no sub-GHz radiator on the
-# tower). Slot angles keep ≥ 20° from the GND castellations; slot geometry
-# (length / direction / keep-out depth) is pending the antenna sim.
-ANTENNA_FEED_ANGLES_DEG = {"RF_LF_EXT": 130.0, "ANT_HF_S1": 150.0,
-                           "ANT_HF_S2": 180.0, "ANT_HF_S3": 210.0}
+# sleeve via to the sleeve's antenna copper. (2026-11-17) Two DEDICATED
+# printed slots, no RF switching: S1 (LR2021, 2.1-2.48 GHz) and S3 (BLE).
+# Sub-GHz (RF_LF_EXT) and slot S2 are gone. (2026-11-17) Angles = the CPW
+# strip centres of the simulated slots (antenna_slots.SLOTS); S4 (transverter
+# high band, no circuit yet) is listed so its angle stays RESERVED — a feed
+# whose net is absent from the design gets no castellation.
+ANTENNA_FEED_ANGLES_DEG = {s_.net: round(s_.feed_deg, 1) for s_ in _ANT_SLOTS}
 # Plug ring (2026-11-14): the aft board's bottom-face bench/harness interface
 # (SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES, …) is UNCHANGED — it is now reached
 # on the sleeve's plug ring instead of on the board face. Each interface pad

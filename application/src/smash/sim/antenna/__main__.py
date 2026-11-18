@@ -43,6 +43,11 @@ def _parse_sets(items):
             kw[k] = json.loads(v)
         except json.JSONDecodeError:
             kw[k] = v
+    for key in ("ring_setback_gaps", "keepout_slots", "ring_al_gaps"):     # "a,b" → ("a", "b")
+        if isinstance(kw.get(key), str):
+            kw[key] = tuple(x for x in kw[key].split(",") if x)
+    if isinstance(kw.get("skin_clip_deg"), str):          # "109,255"
+        kw["skin_clip_deg"] = tuple(float(x) for x in kw["skin_clip_deg"].split(","))
     if kw.get("rings") == "al_cut":
         kw["rings"] = "al"
         kw["ring_free_sector"] = cases.ANTENNA_SECTOR_FREE
@@ -53,20 +58,26 @@ def _parse_sets(items):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="python -m smash.sim.antenna")
-    ap.add_argument("case", choices=["M0", "A", "B", "C"])
+    ap.add_argument("case", choices=["M0", "A", "B", "C", "C2"])
     ap.add_argument("--port", default=None, help="excited port, e.g. P_S2 (default: first)")
     ap.add_argument("--set", action="append", help="build_tower override key=value")
     ap.add_argument("--out", default=str(REPO / "dist" / "sim" / "antenna"))
     ap.add_argument("--mesh", type=float, default=0.4)
     ap.add_argument("--threads", type=int, default=0)
     ap.add_argument("--tag", default="")
+    ap.add_argument("--f-start", type=float, default=1.5, help="sweep start [GHz]")
+    ap.add_argument("--f-stop", type=float, default=2.8, help="sweep stop [GHz]")
+    ap.add_argument("--ff", default="", help="extra far-field frequencies, GHz, comma-separated")
     a = ap.parse_args(argv)
 
     if a.case == "M0":
         model = dipole_model()
     else:
         tm = cases.option_model(a.case, **_parse_sets(a.set))
-        model = geometry.model_to_dict(tm, excite=a.port, mesh_mm=a.mesh)
+        ff = tuple(float(x) for x in a.ff.split(",") if x.strip())
+        model = geometry.model_to_dict(tm, excite=a.port, mesh_mm=a.mesh,
+                                       f_start_ghz=a.f_start, f_stop_ghz=a.f_stop,
+                                       ff_extra_ghz=ff)
     name = "_".join(x for x in (a.case, model["excite"], a.tag) if x)
     out = pathlib.Path(a.out) / name
     out.mkdir(parents=True, exist_ok=True)

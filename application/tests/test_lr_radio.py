@@ -1,5 +1,7 @@
 """LR2021 radio wiring vs the FINAL LR20xx datasheet (Rev 2.2) — the supply,
-PA and DIO rules the preliminary datasheet did not give (2026-11-16)."""
+PA and DIO rules the preliminary datasheet did not give (2026-11-16).
+HF-only since 2026-11-17: sub-GHz dropped; LR2021 and BLE SHARE slot S1 via an owner switch,
+no band / owner switching."""
 from __future__ import annotations
 
 import importlib
@@ -54,28 +56,27 @@ def test_vpax_is_its_own_net_not_vbat(design):
     assert _net(design, lr, "VDCC1") == _net(design, lr, "VDCC2")
 
 
-def test_lf_pa_pins_are_tied(design):
+def test_unused_lf_pins_left_open(design):
+    """Sub-GHz dropped (2026-11-17): DS v2.2 §23.5 — unused RF pins unconnected."""
     lr = _chip(design, "U_LR")
-    assert _net(design, lr, "RFO_LF1") == _net(design, lr, "RFO_LF2") is not None
+    for p in ("RFO_LF1", "RFO_LF2", "RFI_LF"):
+        assert _net(design, lr, p) is None, p
 
 
-def test_both_pa_outputs_have_a_vr_pa_choke(design):
+def test_hf_pa_output_has_a_vr_pa_choke(design):
     lr = _chip(design, "U_LR")
     vr = _net(design, lr, "VR_PA")
-    for rfo in ("RFO_LF1", "RFO_HF"):
-        out = _net(design, lr, rfo)
-        chokes = [c for c in design.chips if c.ref.startswith("L_")
-                  and {_net(design, c, "1"), _net(design, c, "2")} == {vr, out}]
-        assert chokes, f"no VR_PA choke on {rfo}"
+    out = _net(design, lr, "RFO_HF")
+    chokes = [c for c in design.chips if c.ref.startswith("L_")
+              and {_net(design, c, "1"), _net(design, c, "2")} == {vr, out}]
+    assert chokes, "no VR_PA choke on RFO_HF"
 
 
 def test_rf_switch_control_avoids_reset_pulled_up_dios(design):
     """DIO5/6 come up pulled HIGH after reset (DS §5.1.1) — they must not
-    drive the TX/RX switches; one RF-switch DIO drives both."""
+    drive the TX/RX switch; the RF-switch DIO8 does."""
     lr = _chip(design, "U_LR")
-    ctl_lf = _net(design, _chip(design, "U_LR_SW_LF"), "CTRL")
-    ctl_hf = _net(design, _chip(design, "U_LR_SW_HF"), "CTRL")
-    assert ctl_lf == ctl_hf == _net(design, lr, "DIO8")
+    assert _net(design, _chip(design, "U_LR_SW_HF"), "CTRL") == _net(design, lr, "DIO8")
     assert _net(design, lr, "DIO5") is None and _net(design, lr, "DIO6") is None
 
 
@@ -91,7 +92,7 @@ def test_host_lines_have_series_resistors(design):
         assert bridges, f"no series R between {host} and LR2021 {pin}"
 
 
-# ── HF band switch, slot feeds, LF connection, VBAT bead (2026-11-16) ──
+# ── HF slot feeds, VBAT bead (2026-11-16; dedicated slots 2026-11-17) ──
 
 _GND = {"GND", "FLEX_GND"}   # the ground net's canonical name / alias
 
@@ -114,45 +115,61 @@ def test_vbat_through_ferrite_bead(design):
     assert _net(design, fb, "1") in _names(design, "3V3")
 
 
-def test_band_switch_two_pin_control(design):
-    sw = _chip(design, "U_LR_BAND")
-    wba = _chip(design, "U_WBA")
-    assert sw.manf_pn == "PE42442A-Z"
-    for p in ("V3", "VSS_EXT", "EP"):
-        assert _net(design, sw, p) in _GND
-    assert _net(design, sw, "V1") == _net(design, wba, "PA8") == "LR_BAND_SEL0"
-    assert _net(design, sw, "V2") == _net(design, wba, "PA9") == "LR_BAND_SEL1"
-    for sel in ("LR_BAND_SEL0", "LR_BAND_SEL1"):   # EVK pull-down → reset = RF4
-        pd = [c for c in design.chips if c.ref.startswith("R_")
-              and _gndize(_two_ended(design, c)) == {sel, "GND"}]
-        assert pd, f"no pull-down on {sel}"
-    # common port fed (DC-blocked) from the HF TX/RX switch
-    rfc = _net(design, sw, "RFC")
+def test_hf_chain_feeds_slot_s1_through_the_owner_switch(design):
+    """LR switch common → DC block → DTC π → owner switch RF2 → DC block →
+    ANT_HF_S1."""
+    rfin = _net(design, _chip(design, "U_LR_SW_HF"), "RFIN")
     blk = _chip(design, "C_LR_HF_ANTBLK")
-    assert _two_ended(design, blk) == {_net(design, _chip(design, "U_LR_SW_HF"), "RFIN"), rfc}
+    assert rfin in _two_ended(design, blk)
+    mid = (_two_ended(design, blk) - {rfin}).pop()
+    lpf = _chip(design, "L_LR_HF_ANT_LPF")
+    out = (_two_ended(design, lpf) - {mid}).pop()
+    sw = _chip(design, "U_ANTSW_S1")
+    assert _net(design, sw, "RF2") == out
+    com = _net(design, sw, "RFIN")
+    assert _two_ended(design, _chip(design, "C_ANT_S1_DCBLK")) == {com, "ANT_HF_S1"}
 
 
-def test_band_switch_routes_to_slots_and_load(design):
-    sw = _chip(design, "U_LR_BAND")
-    feeds = {}
-    for port, tag in (("RF1", "S1"), ("RF2", "S2"), ("RF3", "S3")):
-        inn = _net(design, sw, port)
-        lpf = _chip(design, f"L_LR_HF_{tag}_LPF")
-        assert inn in _two_ended(design, lpf)
-        feeds[tag] = (_two_ended(design, lpf) - {inn}).pop()
-    assert feeds["S1"] == "ANT_HF_S1" and feeds["S2"] == "ANT_HF_S2"
-    # S3 shares the antenna with BLE through the owner switch
-    own = _chip(design, "U_ANTSW_2G4")
-    assert feeds["S3"] == _net(design, own, "RF2")
-    assert _net(design, own, "RFIN") == "ANT_HF_S3"
-    # RF4 (reset default) → 49.9 Ω dummy load
-    load = _chip(design, "R_LR_HF_LOAD")
-    assert _gndize(_two_ended(design, load)) == {_net(design, sw, "RF4"), "GND"}
+def test_ble_shares_slot_s1_by_default(design):
+    """S3 merged into S1 (2026-11-17): BLE → DC block → owner switch RF1, the
+    pull-down default; switch on 3V3_AON (BLE works with 3V3 off), CTRL from
+    LR2021 DIO9."""
+    blk = _chip(design, "C_BLE_DCBLK")
+    sw = _chip(design, "U_ANTSW_S1")
+    assert _two_ended(design, blk) == {"BLE_RF", _net(design, sw, "RF1")}
+    assert _net(design, sw, "VDD") in _names(design, "3V3_AON")
+    ctrl = _net(design, sw, "CTRL")
+    assert ctrl == _net(design, _chip(design, "U_LR"), "DIO9") == "ANTSW_S1_LR"
+    pd = _chip(design, "R_ANTSW_S1_PD")
+    assert ctrl in _two_ended(design, pd)
+    assert design.net_by_name("ANT_HF_S3") is None
 
 
-def test_lf_path_ends_at_external_connection(design):
-    assert design.net_by_name("RF_LF_EXT") is not None
-    assert design.net_by_name("ANT_SUBG_FEED") is None
-    assert design.net_by_name("ANT_2G4_FEED") is None
-    lpf = _chip(design, "L_LR_LF_LPF")
-    assert "RF_LF_EXT" in _two_ended(design, lpf)
+def test_no_rf_switching_or_lf_left(design):
+    refs = {c.ref for c in design.chips}
+    assert not refs & {"U_LR_BAND", "U_ANTSW_2G4", "U_LR_SW_LF", "R_LR_HF_LOAD"}
+    for n in ("RF_LF_EXT", "ANT_HF_S2", "ANTSW_2G4_CTRL", "LR_BAND_SEL0",
+              "LR_BAND_SEL1", "ANT_SUBG_FEED", "ANT_2G4_FEED"):
+        assert design.net_by_name(n) is None, n
+
+
+def test_s1_tuner_is_two_dtcs_around_the_series_l(design):
+    """2026-11-17: the S1 π-match is tunable — PE64906 DTCs shunt on both
+    sides of the 3.9 nH, RF- grounded, shared SCL/SDA, one SEN each, all
+    from the WBA's former spare pins."""
+    lpf = _chip(design, "L_LR_HF_ANT_LPF")
+    ends = _two_ended(design, lpf)
+    wba = _chip(design, "U_WBA")
+    for ref, sen, wpin in (("U_LR_DTC1", "LR_DTC_SEN1", "PA9"),
+                           ("U_LR_DTC2", "LR_DTC_SEN2", "PC15__OSC32__OUT")):
+        dtc = _chip(design, ref)
+        assert dtc.manf_pn == "PE64906B-Z"
+        rf = {_net(design, dtc, p) for p in ("RF+_1", "RF+_2")}
+        assert len(rf) == 1 and rf <= ends
+        gnd = _net(design, _chip(design, "U_LR"), "GND")
+        assert {_net(design, dtc, p) for p in ("RF-_1", "RF-_2", "EP")} == {gnd}
+        assert _net(design, dtc, "SEN") == sen == _net(design, wba, wpin)
+        assert _net(design, dtc, "SCL") == "LR_DTC_SCL" == _net(design, wba, "PA7")
+        assert _net(design, dtc, "SDA") == "LR_DTC_SDA" == _net(design, wba, "PA8")
+    assert _net(design, _chip(design, "U_LR_DTC1"), "RF+_1") != \
+        _net(design, _chip(design, "U_LR_DTC2"), "RF+_1")

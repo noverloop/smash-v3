@@ -71,8 +71,8 @@ def test_drv5023_threshold_aliases():
     c = add_drv5023ajqlpg(Design(), ref="U1")
     # AJQ = AEC-Q100 grade 0
     assert "AEC-Q100 Grade 0" in c.standards
-    # AJQLPG = SOT-23
-    assert "SOT-23" in c.package
+    # LPG = TO-92 (DS: "LPG Package 3-Pin TO-92"; the SOT-23 is DBZ)
+    assert "TO-92" in c.package
 
 def test_sfh203_ir_filter():
     c = add_sfh203fa(Design(), ref="D1")

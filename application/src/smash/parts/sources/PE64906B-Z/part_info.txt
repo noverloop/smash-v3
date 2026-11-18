@@ -1,0 +1,9 @@
+Manufacturer=Peregrine Semiconductor
+PartNumber=PE64906B-Z
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=11
+Version=3.1
+Released=2019-01-09 03:28:38
+Downloaded=2026-11-17 18:25:01
+3D=Y

@@ -624,6 +624,97 @@ def add_pe42442a_z(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+# ═════════════════════════════════════════════════════════════════════════
+# pSemi (Murata) PE64906B-Z — 5-bit digitally tunable capacitor (DTC),
+# 100-3000 MHz, 10-lead 2×2×0.55 mm QFN + EP
+# ═════════════════════════════════════════════════════════════════════════
+
+_PE64906_NOTE = """\
+Datasheet: pSemi PE64906 Product Specification DOC-82123-4.03 (09/2026),
+vendored. SamacSys LIB v3.1 (2019-01-09) supplies the symbol and 3D model;
+its pin numbering matches DS Table 9 / Fig 19 (1-2 RF-, 3/10 GND, 4 VDD,
+5 SCL, 6 SEN, 7 SDA, 8-9 RF+, 11 = EP GND).
+
+⚠ FOOTPRINT: the SamacSys land puts the side pads at ±1.25 mm, 0.7 mm long
+(0.9-1.6 mm from centre) — only ~0.1 mm over the 0.20 mm leads (0.8-1.0 mm).
+The pads here follow the DS "recommended land pattern" (Fig 20): side pads
+0.45 × 0.25 mm centred at ±0.975 mm, pins 5/10 0.25 × 0.45 mm at ±0.975 mm,
+EP 0.95 × 0.95 mm, 0.5 mm pitch, 2.40 mm overall.
+
+Shunt C (RF- grounded) 0.90-4.60 pF in 32 states, 119 fF steps (at 100 MHz;
+tolerance Cmin 0.81-0.99, Cmax 3.68-5.52 pF). Q at 1710-2170 MHz: 40 at
+Cmin, 13 at Cmax (Ls removed). SRF 7.9 GHz at state 0. VDD 2.30-4.80 V,
+140 µA typ (25 µA standby). 3-wire serial (SCL/SDA/SEN, 8-bit telegram MSB
+first, latched on SEN falling edge; SCL ≥ 38.4 ns period); SCL/SDA/VDD may be
+shared between DTCs with a dedicated SEN each (DS Fig 10). Switching ≤ 12 µs,
+startup/wake ≤ 70 µs. RF- needs a DC path to GND. MSL1, -40…+85 °C.
+"""
+
+
+def _pe64906_footprint() -> Footprint:
+    """DS recommended land pattern (Fig 20), orientation as SamacSys / Fig 19:
+    pins 1-4 down the left, 5 bottom, 6-9 up the right, 10 top, EP 11."""
+    side = (0.45, 0.25)
+    pads = [Pad(num=str(n), position_mm=(-0.975, y), size_mm=side, shape="rect", layer="F.Cu")
+            for n, y in zip((1, 2, 3, 4), (-0.75, -0.25, 0.25, 0.75))]
+    pads.append(Pad(num="5", position_mm=(0.0, 0.975), size_mm=(0.25, 0.45),
+                    shape="rect", layer="F.Cu"))
+    pads += [Pad(num=str(n), position_mm=(0.975, y), size_mm=side, shape="rect", layer="F.Cu")
+             for n, y in zip((6, 7, 8, 9), (0.75, 0.25, -0.25, -0.75))]
+    pads.append(Pad(num="10", position_mm=(0.0, -0.975), size_mm=(0.25, 0.45),
+                    shape="rect", layer="F.Cu"))
+    pads.append(Pad(num="11", position_mm=(0.0, 0.0), size_mm=(0.95, 0.95),
+                    shape="rect", layer="F.Cu"))
+    return Footprint(
+        name="QFN50P200X200X60-11N-D_DS", package_class="QFN-10 2x2 + EP",
+        pads=pads,
+        body_outline=[(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)],
+        courtyard=[(-1.45, -1.45), (1.45, -1.45), (1.45, 1.45), (-1.45, 1.45)],
+        pitch_mm=0.5, size_mm=(2.0, 2.0), height_mm=0.6,
+        model_3d_path=datasheet_ref("PE64906B-Z", "PE64906B-Z.stp"),
+        source="custom")
+
+
+def add_pe64906b_z(design, ref: str, **overrides) -> Chip:
+    """pSemi (Murata) PE64906B-Z — 5-bit DTC, 0.9-4.6 pF shunt, 100-3000 MHz,
+    3-wire serial control, 10-lead 2×2 mm QFN."""
+    pn = "PE64906B-Z"
+    fp = _pe64906_footprint()
+    P = Pin
+    pins = [
+        P(num="1", name="RF-_1", type="io", aliases=["RF-"], note="RF− (tie 1+2; GND in shunt use)"),
+        P(num="2", name="RF-_2", type="io", note="RF− (tie 1+2)"),
+        P(num="3", name="GND_1", type="ground"),
+        P(num="4", name="VDD", type="power", note="Supply 2.30-4.80 V"),
+        P(num="5", name="SCL", type="input", note="Serial clock"),
+        P(num="6", name="SEN", type="input", note="Serial latch enable (state applied on falling edge)"),
+        P(num="7", name="SDA", type="input", note="Serial data"),
+        P(num="8", name="RF+_1", type="io", aliases=["RF+"], note="RF+ (tie 8+9)"),
+        P(num="9", name="RF+_2", type="io", note="RF+ (tie 8+9)"),
+        P(num="10", name="GND_2", type="ground"),
+        P(num="11", name="EP", type="ground", note="Exposed pad, GND"),
+    ]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="pSemi (Murata)", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("Digitally tunable capacitor, 5-bit, 0.9-4.6 pF shunt, "
+                     "100-3000 MHz, 3-wire serial, QFN-10 2×2 mm"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        weight_g=None, standards=["RoHS", "MSL1", "ESD HBM 2 kV"], eccn=None, itar=None,
+        package="QFN-10 2x2", size_mm=(2.0, 2.0), height_mm=0.6,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=4.8, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
+        pins=pins, footprint=fp, note=_PE64906_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 def _tcxo_2016_footprint() -> Footprint:
     """Generic 2.0 × 1.6 mm 4-pad TCXO land (JEDEC-style, pads 1-4 CCW)."""
     pads = [Pad(num=n, position_mm=(x, y), size_mm=(0.65, 0.55), shape="rect", layer="F.Cu")

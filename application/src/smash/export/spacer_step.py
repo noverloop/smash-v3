@@ -31,6 +31,8 @@ The output STEP can be loaded into FreeCAD / Fusion / mesh tools for
 """
 from __future__ import annotations
 
+import dataclasses
+
 import pathlib
 from typing import Iterable
 
@@ -562,9 +564,62 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
 # radar ↔ nose_cap: NO hardware — the nose_cap is itself the spacer.
 NO_HARDWARE_GAPS = ("spacer_radar_module_nose_cap",)
-RING_R_IN_MM, RING_R_OUT_MM = 16.0, 17.0      # 1.0 mm wall, OD 34 = board edge (2026-11-15); bears on the
+# (2026-11-17, user) Gap rings are GF30 PEEK (30 % glass-filled), 2.0 mm wall,
+# CLOSED all round: RF-transparent (εr ≈ 3.8, low loss) behind the slot
+# antennas, so no openings; twice the 1 mm Al ring's area to make up for
+# PEEK's lower strength (setback load is shared with the potted monolith —
+# check in the launch FEA). Not carbon-filled (conductive / lossy at GHz).
+RING_MATERIAL = "PEEK GF30 (30 % glass-filled), annealed after machining"
+RING_IS_METAL = False
+RING_LABEL = "PEEK RING"
+RING_NOTCH_RADIUS_MM = 0.3                    # radiused notch corners: GF30 is notch-sensitive
+RING_R_IN_MM, RING_R_OUT_MM = 15.0, 17.0      # 2.0 mm wall, OD 34 = board edge; bears on the
                                               # mask-tented castellation annuli (mask + anodise = 2× insulation)
+
+
+@dataclasses.dataclass(frozen=True)
+class RingSpec:
+    material: str
+    is_metal: bool
+    label: str
+    r_in: float
+    r_out: float = 17.0
+
+
+RING_PEEK = RingSpec(RING_MATERIAL, False, RING_LABEL, 15.0)
+RING_AL = RingSpec("7075-T6 aluminium, hard anodised (anodise = insulation)", True,
+                   "AL RING", 16.0)
+# (2026-11-17, user) 2 mm GF30 PEEK ONLY in the two slot gaps (S1
+# activation↔fin_ble, S4 fin_ble↔wakeup); every gap above the radio board
+# keeps a 1 mm Al ring to preserve board space (S3 merged into S1, so
+# wakeup↔power holds no slot any more).
+AL_RING_GAPS = ("spacer_wakeup_board_power_board",
+                "spacer_power_board_companion_compute",
+                "spacer_companion_compute_radar_module")
+
+
+def ring_spec(spacer_name: str) -> RingSpec:
+    return RING_AL if spacer_name in AL_RING_GAPS else RING_PEEK
+
 RING_CLEARANCE_MM = 0.2                       # silk "standoff distance" each side
+# (2026-11-17, user) A ring is OPEN only where a slot antenna sits in its
+# gap, over that slot's span + a margin (antenna_slots.ring_openings) — no
+# metal behind the slot. The rings are structural, so the opening is kept as
+# narrow as the slot allows; gaps without a slot keep a full ring. A C-ring
+# that still spans > 180° locates and spaces its two boards; potting fills
+# the opening.
+
+
+def ring_open_sector(spacer_name: str):
+    """(a0, a1) physical degrees where this gap's ring is open, or None.
+    Only a METAL ring opens behind a slot; the PEEK ring stays closed."""
+    if not ring_spec(spacer_name).is_metal:
+        return None
+    from smash.parts.antenna_slots import ring_openings
+    for (lo, hi), sec in ring_openings().items():
+        if spacer_name == f"spacer_{lo}_{hi}":
+            return sec
+    return None
 # Battery HOLDER (2026-11-14, replaces the Ø38 battery ring): a 7075-T6
 # hard-anodised block inside the Ø34 envelope with three cell bores. Cells
 # bear on the bore FLANKS (location fit); a shallow relief at each cell's
@@ -711,13 +766,20 @@ def gap_kind(name: str) -> str:
     return "ring"
 
 
-def _ring_body(cq, r_in, r_out, h):
-    """Plain ring with potting NOTCHES at its top and bottom edges (at the
-    feed / vent angles) — not full-height slots, so the ring stays
-    hoop-continuous. Potting runs in along the board face through the
-    notch on each end."""
+def _ring_body(cq, r_in, r_out, h, open_sector=None):
+    """C-ring: OPEN over `open_sector` (the antenna sector, 2026-11-17),
+    with potting NOTCHES at its top and bottom edges (at the feed / vent
+    angles). Potting runs in along the board face through the notch on
+    each end."""
     import math
     body = (cq.Workplane("XY").circle(r_out).circle(r_in).extrude(h))
+    if open_sector:
+        a0, a1 = open_sector
+        R = r_out + 1.0
+        pts = [(0.0, 0.0)] + [(R * math.cos(math.radians(a0 + (a1 - a0) * k / 16)),
+                               R * math.sin(math.radians(a0 + (a1 - a0) * k / 16)))
+                              for k in range(17)]
+        body = body.cut(cq.Workplane("XY").polyline(pts).close().extrude(h))
     d = min(NOTCH_DEPTH_MM, h / 3.0)
     for ang in SLOT_ANGLES_DEG:
         a = math.radians(ang)
@@ -760,7 +822,8 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
     if kind == "none":
         return None
     if kind == "ring":
-        return _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h), h, name, kind
+        rs = ring_spec(name)
+        return _ring_body(cq, rs.r_in, rs.r_out, h, ring_open_sector(name)), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
 
 
@@ -798,10 +861,14 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     "extensions bend across it to P_CELL_CONTACTS")
         elif kind == "ring":
             h = b.thickness_mm
-            body = _ring_body(cq, RING_R_IN_MM, RING_R_OUT_MM, h)
-            label, mat = name, "7075-T6 aluminium, hard anodised (anodise = insulation)"
-            dims = (f"ring ID Ø{2*RING_R_IN_MM:.1f} / OD Ø{2*RING_R_OUT_MM:.1f}"
-                    f" × {h:.2f} mm (no standoffs: the ring is the spacer)")
+            osec = ring_open_sector(name)
+            rs = ring_spec(name)
+            body = _ring_body(cq, rs.r_in, rs.r_out, h, osec)
+            label, mat = name, rs.material
+            opening = (f", OPEN {osec[0]:g}–{osec[1]:g}° (slot antenna in this gap: no "
+                       "metal behind it; potting fills the opening)" if osec else "")
+            dims = (f"{'C-' if osec else ''}ring ID Ø{2*rs.r_in:.1f} / OD Ø{2*rs.r_out:.1f}"
+                    f" × {h:.2f} mm{opening} — no standoffs: the ring is the spacer")
         else:
             h = b.thickness_mm
             body = _standoffs_body(cq, h)
@@ -814,7 +881,8 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
         cq.exporters.export(body, str(step))
         cq.exporters.export(body, str(stl))
         slots = (f"- Potting notches {SLOT_W_MM} mm wide × {NOTCH_DEPTH_MM} mm deep "
-                 "at the TOP and BOTTOM edge (ring stays hoop-continuous) at "
+                 f"(corners radiused R{RING_NOTCH_RADIUS_MM:g} — GF30 is notch-sensitive; "
+                 "break all edges) at the TOP and BOTTOM edge at "
                  f"{', '.join(f'{a:.0f}°' for a in SLOT_ANGLES_DEG)} "
                  "(= the sleeve's feed / vent grooves).\n"
                  if kind == "ring" else "")

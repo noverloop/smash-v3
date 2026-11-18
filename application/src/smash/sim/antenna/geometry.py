@@ -157,14 +157,27 @@ def cell_gap_angles(cell_rot_deg: float = 90.0) -> list:
 
 def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 holder="al", cell_rot_deg: float = 90.0, rings="al",
-                ring_free_sector=None, keepout_depth_mm: float = 0.0,
-                keepout_halfwidth_mm: float = 4.0, sleeve_inner_gnd: bool = False,
+                ring_free_sector=None, ring_setback_mm: float = 0.0,
+                ring_setback_gaps: tuple | None = None,
+                ring_open_margin_mm: float | None = None,
+                ring_wall_mm: float | None = None,
+                sleeve_mat: str = "lds_lcp",
+                ring_al_gaps: tuple | None = None,
+                ring_insert: str = "peek", keepout_depth_mm: float = 0.0,
+                keepout_halfwidth_mm: float = 4.0,
+                keepout_slots: tuple | None = None, sleeve_inner_gnd: bool = False,
                 skin: str = "sector", skin_margin_mm: float = 4.0,
-                coating_mm: float = 0.0, housing=None) -> TowerModel:
+                skin_clip_deg: tuple | None = None,
+                coating_mm: float = 0.0, housing=None, feed: str = "ideal",
+                feed_board: str = "wakeup_board", cpw_w_mm: float = 1.0,
+                cpw_gap_mm: float = 0.5, cpw_gnd_mm: float = 2.0) -> TowerModel:
     """Assemble the tower.
 
     holder: "al" (PEC skin) | "composite".   rings: "al" | "peek" | "none".
     ring_free_sector: (a0, a1) where Al rings are cut away (rings="al" only).
+    ring_setback_mm > 0: instead of the cut, the Al wall steps inward by that
+    much over ring_free_sector and `ring_insert` (PEEK) fills the space in
+    front of it up to the sleeve — a slot cavity with no potting in it.
     keepout_*: copper-free wedge cut into every board under each slot
     (radial depth from the edge, ± half-width around the slot line).
     skin: "sector" — copper over the whole antenna sector (forms a closed
@@ -173,6 +186,13 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     side (2026-11-16, after the sector skin trapped the energy).
     housing: None (uncovered sleeve, option D) or dict(window=(z0, z1, a0, a1))
     for a metal tube Ø(sleeve OD + coating)… with an open window.
+    feed: "ideal" — a lumped port straight across the slot at its feed point;
+    "castellation" (2026-11-17, arc slots only) — the real path: the radio
+    board's castellation at the slot's feed angle (z = `feed_board` mid-plane)
+    → a coplanar line on the sleeve's outer face (strip `cpw_w_mm`, gaps
+    `cpw_gap_mm`, ground bands `cpw_gnd_mm` joined to the slot's copper patch)
+    → the strip crosses the slot and lands on the far-side copper. The port
+    sits at the board end, across one CPW gap, so Zin includes the line.
     """
     S, notes = [], []
     zb = [BOARD_MID_Z_MM[b] for b in boards]
@@ -180,7 +200,7 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     z_hi = BOARD_MID_Z_MM[boards[-1]] + BOARD_T_MM / 2
     # potting fills the sleeve bore; the sleeve wall around it.
     S.append(Sector("potting", potting, 0.0, SLEEVE_R_IN_MM, z_lo, z_hi, priority=1))
-    S.append(Sector("sleeve_wall", "lds_lcp", SLEEVE_R_IN_MM, SLEEVE_R_OUT_MM, z_lo, z_hi, priority=2))
+    S.append(Sector("sleeve_wall", sleeve_mat, SLEEVE_R_IN_MM, SLEEVE_R_OUT_MM, z_lo, z_hi, priority=2))
     # boards: FR-4 is irrelevant under a PEC disc model — ground disc per board.
     for b in boards:
         zm = BOARD_MID_Z_MM[b]
@@ -189,6 +209,8 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     # keep-out wedges on every board a slot passes over.
     if keepout_depth_mm > 0:
         for sl in slots:
+            if keepout_slots is not None and sl.name not in keepout_slots:
+                continue        # copper board edge stays (closes that slot's gap)
             for sec in sl.sectors(0, SLEEVE_R_OUT_MM, "x", 0):
                 for b in boards:
                     zm = BOARD_MID_Z_MM[b]
@@ -207,10 +229,44 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
             z0 = BOARD_MID_Z_MM[lo] + BOARD_T_MM / 2
             z1 = BOARD_MID_Z_MM[hi] - BOARD_T_MM / 2
             mat = "pec" if rings == "al" else "peek"
-            S.append(Sector(f"ring_{lo}", mat, RING_R_IN_MM, RING_R_OUT_MM, z0, z1, priority=4))
-            if rings == "al" and ring_free_sector:
-                S.append(Sector(f"ring_cut_{lo}", potting, RING_R_IN_MM, RING_R_OUT_MM,
-                                z0, z1, ring_free_sector[0], ring_free_sector[1], priority=7))
+            r_ring_in = RING_R_OUT_MM - ring_wall_mm if ring_wall_mm else RING_R_IN_MM
+            if ring_al_gaps and lo in ring_al_gaps:      # (2026-11-17) per-gap: 1 mm Al
+                mat, r_ring_in = "pec", RING_R_OUT_MM - 1.0
+            S.append(Sector(f"ring_{lo}", mat, r_ring_in, RING_R_OUT_MM, z0, z1, priority=4))
+            free = ring_free_sector
+            if ring_open_margin_mm is not None:
+                # (2026-11-17) structural rings: open ONLY behind a slot in
+                # this gap, over its span ± margin; other gaps: full ring.
+                dm = math.degrees(ring_open_margin_mm / (0.5 * (RING_R_IN_MM + RING_R_OUT_MM)))
+                spans = [sec for sl in slots for sec in sl.sectors(0, SLEEVE_R_OUT_MM, "x", 0)
+                         if z0 <= 0.5 * (sec.z0 + sec.z1) <= z1]
+                free = ((min(sp.a0 for sp in spans) - dm, max(sp.a1 for sp in spans) + dm)
+                        if spans else None)
+            if rings == "al" and free:
+                a0, a1 = free
+                # ring_setback_gaps: lower boards of the gaps that get the step
+                # (None = every gap). 2026-11-17: the step kills S1 at 2.15 GHz
+                # but lifts S4 (4-7 GHz) to 57-88 % — so per gap.
+                if ring_setback_mm > 0 and (ring_setback_gaps is None
+                                            or lo in ring_setback_gaps):
+                    # STEPPED ring (2026-11-17): over the free sector the Al wall
+                    # steps inward (radial end walls at the sector edges) and a
+                    # low-loss insert fills the space in front of it up to the
+                    # sleeve — the slot's cavity is boards + stepped wall +
+                    # insert, with no potting in it.
+                    w = RING_R_OUT_MM - RING_R_IN_MM
+                    rb = RING_R_OUT_MM - ring_setback_mm
+                    S.append(Sector(f"ring_insert_{lo}", ring_insert, rb, SLEEVE_R_IN_MM,
+                                    z0, z1, a0, a1, priority=7))
+                    S.append(Sector(f"ring_step_{lo}", "pec", rb - w, rb, z0, z1, a0, a1, priority=7))
+                    da = math.degrees(w / (0.5 * (rb - w + RING_R_IN_MM)))
+                    S.append(Sector(f"ring_end_a_{lo}", "pec", rb - w, RING_R_IN_MM,
+                                    z0, z1, a0 - da, a0, priority=7))
+                    S.append(Sector(f"ring_end_b_{lo}", "pec", rb - w, RING_R_IN_MM,
+                                    z0, z1, a1, a1 + da, priority=7))
+                else:
+                    S.append(Sector(f"ring_cut_{lo}", potting, RING_R_IN_MM, RING_R_OUT_MM,
+                                    z0, z1, a0, a1, priority=7))
     # battery compartment: holder skin + floor, three cells.
     if "aft_end_board" in boards and "activation_interface" in boards:
         hz0 = BOARD_MID_Z_MM["aft_end_board"] + BOARD_T_MM / 2
@@ -218,6 +274,12 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         hmat = "pec" if holder == "al" else "composite"
         S.append(Sector("holder_skin", hmat, HOLDER_R_IN_MM, BOARD_R_MM, hz0, hz1, priority=4))
         S.append(Sector("holder_floor", hmat, 0.0, BOARD_R_MM, hz0, hz0 + 1.2, priority=4))
+        # The compartment is NOT potted (user, 2026-11-16): the real holder is
+        # a solid block with three cell bores (spacer_step BATT_*), so holder
+        # material up to the cell tops, air in the headroom above them. Cells
+        # (priority 4) still win over the block.
+        S.append(Sector("holder_block", hmat, 0.0, HOLDER_R_IN_MM, hz0, CELL_Z_MM[1], priority=3))
+        S.append(Sector("holder_headroom", "air", 0.0, HOLDER_R_IN_MM, CELL_Z_MM[1], hz1, priority=3))
         for k in range(3):
             a = math.radians(cell_rot_deg + 120.0 * k)
             S.append(_offset_cylinder(f"cell{k + 1}", CELL_CLUSTER_R_MM * math.cos(a),
@@ -243,13 +305,25 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                     sec, name=f"skin_{sec.name}",
                     z0=max(sec.z0 - skin_margin_mm, skin_z[0]),
                     z1=min(sec.z1 + skin_margin_mm, skin_z[1]),
-                    a0=sec.a0 - dm, a1=sec.a1 + dm))
+                    a0=max(sec.a0 - dm, skin_clip_deg[0]) if skin_clip_deg else sec.a0 - dm,
+                    a1=min(sec.a1 + dm, skin_clip_deg[1]) if skin_clip_deg else sec.a1 + dm))
     else:
         raise ValueError(f"skin={skin!r}")
     ports = []
+    r_port = SLEEVE_R_OUT_MM - 0.2
     for sl in slots:
-        S.extend(sl.sectors(skin_r_in, SLEEVE_R_OUT_MM, "lds_lcp", 12))
-        ports.append(sl.port(SLEEVE_R_OUT_MM - 0.2))
+        S.extend(sl.sectors(skin_r_in, SLEEVE_R_OUT_MM, sleeve_mat, 12))
+        if feed == "ideal":
+            ports.append(sl.port(r_port))
+        elif feed == "castellation":
+            S_feed, port = _cpw_feed(sl, BOARD_MID_Z_MM[feed_board], skin_r_in, r_port,
+                                     cpw_w_mm, cpw_gap_mm, cpw_gnd_mm, sleeve_mat)
+            S.extend(S_feed)
+            ports.append(port)
+            notes.append(f"{sl.name}: CPW feed from {feed_board} (z {BOARD_MID_Z_MM[feed_board]:.2f}) "
+                         f"at {port.angle_deg:.1f}°, w {cpw_w_mm} / gap {cpw_gap_mm} mm")
+        else:
+            raise ValueError(f"feed={feed!r}")
     if coating_mm > 0:
         S.append(Sector("coating", "coating_ptfe", SLEEVE_R_OUT_MM, SLEEVE_R_OUT_MM + coating_mm,
                         z_lo, z_hi, priority=3))
@@ -259,6 +333,43 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         wz0, wz1, wa0, wa1 = housing["window"]
         S.append(Sector("housing_window", "air", r0, r0 + 2.5, wz0, wz1, wa0, wa1, priority=11))
     return TowerModel(S, ports, list(slots), (z_lo, z_hi), notes)
+
+
+def _cpw_feed(sl: "Slot", z_board: float, r_in: float, r_port: float,
+              w: float, g: float, gnd: float, gap_mat: str = "lds_lcp") -> tuple[list, Port]:
+    """Coplanar feed from the radio board's castellation down/up the sleeve
+    to an ARC slot: ground bands (PEC, merge with the slot patch), the CPW
+    gaps (LCP), and the centre strip that crosses the slot onto its far side."""
+    if sl.kind != "arc":
+        raise ValueError("castellation feed is modelled for arc slots only")
+    r = SLEEVE_R_OUT_MM
+    deg = lambda mm: math.degrees(mm / r)
+    a_f = sl.port(r_port).angle_deg
+    zs = sl.z_start
+    s = 1.0 if z_board > zs else -1.0              # board side of the slot
+    z_near = zs + s * sl.width / 2                 # slot edge on the board side
+    z_far = zs - s * (sl.width / 2 + 0.8)          # strip lands 0.8 mm past the slot
+    zb_end = z_board + s * (g + 0.6)               # ground closes just past the strip end
+                                                   # (kept short: another slot may sit in
+                                                   # the gap on the board's far side)
+    out = [
+        Sector(f"{sl.name}_cpw_gnd", "pec", r_in, r, *sorted((z_near, zb_end)),
+               a_f - deg(w / 2 + g + gnd), a_f + deg(w / 2 + g + gnd), priority=9),
+        Sector(f"{sl.name}_cpw_gap", gap_mat, r_in, r, *sorted((z_near, z_board + s * g)),
+               a_f - deg(w / 2 + g), a_f + deg(w / 2 + g), priority=10),
+        Sector(f"{sl.name}_cpw_strip", "pec", r_in, r, *sorted((z_far, z_board)),
+               a_f - deg(w / 2), a_f + deg(w / 2), priority=13),
+    ]
+    # GND castellations either side of the feed: tie both CPW ground bands to
+    # the board's ground disc across the potting gap (a floating CPW ground
+    # resonates on its own and swamps the slot).
+    zb0, zb1 = z_board - BOARD_T_MM / 2, z_board + BOARD_T_MM / 2
+    for side, sgn in (("a", -1.0), ("b", 1.0)):
+        a_in, a_out = a_f + sgn * deg(w / 2 + g), a_f + sgn * deg(w / 2 + g + gnd)
+        out.append(Sector(f"{sl.name}_cpw_gnd_tie_{side}", "pec", BOARD_R_MM - 0.4, r_in,
+                          zb0, zb1, min(a_in, a_out), max(a_in, a_out), priority=9))
+    port = Port(f"P_{sl.name}", a_f + deg(w / 2 + g / 2), r_port, z_board, "tangential", g)
+    return out, port
 
 
 def _offset_cylinder(name, x, y, r, z0, z1):
@@ -277,7 +388,7 @@ def slot_angles_clear_of_gnd(slots, min_deg: float = 5.0) -> bool:
 
 def model_to_dict(model: TowerModel, *, f_start_ghz: float = 1.5, f_stop_ghz: float = 2.8,
                   excite: str | None = None, mesh_mm: float = 0.4,
-                  nf2ff: bool = True) -> dict:
+                  nf2ff: bool = True, ff_extra_ghz: tuple = ()) -> dict:
     """Solver-neutral JSON for openems_runner (which imports nothing from
     smash, so it runs unchanged inside the openEMS container)."""
     from smash.sim.antenna import materials as M
@@ -292,6 +403,6 @@ def model_to_dict(model: TowerModel, *, f_start_ghz: float = 1.5, f_stop_ghz: fl
         "notes": list(model.notes),
         "f_start_ghz": f_start_ghz, "f_stop_ghz": f_stop_ghz,
         "excite": excite or (model.ports[0].name if model.ports else None),
-        "mesh_mm": mesh_mm, "nf2ff": nf2ff,
+        "mesh_mm": mesh_mm, "nf2ff": nf2ff, "ff_extra_ghz": list(ff_extra_ghz),
         "r_fine_mm": SLEEVE_R_OUT_MM + 1.5,
     }
