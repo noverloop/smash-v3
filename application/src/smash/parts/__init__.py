@@ -81,10 +81,17 @@ from smash.parts.opamps import (
 )
 from smash.parts.rf import (
     add_bgs12wn6e6327xtsa1,
+    add_pe42442a_z,
+    add_pe64906b_z,
     add_adf4351bcpz,
+    add_bgs12p2l6e6327xtsa1,
+    add_ltc5549iudb,
+    add_grf5126,
+    add_grf2073w,
 )
 from smash.parts.passives import (
     add_we_744043100,
+    add_blm18pg221sn1d,
     # Family-parameterized passive factories (Group D)
     add_resistor_0402_vishay,
     add_capacitor_x7r_0402_kemet,
@@ -119,9 +126,11 @@ from smash.parts.mcus import (
     add_stm32wle5jci6,
     add_stm32wba52cgu7tr,
     add_stm32wba55hgf6tr,
+    add_stm32wba55ugi7,
     add_stm32h562aii6,
     add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
 )
 from smash.parts.wireless import add_lbee5kl1yn_814
 from smash.parts.pmics import add_stpmic25apqr
@@ -137,7 +146,7 @@ from smash.parts.radar import (
 )
 from smash.parts.diodes import add_bat64_06_tp
 from smash.parts.optical import add_sfh203fa, add_vbpw34fas, add_vsmb1940x01
-from smash.parts.hall_sensors import add_drv5023ajqlpg, add_drv5032fcqdbzr, add_rr123_1h02_612
+from smash.parts.hall_sensors import add_drv5023ajqlpg, add_drv5032fcdbzt, add_rr123_1h02_612
 from smash.parts.cameras import add_ar0234cssm00suka0_cp
 from smash.parts.usb import (
     add_uj31_ch_3_msmt_tr_67,
@@ -210,9 +219,14 @@ __all__ = [
     "add_ad8603aujz_r2_dual_supply",
     # RF parts
     "add_bgs12wn6e6327xtsa1",
+    "add_pe42442a_z",
+    "add_pe64906b_z",
     "add_adf4351bcpz",
+    # S4 transverter (2026-11-18)
+    "add_bgs12p2l6e6327xtsa1", "add_ltc5549iudb", "add_grf5126", "add_grf2073w",
     # passives
     "add_we_744043100",
+    "add_blm18pg221sn1d",
     # Group D — family-parameterized passives
     "add_resistor_0402_vishay",
     "add_capacitor_x7r_0402_kemet",
@@ -239,8 +253,8 @@ __all__ = [
     "add_mx60lf8g28ad_xki_t",
     # MCUs
     "add_stm32g0b1kct6n", "add_stm32g0b1kcu6n", "add_stm32g0b1rei6n",
-    "add_stm32wle5jci6", "add_stm32wba52cgu7tr", "add_stm32wba55hgf6tr",
-    "add_stm32h562aii6", "add_stm32mp255fak3", "add_stm32mp255dal3",
+    "add_stm32wle5jci6", "add_stm32wba52cgu7tr", "add_stm32wba55hgf6tr", "add_stm32wba55ugi7",
+    "add_stm32h562aii6", "add_stm32mp255fak3", "add_stm32mp255dal3", "add_stm32mp255fal3",
     # wireless / PMIC / radar
     "add_lbee5kl1yn_814",
     "add_stpmic25apqr",
@@ -251,7 +265,7 @@ __all__ = [
     "add_awr2e44pbgamxrq1",
     # photodiode + Hall sensor + camera
     "add_sfh203fa", "add_vbpw34fas", "add_vsmb1940x01", "add_drv5023ajqlpg",
-    "add_drv5032fcqdbzr", "add_rr123_1h02_612",
+    "add_drv5032fcdbzt", "add_rr123_1h02_612",
     "add_ar0234cssm00suka0_cp",
     # USB-C connector
     "add_uj31_ch_3_msmt_tr_67",

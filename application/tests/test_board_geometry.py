@@ -40,20 +40,26 @@ def test_registry_contains_all_evb_boards():
 @pytest.mark.parametrize("name", [
     "power_board", "wakeup_board", "flight_board", "radar_module",
     "fins_module",
-    "companion_compute", "companion_io", "nose_cap",
+    "companion_compute", "companion_io",
 ])
 def test_main_rigid_boards_are_d34_with_potting(name):
     g = load_board_geometry(name)
     assert g.shape == "circle"
     assert g.diameter_mm == 34.0
-    assert len(g.holes) == 2
+    assert len(g.holes) == 1   # ONE potting hole per board (NW) since 2026-11-14
     assert all(h.tag == "potting" for h in g.holes)
     assert all(h.diameter_mm == POTTING_HOLE_DIA_MM for h in g.holes)
     assert all(not h.plated for h in g.holes)  # NPTH
-    # Holes sit on a 15-mm radial circle around the centre
+    # One hole at r = 13 (clears the 1 mm Al rings in the aft gaps)
+    from smash.layout.cavities import BOARD_POTTING_HOLE_RADIUS_MM
     for h in g.holes:
         r = (h.position_mm[0] ** 2 + h.position_mm[1] ** 2) ** 0.5
-        assert r == pytest.approx(POTTING_HOLE_RADIUS_MM, abs=1e-6)
+        assert r == pytest.approx(BOARD_POTTING_HOLE_RADIUS_MM, abs=1e-6)
+
+
+def test_nose_cap_has_no_potting_hole():
+    """The potting channel runs up the stack and stops under the nose cap."""
+    assert load_board_geometry("nose_cap").holes == []
 
 
 def test_activation_interface_is_d34_circle_with_potting():
@@ -66,7 +72,7 @@ def test_activation_interface_is_d34_circle_with_potting():
     g = load_board_geometry("activation_interface")
     assert g.shape == "circle"
     assert g.diameter_mm == 34.0
-    assert len(g.holes) == 2
+    assert len(g.holes) == 1   # ONE potting hole per board (NW) since 2026-11-14
     assert all(h.tag == "potting" for h in g.holes)
     assert g.dxf_path is None
 
@@ -134,7 +140,7 @@ def test_unknown_non_spacer_raises():
 
 def test_potting_hole_keepouts_are_square_around_each_hole():
     g = load_board_geometry("flight_board")
-    assert len(g.keepouts) == 2
+    assert len(g.keepouts) == 1
     h = POTTING_HOLE_KEEPOUT_HALF_MM
     for ko, hole in zip(g.keepouts, g.holes):
         assert ko.tag == "potting_hole"
@@ -201,6 +207,27 @@ def test_geometry_to_dict_keeps_holes_keepouts():
     d = g.to_dict()
     assert d["shape"] == "circle"
     assert d["diameter_mm"] == 34.0
-    assert len(d["holes"]) == 2
-    assert len(d["keepouts"]) == 2
+    assert len(d["holes"]) == 1
+    assert len(d["keepouts"]) == 1
     assert "flex_cutouts" not in d   # panel-build artifact, not a definition
+
+
+def test_potting_hole_is_one_channel_up_the_stack():
+    """Every rigid snake board that has a potting hole has it at the SAME
+    physical spot (the nose-ward group is turned 180°, so its local hole is
+    turned too) — one continuous axial channel."""
+    from smash.layout.boards.smash_evb_v1 import build_panel
+    from smash.layout.cavities import is_rotated_180
+    panel, boards = build_panel()
+    chain = list(panel.snake_chain)
+    phys = set()
+    for n in chain:
+        b = boards[n]
+        if b.is_spacer or b.kind != "rigid" or b.geometry is None:
+            continue
+        for h in b.geometry.holes:
+            x, y = h.position_mm
+            if is_rotated_180(chain, n):
+                x, y = -x, -y
+            phys.add((round(x, 3), round(y, 3)))
+    assert len(phys) == 1, phys

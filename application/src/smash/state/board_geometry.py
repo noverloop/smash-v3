@@ -26,7 +26,7 @@ _DEFAULT_CIRCLE_SEGMENTS = 64
 from smash.layout.cavities import (
     POTTING_HOLE_DIA_MM,
     POTTING_HOLE_RADIUS_MM,
-    potting_hole_positions_math_yup,
+    potting_hole_positions_math_yup, board_potting_hole_positions,
 )
 
 
@@ -191,7 +191,7 @@ def _synth_potting_holes() -> tuple[list, list]:
     holes: list = []
     keepouts: list = []
     h = POTTING_HOLE_KEEPOUT_HALF_MM
-    positions = potting_hole_positions_math_yup()
+    positions = board_potting_hole_positions()
     for (x, y) in positions:
         holes.append(Hole(
             position_mm=(x, y),

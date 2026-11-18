@@ -65,9 +65,11 @@ def test_real_data_has_all_anchors():
     QSPI NOR) was dropped entirely when flight control consolidated onto
     the MP25 Cortex-M33."""
     locked = load_locked_placements()
-    expected = {"U_PMIC", "U_MPU", "U_DDR4", "P_CELL_CONTACTS"}
+    expected = {"U_PMIC", "U_MPU", "U_DDR4",
+                "P_CELL_TAB_POS1", "P_CELL_TAB_POS2", "P_CELL_TAB_POS3"}
     assert expected <= set(locked)
-    for ref in ("P_AFT_LGA", "U1", "U_WLE", "U_WIFI", "U_FLASH"):
+    for ref in ("P_AFT_LGA", "U1", "U_WLE", "U_WIFI", "U_FLASH",
+                "P_CELL_CONTACTS"):   # split into 3 tab lands 2026-11-14
         assert ref not in locked, f"{ref} should not be locked anymore"
 
 

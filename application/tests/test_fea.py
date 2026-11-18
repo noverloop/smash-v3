@@ -258,7 +258,7 @@ class TestStycastPotting:
         import sys, pathlib as _pl
         REPO = _pl.Path(__file__).resolve().parents[2]
         sys.path.insert(0, str(REPO))
-        import generate_maximalist_system as gen
+        import generate_stackup as gen
         from smash import Design
         from smash.layout.boards.smash_evb_v1 import build_panel
         from smash.layout.placer import place_design

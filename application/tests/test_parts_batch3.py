@@ -30,6 +30,8 @@ from smash.parts import (
     add_stm32g0b1kct6n, add_stm32g0b1kcu6n, add_stm32g0b1rei6n,
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
+    add_stm32wba55ugi7,
     # Round D (modules / PMIC / radar / PLL)
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
@@ -51,6 +53,8 @@ ALL_FACTORIES = [
     add_stm32g0b1kct6n, add_stm32g0b1kcu6n, add_stm32g0b1rei6n,
     add_stm32wle5jci6, add_stm32h562aii6, add_stm32mp255fak3,
     add_stm32mp255dal3,
+    add_stm32mp255fal3,
+    add_stm32wba55ugi7,
     add_lbee5kl1yn_814, add_stpmic25apqr,
     add_iwr1843arqgalpr, add_awr2944abgaltq1, add_awr2243abgablq1,
     add_adf4351bcpz,
@@ -139,6 +143,22 @@ class TestSTM32Family:
         c = add_stm32mp255fak3(Design(), ref="U1")
         assert len(c.footprint.pads) == 424
         assert "424" in c.package
+
+    def test_wba55ugi7_is_59_ball_ufbga_105c(self):
+        c = add_stm32wba55ugi7(Design(), ref="U1")
+        assert c.manf_pn == "STM32WBA55UGI7"
+        assert len(c.footprint.pads) == 59
+        assert c.temp_range_c == (-40, 105)
+        names = {p.name for p in c.pins}
+        assert {"VDD_RFPA", "PH3__BOOT0", "PC14__OSC32__IN"} <= names
+
+    def test_mp255fal3_matches_dal3_ballout(self):
+        f = add_stm32mp255fal3(Design(), ref="U1")
+        d = add_stm32mp255dal3(Design(), ref="U2")
+        assert f.manf_pn == "STM32MP255FAL3"
+        assert len(f.footprint.pads) == 361
+        assert ({p.num: p.name for p in f.pins}
+                == {p.num: p.name for p in d.pins})
 
     def test_mp255dal3_is_361_ball_10mm_bga(self):
         c = add_stm32mp255dal3(Design(), ref="U1")
@@ -240,3 +260,15 @@ class TestHelperParserUsed:
                 # has a name)
                 assert p.name != "", \
                     f"{factory.__name__}: pin {p.num} has empty name"
+
+
+def test_lr2021_pins_match_samacsys_footprint():
+    from smash.parts.rf import add_lr2021imltrt, add_tcxo_32m_2016
+    d = Design()
+    c = add_lr2021imltrt(d, ref="U_LR")
+    assert c.manf_pn == "LR2021IMLTRT" and len(c.footprint.pads) == 33
+    for name in ("SCK", "MOSI", "MISO", "NSS", "BUSY", "NRESET",
+                 "RFO_LF1", "RFI_LF", "RFO_HF", "RFI_HF", "XTA", "VTCXO"):
+        c.pin(name)
+    t = add_tcxo_32m_2016(d, ref="Y")
+    assert {p.num for p in t.pins} == {p.num for p in t.footprint.pads}

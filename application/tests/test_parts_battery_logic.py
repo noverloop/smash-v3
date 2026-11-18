@@ -134,10 +134,10 @@ class TestSN74LVC1G08:
 
     @pytest.mark.parametrize("substring", [
         "ACTIVATE_CONFIRM",
-        "ACTIVATE_SET",
+        "PARACHUTE_CUTTER_SET",
         "COMP_OUT",
-        "unforgeable",
-        "launch confirmation",   # firmware interlock now; note keeps the rationale
+        "illuminated aim point",
+        "parachute restraint",   # firmware interlock now; note keeps the rationale
         "1.65 V to 5.5 V",
     ])
     def test_note(self, substring):

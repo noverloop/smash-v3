@@ -15,7 +15,7 @@ def built():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     from smash.layout.boards.smash_evb_v1 import build_panel
@@ -24,7 +24,6 @@ def built():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in (gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module, gen.build_companion_compute,

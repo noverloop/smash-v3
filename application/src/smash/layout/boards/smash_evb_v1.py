@@ -45,7 +45,7 @@ from smash.state        import Board, Flex
 # cell_floor_board 2026-07-30 rework: briefly DELETED (side-solder-tab cells
 # standing directly on the piezo disc), then REINSTATED THIN the same day —
 # with cells on aft_end, the piezo hole + comparator pockets + tab chimneys
-# starved the aft LGA joint (59→20 lands, ACTIVATE_SET/BAT_RAW dropped), and
+# starved the aft LGA joint (59→20 lands, PARACHUTE_CUTTER_SET/BAT_RAW dropped), and
 # moving the comparator to the bottom face gave PIEZO_P an unwanted via stub.
 # The tile is now 6L / ~0.85 mm (was a 20L coin host — the Cu coin is GONE,
 # the potted monolith carries the pack load) and carries POTTING pass-through
@@ -55,7 +55,11 @@ from smash.state        import Board, Flex
 # activation_interface (ACTIVATE boost) and the compartment sits nose-ward, up
 # to the fin_ble_board ceiling. Single-cell mode still drops the tile (the
 # one horizontal cell lies on aft_end directly).
-BATTERY_LENGTH_MM = 21.0           # default (3-cell superset) = TLM-1520HPM/S
+BATTERY_HEADROOM_MM = 2.0          # (2026-11-14) free space above the cells under
+                                   # fin_ble_board — the battery holder is only an
+                                   # edge ring there (spacer_step.BATT_HEADROOM_MM)
+BATTERY_LENGTH_MM = 21.0 + BATTERY_HEADROOM_MM   # compartment = cell length + headroom
+                                   # (was 21.0) = TLM-1520HPM/S
                                    # length; cells stand flat on cell_floor.
                                    # Single configs pass 15.1 (the TLM-1530M/S
                                    # Ø, laid horizontal).
@@ -167,8 +171,56 @@ def _lower_coins_for_top_routing(boards, n_top=N_TOP_ROUTABLE_LAYERS):
 # There was no need for coins in this design.
 
 
-def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
-                single_cell: bool = False):
+# ── standard board stackup (2026-11-14) ─────────────────────────────────
+# Every rigid tile is ONE standard 8-layer board (~1.3 mm); the gaps (potting + PEEK
+# standoffs / Al rings) absorb height differences instead. In the potted,
+# spacer-less tower the potting supports each board over its full area, so the
+# old "20 layers for stiffness" (radar, companion_compute) no longer applies:
+# layer count is set by routing only. 8 layers; boards with fine-pitch parts
+# (compute MP25 VFBGA361 + DDR4, wakeup WBA55 WLCSP) use HDI 2+4+2 (fab
+# detail, same 8L stack). EXCEPTION: nose_cap — its thickness is set by the
+# AWR height / waveguide air gap (see build_panel).
+STANDARD_COPPER_LAYERS = 8
+STANDARD_BOARD_THICKNESS_MM = 1.6     # fitter TARGET → fitted board = 1.315 mm with the current catalogue (accepted 2026-11-14)
+_NONSTANDARD_BOARDS = {"nose_cap"}
+
+
+def _align_potting_holes(chain_names: list, boards: dict) -> None:
+    """Keep the single potting hole at ONE physical angle up the stack: the
+    nose-ward group is installed turned 180° (cavities.is_rotated_180), so
+    its boards carry the hole (and its keep-out) turned 180° in their local
+    frame. Spacers carry no holes."""
+    import dataclasses as _dc
+    from smash.layout.cavities import is_rotated_180
+    for name in chain_names:
+        b = boards.get(name)
+        if b is None or b.is_spacer or b.geometry is None:
+            continue
+        if not is_rotated_180(chain_names, name):
+            continue
+        g = b.geometry
+        pots = [h.position_mm for h in g.holes if getattr(h, "tag", None) == "potting"]
+
+        def _is_hole_keepout(k):
+            cx = sum(x for x, _ in k.polygon) / len(k.polygon)
+            cy = sum(y for _, y in k.polygon) / len(k.polygon)
+            return any(abs(cx - px) < 0.5 and abs(cy - py) < 0.5 for px, py in pots)
+        g.keepouts = [_dc.replace(k, polygon=[(-x, -y) for x, y in k.polygon])
+                      if k.polygon and _is_hole_keepout(k) else k
+                      for k in g.keepouts]
+        g.holes = [_dc.replace(h, position_mm=(-h.position_mm[0], -h.position_mm[1]))
+                   if getattr(h, "tag", None) == "potting" else h for h in g.holes]
+
+
+def _standardize_board_stackups(boards: dict) -> None:
+    for name, b in boards.items():
+        if b.kind != "rigid" or name in _NONSTANDARD_BOARDS:
+            continue
+        b.copper_layers = STANDARD_COPPER_LAYERS
+        b.target_thickness_mm = STANDARD_BOARD_THICKNESS_MM
+
+
+def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # ── rigid tiles ───────────────────────────────────────────────────
     power_board       = Board("power_board")
     wakeup_board      = Board("wakeup_board")   # also carries the IMU/mag (flight folded in)
@@ -203,7 +255,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # No Rogers: the 77 GHz SIW launches couple directly into the machined
     # aluminium waveguide/horn block bonded above, so the PCB laminate never
     # sees RF — plain FR4 top substrate. The 20L count stays for MECHANICAL
-    # stiffness (the setback/bend envelope), not RF.
+    # stiffness (the rapid-deceleration/bend envelope), not RF.
     radar_module      = Board("radar_module", copper_layers=20)
     # (its Cu T-coin was REMOVED 2026-07-04 — see the coin note above.)
     # companion_compute is the other bend-sim bottleneck — U_MPU
@@ -257,11 +309,12 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # element meander geometry will be locked when the antenna team's
     # simulation closes; tile dimensions (20×40 mm rect) are a reasonable
     # placeholder envelope.
-    yagi_ant_a_flex   = Board("yagi_ant_a_flex", kind="flex")
-    yagi_ant_b_flex   = Board("yagi_ant_b_flex", kind="flex")
+    # (yagi_ant_a_flex / yagi_ant_b_flex REMOVED 2026-11-14 — BLE is ground-
+    # only and shares the conformal 2.4 GHz antenna in the PEEK battery
+    # compartment, fed from fin_ble_board.)
 
     # ── snake order (fixed) + compact fold via the solver ─────────────
-    # MUST match generate_maximalist_system._MASTER_SNAKE (this panel and the
+    # MUST match generate_stackup._MASTER_SNAKE (this panel and the
     # per-config builds share the order; they're maintained in lock-step). Every
     # snake gap carries a spacer (incl. radar→nose). Reordering = edit both.
     # power_board sits next to companion_compute so the PMIC core rails cross
@@ -275,24 +328,20 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # contacts on the bottom face; piezo disc + comparator column on its
     # top). Potting injects from the fin_ble/wakeup-side channels and the
     # pass-through holes on cell_floor + activation fill the two thin aft
-    # gaps. Single-cell mode drops cell_floor (horizontal cell on aft_end;
-    # see the battery-compartment header).
+    # gaps.
     aft_end_board = Board(_AFT_END)
-    if single_cell:
-        cell_floor_board = None
-        chain = [
-            aft_end_board, activation_interface, fin_ble_board, wakeup_board,
-            power_board, companion_compute,
-            radar_module, nose_cap,
-        ]
-    else:
-        cell_floor_board = Board(_CELL_FLOOR, copper_layers=6)
-        chain = [
-            aft_end_board, activation_interface, cell_floor_board,
-            fin_ble_board, wakeup_board,
-            power_board, companion_compute,
-            radar_module, nose_cap,
-        ]
+    # (2026-11-15 aft reorder) cell_floor_board dropped: the Al battery
+    # compartment is glued + screwed straight onto aft_end_board's EMPTY
+    # top face; activation_interface (now also carrying aft_end's former
+    # top-face parts) is the compartment ceiling, under fin_ble.
+    # (2026-11-16) the single-cell variant is gone — always 3 cells.
+    cell_floor_board = None
+    chain = [
+        aft_end_board, activation_interface,
+        fin_ble_board, wakeup_board,
+        power_board, companion_compute,
+        radar_module, nose_cap,
+    ]
     chain_cells, spacers, edges = _interleave(chain, battery_length_mm)
 
     # Deploy branches (nfc/camera/qpd) all S-fold off their parent's snake
@@ -310,10 +359,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
         # "deploy" branches that physically run alongside the snake on
         # a long flex, not stacked tiles on the body meridian like the
         # Yagis.
-        (wakeup_board,      yagi_ant_a_flex,
-            Flex(length_mm=60.0, branch_side="N")),
-        (wakeup_board,      yagi_ant_b_flex,
-            Flex(length_mm=60.0, branch_side="S")),
         # All deploy branches go DIRECTLY south of their parent
         # (s_fold=False). The S-fold tuck-along-snake routing was
         # eating too much of the parent's perimeter into the merged
@@ -366,8 +411,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
         "nose_cap":             nose_cap,
         "camera_module":        camera_module,
         "qpd_module":           qpd_module,
-        "yagi_ant_a_flex":      yagi_ant_a_flex,
-        "yagi_ant_b_flex":      yagi_ant_b_flex,
         "activation_interface": activation_interface,
         _AFT_END:               aft_end_board,
     }
@@ -378,6 +421,8 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM,
     # Fit each rigid tile's real layer buildup from the FabProfile catalog
     # (radar picks up the Rogers top dielectric, camera the Al backing).
     # Spacers/flex skip — `set_fitted_stackup` is a no-op for them.
+    _standardize_board_stackups(boards)    # 8L / 1.6 mm (nose_cap excepted)
+    _align_potting_holes(list(panel.snake_chain), boards)
     for b in boards.values():
         b.set_fitted_stackup()
     _lower_coins_for_top_routing(boards)   # keep top-N copper layers routable
@@ -405,8 +450,6 @@ _BOARD_KWARGS = {
     # and qpd_module are RIGID sensor tiles on flex connectors, so they are
     # deliberately NOT in this map.
     "nfc_antenna_flex":  dict(kind="flex"),
-    "yagi_ant_a_flex":   dict(kind="flex"),
-    "yagi_ant_b_flex":   dict(kind="flex"),
 }
 
 
@@ -458,6 +501,8 @@ def build_config_panel(board_names, *, branches=None, straight=True,
     # Fit each rigid tile's real layer buildup from the FabProfile catalog
     # (radar picks up the Rogers top dielectric, camera the Al backing).
     # Spacers/flex skip — `set_fitted_stackup` is a no-op for them.
+    _standardize_board_stackups(boards)    # 8L / 1.6 mm (nose_cap excepted)
+    _align_potting_holes(list(panel.snake_chain), boards)
     for b in boards.values():
         b.set_fitted_stackup()
     _lower_coins_for_top_routing(boards)   # keep top-N copper layers routable

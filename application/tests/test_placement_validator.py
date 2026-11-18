@@ -109,7 +109,7 @@ def test_twin_panel_has_no_overlaps():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     from smash.layout.boards.smash_evb_v1 import build_panel
@@ -118,7 +118,6 @@ def test_twin_panel_has_no_overlaps():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
@@ -129,5 +128,12 @@ def test_twin_panel_has_no_overlaps():
     gen.build_spacers(d, boards)
     place_design(d, panel, boards)
 
-    issues = check_chip_overlaps(boards)
+    # The routed boards' courtyard overlaps are accepted by design (fabbed
+    # as routed; KiCad DRC clean) — the generator carries them in
+    # _ACCEPTED_LOCKED_OVERLAPS, so honour the same list here.
+    accepted = {(b, *sorted((r1, r2)))
+                for b, r1, r2 in gen._ACCEPTED_LOCKED_OVERLAPS}
+    issues = [i for i in check_chip_overlaps(boards)
+              if not (i.locked_a and i.locked_b
+                      and (i.board, *sorted((i.ref_a, i.ref_b))) in accepted)]
     assert issues == [], "\n".join(str(i) for i in issues)

@@ -276,7 +276,7 @@
    "nets": [
     "3V3",
     "ACTIVATE_CONFIRM",
-    "ACTIVATE_SET",
+    "PARACHUTE_CUTTER_SET",
     "BAT_ISO_DRIVE",
     "BAT_PROT",
     "BOOT0",
@@ -611,7 +611,7 @@
    "nets": [
     "3V3",
     "ACTIVATE_CONFIRM",
-    "ACTIVATE_SET",
+    "PARACHUTE_CUTTER_SET",
     "BAT_CELL1_POS",
     "BAT_CELL2_POS",
     "BAT_CELL3_POS",

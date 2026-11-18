@@ -201,6 +201,36 @@ def add_stm32g0b1rei6n(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_stm32g0b1ret6(design, ref: str, **overrides) -> Chip:
+    """ST STM32G0B1RET6 — the same G0B1 die as the REI6N in LQFP-64
+    (10×10 mm body, 0.5 mm lead pitch, leaded gull-wing). Chosen 2026-11-14
+    over the UFBGA-64 REI6N so fin_ble_board needs no HDI microvias. AF table
+    borrowed from the REI6N CubeMX XML by pin NAME (same die)."""
+    pn = "STM32G0B1RET6"
+    fields = _stm32(
+        pn=pn,
+        ds_name=f"{pn}.pdf",
+        fp_mod_name="QFP50P1200X1200X160-64N.kicad_mod",
+        fp_class="LQFP-64 (10×10 mm)",
+        package="LQFP-64 (10×10 mm)",
+        description="STM32G0B1, Cortex-M0+ 64 MHz, 512 KB flash, 144 KB SRAM, LQFP-64",
+        clock_max_hz=64e6,
+        vcc_nominal_v=3.3,
+        size_mm=(12.0, 12.0), height_mm=1.6, pitch_mm=0.5,
+        p_active_w=0.028,                   # same die as REI6N (DS Tab 28)
+        p_max_w=0.032,
+        tj_max_c=150.0,
+        note=("LQFP-64 variant of STM32G0B1 (same die as REI6N). Leaded "
+              "package: no HDI needed at 0.5 mm lead pitch. Single VDD/VDDA "
+              "and VSS/VSSA pins; no separate VDDIO2 pin in this package."),
+        standards=["RoHS", "ECOPACK2"],
+    )
+    fields["pins"] = _overlay_cubemx_af(pn, fields["pins"],
+                                        af_source_pn="STM32G0B1REI6N")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ─── STM32WLE5 — Cortex-M4 with sub-GHz LoRa radio ───────────────────────
 
 def add_stm32wle5jci6(design, ref: str, **overrides) -> Chip:
@@ -240,6 +270,40 @@ def add_stm32wle5jci6(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_stm32wle5ccu6(design, ref: str, **overrides) -> Chip:
+    """ST STM32WLE5CCU6 — Cortex-M4 48 MHz + sub-GHz LoRa/(G)FSK radio,
+    256 KB flash, 64 KB SRAM, UFQFPN-48 (7×7 mm, 0.5 mm pitch, leadless +
+    exposed pad). The package of the E77 module that mLRS's
+    rx-hal-easysolder-e77-e28-dualband-wle5cc target is written for, so the
+    radio pin map is the stock mLRS one. Chosen 2026-11-14 over the
+    UFBGA-73 JCI6 so fin_ble_board needs no HDI. AF table borrowed from the
+    JCI6 CubeMX XML by pin NAME (same die)."""
+    pn = "STM32WLE5CCU6"
+    fields = _stm32(
+        pn=pn,
+        ds_name=f"{pn}.pdf",
+        fp_mod_name="QFN50P700X700X60-49N-D.kicad_mod",
+        fp_class="UFQFPN-48 (7×7 mm) + EP",
+        package="UFQFPN-48 (7×7 mm)",
+        description=("Cortex-M4 48 MHz + sub-GHz LoRa/(G)FSK radio, 256 KB "
+                     "flash, 64 KB SRAM, UFQFPN-48"),
+        clock_max_hz=48e6,
+        vcc_nominal_v=3.3,
+        size_mm=(7.0, 7.0), height_mm=0.6, pitch_mm=0.5,
+        p_active_w=0.018,                   # same die as JCI6 (DS Tab 28 p70)
+        p_max_w=0.396,                      # TX +22 dBm HP (DS Tab 29 p71)
+        tj_max_c=125.0,
+        note=("STM32WLE5 in UFQFPN-48: same die as the JCI6. Ground is the "
+              "exposed pad (EP) + VSSSMPS; no separate VSS / VSSRF pins and "
+              "no VREF+ pin in this package."),
+        standards=["RoHS", "ECOPACK2"],
+    )
+    fields["pins"] = _overlay_cubemx_af(pn, fields["pins"],
+                                        af_source_pn="STM32WLE5JCI6")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ─── STM32WBA52 — Cortex-M33 100 MHz with BLE 5.4 + 802.15.4 ─────────────
 
 def add_stm32wba52cgu7tr(design, ref: str, **overrides) -> Chip:
@@ -261,8 +325,8 @@ def add_stm32wba52cgu7tr(design, ref: str, **overrides) -> Chip:
     LPUART ↔ system CAN-FD (datasheet Table 2 confirms).
 
     The 32 MHz HSE is implemented as a MEMS resonator (DSC1001CI5-032.0000
-    or equivalent) rather than a crystal, for shock survival under launch
-    setback (Smash takes 1000+ g). The 32.768 kHz LSE is dropped — internal
+    or equivalent) rather than a crystal, for shock survival under rapid
+    deceleration. The 32.768 kHz LSE is dropped — internal
     LSI (±5 %) is sufficient for BLE periodic-scan timing."""
     fields = _stm32(
         pn="STM32WBA52CGU7TR",
@@ -321,7 +385,7 @@ def add_stm32wba55hgf6tr(design, ref: str, **overrides) -> Chip:
 
     **Underfill is MANDATORY.** This is a wafer-level chip-scale
     package — bare silicon with 0.23 mm solder balls at 0.40 mm pitch
-    and no overmould. Smash's 1000+ g setback would shear unprotected
+    and no overmould. Smash's rapid deceleration would shear unprotected
     WLCSP joints; Hysol FP4549 (or equivalent capillary underfill)
     under the entire die is the standard mitigation and is rated
     >5000 g. Documented also in `components.md` as a process step
@@ -353,13 +417,53 @@ def add_stm32wba55hgf6tr(design, ref: str, **overrides) -> Chip:
             "the SPDT directly from radio hardware. "
             "**WLCSP shock note:** mandatory die-area underfill (Hysol "
             "FP4549 or equivalent capillary epoxy) — without it the "
-            "WLCSP joints will shear under Smash's 1000+ g launch "
-            "setback. Underfill process is already in the assembly "
+            "WLCSP joints will shear under Smash's rapid deceleration. "
+            "Underfill process is already in the assembly "
             "flow for the H562 / MP25 / Micron NAND BGAs."
         ),
         standards=["RoHS", "ECOPACK2"],
     )
     # Tag the underfill so structural / assembly tooling can pick it up.
+    fields["underfill"] = "Hysol_FP4549_capillary_die_area"
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_stm32wba55ugi7(design, ref: str, **overrides) -> Chip:
+    """ST STM32WBA55UGI7 — same die as the WBA55HGF6TR (Cortex-M33
+    100 MHz + 2.4 GHz BLE 5.4 / 802.15.4, SMPS, 1 MB flash, 128 KB SRAM)
+    in the **UFBGA59 (5 × 5 mm, 0.5 mm pitch)** with the extended
+    temperature range (suffix 7 = -40 to +105 °C).
+
+    Versus the WLCSP41 it brings back 15 GPIOs (PA3/4/9/10/11,
+    PB0/1/2/5/6/7/11/13/14, PC13) and adds VDD_3/4 + VSS_3/4 balls;
+    VSSRF_3 is gone and SamacSys spells a few pins differently
+    (VDD_RFPA, PH3__BOOT0, PC14__OSC32__IN). The overmoulded UFBGA is
+    far more shock-tolerant than bare WLCSP, but it is still underfilled
+    alongside the other BGAs."""
+    fields = _stm32(
+        pn="STM32WBA55UGI7",
+        ds_name="STM32WBA55UGI7.pdf",
+        fp_mod_name="BGA59C50P8X8_500X500X60.kicad_mod",
+        fp_class="UFBGA-59 (5 × 5 mm, 0.50 mm pitch)",
+        package="UFBGA59",
+        description=(
+            "Cortex-M33 100 MHz w/ TrustZone + 2.4 GHz BLE 5.4 / "
+            "802.15.4 / direction-finding, integrated SMPS, 1 MB flash, "
+            "128 KB SRAM, UFBGA59, -40 to +105 °C"
+        ),
+        clock_max_hz=100e6,
+        vcc_nominal_v=3.3,
+        size_mm=(5.0, 5.0), height_mm=0.60, pitch_mm=0.50,
+        temp_range_c=(-40, 105),
+        note=(
+            "STM32WBA55UGI7: UG = 1 MB flash + 128 KB SRAM, I = UFBGA59, "
+            "7 = -40 to +105 °C. Same radio/SMPS die as the HGF6TR; "
+            "native RF_ANTSW0/1 on PA12/PA11. No FDCAN (G0B1 bridges). "
+            "Underfilled with the other BGAs (Hysol FP4549)."
+        ),
+        standards=["RoHS", "ECOPACK2"],
+    )
     fields["underfill"] = "Hysol_FP4549_capillary_die_area"
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
@@ -515,6 +619,73 @@ def add_stm32mp255dal3(design, ref: str, **overrides) -> Chip:
         ),
         note=(
             "STM32MP255 SoC in the 10×10 VFBGA-361 (AL) package — A35 "
+            "cluster (2× @ 1.5 GHz) + M33 + M0+, 3D GPU, 1.35 TOPS NPU, "
+            "H.264/H.265 codec. 16-bit DDR3L only (no 32-bit on AL). "
+            "Routing follows ST AN5724; the AL ballout differs from the "
+            "VFBGA-424 (AK) reference, so DDR length-match data is "
+            "package-specific. 361-ball, 0.5 mm pitch — HDI/VIP escape."
+        ),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_stm32mp255fal3(design, ref: str, **overrides) -> Chip:
+    """ST STM32MP255FAL3 — the security-enabled (F: secure boot +
+    hardware crypto) twin of the DAL3. Same dual Cortex-A35 (1.5 GHz) + Cortex-M33 +
+    Cortex-M0+ compute, 3D GPU and 1.35 TOPS NPU as the MP255F, in the
+    smaller 361-ball VFBGA (10×10 mm, 0.5 mm pitch).
+
+    Package vs the MP255FAK3 (VFBGA-424, 14×14): the AL/VFBGA361 keeps
+    the full 144-GPIO breakout and CSI-2/FMC/3×FDCAN, dropping only the
+    32-bit DDR option — this design runs 16-bit DDR3L, which AL supports
+    (up to 1 GByte single rank). ST's C/F lines add secure boot + crypto
+    over A/D; F and D are both the 1.5 GHz parts. Pinout and footprint
+    were checked identical to the DAL3 SamacSys model (2026-11-15).
+    The 10×10 body fits the Ø34 companion_compute tile with wide edge
+    margin (vs the 14×14 part's ~0.35 mm). DDR3 routing must be redone
+    against this ballout (ST VFBGA361/AL length-equalization data)."""
+    pn = "STM32MP255FAL3"
+    fp_mod = src(pn, f"{pn}.kicad_mod")
+    fields = dict(
+        manf="STMicroelectronics", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=(
+            "Application processor with secure boot + crypto: dual Cortex-A35 1.5 GHz + Cortex-M33 + "
+            "Cortex-M0+, 3D GPU, 1.35 TOPS NPU, DDR3L/DDR4/LPDDR4 "
+            "controller (16-bit on this package), 361-ball VFBGA"
+        ),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        package="VFBGA-361 (10×10 mm)",
+        size_mm=(10.0, 10.0), height_mm=1.16,
+        temp_range_c=(-40, 85),
+        clock_max_hz=1.5e9,
+        vcc_nominal_v=1.2,            # core supply; many other rails
+        # ── thermal (datasheet DS14284 Rev 5) ────────────────────────
+        # Same silicon as MP255FAK3 — power dissipation is dominated by
+        # the A35+M33+M0+GPU+NPU compute; the smaller 10×10 package is
+        # only thermally tighter (higher ΘJC). Smash splits the A35
+        # pair off-die for active flight — `p_active_w` accounts for
+        # the typical "A35-on + GPU/NPU on, M33+M0 idle" mix.
+        p_active_w=1.19,                    # aggregate run-mode active (DS Tabs 22-27)
+        p_max_w=1.65,                       # aggregate peak (full A35+M33+M0+GPU+NPU @ Tj=125°C)
+        rth_jc_cw=5.7,                      # VFBGA361 10×10 ΘJC, DS Tab 135 p226
+        tj_max_c=125.0,                     # absolute max TJ for suffix 3 die, DS Tab 16 p102
+        standards=["RoHS", "ECOPACK2"],
+        # FAL3 (like DAL3) ships no cubemx.xml; reuse the FAK3 table by pin name (same die).
+        pins=_overlay_cubemx_af(pn, build_pins(src(pn, f"{pn}.kicad_sym")),
+                                af_source_pn="STM32MP255FAK3"),
+        footprint=Footprint(
+            name=pn, package_class="VFBGA-361",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            pitch_mm=0.5, size_mm=(10.0, 10.0), height_mm=1.16,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note=(
+            "STM32MP255 (F: secure boot + crypto) SoC in the 10×10 VFBGA-361 (AL) package — A35 "
             "cluster (2× @ 1.5 GHz) + M33 + M0+, 3D GPU, 1.35 TOPS NPU, "
             "H.264/H.265 codec. 16-bit DDR3L only (no 32-bit on AL). "
             "Routing follows ST AN5724; the AL ballout differs from the "

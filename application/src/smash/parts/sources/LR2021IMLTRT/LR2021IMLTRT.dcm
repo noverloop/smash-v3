@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LR2021IMLTRT
+D RF Transceiver LoRa Plus Fourth-gen LoRa IP, Long Range, Low Power, Multi-band LoRa Transceiver
+K
+F https://static6.arrow.com/aropdfconversion/8c4c56f96ce73446dfb7d5351c178fb7af851e88/lr2021_datasheet_prelim0_1.pdf
+$ENDCMP
+#
+#End Doc Library

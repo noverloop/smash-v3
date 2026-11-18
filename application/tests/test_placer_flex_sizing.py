@@ -157,7 +157,7 @@ def test_twin_link_widths_have_expected_range():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     from smash.layout.boards.smash_evb_v1 import build_panel
@@ -165,7 +165,6 @@ def test_twin_link_widths_have_expected_range():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
                gen.build_aft_end_board,
                gen.build_activation_interface, gen.build_radar_module,
@@ -184,7 +183,8 @@ def test_twin_link_widths_have_expected_range():
     # gaps carry the backbone. (The radar↔nose_cap USB leaf is one of the
     # wider links, ~5.25; not the min.) 20 if the UJ20-emptied nose_cap leaf
     # carries no crossing nets and drops out of the width count.
-    assert len(widths) in (20, 21)
+    # (2026-11-15 aft reorder: cell_floor + one spacer gone → 2 fewer links)
+    assert len(widths) in (18, 19)
     # Narrowest is now the battery-compartment gaps: little crosses → just
     # margin + GND.
     assert min(widths.values()) >= 3.0

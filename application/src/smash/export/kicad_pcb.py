@@ -677,6 +677,9 @@ def _emit_pad(pad, chip: Chip, *, face: str, board_name: str,
     if pth:
         lines.append(f'\t\t\t(drill {_fmt(pad.drill_mm)})')
     lines.append(f'\t\t\t(layers {layers})')
+    if pth and pad.note == "castellated":
+        # Plated half-hole on the board outline (side-wall interconnect).
+        lines.append('\t\t\t(property pad_prop_castellated)')
 
     net_name = _pin_to_net_name(chip, pad.num) or nc_net
     if net_name:
@@ -1045,6 +1048,81 @@ def _emit_segments(
     return out
 
 
+
+def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
+                               offset_xy=(0.0, 0.0)) -> list:
+    """A gap tile is NOT a PCB (2026-11-15): draw its real hardware on
+    Dwgs.User instead of a spacer disc — the battery run's ONE aluminium
+    holder (outer Ø, cell cavity, potting notches, channel) on the run's
+    first tile, a plain ring / the PEEK standoffs elsewhere. No Edge.Cuts,
+    no footprints, no cavities. Physical frame, KiCad y-down."""
+    import math
+    from smash.export import spacer_step as S
+    kind = S.gap_kind(name)
+    ox, oy = offset_xy
+    if kind == "none":
+        return []
+    out = []
+    k = [0]
+
+    def uid():
+        k[0] += 1
+        return _uid(name, "gap_hw", str(k[0]))
+
+    def circle(cx, cy, r, w=0.15):
+        out.append(f'\t(gr_circle (center {_fmt(ox + cx)} {_fmt(oy - cy)}) '
+                   f'(end {_fmt(ox + cx + r)} {_fmt(oy - cy)}) '
+                   f'(stroke (width {w}) (type default)) (fill no) '
+                   f'(layer "Dwgs.User") (uuid "{uid()}"))')
+
+    def poly(pts, w=0.12):
+        xy = " ".join(f"(xy {_fmt(ox + x)} {_fmt(oy - y)})" for x, y in pts)
+        out.append(f'\t(gr_poly (pts {xy}) (stroke (width {w}) (type default)) '
+                   f'(fill no) (layer "Dwgs.User") (uuid "{uid()}"))')
+
+    def text(s, dy):
+        out.append(f'\t(gr_text "{s}" (at {_fmt(ox)} {_fmt(oy + dy)} 0) '
+                   f'(layer "Dwgs.User") (effects (font (size 1 1) (thickness 0.15))) '
+                   f'(uuid "{uid()}"))')
+
+    if kind == "battery_holder":
+        run = [n for n in chain if n in boards and S.gap_kind(n) == "battery_holder"]
+        if run and name != run[0]:
+            return out                       # the run has ONE holder
+        h = sum(boards[n].thickness_mm for n in run)
+        circle(0, 0, S.BATT_HOLDER_R_OUT_MM, 0.2)
+        cav = S.battery_holder_cavity().simplify(0.02)
+        poly(list(cav.exterior.coords)[:-1])
+        cx, cy = S._batt_channel_xy()
+        circle(cx, cy, S.BATT_CHANNEL_D_MM / 2.0)
+        for ang in S.BATT_FEED_ANGLES_DEG:
+            a = math.radians(ang)
+            r0, r1 = S.BATT_NOTCH_R_IN_MM, S.BATT_HOLDER_R_OUT_MM
+            ux, uy = math.cos(a), math.sin(a)
+            vx, vy = -uy * S.SLOT_W_MM / 2, ux * S.SLOT_W_MM / 2
+            poly([(r0 * ux + vx, r0 * uy + vy), (r1 * ux + vx, r1 * uy + vy),
+                  (r1 * ux - vx, r1 * uy - vy), (r0 * ux - vx, r0 * uy - vy)])
+        pk = S.piezo_pocket().simplify(0.02)
+        poly(list(pk.exterior.coords)[:-1], 0.2)
+        text("ALUMINIUM BATTERY HOLDER (not a PCB)", -S.BATT_HOLDER_R_OUT_MM - 2.0)
+        text(f"closed {S.BATT_FLOOR_MM:g} mm floor; piezo pocket {S.BATT_PZ_POCKET_DEPTH_MM:g} mm deep underneath",
+             S.BATT_HOLDER_R_OUT_MM + 3.5)
+        text(f"{h:.1f} mm tall - spans {len(run)} gaps", S.BATT_HOLDER_R_OUT_MM + 2.0)
+    elif kind == "ring":
+        rs = S.ring_spec(name)
+        circle(0, 0, rs.r_out, 0.2)
+        circle(0, 0, rs.r_in, 0.2)
+        text(f"{rs.label} {board.thickness_mm:.1f} mm, wall {rs.r_out - rs.r_in:g} mm (not a PCB)",
+             -rs.r_out - 2.0)
+    else:
+        circle(0, 0, 17.0, 0.08)
+        for ang in S.STANDOFF_ANGLES_DEG:
+            a = math.radians(ang)
+            circle(S.STANDOFF_R_MM * math.cos(a), S.STANDOFF_R_MM * math.sin(a),
+                   S.STANDOFF_D_MM / 2.0, 0.2)
+        text(f"PEEK STANDOFFS {board.thickness_mm:.1f} mm (not a PCB)", -19.0)
+    return out
+
 def _emit_substrate_callout(
     board: Board,
     *,
@@ -1297,7 +1375,7 @@ def _emit_eccobond(
 ) -> list[str]:
     """Eccobond corner-stake marks on F.Adhes / B.Adhes — a short 45°
     stroke dispensed into each component corner for shock/vibration
-    survival (Smash sees 1000+ G setback). Applied to every placed chip;
+    survival (Smash sees rapid deceleration). Applied to every placed chip;
     BGAs get a longer stroke (corner staking is mandatory for them). The
     stroke scales down on tiny parts so it never overruns the body."""
     from smash.layout.placer.grid import placement_extents_mm
@@ -1508,7 +1586,7 @@ def _branch_leaf_offsets(panel, boards, canvas_origin_mm, tile_pitch_mm):
     lengths = panel.branch_flex_lengths or {}
     s_fold = panel.branch_s_fold or set()
     offs: dict = {}
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if parent not in panel.tiles or child not in panel.tiles:
             continue
         if parent not in boards or child not in boards:
@@ -1581,7 +1659,7 @@ def _cutouts_for_tile(
     s_fold = panel.branch_s_fold or set()
     sfold_skip_nbr = None
     sfold_combined = None     # (world centre angle, width)
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold and name == parent and child in tiles:
             run_hat, offset_hat = _s_fold_axes(panel, parent, child)
             snk = _s_fold_run_neighbor(panel, parent, run_hat)
@@ -1624,7 +1702,7 @@ def _cutouts_for_tile(
 
     # Branch neighbours (extra flex tails outside the snake) — these
     # don't carry the snake bus, so use the fallback width
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold:
             # S-turn cutouts: parent exits through ONE merged opening
             # (snake link + branch) that forks in the gap; leaf opening
@@ -2176,9 +2254,15 @@ def write_kicad_panel(
     canvas_origin_mm: tuple[float, float] = _DEFAULT_CANVAS_ORIGIN_MM,
     flex_width_mm: float = _DEFAULT_FLEX_WIDTH_MM,
     link_widths_mm: dict | None = None,
+    link_schematic: set | None = None,
 ) -> dict:
     """Emit ONE `.kicad_pcb` containing every board positioned on the
     panel grid plus flex strips between adjacent snake/branch tiles.
+
+    `link_schematic`: refs whose footprints link (`(path …)`, sheetfile
+    `<stem>.kicad_sch`) to a system schematic written beside the panel by
+    `kicad_sch.write_kicad_schematic(..., project=<stem>)` — so the panel
+    and its schematic form one KiCad project. None = no links (default).
 
     `flex_width_mm` is the fallback width for any flex without an
     explicit entry in `link_widths_mm` (branches don't carry the snake
@@ -2226,6 +2310,13 @@ def write_kicad_panel(
         ox, oy = co_offsets.get(name, (0.0, 0.0))
         bx, by = branch_offsets.get(name, (0.0, 0.0))
         centre = (centre[0] + ox + bx, centre[1] + oy + by)
+        if getattr(board, "is_spacer", False):
+            # Gap hardware (Al holder / ring / PEEK standoffs) — a drawing,
+            # not a spacer PCB.
+            parts.extend(_emit_gap_hardware_drawing(
+                name, board, boards, list(panel.snake_chain or []),
+                offset_xy=centre))
+            continue
         cuts = _cutouts_for_tile(name, panel, flex_width_mm,
                                  link_widths_mm=link_widths_mm)
 
@@ -2243,7 +2334,10 @@ def write_kicad_panel(
         for pl in board.chip_placements:
             if not isinstance(pl.item, (Chip, Antenna)):
                 continue
-            block = _emit_footprint(pl, board_name=name, offset_xy=centre)
+            link = bool(link_schematic) and pl.item.ref in link_schematic
+            block = _emit_footprint(
+                pl, board_name=name, offset_xy=centre, link_symbol=link,
+                sheetfile=f"{pathlib.Path(output_path).stem}.kicad_sch" if link else None)
             if block:
                 parts.append(block)
                 n_footprints += 1
@@ -2277,6 +2371,15 @@ def write_kicad_panel(
     }
 
 
+# (2026-11-15) The QPD / camera branches run on the LDS nose cone, not on
+# flex: no branch flex strips and no flex-mouth cutouts in the parent outline.
+BRANCH_FLEX_ON_LDS = True
+
+
+def _flex_branches(panel) -> list:
+    return [] if BRANCH_FLEX_ON_LDS else list(panel.branches or [])
+
+
 def _emit_flex_strips_for_panel(
     panel, boards: dict, out_parts: list,
     *,
@@ -2304,7 +2407,7 @@ def _emit_flex_strips_for_panel(
     # so suppress its plain strip here.
     s_fold = panel.branch_s_fold or set()
     fork_links = {}      # frozenset({parent, snk}) -> (parent, child)
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         if (parent, child) in s_fold and parent in panel.tiles:
             run_hat, _oh = _s_fold_axes(panel, parent, child)
             snk = _s_fold_run_neighbor(panel, parent, run_hat)
@@ -2343,7 +2446,7 @@ def _emit_flex_strips_for_panel(
         n += 1
 
     # Branches
-    for (parent, child) in (panel.branches or []):
+    for (parent, child) in _flex_branches(panel):
         p_info = _centre_board(parent)
         c_info = _centre_board(child)
         if p_info is None or c_info is None:

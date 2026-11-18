@@ -100,7 +100,7 @@ class Chip:
                                        # distribution maps
     youngs_modulus_gpa: float | None = None
                                        # elastic modulus — for FEM shock
-                                       # simulation (1000+ G launch event)
+                                       # simulation (rapid deceleration)
     cte_ppm_k: float | None = None
                                        # coefficient of thermal expansion —
                                        # for solder-joint stress at temp

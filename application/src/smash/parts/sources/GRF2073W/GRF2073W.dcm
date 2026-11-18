@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP GRF2073W
+D RF Amplifier Ultra-Low Noise Amplifier: SDARS LNA, 2.0 - 6.0 GHz, AEC-Q100 Automotive Qualified
+K
+F https://www.guerrilla-rf.com/products/DataSheet?sku=2073-W&file_name=GRF2073WDS.pdf
+$ENDCMP
+#
+#End Doc Library

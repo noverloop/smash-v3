@@ -93,7 +93,7 @@ def goes_to_bottom(chip: Chip) -> bool:
     if getattr(chip, "feature", None) in ("clock", "bottom"):
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that
-        # survive on the internal bottom face under setback — e.g. the radar's
+        # survive on the internal bottom face under rapid deceleration — e.g. the radar's
         # SOT-23 bucks (compliant leads + low mass), kept off the nose_cap-facing
         # top so they don't need their own coupling cutout. Tall/heavy parts
         # (bulk caps) are NOT opted in — they stay on top.
@@ -108,8 +108,13 @@ def goes_to_bottom(chip: Chip) -> bool:
     # compression-loaded and the high-Z PIEZO_P column together.
     if getattr(chip, "board_tag", None) == "aft_end_board":
         return is_test_point(chip)
-    # The activation_interface tile is near the bottom
-    # Any component relocated here keeps its passives top-side.
+    # activation_interface: passives DEFAULT to the top face so its routed EE
+    # reference layout keeps its faces. This is a default, NOT a ban: the
+    # bottom face is open to parts that opt in with feature="bottom" (handled
+    # above). The old "pads-only bottom" rule (2026-07-31) dated from when the
+    # cells sat against this tile and was really the piezo disc's
+    # compression-only constraint — the disc lives on fin_ble_board's top face
+    # and is face-locked there.
     if getattr(chip, "board_tag", None) == "activation_interface":
         return is_mating_pad(chip) or is_test_point(chip)
     return (is_mating_pad(chip)

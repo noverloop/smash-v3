@@ -1,4 +1,0 @@
-(fp_lib_table
-  (version 7)
-  (lib (name "SmashPowerBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashPowerBoard.pretty")(options "")(descr "Editable Smash power-board footprints"))
-)

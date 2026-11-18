@@ -1138,6 +1138,58 @@ def write_board_schematic(design: Design, board, out_dir, *,
     return r
 
 
+def panel_footprint_refs(panel, boards: dict) -> dict:
+    """{ref: board name} for every footprint `kicad_pcb.write_kicad_panel`
+    emits: boards on the panel grid, spacer tiles excluded (they are drawn
+    as gap hardware, not footprints)."""
+    from smash.state import Chip
+    from smash.state.antenna import Antenna
+    return {pl.item.ref: name for name, b in boards.items()
+            if name in panel.tiles and not getattr(b, "is_spacer", False)
+            for pl in b.chip_placements
+            if isinstance(pl.item, (Chip, Antenna)) and pl.item.footprint is not None}
+
+
+def write_panel_schematic(design: Design, panel, boards: dict, out_dir, *,
+                          project: str, pad_groups: dict | None = None,
+                          lib: str | None = None) -> dict:
+    """Write `<project>.kicad_sch` (+ symbol library, sym-lib-table and the
+    parts' datasheets) beside a panel `.kicad_pcb` written by
+    `kicad_pcb.write_kicad_panel(..., link_schematic=panel_footprint_refs(panel, boards))`,
+    so the panel and its schematic form ONE KiCad project — the panel-level
+    twin of `write_board_schematic`: every footprint on the panel gets a
+    symbol (one framed region per board), the Footprint field is the
+    panel's footprint name, the Datasheet field the panel's, and every net
+    carries its PCB name through a global label, so schematic-parity DRC
+    and Update PCB from Schematic see the panel's own netlist. Leaves
+    `<project>.kicad_pro` to the PCB writer. `lib` is the library nickname
+    for symbols and Footprint fields — the one `portable_project.
+    write_portable_project` gives the panel's footprint library
+    (default `library_nickname(project)`), so run that on the panel PCB
+    afterwards, as for the boards."""
+    from smash.export.portable_project import library_nickname, _fp_filename
+    lib = lib or library_nickname(project)
+    board_of = panel_footprint_refs(panel, boards)
+    comps = [c for c in all_components(design) if c.ref in board_of]
+    out = pathlib.Path(out_dir)
+    r = _write_schematic(design, out, project, comps, board_of, lib=lib,
+                         pad_groups=pad_groups,
+                         fp_of=lambda c: f"{lib}:{_fp_filename(c.footprint.name)}"
+                         if c.footprint else "",
+                         label_all=True, rail_labels=True,
+                         datasheet_of=board_datasheet)
+    shutil.rmtree(out / "datasheets", ignore_errors=True)
+    for c in comps:
+        ds = board_datasheet(c)
+        if ds.startswith("${KIPRJMOD}/"):
+            src = resolve_repo_path(c.datasheet)
+            if src.is_file():
+                dst = out / ds[len("${KIPRJMOD}/"):]
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+    return r
+
+
 def _write_schematic(design, out, project, comps, board_of, *, lib=None,
                      pad_groups=None, fp_of=None, label_all=False,
                      datasheet_of=None, rail_labels=False, titles=None) -> dict:

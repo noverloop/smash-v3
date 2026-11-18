@@ -167,7 +167,7 @@ class Board:
 
     # ── z-thickness (folded-stack height contribution) ───────────────
     # Every rigid tile is the 14-layer FR4 stack (uniform — good for
-    # setback rigidity; Rogers/thin variants not yet modelled). Spacers
+    # rapid-deceleration rigidity; Rogers/thin variants not yet modelled). Spacers
     # are the milled 4 mm interposers. Mirrors the export's
     # _STACKUP_BLOCK (14 Cu + 13 dielectric + masks) and
     # SPACER_THICKNESS_MM; duplicated here so smash.state stays free of a

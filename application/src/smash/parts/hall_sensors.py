@@ -11,7 +11,9 @@ from smash.parts._slug import canonical_id
 
 def add_drv5023ajqlpg(design, ref: str, **overrides) -> Chip:
     """TI DRV5023AJQLPG — digital-output unipolar Hall-effect switch,
-    open-drain output, SOT-23 (DBZ package). The 'A' suffix denotes
+    open-drain output, TO-92 (LPG package, 3-lead through-hole — "LPG"
+    is TO-92, not the SOT-23 DBZ; corrected 2026-11-17; the part is not
+    used in the design). The 'A' suffix denotes
     the lowest operating threshold (B_OP = 3.5 mT typ); 'JQ' = AEC-Q100
     grade 0 (-40 to +150 °C ambient)."""
     pn = "DRV5023AJQLPG"
@@ -20,10 +22,10 @@ def add_drv5023ajqlpg(design, ref: str, **overrides) -> Chip:
         manf="Texas Instruments", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
         description=(
             "Digital Hall-effect switch, unipolar, open-drain output, "
-            "B_OP=3.5 mT typ (A threshold), AEC-Q100 grade 0, SOT-23"
+            "B_OP=3.5 mT typ (A threshold), AEC-Q100 grade 0, TO-92 (LPG)"
         ),
         datasheet=datasheet_ref(pn, "drv5023.pdf"),
-        package="SOT-23 (DBZ)",
+        package="TO-92 (LPG)",
         temp_range_c=(-40, 150),    # AEC-Q100 grade 0 ambient
         voltage_rating_v=27.0,       # typical V_CC abs max for DRV5023
         standards=["AEC-Q100 Grade 0"],
@@ -55,16 +57,22 @@ def add_drv5023ajqlpg(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
-def add_drv5032fcqdbzr(design, ref: str, **overrides) -> Chip:
+def add_drv5032fcdbzt(design, ref: str, **overrides) -> Chip:
     """TI DRV5032FC — NANOPOWER Hall-effect switch, OMNIPOLAR, OPEN-DRAIN,
     SOT-23 (DBZ). B_OP = 4.8 mT max, 20 Hz sampling, I_CC 1.6 uA typ /
     3.5 uA max @ 3 V. The magnetic-wake listener (dual IR + magnetic
     wakeup, 2026-07-30): omnipolar = round orientation in the container
     doesn't matter; open-drain = wire-ORs into MAIN_SW_GATE through the
     spare D_NFC_WAKE cathode AND level-shifts BAT_RAW->3V3_AON naturally;
-    20 Hz sampling supports a ~2 Hz coded wake pattern."""
-    pn = "DRV5032FCQDBZR"
-    fp_mod = src(pn, f"{pn}.kicad_mod")
+    20 Hz sampling supports a ~2 Hz coded wake pattern.
+
+    Library: the real SamacSys part 872282 (DRV5032FCDBZT, SOT95P237X112-3N),
+    vendored 2026-11-17. It replaces "DRV5032FCQDBZR" — not a TI orderable —
+    whose files had been copied from the TO-92 DRV5023AJQLPG: a 10 mm TO-92
+    3D model, a TO-92 land pattern and the TO-92 pinout (2=GND, 3=OUT), so
+    OUT and GND were swapped. DRV5032FCDBZR (3k reel) is the same part."""
+    pn = "DRV5032FCDBZT"
+    fp_mod = src(pn, "SOT95P237X112-3N.kicad_mod")
     fields = dict(
         manf="Texas Instruments", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
         description=(
@@ -82,13 +90,15 @@ def add_drv5032fcqdbzr(design, ref: str, **overrides) -> Chip:
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),
             pitch_mm=0.95,
+            size_mm=(2.92, 1.30),     # DBZ body (DS package outline)
+            height_mm=1.12,           # DBZ max (SOT95P237X112)
             model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
             source="samacsys",
         ),
         note=(
-            "DBZ pinout: 1=VCC (1.65-5.5 V), 2=OUT, 3=GND — identical to "
-            "DRV5023 DBZ; footprint/symbol reused from that part's "
-            "SamacSys sources.\n"
+            "DBZ pinout: 1=VCC (1.65-5.5 V), 2=OUT, 3=GND (datasheet Pin "
+            "Functions, SOT-23 column; SamacSys 872282). The TO-92 (LPG) "
+            "pinout differs — 2=GND, 3=OUT — never reuse TO-92 sources.\n"
             "Output is open-drain, asserts LOW while |B| >= B_OP in EITHER "
             "polarity, samples at 20 Hz (t_S 50 ms) — an external coded "
             "field must hold each bit >= ~100 ms for guaranteed sampling.\n"

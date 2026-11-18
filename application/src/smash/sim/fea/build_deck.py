@@ -167,22 +167,22 @@ class DeckBuildOptions:
     first-iteration sanity check; the transient builder takes different
     options."""
     job_name: str | None = None
-    body_force_direction: tuple = (0.0, 0.0, -1.0)  # forward setback default
-    # Explicit setback direction tag — flips the body force when set to
+    body_force_direction: tuple = (0.0, 0.0, -1.0)  # forward rapid deceleration default
+    # Explicit rapid-deceleration direction tag — flips the body force when set to
     # "reverse" and adjusts the job/step name so the same (board, platform)
     # pair produces distinct forward + reverse artifacts. Overrides
     # body_force_direction when not None.
     #
     #   "forward"  → body force -Z (chip pushed INTO the board; SAC305
-    #                joints in compression / shear; bend-sim's forward_setback
+    #                joints in compression / shear; bend-sim's forward rapid-deceleration
     #                path).
     #   "reverse"  → body force +Z (chip pulled AWAY from the board;
-    #                solder balls in TENSION; bend-sim's reverse_setback
+    #                solder balls in TENSION; bend-sim's reverse rapid-deceleration
     #                path. The report module compares σ_tension at pad
     #                nodes against Solder.tensile_strength_mpa).
     setback_direction: str | None = None
     # Load mode controls the body-force card type:
-    #   "setback" (default) → *DLOAD GRAV with peak G in the setback
+    #   "setback" (default) → *DLOAD GRAV with peak G in the rapid-deceleration
     #                          direction. Driven by profile.peak_g.
     #   "spin"              → *DLOAD CENTRIF with ω² at muzzle spin
     #                          about the board's z-axis (the spin axis
@@ -199,7 +199,7 @@ class DeckBuildOptions:
     # --- transient explicit dynamic options (Phase J) ---
     # When `dynamic` is True, the step becomes *DYNAMIC, EXPLICIT with
     # the full BodyLoadProfile a(t)/a_peak ratio as a *AMPLITUDE table.
-    # The setback load magnitude is set to peak_a; for spin, magnitude
+    # The rapid-deceleration load magnitude is set to peak_a; for spin, magnitude
     # = peak ω² and amplitude = (ω(t)/ω_muzzle)².
     dynamic: bool = False
     # Number of amplitude (t, v) pairs to emit (downsampled from the
@@ -508,7 +508,7 @@ def build_static_deck(mesh: BoardMesh, board: Board,
     if opts.pin_support_top and "SUPPORT_RING_TOP" in mesh.node_sets \
             and mesh.node_sets["SUPPORT_RING_TOP"]:
         # Top ring: only Z is pinned (the spacer above keeps the tile
-        # from lifting in setback but allows radial breathing). Pinning
+        # from lifting under rapid deceleration but allows radial breathing). Pinning
         # all 3 DOFs over-constrains the plate; let the bend live in xy.
         boundaries.append(CCXBoundary(
             nset_name="SUPPORT_RING_TOP", dof_first=3, dof_last=3,
@@ -535,7 +535,7 @@ def build_static_deck(mesh: BoardMesh, board: Board,
                      else f"static_peak_{profile.peak_g:.0f}g")
         note_lines = [
             f"Static FEA at peak acceleration of {profile.name}"
-            + (f" — {direction_label.upper()} setback" if direction_label else ""),
+            + (f" — {direction_label.upper()} rapid deceleration" if direction_label else ""),
             f"  peak a = {peak_a:.3e} m/s² ({profile.peak_g:.0f} G)",
             f"  body force direction = ({dx}, {dy}, {dz})",
             f"  v = {profile.muzzle_velocity_m_per_s} m/s",
@@ -713,7 +713,7 @@ def _critical_dt_explicit_s(mesh, fab) -> float:
 
 def _build_load_amplitude(profile, n_pairs: int,
                             *, mode: str) -> CCXAmplitude:
-    """Downsample profile.t_s + a(t)/a_peak (setback) or
+    """Downsample profile.t_s + a(t)/a_peak (rapid deceleration) or
     (ω(t)/ω_peak)² (spin) into n_pairs (t, scale) points. The
     *AMPLITUDE table multiplies the step's peak magnitude during
     the dynamic solve."""
@@ -752,7 +752,7 @@ def _build_load_amplitude(profile, n_pairs: int,
 
 def _solder_constants(fab):
     """Bulk SAC305 E + G + ν from the FabProfile.solders default
-    (the same alloy the bend-sim's reverse-setback path uses).
+    (the same alloy the bend-sim's reverse rapid-deceleration path uses).
     Returns (E_Pa, G_Pa, ν)."""
     if fab is None:
         return 41e9, 14.6e9, 0.40                # SAC305 fallback

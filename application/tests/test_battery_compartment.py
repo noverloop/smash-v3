@@ -32,21 +32,21 @@ def built():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
     gen._set_battery_mode("maximalist")  # maximalist superset = the 3-cell pack
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in (gen.build_qpd_module,
-               gen.build_yagi_antenna_a_flex, gen.build_yagi_antenna_b_flex,
                gen.build_nose_cap, gen.build_camera_module,
-               gen.build_aft_end_board, gen.build_cell_floor_board,
+               gen.build_aft_end_board,
                gen.build_activation_interface,
                gen.build_radar_module, gen.build_fins_module,
                gen.build_companion_compute, gen.build_power_board,
                gen.build_wakeup_board):
         fn(d)
+    gen._empty_aft_end_top(d)            # 2026-11-15 aft reorder
     panel, boards = build_panel()
     gen.build_spacers(d, boards)
     place_design(d, panel, boards)
@@ -84,23 +84,32 @@ def test_six_battery_spacers_sum_to_cell_length(built):
 
 # ── snake topology ────────────────────────────────────────────────────
 
-def test_compartment_sits_between_cell_floor_and_fin_ble(built):
+def test_compartment_sits_between_aft_end_and_activation(built):
+    """(2026-11-15 aft reorder) cell_floor_board is gone: the Al compartment
+    is glued + screwed straight onto aft_end_board's bare top face, and
+    activation_interface (carrying aft_end's former top-face parts) is the
+    ceiling, under fin_ble_board."""
     _gen, _d, panel, boards = built
     chain = [c for c in panel.snake_chain]
-    # aft_end_board is the snake start; activation_interface moved down
-    # between aft_end and cell_floor (2026-07-31 stack reorder), then the
-    # THIN cell_floor_board (side-solder-tab battery floor), then the
-    # battery compartment, then fin_ble_board (the compartment ceiling).
     assert chain[0] == "aft_end_board"
-    assert "cell_floor_board" in chain
-    i_act = chain.index("activation_interface")
-    assert i_act < chain.index("cell_floor_board")
+    assert "cell_floor_board" not in chain
     bat = [c for c in chain if "battery" in c]
     assert len(bat) == battery_spacer_count()
-    # Contiguous run, between cell_floor_board and fin_ble_board.
     i0 = chain.index(bat[0])
-    assert chain[i0 - 1] == "cell_floor_board"
-    assert chain[i0 + len(bat)] == "fin_ble_board"
+    assert chain[i0 - 1] == "aft_end_board"
+    assert chain[i0 + len(bat)] == "activation_interface"
+
+
+def test_aft_end_top_face_is_empty(built):
+    """Only the bottom-face interface pads (+ castellations) and the piezo
+    cluster in the holder floor pocket stay on aft_end."""
+    gen, _d, _panel, boards = built
+    for pl in boards["aft_end_board"].chip_placements:
+        ref = pl.item.ref
+        if ref.startswith("J_") and "spacer" in ref:
+            continue                     # legacy LGA land chip (this fixture only)
+        assert (ref.startswith(("TP_", "P_ACT", "J_CAST_"))
+                or ref in gen._PIEZO_POCKET_REFS), ref
 
 
 # ── merged through-cut (no unsustainable centre web) ──────────────────
@@ -137,18 +146,15 @@ def _placement(board, ref):
 
 
 def test_cell_contacts_3cell_split(built):
-    """Maximalist (3-cell superset): + contacts on fin_ble_board (bottom —
-    the compartment ceiling since the 2026-07-31 stack reorder), − side
-    solder-tab lands on the thin cell_floor_board (top, one per cell in the
-    trefoil valleys); no single-cell P_CELL_CONTACTS_1H, and no
-    P_CELL_CONTACTS_AFT centre cluster (side tabs since 2026-07-30)."""
+    """(2026-11-15) Both tab sets (+ and −, one per cell) land on
+    activation_interface's BOTTOM face — the compartment ceiling."""
     _gen, _d, _panel, boards = built
-    plus = _placement(boards["fin_ble_board"], "P_CELL_CONTACTS")
-    assert plus is not None and plus.face == "bottom"
+    act = boards["activation_interface"]
+    assert _placement(act, "P_CELL_CONTACTS") is None
     for k in (1, 2, 3):
-        tab = _placement(boards["cell_floor_board"], f"P_CELL_TAB_NEG{k}")
-        assert tab is not None and tab.face == "top", f"P_CELL_TAB_NEG{k}"
-    assert _placement(boards["cell_floor_board"], "P_CELL_CONTACTS_AFT") is None
+        for pol in ("POS", "NEG"):
+            pl = _placement(act, f"P_CELL_TAB_{pol}{k}")
+            assert pl is not None and pl.face == "bottom", f"P_CELL_TAB_{pol}{k}"
 
 
 # ── no structural Cu coins remain anywhere ────────────────────────────
@@ -161,16 +167,18 @@ def test_no_cu_coins_anywhere(built):
     _gen, _d, _panel, boards = built
     coined = [n for n, b in boards.items() if getattr(b, "cu_coin_inserts", None)]
     assert coined == []
-    # and the floor really is thin now (was the 3.3 mm 20L coin host)
-    assert boards["cell_floor_board"].thickness_mm < 1.0
+    # standard board stackup (2026-11-14): cell_floor is the same 8L board as
+    # every other rigid tile (was a thin 6L floor, and before that a 3.3 mm
+    # 20L coin host)
+    assert "cell_floor_board" not in boards     # dropped 2026-11-15
 
 
 def test_piezo_disc_smd_no_pocket(built):
     """The Steminc SMD10T04R111 disc reflows flat on fin_ble_board's TOP
     face (the disc + comparator column swapped off the saturated aft_end
     top in the 2026-07-31 stack reorder). TOP (nose-facing) is the hard
-    mechanical rule: setback loads the ceramic in COMPRESSION against
-    rigid FR4; an aft-facing mount would put its ~114 N @ 46.7 kG on the
+    mechanical rule: rapid deceleration loads the ceramic in COMPRESSION against
+    rigid FR4; an aft-facing mount would put the disc's inertial load on the
     In52 joints in tension and bend the ceramic over potting voids. NO
     milled pocket cavity remains anywhere (the pocket existed to recess
     the old CEB-21018 brass diaphragm and give it flex room)."""
@@ -178,23 +186,24 @@ def test_piezo_disc_smd_no_pocket(built):
     for bname in ("aft_end_board", "fin_ble_board"):
         cavs = boards[bname].cavity_placements or []
         assert "piezo_disk_pocket" not in [c.item.name for c in cavs]
-    pl = _placement(boards["fin_ble_board"], "P_PIEZO")
+    pl = _placement(boards["aft_end_board"], "P_PIEZO")   # 2026-11-15: holder-floor pocket
     assert pl is not None and pl.face == "top"
     assert pl.position_mm == (0.0, 0.0)          # locked on the spin axis
     assert pl.item.footprint.name == "PiezoDisc_SMD10T04R111"
     assert pl.item.height_mm == pytest.approx(0.4)
 
 
-def test_no_chips_on_activation_bottom(built):
-    """The 2026-07-31 redistribution keeps activation_interface's bottom face
-    strictly pads-only (cell + contacts + battery LGA lands) — a bottom-face
-    part sees setback as solder-joint tension, so no chip may ride there."""
+def test_piezo_disc_never_aft_facing(built):
+    """The piezo disc must sit on a nose-facing (top) face: rapid deceleration
+    then loads the ceramic in compression; aft-facing would put its inertial
+    load on the In52 joints in tension. (Replaces the old blanket "no chips on
+    activation_interface bottom" rule — that face is open to small parts that
+    opt in with feature="bottom".)"""
     _gen, _d, _panel, boards = built
-    act = boards["activation_interface"]
-    bottom = [p.item.ref for p in act.chip_placements if p.face == "bottom"]
-    chips = [r for r in bottom if not r.startswith(("P_", "J_", "TP_"))]
-    assert chips == [], f"unexpected chips on activation bottom: {chips}"
-    assert "P_PIEZO" not in bottom               # the disc lives on aft_end top
+    for name, b in boards.items():
+        for p in getattr(b, "chip_placements", []) or []:
+            if getattr(p.item, "ref", "") == "P_PIEZO":
+                assert p.face == "top", f"P_PIEZO on {name} {p.face} face"
 
 
 def test_no_lga_lands_on_piezo_disc(built):
@@ -223,76 +232,88 @@ def test_no_lga_lands_on_piezo_disc(built):
 def test_potting_holes_on_activation_not_aft(built):
     _gen, _d, _panel, boards = built
     aft = boards["aft_end_board"].geometry
-    floor = boards["cell_floor_board"].geometry
     act = boards["activation_interface"].geometry
-    assert (aft.holes or []) == []          # piezo board — sealed aft face
-    # cell_floor passes the potting through (2026-07-30) so the
-    # aft_end↔cell_floor gap (piezo + comparator) fills from the
-    # activation-side channels — it is no longer sealed.
-    assert len(floor.holes or []) == 2
-    assert all(h.tag == "potting" for h in floor.holes)
-    assert len(act.holes or []) == 2        # potting enters here
+    assert (aft.holes or []) == []          # sealed aft floor
+    assert len(act.holes or []) == 1        # potting enters here
     assert all(h.tag == "potting" for h in act.holes)
 
 
-# ── core: single horizontal TLM-1530M/S ─────────────────────────
+# ── single-cell variant dropped (2026-11-16: always 3 cells) ─────
 
-def test_core_single_cell_compartment():
-    """The core_1cell opt-in swaps the 3× vertical TLM-1520 pack for ONE
-    horizontal TLM-1530M/S: a 15.1 mm compartment (4 spacers vs 6), single-cell
-    tab lands with no isolation resistors, and the TLM-1530M cell record."""
+def test_single_cell_config_is_gone():
     repo = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(repo))
     try:
-        gen = importlib.import_module("generate_maximalist_system")
+        gen = importlib.import_module("generate_stackup")
     finally:
         sys.path.pop(0)
-    prev = gen._BATTERY_MODE
-    gen._set_battery_mode("core_1cell")
-    try:
-        # 15.1 mm compartment depth → 4 spacers (vs 21 mm → 6, unchanged)
-        assert gen._compartment_mm() == 15.1
-        assert battery_spacer_count(15.1) == 4
-        assert battery_spacer_count(21.0) == 6      # 3-cell (default) depth
-        # power_board battery wiring: 2 tab lands; the per-cell 200 mΩ
-        # isolation resistors fab UNCONDITIONALLY (power_board is one
-        # shared part across every config — economies of scale; single
-        # mode leaves them as BAT_CELLx_POS stubs, DNP at assembly)
-        d = gen.Design(); gen._prime_power_rails(d); gen.build_power_board(d)
-        refs = [c.ref for c in d.chips]
-        assert "P_CELL_TAB_POS" in refs and "P_CELL_TAB_NEG" in refs
-        assert "P_CELL_CONTACTS" not in refs and "P_CELL_CONTACTS_AFT" not in refs
-        assert [r for r in refs if r.startswith("R_BAT") and r.endswith("_ISO")] \
-            == ["R_BAT1_ISO", "R_BAT2_ISO", "R_BAT3_ISO"]
-        # the TLM-1530M/S cell record carries 200 mAh for the BOM
-        cells = [b for b in d.batteries if b.ref == "BT_CELL"]
-        assert len(cells) == 1
-        assert cells[0].manf_pn == "TLM-1530M/S"
-        assert cells[0].capacity_mah == 200.0
-        # cell side solder-tab lands sit on aft_end_board (N–S cell axis)
-        tabs = [c for c in d.chips if c.ref in ("P_CELL_TAB_POS", "P_CELL_TAB_NEG")]
-        assert len(tabs) == 2 and all(t.board_tag == "aft_end_board" for t in tabs)
-        # the single-cell opt-in DROPS cell_floor_board (cell lies on aft_end)
-        bs = gen._config_boards("core_1cell", gen.CONFIGS["core_1cell"])
-        assert "cell_floor_board" not in bs
-        d2 = gen.Design(); gen._prime_power_rails(d2)
-        for bn in bs:
-            gen._BOARD_BUILDERS[bn](d2)
-        snake = [b for b in gen._MASTER_SNAKE if b in bs]
-        _panel, boards = gen.build_config_panel(
-            snake, straight=gen._STRAIGHT_SNAKE,
-            battery_length_mm=gen._compartment_mm())
-        assert "cell_floor_board" not in boards
-        bat = _battery_spacers(boards)
-        assert len(bat) == 4
-        thicks = [b.thickness_mm for b in bat.values()]
-        assert sum(thicks) == pytest.approx(15.1, abs=1e-6)
-        # compartment sits between aft_end_board and activation_interface
-        chain = list(_panel.snake_chain)
-        i0 = chain.index([c for c in chain if "battery" in c][0])
-        assert chain[i0 - 1] == "aft_end_board"
-        assert chain[i0 + len(bat)] == "activation_interface"
-        assert all(t <= MAX_SPACER_THICKNESS_MM + 1e-9 for t in thicks)
-        assert max(thicks) - min(thicks) < 1e-9
-    finally:
-        gen._BATTERY_MODE = prev
+    assert "core_1cell" not in gen.CONFIGS
+    assert set(gen._BATTERY_MODES) == {"triple"}
+    assert all(gen._set_battery_mode(n) == "triple" for n in gen.CONFIGS)
+
+
+def test_peek_standoffs_stay_inside_the_aluminium_rings():
+    from smash.export import spacer_step as S
+    edge = S.STANDOFF_R_MM + S.STANDOFF_D_MM / 2.0
+    assert edge <= S.RING_R_IN_MM - S.RING_CLEARANCE_MM + 1e-9
+    assert edge < S.BATT_TOP_RING_R_IN_MM
+
+
+def test_aluminium_ring_gap_exists_in_the_chain():
+    """The ring gap names must match a real gap (they silently went stale
+    after the aft reorder)."""
+    from smash.layout.boards.smash_evb_v1 import build_panel
+    from smash.export.spacer_step import GAP_RING_GAPS
+    panel, boards = build_panel()
+    assert set(GAP_RING_GAPS) <= set(panel.snake_chain)
+
+
+def test_peek_standoffs_clear_ring_keepout_and_potting_hole():
+    import math
+    from smash.export import spacer_step as S
+    from smash.layout.cavities import (BOARD_POTTING_HOLE_ANGLES_DEG,
+                                       BOARD_POTTING_HOLE_RADIUS_MM,
+                                       POTTING_HOLE_DIA_MM)
+    # standoff keepout stays inside the ring keepout
+    assert (S.STANDOFF_R_MM + S.STANDOFF_D_MM / 2 + S.RING_CLEARANCE_MM
+            <= S.RING_R_IN_MM - S.RING_CLEARANCE_MM + 1e-9)
+    # 180°-symmetric set (nose-ward boards are turned 180°)
+    angs = {a % 360 for a in S.STANDOFF_ANGLES_DEG}
+    assert {(a + 180) % 360 for a in angs} == angs
+    for sa in S.STANDOFF_ANGLES_DEG:
+        sx = S.STANDOFF_R_MM * math.cos(math.radians(sa))
+        sy = S.STANDOFF_R_MM * math.sin(math.radians(sa))
+        for ha in BOARD_POTTING_HOLE_ANGLES_DEG:
+            for turn in (0.0, 180.0):
+                hx = BOARD_POTTING_HOLE_RADIUS_MM * math.cos(math.radians(ha + turn))
+                hy = BOARD_POTTING_HOLE_RADIUS_MM * math.sin(math.radians(ha + turn))
+                gap = (math.hypot(sx - hx, sy - hy) - S.STANDOFF_D_MM / 2
+                       - POTTING_HOLE_DIA_MM / 2)
+                assert gap > 1.0, (sa, ha, turn, gap)
+
+
+def test_every_gap_is_battery_holder_or_ring():
+    from smash.layout.boards.smash_evb_v1 import build_panel
+    from smash.export.spacer_step import gap_kind
+    panel, boards = build_panel()
+    kinds = {gap_kind(n) for n in panel.snake_chain if boards[n].is_spacer}
+    assert kinds == {"battery_holder", "ring", "none"}   # no PEEK standoffs anywhere
+    from smash.export.spacer_step import NO_HARDWARE_GAPS
+    assert {n for n in panel.snake_chain
+            if boards[n].is_spacer and gap_kind(n) == "none"} == set(NO_HARDWARE_GAPS)
+
+
+def test_piezo_cluster_sits_in_the_holder_floor_pocket():
+    import json, pathlib
+    from shapely.geometry import box
+    from smash.export.spacer_step import piezo_pocket, BATT_PZ_POCKET_DEPTH_MM
+    from smash.parts.mechanical import add_piezo_disc_smd10t04r111
+    from smash import Design
+    L = json.loads((pathlib.Path(__file__).parents[1] / "src/smash/data/locked_placements.json").read_text())
+    pk = piezo_pocket()
+    assert L["P_PIEZO"]["position_mm"] == [0.0, 0.0] and L["P_PIEZO"]["face"] == "top"
+    disc = add_piezo_disc_smd10t04r111(Design(), ref="P")
+    assert disc.height_mm < BATT_PZ_POCKET_DEPTH_MM
+    for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_THR1", "R_THR2", "U_COMP_PZ", "C_COMP_PZ"):
+        x, y = L[ref]["position_mm"]
+        assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref

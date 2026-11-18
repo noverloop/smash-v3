@@ -1,0 +1,9 @@
+Manufacturer=Infineon
+PartNumber=BGS12P2L6E6327XTSA1
+PartCategory=Switch
+PackageCategory=Other
+PinCount=6
+Version=2.1
+Released=2020-07-19 08:56:44
+Downloaded=2026-11-18 09:52:59
+3D=Y

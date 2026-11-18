@@ -1,7 +1,7 @@
 """Shared roots for smash tests.
 
 After the package move, tests live at ``Export/application/tests``.
-``EXPORT_ROOT`` is where ``generate_maximalist_system.py`` lives.
+``EXPORT_ROOT`` is where ``generate_stackup.py`` lives.
 ``GIT_ROOT`` is the smash-electronics checkout (``tools/``, ``library_kicad/``).
 """
 from __future__ import annotations

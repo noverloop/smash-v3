@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32WBA55UGI7
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=59
+Version=5.1
+Released=2025-09-13 04:48:57
+Downloaded=2026-11-15 19:31:01
+3D=Y

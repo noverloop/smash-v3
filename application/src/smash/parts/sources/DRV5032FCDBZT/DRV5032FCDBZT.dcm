@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DRV5032FCDBZT
+D Ultra-Low Power 1.65V to 5.5V Hall Effect Switch
+K
+F http://www.ti.com/lit/gpn/DRV5032
+$ENDCMP
+#
+#End Doc Library

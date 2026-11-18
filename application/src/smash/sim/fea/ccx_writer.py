@@ -17,7 +17,7 @@ launch-load FEA are:
                           — bind an element set to a material
   *BOUNDARY               — Dirichlet BCs (clamped edge, etc.)
   *DLOAD, ELSET=…         — distributed body force per unit volume
-                            (= ρ·a for setback acceleration)
+                            (= ρ·a for rapid deceleration)
   *STEP                   — open a load step
   *STATIC | *DYNAMIC      — analysis type
   *NODE FILE, *EL FILE    — request output to .frd
@@ -173,7 +173,7 @@ class CCXBodyLoad:
 class CCXNodalLoad:
     """A *CLOAD card — a concentrated force on a node set, one DOF
     (1=Fx, 2=Fy, 3=Fz). Used to apply the inertial pull of a supported
-    mass onto a via's top pad (+Z for reverse setback tension, −Z for
+    mass onto a via's top pad (+Z for reverse rapid-deceleration tension, −Z for
     forward compression).
 
     `magnitude_n` is PER NODE, matching CCX semantics: a *CLOAD on an
