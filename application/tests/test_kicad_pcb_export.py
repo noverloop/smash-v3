@@ -943,6 +943,30 @@ def test_full_twin_exports_clean(tmp_path):
     #   one series 0.5 pF (C_ANT_S4_MATCH).
     assert total_fps == 667
 
+    # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
+    # to its symbol in stackup.kicad_sch, written beside the PCB like each
+    # board's own schematic; the PCB writer's .kicad_pro is kept.
+    from smash.export import (write_kicad_panel, write_panel_schematic,
+                              write_blank_drawing_sheet)
+    from smash.export.kicad_sch import panel_footprint_refs
+    st = tmp_path / "stackup"
+    st.mkdir()
+    refs = panel_footprint_refs(panel, boards)
+    r = write_kicad_panel(d, panel, boards, st / "stackup.kicad_pcb",
+                          link_schematic=set(refs))
+    write_blank_drawing_sheet(st / "stackup.kicad_pcb")          # writes stackup.kicad_pro
+    pro_before = (st / "stackup.kicad_pro").read_text()
+    write_panel_schematic(d, panel, boards, st, project="stackup")
+    assert (st / "stackup.kicad_pro").read_text() == pro_before
+    pcb = (st / "stackup.kicad_pcb").read_text()
+    sch = (st / "stackup.kicad_sch").read_text()
+    paths = re.findall(r'\(path "/([0-9a-f-]+)"\)', pcb)
+    assert len(paths) == len(set(paths)) == len(refs) == r["n_footprints"]
+    sym_uuids = set(re.findall(r'\(uuid "([0-9a-f-]+)"\)', sch))
+    missing = [p for p in paths if p not in sym_uuids]
+    assert not missing, f"{len(missing)} footprint links with no symbol"
+    assert pcb.count('(sheetfile "stackup.kicad_sch")') == len(paths)
+
 
 
 # ── Cu coin silkscreen annotation ─────────────────────────────────────

@@ -19,6 +19,7 @@ Format coverage:
   - `write_kicad_schematic`   — hierarchical KiCad schematic, one sheet
                                  per board (documentation projection)
   - `write_board_schematic`   — one board's schematic, linked to its .kicad_pcb
+  - `write_panel_schematic`   — a panel's schematic, linked to its .kicad_pcb (stackup)
 
 Companion validator lives in `smash.validators.specctra`.
 """
@@ -34,7 +35,8 @@ from smash.export.fp_inventory import (
     load_allegro_fp_map,
 )
 from smash.export.specctra import write_specctra_dsn
-from smash.export.kicad_sch import write_kicad_schematic, write_board_schematic
+from smash.export.kicad_sch import (write_kicad_schematic, write_board_schematic,
+                                    write_panel_schematic)
 from smash.export.kicad_pcb import (
     write_kicad_pcb, write_kicad_panel, write_blank_drawing_sheet,
 )
@@ -69,6 +71,7 @@ __all__ = [
     "write_specctra_dsn",
     "write_kicad_schematic",
     "write_board_schematic",
+    "write_panel_schematic",
     "write_kicad_pcb",
     "write_kicad_panel",
     "write_blank_drawing_sheet",

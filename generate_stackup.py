@@ -116,6 +116,7 @@ from smash.export import (                                              # noqa: 
     write_stackup_components_step,
     write_consolidated_stackup_stl, write_housing_stl,
     write_gerbers, write_kicad_schematic, write_board_schematic,
+    write_panel_schematic,
     write_board_protel_netlist,
 )
 from smash.export.kicad_sch import relink_multi_unit_footprints   # noqa: E402
@@ -1908,7 +1909,7 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     R("XV_5V", "XV_PA_VGAIN", "22k", "R_XV_PA_VG1")
     R("XV_PA_VGAIN", "GND", "15k", "R_XV_PA_VG2")
     _net(d, "XV_PA_VGAIN").connect(pa.pin("VGAIN"))
-    cap_to_gnd(d, "XV_5V", "10uF", ref="C_XV_PA_BULK1", board_tag=BTAG, pin=pa.pin("VDD1"))
+    cap_to_gnd(d, "XV_5V", "10uF", ref="C_XV_PA_BULK1", board_tag=BTAG)
     cap_to_gnd(d, "XV_5V", "100nF", ref="C_XV_PA_CHOKE", board_tag=BTAG)
 
     # ── XV_5V: MCP1640D boost (output disconnect when EN low) ─────────
@@ -4292,8 +4293,7 @@ _CONE_EXITS = _cone_exits()
 # onto wakeup_board (the two thin aft tiles merged), so there is no separate
 # flight_board tile. The fin actuators also fold onto wakeup_board (no separate
 # fins_module tile — its FINBOOST 12 V boost came along), so they are carried in
-# EVERY config: there is no unguided/guided split, and configs differ ONLY by
-# PAYLOAD / seeker (radar / qpd / camera). "core" IS the guided base.
+# EVERY config: there is no unguided/guided split.
 _CORE      = {"aft_end_board", "power_board",
               "activation_interface", "fin_ble_board", "wakeup_board",
               "companion_compute"}
@@ -6630,6 +6630,7 @@ def main() -> int:
         "smash_evb_panel.kicad_prl", "smash_evb_panel.kicad_wks",
         "stackup.kicad_pcb", "stackup.kicad_pro",
         "stackup.kicad_prl", "stackup.kicad_wks",
+        "stackup.kicad_sch", "stackup.kicad_sym", "sym-lib-table", "fp-lib-table",
         "stackup.step", "stackup_no_potting.step", "stackup_components.step",
         "consolidated_stackup.stl", "housing.stl", "waveguide_stubs.step",
     ):
@@ -6641,8 +6642,27 @@ def main() -> int:
     # Panel-level file (primary output — every board + flex strips on
     # one canvas, opens directly in KiCad).
     panel_path = pcb_out / "stackup.kicad_pcb"
-    r = write_kicad_panel(d, panel, boards, panel_path)
+    from smash.export.kicad_sch import panel_footprint_refs
+    r = write_kicad_panel(d, panel, boards, panel_path,
+                          link_schematic=set(panel_footprint_refs(panel, boards)))
     write_blank_drawing_sheet(panel_path)
+    # The schematic joins the stackup PCB as ONE KiCad project
+    # (stackup.kicad_pro → stackup.kicad_pcb + stackup.kicad_sch), every
+    # footprint linked to its symbol like the per-board projects (net names,
+    # Footprint and Datasheet fields as on the panel → clean schematic
+    # parity). The sleeve frame stays in dist/schematic/smash.kicad_sch only
+    # (it has no footprints on this PCB).
+    _st_sch = write_panel_schematic(d, panel, boards, pcb_out, project="stackup",
+                                    pad_groups=dict(_SCH_PAD_GROUPS or {}))
+    try:
+        _st_cli = find_kicad_cli()
+    except KiCadCliNotFound:
+        _st_cli = None
+    if _st_cli is not None:
+        relink_multi_unit_footprints(panel_path, pcb_out / "stackup.kicad_sch", _st_cli)
+    print(f"KiCad schematic joined the stackup project: "
+          f"{(pcb_out / 'stackup.kicad_sch').relative_to(REPO)} "
+          f"({_st_sch['n_parts']} parts, {_st_sch['n_symbols']} symbols)")
     print(f"KiCad panel written to {panel_path.relative_to(REPO)} "
           f"({r['n_tiles']} tiles, {r['n_footprints']} footprints, "
           f"{r['n_flex_strips']} flex strips, {r['n_holes']} holes, "
@@ -6692,6 +6712,20 @@ def main() -> int:
         print(f"  {_export_waveguide_stubs(boards, pcb_out / 'waveguide_stubs.step')}")
     else:
         print("  3D STEP (spacers + stackup): SKIPPED (SMASH_STEP_EXPORT=0); per-board PCBs written")
+    # Stackup project made portable LAST (like the boards): its own
+    # footprints/SmashStackup.pretty + 3dmodels/ + fp-lib-table, the PCB's
+    # footprints renamed SmashStackup:<entry> — the names stackup.kicad_sch
+    # already carries, so schematic parity and Update PCB from Schematic
+    # resolve against the project's own library.
+    from smash.export.portable_project import write_portable_project
+    try:
+        _pp = write_portable_project(panel_path)
+        print(f"  stackup project portable: {_pp['n_footprints']} footprints, "
+              f"{_pp['n_models']} 3D models"
+              + (f"; conflicts: {', '.join(_pp['conflicts'])}" if _pp["conflicts"] else "")
+              + (f"; {len(_pp['missing_models'])} model(s) not found" if _pp["missing_models"] else ""))
+    except Exception as e:                       # keep the run resilient
+        print(f"  WARN stackup portable project: {type(e).__name__}: {e}")
 
     # ── board-configuration variants ────────────────────────────────
     # Each config re-places + re-exports a separate panel, so for fast

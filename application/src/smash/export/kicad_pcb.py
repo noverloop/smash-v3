@@ -2254,9 +2254,15 @@ def write_kicad_panel(
     canvas_origin_mm: tuple[float, float] = _DEFAULT_CANVAS_ORIGIN_MM,
     flex_width_mm: float = _DEFAULT_FLEX_WIDTH_MM,
     link_widths_mm: dict | None = None,
+    link_schematic: set | None = None,
 ) -> dict:
     """Emit ONE `.kicad_pcb` containing every board positioned on the
     panel grid plus flex strips between adjacent snake/branch tiles.
+
+    `link_schematic`: refs whose footprints link (`(path …)`, sheetfile
+    `<stem>.kicad_sch`) to a system schematic written beside the panel by
+    `kicad_sch.write_kicad_schematic(..., project=<stem>)` — so the panel
+    and its schematic form one KiCad project. None = no links (default).
 
     `flex_width_mm` is the fallback width for any flex without an
     explicit entry in `link_widths_mm` (branches don't carry the snake
@@ -2328,7 +2334,10 @@ def write_kicad_panel(
         for pl in board.chip_placements:
             if not isinstance(pl.item, (Chip, Antenna)):
                 continue
-            block = _emit_footprint(pl, board_name=name, offset_xy=centre)
+            link = bool(link_schematic) and pl.item.ref in link_schematic
+            block = _emit_footprint(
+                pl, board_name=name, offset_xy=centre, link_symbol=link,
+                sheetfile=f"{pathlib.Path(output_path).stem}.kicad_sch" if link else None)
             if block:
                 parts.append(block)
                 n_footprints += 1
