@@ -84,6 +84,10 @@ from smash.parts.rf import (
     add_pe42442a_z,
     add_pe64906b_z,
     add_adf4351bcpz,
+    add_bgs12p2l6e6327xtsa1,
+    add_ltc5549iudb,
+    add_grf5126,
+    add_grf2073w,
 )
 from smash.parts.passives import (
     add_we_744043100,
@@ -218,6 +222,8 @@ __all__ = [
     "add_pe42442a_z",
     "add_pe64906b_z",
     "add_adf4351bcpz",
+    # S4 transverter (2026-11-18)
+    "add_bgs12p2l6e6327xtsa1", "add_ltc5549iudb", "add_grf5126", "add_grf2073w",
     # passives
     "add_we_744043100",
     "add_blm18pg221sn1d",

@@ -934,7 +934,14 @@ def test_full_twin_exports_clean(tmp_path):
     #   become 2× PE64906 DTC, each with a 100 nF VDD cap.
     # → 572: S3 merged into S1 (2026-11-17, +4): owner switch U_ANTSW_S1
     #   (BGS12) + its VDD cap + CTRL pull-down + the shared-feed DC block.
-    assert total_fps == 572
+    # → 669: S4 transverter, 4.4-5.0 GHz (2026-11-18, +97): IF switch
+    #   U_LR_IFSW + VDD cap + DIO10 pull-down (3) and _build_transverter (94:
+    #   ADF4351 LO + ferrite/decoupling/loop filter/pad, LTC5549, 2× BGS12P2L6
+    #   T/R, GRF5126 PA + tune parts, MCP1640D 5 V boost, GRF2073W LNA, BPF,
+    #   S4 match + DC block).
+    # → 667: S4 retuned (2026-11-18, −2): the L-match + DC block collapse into
+    #   one series 0.5 pF (C_ANT_S4_MATCH).
+    assert total_fps == 667
 
 
 

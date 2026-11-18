@@ -126,7 +126,9 @@ def add_bgs12wn6e6327xtsa1(design, ref: str, **overrides) -> Chip:
             "PG-TSNP-6-10 (0.7×1.1×0.375 mm)"
         ),
         datasheet="application/src/smash/parts/sources/BGS12WN6E6327XTSA1/BGS12WN6.pdf",
-        fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
+        # 2026-11-18: Infineon lists assembly in CN and MY (wafer DE) → fails
+        # the no-Chinese-chips rule; replaced by BGS12P2L6 in the design.
+        fab_country="DE (wafer), CN/MY (assembly)", currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
         standards=[
             "RoHS", "WEEE", "Pb-Free",
             "JEDEC47", "JEDEC20", "JEDEC22 (Industrial qualification)",
@@ -188,6 +190,7 @@ def add_adf4351bcpz(design, ref: str, **overrides) -> Chip:
             "35 MHz to 4.4 GHz output, LFCSP-32"
         ),
         datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country="TW (wafer), KR/PH (assembly)",   # Mouser AU / Arrow / Farnell UK, 2026-11-18
         package="LFCSP-32 (5×5 mm)",
         size_mm=(5.0, 5.0), height_mm=1.0,
         temp_range_c=(-40, 85),
@@ -529,7 +532,8 @@ def add_lr2021imltrt(design, ref: str, **overrides) -> Chip:
                      "+ 1.6-2.5 GHz (+12 dBm), LoRa/FLRC/FSK/O-QPSK, SPI, "
                      "QFN-32 5×5 mm"),
         datasheet=datasheet_ref(pn, f"{pn}.pdf"),
-        fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
+        fab_country="TW (assembly)",  # Mouser IN COO, 2026-11-18
+        currency=None, price_1pc=None, price_20kpc=None,
         weight_g=None, standards=["RoHS"], eccn=None, itar=None,
         package="QFN-32 5x5", size_mm=(5.0, 5.0), height_mm=1.0,
         temp_range_c=(-40, 85),
@@ -710,6 +714,300 @@ def add_pe64906b_z(design, ref: str, **overrides) -> Chip:
         i_rms_a=None, power_rating_w=None,
         rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
         pins=pins, footprint=fp, note=_PE64906_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# S4 transverter parts (2026-11-18, user-approved): 4.4–5.0 GHz on slot S4.
+# Sourcing rule (user): no Chinese chips — incl. die fab / assembly / test in
+# China; EU/US preferred. `fab_country` records the verified (or best-known)
+# manufacturing sites; tests reject "CN" on the radio/transverter parts.
+# ═════════════════════════════════════════════════════════════════════════
+
+_BGS12P2L6_NOTE = """\
+Datasheet: Infineon BGS12P2L6 (vendored BGS12P2L6.pdf) + PG-TSLP-6-4 land
+pattern (PG-TSLP-6-4.pdf). SamacSys LIB v2.1 footprint matches the Infineon
+land: 6 × 0.25 × 0.25 mm pads, 0.4 mm pitch, rows ±0.2 mm.
+
+0.05-6 GHz SPDT, RF input up to 37 dBm (abs max 38 dBm), VDD 1.65-3.4 V
+(65 µA typ), CTRL low ≤ 0.45 V / high ≥ 1.0 V, -40…+85 °C.
+IL 0.31 / 0.39 / 0.47 dB typ at 2.17-2.7 / 3.3-3.8 / 4.4-5.0 GHz; isolation
+RFin-RFx 26-29 dB, RF1-RF2 31-35 dB at 4.4-5.0 GHz. No supply decoupling
+required (DS). Power-up settling 5 µs typ.
+
+Pins: 1 RF2, 2 GND, 3 RF1, 4 VDD, 5 RFin, 6 CTRL. Truth table: CTRL 0 →
+RFIN-RF1, CTRL 1 → RFIN-RF2 — same pin names / logic as the BGS12WN6 it
+replaces (2026-11-18: BGS12WN6 rejected — Infineon lists CN + MY assembly).
+Origin (Infineon product page / Mouser, 2026-11-18): wafer DE, assembly MY.
+"""
+
+
+def add_bgs12p2l6e6327xtsa1(design, ref: str, **overrides) -> Chip:
+    """Infineon BGS12P2L6E6327XTSA1 — 0.05–6 GHz SPDT, 37 dBm, on-chip CMOS
+    logic, PG-TSLP-6-4 (0.7 × 1.1 × 0.31 mm). Pin-name-compatible with the
+    BGS12WN6 (RF1/RF2/RFIN/CTRL/VDD/GND, CTRL 0 → RF1)."""
+    pn = "BGS12P2L6E6327XTSA1"
+    fp = _samacsys_qfn_footprint(
+        pn, f"{pn}.kicad_mod", name="PG-TSLP-6-4", package_class="PG-TSLP-6-4",
+        pitch_mm=0.4, size_mm=(1.1, 0.7), height_mm=0.31)
+    pins = [
+        Pin(num="1", name="RF2", type="io", note="RF throw 2 (CTRL=1); no DC"),
+        Pin(num="2", name="GND", type="ground"),
+        Pin(num="3", name="RF1", type="io", note="RF throw 1 (CTRL=0); no DC"),
+        Pin(num="4", name="VDD", type="power", note="1.65-3.4 V logic supply"),
+        Pin(num="5", name="RFIN", type="io", aliases=["RFin"], note="RF common; no DC"),
+        Pin(num="6", name="CTRL", type="input", note="0 → RF1, 1 → RF2"),
+    ]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Infineon", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description="SPDT RF switch, 0.05-6 GHz, 37 dBm, CMOS control, PG-TSLP-6-4",
+        datasheet=datasheet_ref(pn, "BGS12P2L6.pdf"),
+        fab_country="DE (wafer), MY (assembly)", currency=None, price_1pc=None,
+        price_20kpc=None, weight_g=None,
+        standards=["RoHS", "Halogen-free", "ESD HBM ±1 kV", "ESD CDM ±1 kV"],
+        eccn=None, itar=None,
+        package="PG-TSLP-6-4", size_mm=(1.1, 0.7), height_mm=0.31,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=3.6, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=125.0,
+        pins=pins, footprint=fp, note=_BGS12P2L6_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+_LTC5549_NOTE = """\
+Datasheet: ADI (Linear) LTC5549 rev A "5549fa" (vendored LTC5549IUDB.pdf).
+SamacSys LIB (UDB_VARIATIONA) footprint checked against DS p18 "Recommended
+solder pad": 12 × 0.25 mm pads at 0.5 mm, exposed pad 0.77 × 0.25 mm (it
+really is that small — DS Detail B).
+
+Passive double-balanced mixer, up- OR down-conversion. RF 2-14 GHz, LO
+1-12 GHz (0 dBm ±6 dBm drive, internal buffer; X2 pin enables an LO doubler),
+IF 0.5-6 GHz. Conversion loss 8.0 dB at 5.8 GHz (7.8 dB at 2 GHz); up-
+conversion input P1dB +15.5 dBm, down-conversion IIP3 +28.2 dBm at 5.8 GHz.
+LO-RF leakage < -30 dBm, LO-IF < -27 dBm. VCC 3.3 V, 115 mA typ / 136 mA
+max; EN > 1.2 V on, < 0.3 V off (376 kΩ pull-down), turn-on 0.2 µs /
+off 0.1 µs (TDD). All RF/IF/LO ports single-ended 50 Ω, internal
+transformers with low DC resistance to GND → series DC blocks required.
+Tc -40…+105 °C.
+
+Pins: 1/3/4/6/10/12 + EP 13 GND, 2 IF, 5 RF, 7 EN, 8 X2, 9 VCC, 11 LO.
+Origin (Farnell BE / Mouser DK, 2026-11-18): PH / TH assembly.
+"""
+
+
+def add_ltc5549iudb(design, ref: str, **overrides) -> Chip:
+    """ADI LTC5549IUDB#TRMPBF — 2–14 GHz passive double-balanced mixer with
+    LO buffer + optional LO doubler, up/down-conversion, 3.3 V / 115 mA,
+    12-lead 3 × 2 mm QFN (UDB)."""
+    pn = "LTC5549IUDB"
+    fp = _samacsys_qfn_footprint(
+        pn, "UDB_VARIATIONA.kicad_mod", name="UDB_VARIATIONA",
+        package_class="QFN-12 3x2 (UDB) + EP", pitch_mm=0.5, size_mm=(3.0, 2.0),
+        height_mm=0.75)
+    gnd = {"1": "GND_1", "3": "GND_2", "4": "GND_3", "6": "GND_4",
+           "10": "GND_5", "12": "GND_6", "13": "EP"}
+    named = {
+        "2": Pin(num="2", name="IF", type="io", note="IF port 0.5-6 GHz, 50 Ω; DC block"),
+        "5": Pin(num="5", name="RF", type="io", note="RF port 2-14 GHz, 50 Ω; DC block"),
+        "7": Pin(num="7", name="EN", type="input", note="> 1.2 V on, < 0.3 V off; 376 kΩ pull-down"),
+        "8": Pin(num="8", name="X2", type="input", note="LO doubler: > 1.2 V on; 376 kΩ pull-down"),
+        "9": Pin(num="9", name="VCC", type="power", note="3.3 V, 115 mA"),
+        "11": Pin(num="11", name="LO", type="input", note="LO 1-12 GHz, 0 dBm; DC block (pin ~1.6 V)"),
+    }
+    pins = [named[n] if n in named else Pin(num=n, name=gnd[n], type="ground")
+            for n in sorted({p.num for p in fp.pads}, key=int)]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Analog Devices", manf_pn="LTC5549IUDB#TRMPBF", canonical_id=canonical_id(pn),
+        name=pn, value="LTC5549",
+        description=("Mixer 2-14 GHz RF / 0.5-6 GHz IF, up/down-conversion, LO buffer "
+                     "+ doubler, 3.3 V 115 mA, QFN-12 3x2"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country="PH/TH (assembly)", currency=None, price_1pc=None,
+        price_20kpc=None, weight_g=None, standards=["RoHS"], eccn=None, itar=None,
+        package="QFN-12 3x2 (UDB)", size_mm=(3.0, 2.0), height_mm=0.75,
+        temp_range_c=(-40, 105),
+        body_material=None, lead_material=None,
+        voltage_rating_v=4.0, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=150.0,
+        p_active_w=0.38,                 # 115 mA × 3.3 V (DS)
+        pins=pins, footprint=fp, note=_LTC5549_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+_GRF5126_NOTE = """\
+Datasheet: Guerrilla RF GRF5126 Rel. 0 (2026-01-20, vendored GRF5126.pdf) +
+Custom Tune 4400-5000 MHz (2025-10-08, GRF5126_tune_4400-5000MHz.pdf).
+NO SamacSys model exists (user, 2026-11-18): footprint = DS p19 "Recommended
+PCB Footprint" (0.25 × 0.45 mm pads, 0.5 mm pitch, toe 0.15 mm past the
+3.00 mm outline; EP 1.70 mm square with pin-1 chamfer); 3D = SamacSys model
+of the package-identical GRF5109.
+
+Two-stage GaAs pHEMT linear driver, 1.8-5 GHz by tune; VDD 3-5.5 V.
+4400-5000 MHz tune @ 5 V / 110 mA (VBIAS1/2 via 2740 Ω / 2320 Ω from 5 V,
+VGAIN 1.8 V = high gain): gain 31.1 / 32.6 / 31.1 dB, OP1dB 22.0 / 22.3 /
+22.2 dBm, OP3dB 25.7 / 25.7 / 25.1 dBm, OIP3 32-35 dBm at 4.4 / 4.7 / 5.0
+GHz (IP1dB -8…-9 dBm). Low-gain mode (VGAIN 0): ~24 dB, OP1dB ~21 dBm.
+Abs max: VDD 6 V, RF in 23 dBm, Tpkg -40…+115 °C, stage dissipation
+185 mW / 475 mW. VBIAS1/VBIAS2 < 0.2 V disables the stage. ESD HBM 250 V.
+
+Pins: 1 GND, 2 RF_IN (DC block), 4 VDD1 (inductor + bypass), 10 RF_OUT/VDD
+(choke), 13 VBIAS2, 14 VBIAS1, 15 VGAIN (≥ 1.0 V high gain, ≤ 0.5 V low),
+3/5/6/7/8/9/11/12/16 NC (ground recommended), EP GND.
+Origin: Guerrilla RF (US, fabless); assembly MY per Mouser on sibling parts
+— NOT confirmed for this part (ask Guerrilla for a COO statement).
+"""
+
+
+def _grf5126_footprint() -> Footprint:
+    """GRF5126 DS p19 recommended land: QFN-16 3 × 3, pins CCW from pin 1 at
+    the top of the left side (KiCad y down)."""
+    side, toe = (0.45, 0.25), 1.425          # pad spans 1.20 … 1.65 mm from centre
+    ys = (-0.75, -0.25, 0.25, 0.75)
+    pads = [Pad(num=str(n), position_mm=(-toe, y), size_mm=side, shape="rect", layer="F.Cu")
+            for n, y in zip((1, 2, 3, 4), ys)]
+    pads += [Pad(num=str(n), position_mm=(x, toe), size_mm=side[::-1], shape="rect", layer="F.Cu")
+             for n, x in zip((5, 6, 7, 8), ys)]
+    pads += [Pad(num=str(n), position_mm=(toe, y), size_mm=side, shape="rect", layer="F.Cu")
+             for n, y in zip((9, 10, 11, 12), ys[::-1])]
+    pads += [Pad(num=str(n), position_mm=(x, -toe), size_mm=side[::-1], shape="rect", layer="F.Cu")
+             for n, x in zip((13, 14, 15, 16), ys[::-1])]
+    pads.append(Pad(num="17", position_mm=(0.0, 0.0), size_mm=(1.70, 1.70),
+                    shape="rect", layer="F.Cu"))
+    return Footprint(
+        name="QFN16_3x3_GRF5126_DS", package_class="QFN-16 3x3 + EP",
+        pads=pads,
+        body_outline=[(-1.5, -1.5), (1.5, -1.5), (1.5, 1.5), (-1.5, 1.5)],
+        courtyard=[(-1.9, -1.9), (1.9, -1.9), (1.9, 1.9), (-1.9, 1.9)],
+        pitch_mm=0.5, size_mm=(3.0, 3.0), height_mm=0.85,
+        model_3d_path=datasheet_ref("GRF5126", "GRF5126.stp"),
+        source="custom")
+
+
+def add_grf5126(design, ref: str, **overrides) -> Chip:
+    """Guerrilla RF GRF5126 — 1.8–5 GHz two-stage linear driver/PA, 37 dB,
+    OP1dB ~22 dBm with the 4400–5000 MHz tune at 5 V, QFN-16 3 × 3 mm."""
+    pn = "GRF5126"
+    fp = _grf5126_footprint()
+    named = {
+        "1": Pin(num="1", name="GND", type="ground", note="internally grounded; via at the pin"),
+        "2": Pin(num="2", name="RF_IN", type="input", note="DC block required"),
+        "4": Pin(num="4", name="VDD1", type="power", note="via inductor + bypass (RF present)"),
+        "10": Pin(num="10", name="RF_OUT", type="output", aliases=["RF_OUT/VDD"],
+                  note="RF out + stage-2 VDD through an RF choke"),
+        "13": Pin(num="13", name="VBIAS2", type="input", note="series R to VDD sets IDDQ2; < 0.2 V = off"),
+        "14": Pin(num="14", name="VBIAS1", type="input", note="series R to VDD sets IDDQ1; < 0.2 V = off"),
+        "15": Pin(num="15", name="VGAIN", type="input", note="≥ 1.0 V high gain, ≤ 0.5 V low gain"),
+        "17": Pin(num="17", name="EP", type="ground", note="exposed pad: RF/DC GND + heat sink"),
+    }
+    pins = [named.get(str(n)) or Pin(num=str(n), name=f"NC_{n}", type="passive",
+                                       note="no internal connection — ground (DS)")
+            for n in range(1, 18)]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Guerrilla RF", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("Linear driver/PA 1.8-5 GHz (4.4-5.0 GHz tune), 31-33 dB, "
+                     "OP1dB 22 dBm @ 5 V, QFN-16 3x3"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country="US design (fabless); MY assembly — unconfirmed for this part",
+        currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
+        standards=["RoHS", "MSL1", "ESD HBM 250 V"], eccn=None, itar=None,
+        package="QFN-16 3x3", size_mm=(3.0, 3.0), height_mm=0.85,
+        temp_range_c=(-40, 115),
+        body_material=None, lead_material=None,
+        voltage_rating_v=6.0, vcc_nominal_v=5.0,
+        i_rms_a=None, power_rating_w=0.66,       # 185 + 475 mW stage abs max
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=170.0,
+        p_active_w=0.55,                          # 5 V × 110 mA quiescent
+        pins=pins, footprint=fp, note=_GRF5126_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+_GRF2073W_NOTE = """\
+Datasheet: Guerrilla RF GRF2073W Rel. D (2025-09-11, vendored GRF2073W.pdf);
+de-embedded S-parameters in GRF2073W_Spars.zip (for the 4.4-5.0 GHz match).
+Footprint = DS p23 "Suggested PCB Footprint" (pads 0.55 × 0.25 mm at
+±0.925 mm, 0.5 mm pitch, EP 0.60 × 1.20 mm) — tighter than the SamacSys
+SON50P200X200X80-9N (0.3 × 0.8 pads, EP 0.65 × 1.25), which is kept only
+for its 3D model.
+
+AEC-Q100 Grade 2 ultra-low-noise LNA, 1.0-6.8 GHz by tune. Ref 5 V/70 mA:
+gain 20.5 dB / OP1dB 20 dBm at 2.33 GHz; 18.5 dB / 18 dBm at 3.6 GHz; NF
+~0.9-1.0 dB at 5 GHz (Guerrilla app data). VDD 0-6 V (run on 3V3 here).
+Abs max: RF in 23 dBm, Tpkg -40…+105 °C, MSL1.
+
+Pins: 1 VENABLE (series R sets IDDQ; ≤ 0.2 V = off), 2 RF_IN (match must
+DC-block), 7 RF_OUT/VDD (VDD via bias inductor), 3/4/5/6/8 NC (ground
+recommended), EP GND.
+Origin: Guerrilla RF (US, fabless); MY assembly per Mouser on sibling parts
+— NOT confirmed for this part.
+"""
+
+
+def _grf2073w_footprint() -> Footprint:
+    side, x = (0.55, 0.25), 0.925
+    ys = (-0.75, -0.25, 0.25, 0.75)
+    pads = [Pad(num=str(n), position_mm=(-x, y), size_mm=side, shape="rect", layer="F.Cu")
+            for n, y in zip((1, 2, 3, 4), ys)]
+    pads += [Pad(num=str(n), position_mm=(x, y), size_mm=side, shape="rect", layer="F.Cu")
+             for n, y in zip((5, 6, 7, 8), ys[::-1])]
+    pads.append(Pad(num="9", position_mm=(0.0, 0.0), size_mm=(0.60, 1.20),
+                    shape="rect", layer="F.Cu"))
+    return Footprint(
+        name="DFN8_2x2_GRF2073W_DS", package_class="DFN-8 2x2 + EP",
+        pads=pads,
+        body_outline=[(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)],
+        courtyard=[(-1.45, -1.25), (1.45, -1.25), (1.45, 1.25), (-1.45, 1.25)],
+        pitch_mm=0.5, size_mm=(2.0, 2.0), height_mm=0.75,
+        model_3d_path=datasheet_ref("GRF2073W", "GRF2073W.stp"),
+        source="custom")
+
+
+def add_grf2073w(design, ref: str, **overrides) -> Chip:
+    """Guerrilla RF GRF2073W — AEC-Q100 ultra-low-noise LNA, 1.0–6.8 GHz,
+    enable pin, DFN-8 2 × 2 mm."""
+    pn = "GRF2073W"
+    fp = _grf2073w_footprint()
+    named = {
+        "1": Pin(num="1", name="VENABLE", type="input", note="series R sets IDDQ; ≤ 0.2 V = off"),
+        "2": Pin(num="2", name="RF_IN", type="input", note="match must DC-block"),
+        "7": Pin(num="7", name="RF_OUT", type="output", aliases=["RF_OUT/VDD"],
+                 note="RF out; VDD via bias inductor"),
+        "9": Pin(num="9", name="EP", type="ground", note="exposed pad GND"),
+    }
+    pins = [named.get(str(n)) or Pin(num=str(n), name=f"NC_{n}", type="passive",
+                                       note="no internal connection — ground (DS)")
+            for n in range(1, 10)]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Guerrilla RF", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description="Ultra-low-noise LNA 1.0-6.8 GHz, AEC-Q100 Gr 2, enable pin, DFN-8 2x2",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country="US design (fabless); MY assembly — unconfirmed for this part",
+        currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
+        standards=["RoHS", "MSL1", "AEC-Q100 Grade 2"], eccn=None, itar=None,
+        package="DFN-8 2x2", size_mm=(2.0, 2.0), height_mm=0.75,
+        temp_range_c=(-40, 105),
+        body_material=None, lead_material=None,
+        voltage_rating_v=6.0, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=None, rth_ja_cw=None, tj_max_c=170.0,
+        pins=pins, footprint=fp, note=_GRF2073W_NOTE,
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

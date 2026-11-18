@@ -20,6 +20,15 @@ LR2021_2G4_BW800_SENS_DBM = {5: -111.0, 6: -114.0, 7: -116.5, 8: -119.5,
                               9: -122.5, 10: -125.0, 11: -128.0, 12: -130.5}
 LR2021_HF_TX_MAX_DBM = 12.0
 
+# S4 transverter, 4.4-5.0 GHz (2026-11-18): GRF5126 at 5 V, OP1dB 22.0-22.3 dBm
+# (Guerrilla 4400-5000 MHz tune), run ~1 dB into compression (LoRa is
+# constant-envelope) minus T/R switch 0.5 dB (BGS12P2L6 DS) and BPF + match
+# ~1.3 dB (estimate) → ≈ +21 dBm at the S4 feed. RX: ~1.8 dB front loss +
+# GRF2073W NF ~1 dB ahead of 16 dB gain — no worse than the bare LR2021,
+# so the LR2021 sensitivity table is reused (sens_offset 0).
+S4_XV_TX_DBM = 21.0
+S4_F_MHZ = 4700.0
+
 
 @dataclasses.dataclass(frozen=True)
 class Station:
@@ -51,14 +60,17 @@ def vehicle_gain_dbi(eff_total: float, directivity_avg_dbi: float = 0.0) -> floa
 
 
 def table(eff_total: float, f_mhz: float = 2400.0, sfs=(5, 7, 9),
-          margin_db: float = 10.0, stations=(GROUND_NO_PA, GROUND_OMNI, GROUND_PANEL)):
-    """Rows: (station, SF, downlink km [vehicle → ground], uplink km [ground → vehicle])."""
+          margin_db: float = 10.0, stations=(GROUND_NO_PA, GROUND_OMNI, GROUND_PANEL),
+          p_vehicle_dbm: float = LR2021_HF_TX_MAX_DBM):
+    """Rows: (station, SF, downlink km [vehicle → ground], uplink km [ground → vehicle]).
+    p_vehicle_dbm: vehicle TX power at its antenna feed (S1: the bare LR2021;
+    S4: S4_XV_TX_DBM with f_mhz=S4_F_MHZ)."""
     gv = vehicle_gain_dbi(eff_total)
     rows = []
     for st in stations:
         for sf in sfs:
             s = LR2021_2G4_BW800_SENS_DBM[sf]
-            down = range_km(LR2021_HF_TX_MAX_DBM, gv, st.gain_dbi, s + st.sens_offset_db,
+            down = range_km(p_vehicle_dbm, gv, st.gain_dbi, s + st.sens_offset_db,
                             f_mhz, margin_db)
             up = range_km(st.p_tx_dbm, st.gain_dbi, gv, s, f_mhz, margin_db)
             rows.append((st.name, sf, down, up))

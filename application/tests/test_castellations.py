@@ -173,10 +173,10 @@ def test_feed_lane_on_radio_board(built):
     net's chips (the radio board), not on a hard-coded tile."""
     d, _p, _b, contract, _n, _M = built
     from smash.parts.castellations import ANTENNA_FEED_ANGLES_DEG
+    assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S4"}
     for fname in ANTENNA_FEED_ANGLES_DEG:
-        if d.net_by_name(fname) is None:            # S4: reserved, no circuit yet
-            assert fname not in contract["lanes"]
-            continue
+        # S4 has its circuit since 2026-11-18 (_build_transverter).
+        assert d.net_by_name(fname) is not None, fname
         lane = contract["lanes"][fname]
         assert lane["kind"] == "antenna_feed"
         net = d.net_by_name(fname)
@@ -199,7 +199,8 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     refs = add_sleeve_schematic_parts(
         s, contract, connect=lambda net, pin: gen._net(s, net).connect(pin))
     assert refs[0] == "J_SLEEVE" and "AE_S1" in refs and "AE_S3" not in refs
-    assert not {"AE_S2", "AE_S4", "J_LF_EXT"} & set(refs)     # S4: no circuit yet
+    assert "AE_S4" in refs                        # S4 transverter since 2026-11-18
+    assert not {"AE_S2", "J_LF_EXT"} & set(refs)
     assert not any(c.ref == "J_SLEEVE" for c in d.chips)
     sl = next(c for c in s.chips if c.ref == "J_SLEEVE")
     xs = [p.position_mm[0] for p in sl.footprint.pads]

@@ -104,7 +104,9 @@ from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa:
 from smash.parts.hall_sensors import add_drv5032fcdbzt, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
 from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
-                            add_bgs12wn6e6327xtsa1, add_pe64906b_z)
+                            add_bgs12p2l6e6327xtsa1, add_pe64906b_z,
+                            add_adf4351bcpz, add_ltc5549iudb, add_grf5126,
+                            add_grf2073w)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
 from smash.export import (                                              # noqa: E402
@@ -161,6 +163,8 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "VCAP2":        1.2,
     "WBA_VDD11":    1.1,    # WBA55 SMPS output → core supply
     "CAM_PHY_REG":  1.2,    # AR0234CS internal LDO output (MIPI PHY)
+    "XV_5V":        5.0,    # S4 transverter PA rail (MCP1640D boost off 3V3, on only for TX)
+    "XV_LO_3V3":    3.3,    # S4 transverter LO (ADF4351) supply, ferrite-isolated from 3V3
 }
 
 # Ground nets — anything matching here gets kind="ground". Aliases are
@@ -1596,7 +1600,7 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     F = face
     lr = add_lr2021imltrt(d, ref="U_LR", board_tag=BTAG, feature=F)
     tcxo = add_tcxo_32m_2016(d, ref="Y_LR_TCXO", board_tag=BTAG, feature=F)
-    swhf = add_bgs12wn6e6327xtsa1(d, ref="U_LR_SW_HF", board_tag=BTAG, feature=F)
+    swhf = add_bgs12p2l6e6327xtsa1(d, ref="U_LR_SW_HF", board_tag=BTAG, feature=F)
 
     def C0G(net, val, ref, pin=None):
         cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
@@ -1679,7 +1683,25 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     # 2 GHz), fitted to the openEMS S1 impedances; states set per unit at end
     # of line (open loop, WBA flash) and optionally per hop (≤ 12 µs).
     # Control from the WBA: shared SCL/SDA, one SEN per DTC (DS Fig 10).
-    series_cap("LR_HF_TRX", "LR_HF_ANT_IN", "100pF", "C_LR_HF_ANTBLK")
+    # ── IF tap for the S4 transverter (2026-11-18) ─────────────────────
+    # U_LR_IFSW (BGS12P2L6, CTRL 0 → RF1 = S1 path, 1 → RF2 = transverter
+    # IF) between the T/R switch common and the S1 π. CTRL on LR2021 DIO10
+    # (net LR_XV_SEL, DIO_FUNCTION_RF_SWITCH asserted in BOTH TX_HF and
+    # RX_HF while a transverter channel is active) with a 100 k pull-down →
+    # S1 by default and whenever the LR2021 is unpowered. +0.3-0.4 dB on
+    # the S1 path at 2.1-2.5 GHz (DS IL). No DC on either side (both ends
+    # are DC-blocked).
+    ifsw = add_bgs12p2l6e6327xtsa1(d, ref="U_LR_IFSW", board_tag=BTAG, feature=F)
+    _net(d, "GND").connect(ifsw.pin("GND"))
+    _net(d, "3V3").connect(ifsw.pin("VDD"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_LR_IFSW_VDD", board_tag=BTAG, pin=ifsw.pin("VDD"))
+    _net(d, "LR_XV_SEL").connect(lr.pin("DIO10"))
+    _net(d, "LR_XV_SEL").connect(ifsw.pin("CTRL"))
+    res_between(d, "LR_XV_SEL", "GND", "100k", ref="R_LR_XV_SEL_PD", board_tag=BTAG)
+    _net(d, "LR_HF_TRX").connect(ifsw.pin("RFIN"))
+    _net(d, "LR_HF_S1").connect(ifsw.pin("RF1"))
+    _net(d, "XV_IF_SW").connect(ifsw.pin("RF2"))
+    series_cap("LR_HF_S1", "LR_HF_ANT_IN", "100pF", "C_LR_HF_ANTBLK")
     L("LR_HF_ANT_IN", "LR_HF_ANT_OUT", "3.9nH", "L_LR_HF_ANT_LPF")
     for ref, rf_net, sen in (("U_LR_DTC1", "LR_HF_ANT_IN", "LR_DTC_SEN1"),
                              ("U_LR_DTC2", "LR_HF_ANT_OUT", "LR_DTC_SEN2")):
@@ -1703,7 +1725,7 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     # whenever the LR2021 is unpowered / in reset. FIRMWARE: drive DIO9 high
     # before any LR RX/TX, low after. DC blocks: BGS12 ports carry no DC and
     # the slot feed is a DC short.
-    swa = add_bgs12wn6e6327xtsa1(d, ref="U_ANTSW_S1", board_tag=BTAG, feature=F)
+    swa = add_bgs12p2l6e6327xtsa1(d, ref="U_ANTSW_S1", board_tag=BTAG, feature=F)
     _net(d, "GND").connect(swa.pin("GND"))
     _net(d, "3V3_AON").connect(swa.pin("VDD"))
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_ANTSW_S1_VDD", board_tag=BTAG, pin=swa.pin("VDD"))
@@ -1719,7 +1741,221 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     # ── Antenna feeds: ANT_HF_S1 leaves the board through its dedicated
     # castellation in the sleeve's ANTENNA sector
     # (castellations.ANTENNA_FEED_ANGLES_DEG) → sleeve via → CPW → slot S1.
-    # S4 (transverter high band) has a reserved angle but no circuit yet.
+    # ANT_HF_S4 (4.4-5.0 GHz transverter, _build_transverter) likewise.
+
+
+def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
+    """S4 transverter, 4.4-5.0 GHz (user-approved plan 2026-11-18).
+
+    The LR2021 HF port is the IF (≈1.8-2.2 GHz — NOT 2.4: that would put the
+    LO at 2.4 GHz and the LR2021's 2nd harmonic on the channel), switched in
+    by U_LR_IFSW (_build_lr_radio). Low-side LO: RF = LO + IF.
+
+      XV_IF_SW → DC block → LTC5549 IF   ← LO: ADF4351 RFOUTA+ (2.2-3.2 GHz,
+      LTC5549 RF → DC block → U_XV_TR1     fundamental VCO, no divider; ref =
+                                            the LR2021 32 MHz TCXO)
+        TX (CTRL 1): 10 dB π pad → GRF5126 PA (4400-5000 MHz Guerrilla custom
+                     tune, XV_5V 110 mA, VGAIN high) → U_XV_TR2 RF2
+        RX (CTRL 0): U_XV_TR2 RF1 → GRF2073W LNA (3V3) → U_XV_TR1 RF1
+      U_XV_TR2 common → 4.4-5.0 GHz BPF → series 0.5 pF match → ANT_HF_S4
+      (sleeve slot S4, fin_ble↔wakeup gap; feed castellation emitted
+      automatically because the net exists).
+
+    Control (all parts default OFF / RX):
+      • LR2021 DIO11 → XV_TX (both T/R switches; RF-switch function, TX_HF
+        mask, 100 k pull-down → RX). DIO10 → LR_XV_SEL (IF switch).
+      • WBA55 GPIO (spare UFBGA59 balls): XV_LO_LE PB14, XV_LO_CE PA10,
+        XV_LO_MUX PB11 (MUXOUT = digital lock detect / readback),
+        XV_MIX_EN PA11, XV_LNA_EN PB6, XV_PA_EN PB7 (boost EN). LO SPI
+        CLK/DATA share the bit-banged DTC bus (LR_DTC_SCL / LR_DTC_SDA).
+      • XV_5V = MCP1640D boost (true output disconnect) → PA fully off
+        (VBIAS < 0.2 V) whenever XV_PA_EN is low. FIRMWARE: raise XV_PA_EN
+        ≥ ~1 ms before TX (boost start-up), drop it after.
+
+    Power while active: LO ~0.41 W + mixer 0.38 W; TX + PA 0.55 W (5 V,
+    110 mA) / boost efficiency; RX + LNA ~0.2 W. ⚠ PLACEHOLDERS: loop
+    filter (ADIsimPLL), LO pad, BPF,
+    GRF2073W 4.4-5.0 GHz match + VENABLE resistor (only 2.3 / 3.4-3.8 GHz
+    BOMs published — re-tune from the vendored S-parameters), GRF5126 VDD1
+    inductor. The GRF5126 tune topology is read off Guerrilla's annotated
+    eval-board photo (GRF5126_tune_4400-5000MHz.pdf p2) — confirm with
+    applications@guerrilla-rf.com before layout. TCXO → ADF4351 REFIN needs
+    ≥ 0.7 Vpp (DS) — check against the chosen TCXO's clipped-sine level."""
+    F = face
+
+    def C0G(net, val, ref, pin=None):
+        cap_to_gnd(d, net, val, ref=ref, board_tag=BTAG, feature=F,
+                   **_as_built_0402(val, "C0G/NP0"), pin=pin)
+
+    def series_cap(n1, n2, val, ref):
+        c = add_capacitor_c0g_0603_avx_sqcs(
+            d, ref=ref, value=val, board_tag=BTAG, feature=F,
+            **_as_built_0402(val, "C0G/NP0"))
+        _net(d, n1).connect(c.pin("1")); _net(d, n2).connect(c.pin("2"))
+
+    def L(n1, n2, val, ref):
+        ind_between(d, n1, n2, val, ref=ref, board_tag=BTAG, feature=F)
+
+    def R(n1, n2, val, ref):
+        res_between(d, n1, n2, val, ref=ref, board_tag=BTAG, feature=F)
+
+    def gnd(chip, *pins):
+        for p in pins:
+            _net(d, "GND").connect(chip.pin(p))
+
+    def bgs12(ref, rfin, rf1, rf2, ctrl):
+        sw = add_bgs12p2l6e6327xtsa1(d, ref=ref, board_tag=BTAG, feature=F)
+        gnd(sw, "GND")
+        _net(d, "3V3").connect(sw.pin("VDD"))
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref[2:]}_VDD", board_tag=BTAG, pin=sw.pin("VDD"))
+        for pn, net in (("RFIN", rfin), ("RF1", rf1), ("RF2", rf2), ("CTRL", ctrl)):
+            _net(d, net).connect(sw.pin(pn))
+        return sw
+
+    # ── LO: ADF4351 on its own ferrite-isolated 3.3 V ─────────────────
+    lo = add_adf4351bcpz(d, ref="U_XV_LO", board_tag=BTAG, feature=F)
+    fb = add_blm18pg221sn1d(d, ref="FB_XV_LO", board_tag=BTAG, feature=F)
+    _net(d, "3V3").connect(fb.pin("1")); _net(d, "XV_LO_3V3").connect(fb.pin("2"))
+    cap_to_gnd(d, "XV_LO_3V3", "10uF", ref="C_XV_LO_BULK", board_tag=BTAG)
+    for pn in ("AVDD", "DVDD", "SDVDD", "VP", "VVCO", "VVCO_2"):
+        _net(d, "XV_LO_3V3").connect(lo.pin(pn))
+        cap_to_gnd(d, "XV_LO_3V3", "100nF", ref=f"C_XV_LO_{pn}", board_tag=BTAG, pin=lo.pin(pn))
+    gnd(lo, "CPGND", "AGND", "AGNDVCO", "AGNDVCO_2", "AGNDVCO_3", "DGND", "SDGND", "EP")
+    _net(d, "XV_LO_RSET").connect(lo.pin("RSET"))
+    R("XV_LO_RSET", "GND", "5.1k", "R_XV_LO_RSET")                # ICP = 25.5/RSET = 5 mA (DS)
+    for pn in ("VCOM", "VREF", "TEMP"):                             # DS: decouple at the pin
+        _net(d, f"XV_LO_{pn}").connect(lo.pin(pn))
+        cap_to_gnd(d, f"XV_LO_{pn}", "100nF", ref=f"C_XV_LO_{pn}", board_tag=BTAG, pin=lo.pin(pn))
+    # Reference: the LR2021's 32 MHz TCXO, AC-coupled (REFIN self-biases
+    # at AVDD/2, 100 kΩ) — one reference for the whole link.
+    series_cap("LR_TCXO_OUT", "XV_LO_REF", "100pF", "C_XV_LO_REF")
+    _net(d, "XV_LO_REF").connect(lo.pin("REFIN"))
+    # Control: SPI shared with the DTC bus; LE / CE / MUXOUT on WBA GPIO.
+    _net(d, "LR_DTC_SCL").connect(lo.pin("CLK"))
+    _net(d, "LR_DTC_SDA").connect(lo.pin("DATA"))
+    _net(d, "XV_LO_LE").connect(lo.pin("LE"))
+    _net(d, "XV_LO_CE").connect(lo.pin("CE"))
+    R("XV_LO_CE", "GND", "100k", "R_XV_LO_CE_PD")                  # powered down by default
+    _net(d, "XV_LO_MUX").connect(lo.pin("MUXOUT"))
+    R("XV_LO_3V3", "XV_LO_PDBRF", "10k", "R_XV_LO_PDBRF")          # RF on; mute via R4
+    _net(d, "XV_LO_PDBRF").connect(lo.pin("PDBRF"))
+    # 3rd-order passive loop filter — ⚠ PLACEHOLDER values (ADIsimPLL).
+    _net(d, "XV_LO_CP").connect(lo.pin("CPOUT"))
+    C0G("XV_LO_CP", "1nF", "C_XV_LO_LF1")
+    R("XV_LO_CP", "XV_LO_LF2", "470", "R_XV_LO_LF1")
+    cap_to_gnd(d, "XV_LO_LF2", "22nF", ref="C_XV_LO_LF2", board_tag=BTAG)
+    R("XV_LO_CP", "XV_LO_VTUNE", "1k", "R_XV_LO_LF2")
+    C0G("XV_LO_VTUNE", "220pF", "C_XV_LO_LF3")
+    _net(d, "XV_LO_VTUNE").connect(lo.pin("VTUNE"))
+    # RFOUTA±: 50 Ω pull-ups to VVCO + 100 pF (DS "Output Matching");
+    # A+ drives the mixer through a ~3 dB π pad, A− is terminated in 50 Ω.
+    # RFOUTB± unused (R4 DB9 = 0), left open.
+    _net(d, "XV_LO_OUTP").connect(lo.pin("RFOUTA+"))
+    _net(d, "XV_LO_OUTN").connect(lo.pin("RFOUTA-"))
+    R("XV_LO_3V3", "XV_LO_OUTP", "51", "R_XV_LO_PUP")
+    R("XV_LO_3V3", "XV_LO_OUTN", "51", "R_XV_LO_PUN")
+    series_cap("XV_LO_OUTP", "XV_LO_PAD_I", "100pF", "C_XV_LO_OUTP")
+    series_cap("XV_LO_OUTN", "XV_LO_TERM", "100pF", "C_XV_LO_OUTN")
+    R("XV_LO_TERM", "GND", "51", "R_XV_LO_TERM")
+    R("XV_LO_PAD_I", "GND", "300", "R_XV_LO_PAD1")                 # ⚠ PLACEHOLDER 3 dB π
+    R("XV_LO_PAD_I", "XV_LO_PAD_O", "18", "R_XV_LO_PAD2")
+    R("XV_LO_PAD_O", "GND", "300", "R_XV_LO_PAD3")
+    series_cap("XV_LO_PAD_O", "XV_MIX_LO", "100pF", "C_XV_MIX_LO")  # LO pin sits at ~1.6 V
+
+    # ── Mixer: LTC5549, used both ways (TDD) ──────────────────────────
+    mix = add_ltc5549iudb(d, ref="U_XV_MIX", board_tag=BTAG, feature=F)
+    gnd(mix, "GND_1", "GND_2", "GND_3", "GND_4", "GND_5", "GND_6", "EP", "X2")  # X2 low: no doubler
+    _net(d, "3V3").connect(mix.pin("VCC"))
+    cap_to_gnd(d, "3V3", "1uF", ref="C_XV_MIX_VCC1", board_tag=BTAG, pin=mix.pin("VCC"))
+    C0G("3V3", "1nF", "C_XV_MIX_VCC2", pin=mix.pin("VCC"))
+    _net(d, "XV_MIX_EN").connect(mix.pin("EN"))                    # internal 376 k pull-down
+    _net(d, "XV_MIX_LO").connect(mix.pin("LO"))
+    series_cap("XV_IF_SW", "XV_MIX_IF", "100pF", "C_XV_MIX_IF")
+    _net(d, "XV_MIX_IF").connect(mix.pin("IF"))
+    _net(d, "XV_MIX_RF").connect(mix.pin("RF"))
+    series_cap("XV_MIX_RF", "XV_RF", "10pF", "C_XV_MIX_RF")
+
+    # ── T/R switches (CTRL 0 → RF1 = RX default, 1 → RF2 = TX) ────────
+    _net(d, "XV_TX").connect(next(c for c in d.chips if c.ref == "U_LR").pin("DIO11"))
+    R("XV_TX", "GND", "100k", "R_XV_TX_PD")
+    bgs12("U_XV_TR1", "XV_RF", "XV_RX_OUT", "XV_TX_IN", "XV_TX")
+    bgs12("U_XV_TR2", "XV_ANT_SW", "XV_RX_IN", "XV_TX_OUT", "XV_TX")
+
+    # ── TX: 10 dB π pad → GRF5126 (Guerrilla 4400-5000 MHz tune) ──────
+    # Mixer ≈ +4 dBm out; GRF5126 IP1dB ≈ -8…-9 dBm at high gain.
+    R("XV_TX_IN", "GND", "100", "R_XV_TX_PAD1")                     # 10 dB π, 50 Ω (E12)
+    R("XV_TX_IN", "XV_PA_PADO", "68", "R_XV_TX_PAD2")
+    R("XV_PA_PADO", "GND", "100", "R_XV_TX_PAD3")
+    pa = add_grf5126(d, ref="U_XV_PA", board_tag=BTAG, feature=F)
+    gnd(pa, "GND", "EP", *[f"NC_{n}" for n in (3, 5, 6, 7, 8, 9, 11, 12, 16)])
+    L("XV_PA_PADO", "GND", "1.3nH", "L_XV_PA_IN")                    # tune: 1.3 nH "TN"
+    series_cap("XV_PA_PADO", "XV_PA_IN", "1.5pF", "C_XV_PA_IN")      # tune: 1.5 pF (DC block)
+    _net(d, "XV_PA_IN").connect(pa.pin("RF_IN"))
+    L("XV_5V", "XV_PA_VDD1", "22nH", "L_XV_PA_VDD1")                  # ⚠ PLACEHOLDER (DS: "through inductor")
+    _net(d, "XV_PA_VDD1").connect(pa.pin("VDD1"))
+    cap_to_gnd(d, "XV_PA_VDD1", "100nF", ref="C_XV_PA_VDD1", board_tag=BTAG, pin=pa.pin("VDD1"))  # tune M13
+    _net(d, "XV_PA_OUT").connect(pa.pin("RF_OUT"))
+    L("XV_5V", "XV_PA_OUT", "6.2nH", "L_XV_PA_CHOKE")                 # tune: 6.2 nH
+    C0G("XV_PA_OUT", "0.8pF", "C_XV_PA_OUTSH")                       # tune M27: 0.8 pF
+    series_cap("XV_PA_OUT", "XV_TX_OUT", "10pF", "C_XV_PA_OUT")      # tune: 10 pF
+    R("XV_5V", "XV_PA_VB1", "2.74k", "R_XV_PA_VB1")                  # tune: 2740 Ω
+    R("XV_5V", "XV_PA_VB2", "2.32k", "R_XV_PA_VB2")                  # tune: 2320 Ω
+    _net(d, "XV_PA_VB1").connect(pa.pin("VBIAS1"))
+    _net(d, "XV_PA_VB2").connect(pa.pin("VBIAS2"))
+    cap_to_gnd(d, "XV_PA_VB1", "100nF", ref="C_XV_PA_VB1", board_tag=BTAG, pin=pa.pin("VBIAS1"))
+    cap_to_gnd(d, "XV_PA_VB2", "100nF", ref="C_XV_PA_VB2", board_tag=BTAG, pin=pa.pin("VBIAS2"))
+    # VGAIN high (≥ 1.0 V, ≤ 2.5 V): 2.03 V from XV_5V so it drops with the rail.
+    R("XV_5V", "XV_PA_VGAIN", "22k", "R_XV_PA_VG1")
+    R("XV_PA_VGAIN", "GND", "15k", "R_XV_PA_VG2")
+    _net(d, "XV_PA_VGAIN").connect(pa.pin("VGAIN"))
+    cap_to_gnd(d, "XV_5V", "10uF", ref="C_XV_PA_BULK1", board_tag=BTAG, pin=pa.pin("VDD1"))
+    cap_to_gnd(d, "XV_5V", "100nF", ref="C_XV_PA_CHOKE", board_tag=BTAG)
+
+    # ── XV_5V: MCP1640D boost (output disconnect when EN low) ─────────
+    bst = add_mcp1640ct_i_chy(
+        d, ref="U_XV_BOOST", board_tag=BTAG,
+        manf_pn="MCP1640DT-I/CHY", name="MCP1640DT-I/CHY", value="MCP1640DT-I/CHY",
+        canonical_id="mcp1640dt_i_chy",
+        description=("Synchronous boost regulator, 0.65 V start-up, V_OUT adjustable "
+                     "2.0..5.5 V, auto PFM/PWM, TRUE OUTPUT DISCONNECT in shutdown "
+                     "(D variant), 6L SOT-23"))
+    _net(d, "3V3").connect(bst.pin("VIN"))
+    gnd(bst, "GND")
+    _net(d, "XV_PA_EN").connect(bst.pin("EN"))
+    R("XV_PA_EN", "GND", "100k", "R_XV_PA_EN_PD")
+    _net(d, "XV_BST_SW").connect(bst.pin("SW"))
+    L("3V3", "XV_BST_SW", "2.2uH", "L_XV_BOOST")
+    _net(d, "XV_5V").connect(bst.pin("VOUT"))
+    _net(d, "XV_BST_FB").connect(bst.pin("VFB"))
+    R("XV_5V", "XV_BST_FB", "309k", "R_XV_BST_FB1")                  # 1.21 V × (1 + 309/100) = 4.95 V
+    R("XV_BST_FB", "GND", "100k", "R_XV_BST_FB2")
+    cap_to_gnd(d, "3V3", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, pin=bst.pin("VIN"))
+    cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, pin=bst.pin("VOUT"))
+
+    # ── RX: GRF2073W LNA on 3V3 (⚠ match = DS 3.4-3.8 GHz BOM, PLACEHOLDER) ─
+    lna = add_grf2073w(d, ref="U_XV_LNA", board_tag=BTAG, feature=F)
+    gnd(lna, "EP", *[f"NC_{n}" for n in (3, 4, 5, 6, 8)])
+    series_cap("XV_RX_IN", "XV_LNA_IN", "1.2pF", "C_XV_LNA_IN")      # DS M1
+    _net(d, "XV_LNA_IN").connect(lna.pin("RF_IN"))
+    _net(d, "XV_LNA_OUT").connect(lna.pin("RF_OUT"))
+    L("XV_LNA_VDD", "XV_LNA_OUT", "1.8nH", "L_XV_LNA_BIAS")           # DS M8
+    R("3V3", "XV_LNA_VDD", "0", "R_XV_LNA_VDD")
+    cap_to_gnd(d, "XV_LNA_VDD", "100nF", ref="C_XV_LNA_VDD1", board_tag=BTAG)  # DS M9
+    C0G("XV_LNA_VDD", "100pF", "C_XV_LNA_VDD2")                      # DS M10
+    series_cap("XV_LNA_OUT", "XV_RX_OUT", "5.1pF", "C_XV_LNA_OUT")   # DS M11
+    R("XV_LNA_EN", "XV_LNA_VEN", "1k", "R_XV_LNA_VEN")               # ⚠ PLACEHOLDER (sets IDDQ)
+    _net(d, "XV_LNA_VEN").connect(lna.pin("VENABLE"))
+    R("XV_LNA_EN", "GND", "100k", "R_XV_LNA_EN_PD")
+
+    # ── 4.4-5.0 GHz BPF + S4 L-match (⚠ PLACEHOLDERS, both resonators at 4.8 GHz) ─
+    L("XV_ANT_SW", "XV_BPF_M", "2.2nH", "L_XV_BPF_SER")
+    series_cap("XV_BPF_M", "XV_BPF_O", "0.5pF", "C_XV_BPF_SER")
+    L("XV_BPF_O", "GND", "1nH", "L_XV_BPF_SH")
+    C0G("XV_BPF_O", "1.1pF", "C_XV_BPF_SH")
+    # S4 match: the retuned slot (antenna_slots S4, sim C2_P_S4_p17_sc90_f20_w2)
+    # sits at R 41-69 Ω with +54…+95 Ω inductive reactance over 4.6-5.0 GHz —
+    # one series 0.5 pF cancels it (S11 ≈ -12…-25 dB, calc) and DC-blocks.
+    series_cap("XV_BPF_O", "ANT_HF_S4", "0.5pF", "C_ANT_S4_MATCH")
 
 
 def build_fins_module(d: Design) -> None:
@@ -3624,7 +3860,10 @@ def build_wakeup_board(d: Design) -> None:
     #   - I²C1 on the shared I2C2_* bus (mag / PMIC / TMP117; the MP25
     #     is the other master — the ST25DV left with the NFC removal)
     #   - S1 antenna tuner (2 × PE64906 DTC, 2026-11-17): PA7 SCL, PA8 SDA,
-    #     PA9 SEN1, PC15 SEN2 (bit-banged 3-wire; no spare pins left)
+    #     PA9 SEN1, PC15 SEN2 (bit-banged 3-wire)
+    #   - S4 transverter control (2026-11-18): PB14/PA10/PB11 ADF4351
+    #     LE/CE/MUXOUT, PA11 mixer EN, PB6 LNA EN, PB7 PA boost EN.
+    #     Spare after that: PC13 only
     # Lives directly on the always-on 3V3 rail (no dedicated nano-LDO).
     # 32 MHz HSE via MEMS resonator (survives rapid deceleration); LSE = internal LSI
     # which frees PC14/PC15 as plain spare GPIOs.
@@ -3755,6 +3994,15 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "LR_DTC_SDA") .connect(wba.pin("PA8"))
     _net(d, "LR_DTC_SEN1").connect(wba.pin("PA9"))
     _net(d, "LR_DTC_SEN2").connect(wba.pin("PC15__OSC32__OUT"))  # low-drive pin: fine for a latch line
+    # S4 transverter (2026-11-18, _build_transverter) on spare UFBGA59 GPIO —
+    # all on 3V3 parts: hold LOW / Hi-Z while 3V3 is off. LO SPI CLK/DATA
+    # share LR_DTC_SCL/SDA above; the T/R and IF switches run off LR2021 DIOs.
+    _net(d, "XV_LO_LE")   .connect(wba.pin("PB14"))   # ADF4351 LE
+    _net(d, "XV_LO_CE")   .connect(wba.pin("PA10"))   # ADF4351 CE (100 k pull-down)
+    _net(d, "XV_LO_MUX")  .connect(wba.pin("PB11"))   # ADF4351 MUXOUT (lock detect / readback) in
+    _net(d, "XV_MIX_EN")  .connect(wba.pin("PA11"))   # LTC5549 EN
+    _net(d, "XV_LNA_EN")  .connect(wba.pin("PB6"))    # GRF2073W VENABLE
+    _net(d, "XV_PA_EN")   .connect(wba.pin("PB7"))    # MCP1640D EN → XV_5V → GRF5126
 
     # PA6/PA7 (freed by the H3LIS→M33 move) re-tasked for the optical
     # service link (2026-07-27):
@@ -3828,6 +4076,8 @@ def build_wakeup_board(d: Design) -> None:
     # feeds (S1, S3) leave (castellations in the antenna sector).
     # The IIS2MDC sits on the opposite (bottom) face, away from the PA bursts.
     _build_lr_radio(d, BTAG, face="rf")
+    # S4 transverter, 4.4-5.0 GHz (2026-11-18): IF from U_LR_IFSW.
+    _build_transverter(d, BTAG, face="rf")
 
     # WLE5 LSE oscillator removed — WBA55 uses internal LSI (±5 %); LSE
     # crystal not needed for periodic BLE-scan timing accuracy.

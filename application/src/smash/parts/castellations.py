@@ -56,9 +56,9 @@ GND_CAST_ANGLES_DEG = tuple(sorted(a for s_ in _ANT_SLOTS for a in s_.gnd_flank_
 # sleeve via to the sleeve's antenna copper. (2026-11-17) Two DEDICATED
 # printed slots, no RF switching: S1 (LR2021, 2.1-2.48 GHz) and S3 (BLE).
 # Sub-GHz (RF_LF_EXT) and slot S2 are gone. (2026-11-17) Angles = the CPW
-# strip centres of the simulated slots (antenna_slots.SLOTS); S4 (transverter
-# high band, no circuit yet) is listed so its angle stays RESERVED — a feed
-# whose net is absent from the design gets no castellation.
+# strip centres of the simulated slots (antenna_slots.SLOTS); S4 carries the
+# 4.4-5.0 GHz transverter since 2026-11-18. A feed whose net is absent from
+# the design (e.g. a config without the wakeup radio) gets no castellation.
 ANTENNA_FEED_ANGLES_DEG = {s_.net: round(s_.feed_deg, 1) for s_ in _ANT_SLOTS}
 # Plug ring (2026-11-14): the aft board's bottom-face bench/harness interface
 # (SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES, …) is UNCHANGED — it is now reached

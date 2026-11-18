@@ -1,0 +1,8 @@
+Manufacturer=Guerrilla RF
+PartNumber=GRF5126
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead (QFN-16 3x3, 0.5 pitch, EP 1.70)
+PinCount=17
+Source=NO SamacSys model exists (user, 2026-11-18). Footprint = GRF5126 DS Rel.0 p19 "Recommended PCB Footprint" (custom, in rf.py).
+3D=GRF5126.stp is the SamacSys 3D model of the package-identical GRF5109 (LIB_GRF5109 v1.1, QFN50P300X300X85-17N), downloaded 2026-11-18.
+Tune=GRF5126_tune_4400-5000MHz.pdf (Guerrilla RF Custom Tune, 2025-10-08)

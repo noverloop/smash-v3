@@ -1,0 +1,9 @@
+Manufacturer=Analog Devices
+PartNumber=LTC5549IUDB#TRMPBF
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=13
+Version=1.1
+Released=2019-08-12 08:05:11
+Downloaded=2026-11-18 08:43:49
+3D=Y

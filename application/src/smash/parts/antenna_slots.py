@@ -13,8 +13,12 @@ Simulated (C2 tower, Stycast 2651MM + Cat 11, castellation feed):
       (DTC-tuned π): radiation 66/72/63 % at 2.15/2.30/2.44 GHz.
   (S3, BLE, merged into S1 2026-11-17: with GF30 PEEK gap rings S1 peaks at
   2.44-2.48 GHz — 50-59 % radiated — and the LR2021 + BLE share it.)
-  S4  transverter high band (PROVISIONAL, no circuit yet): radiation
-      52-63 % at 4.0-4.5 GHz and 50-55 % at 6.0-6.5 GHz (two bands).
+  S4  4.4-5.0 GHz transverter (2026-11-18, generate_stackup._build_transverter).
+      Final rings (PEEK in S1/S4 gaps, Al from wakeup↔power down), slot ×0.9
+      of the 4.4 GHz half-wave, 2 mm wide, feed 2 mm (sim C2_P_S4_p17_sc90_f20_w2):
+      radiation 59/62/72/66/74 % at 4.6/4.7/4.8/4.9/5.0 GHz (50 % at 4.4);
+      Zin 41+63j … 69+95j → one series ~0.5 pF gives S11 ≈ -12…-25 dB over
+      4.6-5.0 GHz. Usable band 4.6-5.0 GHz (4.4-4.6 poorly matched).
 
 Frame: PHYSICAL angles (castellations.py), z = stack height (sleeve unroll).
 """
@@ -95,9 +99,9 @@ SLOTS = (
                 width_mm=1.5, feed_mm=6.0,
                 label="S1 2.4 GHz ISM: LoRa (LR2021, DTC-tuned) + BLE, shared"),
     SlotAntenna("S4", "ANT_HF_S4", "fin_ble_board", "wakeup_board",
-                start_deg=143.0, direction=+1, f_design_ghz=4.4, scale=1.0,
-                width_mm=3.0, feed_mm=3.0, provisional=True,
-                label="S4 transverter 4.0-4.5 + 6.0-6.5 GHz (PROVISIONAL)"),
+                start_deg=143.0, direction=+1, f_design_ghz=4.4, scale=0.9,
+                width_mm=2.0, feed_mm=2.0,
+                label="S4 transverter 4.6-5.0 GHz (LR2021 IF + ADF4351/LTC5549)"),
 )
 
 

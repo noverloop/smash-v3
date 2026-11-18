@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP LTC5549IUDB#TRMPBF
+D RF Mixer 2GHz to 14GHz Microwave Mixer with Integrated LO Frequency Doubler
+K
+F https://www.analog.com/media/en/technical-documentation/data-sheets/5549fa.pdf
+$ENDCMP
+#
+#End Doc Library

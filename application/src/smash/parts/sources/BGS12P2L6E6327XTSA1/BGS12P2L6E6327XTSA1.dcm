@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BGS12P2L6E6327XTSA1
+D RF Switch IC GSM, LTE, W-CDMA SPDT 50Ohm PG-TSLP-6-4
+K
+F https://www.infineon.com/assets/row/public/documents/24/49/infineon-bgs12p2l6-datasheet-en.pdf?fileId=5546d4626cb27db2016d4487d53603ce
+$ENDCMP
+#
+#End Doc Library

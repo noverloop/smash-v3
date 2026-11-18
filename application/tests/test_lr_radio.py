@@ -116,12 +116,15 @@ def test_vbat_through_ferrite_bead(design):
 
 
 def test_hf_chain_feeds_slot_s1_through_the_owner_switch(design):
-    """LR switch common → DC block → DTC π → owner switch RF2 → DC block →
-    ANT_HF_S1."""
+    """LR switch common → IF switch RF1 (S1 default; RF2 = S4 transverter IF,
+    2026-11-18) → DC block → DTC π → owner switch RF2 → DC block → ANT_HF_S1."""
     rfin = _net(design, _chip(design, "U_LR_SW_HF"), "RFIN")
+    ifsw = _chip(design, "U_LR_IFSW")
+    assert _net(design, ifsw, "RFIN") == rfin
+    s1 = _net(design, ifsw, "RF1")
     blk = _chip(design, "C_LR_HF_ANTBLK")
-    assert rfin in _two_ended(design, blk)
-    mid = (_two_ended(design, blk) - {rfin}).pop()
+    assert s1 in _two_ended(design, blk)
+    mid = (_two_ended(design, blk) - {s1}).pop()
     lpf = _chip(design, "L_LR_HF_ANT_LPF")
     out = (_two_ended(design, lpf) - {mid}).pop()
     sw = _chip(design, "U_ANTSW_S1")
