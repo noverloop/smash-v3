@@ -137,3 +137,8 @@ Finalized/**/fp-info-cache
 ~*.lck
 Reviewed/spacer_fin_ble_board_wakeup_board/.history/
 **/**/.history/
+
+# KiCad session files when the Unrouted/ export is opened (export_unrouted.py
+# deletes them on the next export)
+Unrouted/**/*.kicad_prl
+Unrouted/**/*-backups/

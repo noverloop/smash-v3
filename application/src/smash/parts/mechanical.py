@@ -246,7 +246,7 @@ def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
 
     ⚠ The wrap-electrode strip geometry below is a conservative
     placeholder — confirm against the Steminc spec sheet before fab
-    (Research/ PDF TODO; their per-model drawings are on request)."""
+    (there is no datasheet; per-model drawings are on request)."""
     part = "SMD10T04R111"
     fp = _project_footprint(
         part, "PiezoDisc_SMD10T04R111",
@@ -280,7 +280,7 @@ def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
             "PZT), wrap-around electrode — SMD-mount launch/impact shock "
             "sensor, 2100 pF, 5 MHz thickness resonance"
         ),
-        datasheet="Research/SMD10T04R111.pdf",   # TODO: request from Steminc
+        datasheet=None,                 # Steminc publishes no datasheet for this disc
         package="Bare PZT disc Ø10×0.4, both electrodes one face",
         size_mm=(10.0, 10.0), height_mm=0.4,
         pins=pins,
