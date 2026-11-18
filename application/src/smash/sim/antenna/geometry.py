@@ -40,11 +40,15 @@ BOARD_MID_Z_MM = {
     "power_board": 41.92,
     "companion_compute": 46.43,
     "radar_module": 51.85,
-    "nose_cap": 53.23,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface", "fin_ble_board",
                "wakeup_board", "power_board", "companion_compute")
-RADAR_BOARDS = CORE_BOARDS + ("radar_module", "nose_cap")
+RADAR_BOARDS = CORE_BOARDS + ("radar_module",)
+# (2026-11-18) The nose_cap PCB is retired: the stack is closed by the cup's
+# PEEK-LDS end wall (one moulding with the sleeve), CUP_END_GAP_MM above the
+# top board, CUP_END_T_MM thick — modelled in sleeve material, potting below.
+CUP_END_GAP_MM = 2.0
+CUP_END_T_MM = 1.0
 
 # Battery compartment (3 × TLM-1520HPM/S standing, 21 mm cells).
 CELL_R_MM = 7.25
@@ -201,6 +205,13 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     # potting fills the sleeve bore; the sleeve wall around it.
     S.append(Sector("potting", potting, 0.0, SLEEVE_R_IN_MM, z_lo, z_hi, priority=1))
     S.append(Sector("sleeve_wall", sleeve_mat, SLEEVE_R_IN_MM, SLEEVE_R_OUT_MM, z_lo, z_hi, priority=2))
+    # cup: potting continues past the top board up to the closed end wall
+    # (same moulding / material as the sleeve).
+    z_end = z_hi + CUP_END_GAP_MM
+    S.append(Sector("cup_potting", potting, 0.0, SLEEVE_R_IN_MM, z_hi, z_end, priority=1))
+    S.append(Sector("cup_wall", sleeve_mat, SLEEVE_R_IN_MM, SLEEVE_R_OUT_MM, z_hi, z_end, priority=2))
+    S.append(Sector("cup_end", sleeve_mat, 0.0, SLEEVE_R_OUT_MM, z_end, z_end + CUP_END_T_MM,
+                    priority=2))
     # boards: FR-4 is irrelevant under a PEC disc model — ground disc per board.
     for b in boards:
         zm = BOARD_MID_Z_MM[b]
@@ -221,11 +232,9 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                     S.append(Sector(f"keepout_{sl.name}_{b}", "fr4",
                                     BOARD_R_MM - keepout_depth_mm, BOARD_R_MM,
                                     zm - BOARD_T_MM / 2, zm + BOARD_T_MM / 2, a0, a1, priority=6))
-    # gap rings (every non-battery gap; none between radar and nose_cap).
+    # gap rings (every non-battery gap).
     if rings != "none":
         for lo, hi in zip(boards[1:-1], boards[2:]):
-            if (lo, hi) == ("radar_module", "nose_cap"):
-                continue
             z0 = BOARD_MID_Z_MM[lo] + BOARD_T_MM / 2
             z1 = BOARD_MID_Z_MM[hi] - BOARD_T_MM / 2
             mat = "pec" if rings == "al" else "peek"

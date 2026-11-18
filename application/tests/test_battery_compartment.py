@@ -39,7 +39,7 @@ def built():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in (gen.build_qpd_module,
-               gen.build_nose_cap, gen.build_camera_module,
+               gen.build_radar_nose_io, gen.build_camera_module,
                gen.build_aft_end_board,
                gen.build_activation_interface,
                gen.build_radar_module, gen.build_fins_module,
@@ -50,7 +50,6 @@ def built():
     panel, boards = build_panel()
     gen.build_spacers(d, boards)
     place_design(d, panel, boards)
-    gen._mark_radar_block_cutout(boards)
     gen._mark_battery_pockets(boards)
     gen.place_lga_lands(
         d, panel, boards,
@@ -297,7 +296,9 @@ def test_every_gap_is_battery_holder_or_ring():
     from smash.export.spacer_step import gap_kind
     panel, boards = build_panel()
     kinds = {gap_kind(n) for n in panel.snake_chain if boards[n].is_spacer}
-    assert kinds == {"battery_holder", "ring", "none"}   # no PEEK standoffs anywhere
+    # no PEEK standoffs anywhere; (2026-11-18) no hardware-free gap either —
+    # the radar↔nose_cap gap went with the nose_cap PCB.
+    assert kinds == {"battery_holder", "ring"}
     from smash.export.spacer_step import NO_HARDWARE_GAPS
     assert {n for n in panel.snake_chain
             if boards[n].is_spacer and gap_kind(n) == "none"} == set(NO_HARDWARE_GAPS)

@@ -1735,19 +1735,18 @@ def _cutouts_for_tile(
     # seats against a straight edge (mouth out) instead of fighting the curved
     # Ø34 rim — the pads sit on-board just inboard of the flat (y≈14.72). The
     # chord also carries the connector mouth notch (see below).
-    # The USB-C lowered to the radar; BOTH tiles keep the 17 mm N chord, and the
-    # chord now CARRIES the connector mouth notch (flat -> notch -> flat, ONE
+    # The USB-C sits on the radar; its 17 mm N chord CARRIES the connector mouth notch (flat -> notch -> flat, ONE
     # continuous outline) rather than a separate overlapping through-cut cavity —
     # the overlap was confusing the outline boolean and leaving stray FR4
     # rectangles. The notch is CENTRED, depth 6.3 mm (floor y~8.42, clearing the
     # radar Cu coin at y~8.0); the WIDTH is per-tile (see below).
-    if name in ("nose_cap", "radar_module"):
-        # WIDTH is per-tile: the connector MOUNTS on the radar. Its notch is
-        # 10.2 mm (+/-5.1) -> wide enough to clear the ~8.3 mm mouth while the flat
-        # segments beside it (~3.4 mm each) still carry the solder lands (pads at
-        # x +/-5.745, just outside the wall). The NOSE_CAP keeps the WIDE 12.5 mm
-        # notch to clear the connector body poking up from the radar.
-        _nw = 10.2 if name == "radar_module" else 12.5
+    if name == "radar_module":
+        # The connector MOUNTS on the radar. Its notch is 10.2 mm (+/-5.1) ->
+        # wide enough to clear the ~8.3 mm mouth while the flat segments beside
+        # it (~3.4 mm each) still carry the solder lands (pads at x +/-5.745,
+        # just outside the wall). (The nose_cap's 12.5 mm notch went with the
+        # nose_cap PCB, retired 2026-11-18.)
+        _nw = 10.2
         cuts.append(make_cutout(_ANGLE_N, 17.0, kind="flat",
                                 notch_width_mm=_nw, notch_depth_mm=6.3,
                                 notch_offset_mm=0.0))

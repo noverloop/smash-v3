@@ -153,7 +153,7 @@ def add_sst26wf080b(design, ref: str, **overrides) -> Chip:
         memory_bits=8_000_000,
         package="USON-8 (2×3 mm)",
         pitch_mm=0.5,
-        size_mm=(2.0, 3.0),                 # USON-8 body — needed so the nose_cap cutout includes the flash
+        size_mm=(2.0, 3.0),                 # USON-8 body — needed so top-face clearance includes the flash
         # ── thermal (DS20005283C p1) — NOR DS quotes no ΘJC/Tj ───────────────
         p_active_w=0.027,                   # 15 mA active read @104 MHz × 1.8 V
         p_max_w=0.045,                      # ~25 mA program/erase × 1.8 V (est)
@@ -199,7 +199,7 @@ def add_sst26vf080a(design, ref: str, **overrides) -> Chip:
         memory_bits=8_000_000,
         package="WDFN-8 (6x5 mm)",
         pitch_mm=1.27,
-        size_mm=(6.0, 5.0),                 # WDFN-8 body — sizes a top-face nose_cap cutout / bottom spacer cavity
+        size_mm=(6.0, 5.0),                 # WDFN-8 body — sizes top-face clearance / a bottom spacer cavity
         # ── thermal (DS20006203C) — NOR DS quotes no ΘJC/Tj ─────────────────
         p_active_w=0.050,                   # 15 mA active read @104 MHz x 3.3 V
         p_max_w=0.083,                      # ~25 mA program/erase x 3.3 V (est)

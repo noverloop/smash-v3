@@ -1808,5 +1808,77 @@
   "rotation_deg": 0,
   "face": "bottom",
   "reason": "STM32G0B1RET6 (LQFP-64, 12×12 incl. leads, 1.6 mm) at the centre of fin_ble_board's BOTTOM face — the only spot a 13.4 mm courtyard fits between the three + tab lands (r 12.5), the potting hole (135°, r 13) and the battery holder's edge ring (r ≥ 15.8); 1.6 mm ≤ the 1.8 mm headroom. Placeholder for the layout EE (2026-11-14)."
+ },
+ "D_IR_WAKE_Q": {
+  "position_mm": [
+   0.0,
+   12.8
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+ },
+ "D_IR_TX_Q": {
+  "position_mm": [
+   -9.5,
+   9.5
+  ],
+  "rotation_deg": 45,
+  "face": "top",
+  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+ },
+ "D_IR_WAKE_C": {
+  "position_mm": [
+   0.0,
+   12.8
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+ },
+ "D_IR_TX_C": {
+  "position_mm": [
+   -9.5,
+   9.5
+  ],
+  "rotation_deg": 45,
+  "face": "top",
+  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+ },
+ "R_PZ_TX": {
+  "position_mm": [
+   9.6,
+   1.6
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: piezo vibration-beacon coupling (PIEZO_TX → 1 k → 10 nF → PIEZO_P) in the piezo pocket's comparator slot beside R_THR2."
+ },
+ "C_PZ_TX": {
+  "position_mm": [
+   9.6,
+   -1.6
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: piezo vibration-beacon coupling (PIEZO_TX → 1 k → 10 nF → PIEZO_P) in the piezo pocket's comparator slot beside R_THR2."
+ },
+ "Q_IR_TX_Q": {
+  "position_mm": [
+   -6.5,
+   12.5
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: IR emitter low-side switch at the rim beside D_IR_TX — clear of the lens light tube and both IR light pipes."
+ },
+ "Q_IR_TX_C": {
+  "position_mm": [
+   -6.5,
+   12.5
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: IR emitter low-side switch at the rim beside D_IR_TX — clear of the lens light tube and both IR light pipes."
  }
 }

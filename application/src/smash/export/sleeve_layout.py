@@ -31,7 +31,7 @@ from smash.parts.castellations import (
     SIGNAL_SECTOR_CENTRE_DEG, SIGNAL_SECTOR_HALF_DEG,
 )
 from smash.export.sleeve_step import (SLEEVE_GAP_MM, SLEEVE_WALL_MM,
-                                      stack_z_map)
+                                      INNER_FACE_LASERABLE, stack_z_map)
 
 VIA_PAD_MM = 0.75
 GND_PLANE_MARGIN_MM = 1.0          # plane stops this far from the sector edges
@@ -209,12 +209,16 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             if plane.contains(cell.centroid) and plane.intersection(cell).area > 0.99 * cell.area:
                 fills.append(f'(filled_polygon (layer "B.Cu") (pts (xy {X(xa)} {Y(zb)}) '
                              f'(xy {X(xb)} {Y(zb)}) (xy {X(xb)} {Y(za)}) (xy {X(xa)} {Y(za)})))')
-    items.append(
-        f'\t(zone (net {g}) (net_name "GND") (layer "B.Cu") (hatch edge 0.5) '
-        f'(connect_pads yes (clearance 0.2)) (min_thickness 0.2) '
-        f'(fill yes (thermal_gap 0.3) (thermal_bridge_width 0.3)) '
-        f'(polygon (pts (xy {X(gx0)} {Y(H - 0.5)}) (xy {X(gx1)} {Y(H - 0.5)}) '
-        f'(xy {X(gx1)} {Y(0.5)}) (xy {X(gx0)} {Y(0.5)}))) ' + " ".join(fills) + ')')
+    # (2026-11-18) One-piece cup: the deep bore can't be lasered, so the inner
+    # GND plane is NOT emitted (the antenna sector loses its inner ground —
+    # re-simulate). Kept behind INNER_FACE_LASERABLE for a half-shell sleeve.
+    if INNER_FACE_LASERABLE:
+        items.append(
+            f'\t(zone (net {g}) (net_name "GND") (layer "B.Cu") (hatch edge 0.5) '
+            f'(connect_pads yes (clearance 0.2)) (min_thickness 0.2) '
+            f'(fill yes (thermal_gap 0.3) (thermal_bridge_width 0.3)) '
+            f'(polygon (pts (xy {X(gx0)} {Y(H - 0.5)}) (xy {X(gx1)} {Y(H - 0.5)}) '
+            f'(xy {X(gx1)} {Y(0.5)}) (xy {X(gx0)} {Y(0.5)}))) ' + " ".join(fills) + ')')
 
     # ── Plug ring ──
     plug = contract.get("plug", [])
@@ -340,7 +344,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             if 0.0 <= xs_ <= W:
                 items.append(f'\t(gr_line (start {X(xs_)} {Y(H)}) (end {X(xs_)} {Y(0)}) '
                              f'(stroke (width 0.15) (type solid)) (layer "F.SilkS"))')
-    items.append(f'\t(gr_text "ANTENNA SECTOR (slots on outer face; inner GND cut behind them)" '
+    items.append(f'\t(gr_text "ANTENNA SECTOR (slots on outer face; ' + ("inner GND cut behind them" if INNER_FACE_LASERABLE else "NO inner GND - one-piece cup") + ')" '
                  f'(at {X((gx0 + gx1) / 2)} {Y(H) - 2:.2f}) (layer "F.SilkS") '
                  f'(effects (font (size 1.2 1.2) (thickness 0.18))))')
     items.append(f'\t(gr_text "SIGNAL SECTOR (outer-face lanes)" '
@@ -508,7 +512,7 @@ def merge_unrolled_sleeve_into_panel(sleeve_pcb, panel_pcb, gap_mm: float = 15.0
                     lambda m: f'(net "{nets.get(m.group(1), "")}")', ln)
         ln = re.sub(r'\(net (\d+)\)', lambda m: f'(net "{nets.get(m.group(1), "")}")', ln)
         out.append(ln)
-    title = (f'\t(gr_text "LDS SLEEVE - 2D UNROLL (outer face F.Cu, inner GND B.Cu)" '
+    title = (f'\t(gr_text "LDS CUP SLEEVE - 2D UNROLL, UNION OF ALL CONFIGS (outer face F.Cu)" '
              f'(at {min(sx) + dx:.4f} {min(sy) + dy - 4:.4f} 0) (layer "F.SilkS") '
              f'(effects (font (size 2 2) (thickness 0.3)) (justify left)))')
     body = p.rstrip()

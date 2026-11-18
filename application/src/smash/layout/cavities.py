@@ -308,8 +308,7 @@ BOARD_POTTING_HOLE_ANGLES_DEG = (POTTING_HOLE_ANGLE_DEG_A,)
 # the two aft gaps (r 15.2–16.2, keep-out from r 15.0). Still clears the cells
 # on cell_floor / fin_ble (0.25 mm to the Ø14.9 bore, outside the tip relief).
 # The holes form ONE continuous axial channel up the stack at PHYSICAL 135°
-# (smash_evb_v1._align_potting_holes turns them 180° on the nose-ward group);
-# the nose_cap has none.
+# (smash_evb_v1._align_potting_holes turns them 180° on the nose-ward group).
 BOARD_POTTING_HOLE_RADIUS_MM = 13.0
 
 
@@ -338,8 +337,8 @@ def fold_project(rx: float, ry: float, same_row: bool) -> tuple[float, float]:
 
 
 # 180° stack-axis turn (2026-10-12). This tile and every tile after it in the
-# snake chain (the nose-ward group: power_board, companion_compute, radar,
-# nose_cap and their spacers) are installed rotated 180° about the stack axis
+# snake chain (the nose-ward group: power_board, companion_compute, radar
+# and their spacers) are installed rotated 180° about the stack axis
 # relative to the aft group. Both routed boards at the seam are final —
 # Sjoert's power_board bottom field is Francesco's wakeup_board top field
 # turned 180° — and the diagonal potting holes are 180°-symmetric, so the turn

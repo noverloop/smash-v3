@@ -378,7 +378,8 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # tiles were removed 2026-11-14 — BLE shares the conformal 2.4 GHz
     # antenna in the PEEK battery compartment.)
     # → 22 (2026-11-15 aft reorder): cell_floor_board and its spacer gone.
-    assert r["n_tiles"] == 22
+    # → 20 (2026-11-18): nose_cap PCB + the radar↔nose_cap spacer retired.
+    assert r["n_tiles"] == 20
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
@@ -626,7 +627,7 @@ def test_full_twin_exports_clean(tmp_path):
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_nose_cap, gen.build_camera_module,
+               gen.build_radar_nose_io, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
                gen.build_companion_compute,
@@ -941,7 +942,10 @@ def test_full_twin_exports_clean(tmp_path):
     #   S4 match + DC block).
     # → 667: S4 retuned (2026-11-18, −2): the L-match + DC block collapse into
     #   one series 0.5 pF (C_ANT_S4_MATCH).
-    assert total_fps == 667
+    # → 666 (2026-11-18): the nose_cap tile (its castellation footprint) retired.
+    # → 696 (2026-11-18): IR service-link copies on qpd / camera (2 × 8),
+    #   piezo vibration-beacon coupling (2), health-coil driver (12).
+    assert total_fps == 696
 
     # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
     # to its symbol in stackup.kicad_sch, written beside the PCB like each

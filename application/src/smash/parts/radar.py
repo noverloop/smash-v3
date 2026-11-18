@@ -114,7 +114,7 @@ def add_awr1843aop(design, ref: str, *, secure: bool = False, **overrides) -> Ch
     AoP is the headline architectural fact: the antenna is *on the package*,
     radiating away from the PCB. There are NO discrete TX/RX antenna balls and
     NO RF on the laminate (like the AWR2E44P, opposite of the AWR2944) — so the
-    nose_cap becomes an **RF-transparent radome over the package face**, NOT a
+    nose (the PEEK-LDS cup's closed end) is an **RF-transparent radome over the package face**, NOT a
     machined waveguide/horn block. The radar board sees only DC + digital, so
     plain FR4 is fine.
 
@@ -154,7 +154,7 @@ def add_awr1843aop(design, ref: str, *, secure: bool = False, **overrides) -> Ch
             "TI AWR1843AOP (automotive, SWRS236C) — Antennas-On-Package "
             "77/79 GHz radar. 3 TX + 4 RX patches ON the 180-ball ALP "
             "package; no external antenna, no RF on the PCB → the "
-            "nose_cap is a radome, not a waveguide block.\n\n"
+            "cup nose is a radome (smash.export.nose_radome).\n\n"
             "RF headline (SWRS236C): TX EIRP 16 dBm, RX NF 10 dB "
             "(76-81 GHz), phase noise -95/-93 dBc/Hz @1 MHz. Processing: "
             "C674x DSP + Radar HWA + Cortex-R4F, 2 MB RAM.\n\n"
@@ -170,8 +170,8 @@ def add_awr1843aop(design, ref: str, *, secure: bool = False, **overrides) -> Ch
             "…ALPRQ1 suffix. Confirm Secure-variant sourcing + OTP-keywriter "
             "lead time with TI before production.\n\n"
             "Package height 0.9 mm (ALP max, from the SamacSys 3D model "
-            "bounding box) — drives the radar↔nose_cap radome standoff via "
-            "_set_dynamic_spacer_thickness. Verify vs the SWRS236C "
+            "bounding box) — drives the AoP→radome gap in "
+            "smash.export.nose_radome. Verify vs the SWRS236C "
             "mechanical drawing before fab."
         ),
     )

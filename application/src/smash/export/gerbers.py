@@ -6,7 +6,7 @@ tile — the archive a fab actually receives. The copper layer list is
 derived from the same fitted stackup the .kicad_pcb writer used
 (`kicad_pcb._board_stackup`), so the plotted set always matches the
 file's declared layer table (14L default, 20L coined tiles, 12L
-nose_cap, …).
+radar_module, …).
 
 Output conventions (kicad-cli 10 defaults, verified):
   - Protel filename extensions (.gtl/.gbl/.g1…/.gts/.gbs/.gto/.gbo/.gm1)

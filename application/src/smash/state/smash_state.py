@@ -68,7 +68,6 @@ class SmashState:
           - flight_board:         H562 MCU + IMU/mag/baro + nav sensors
           - activation_interface: pogo pads, Hall channel-detect, parachute-cutter boost
           - nfc_antenna_flex:     ST25DV NFC tag + 13.56 MHz antenna
-          - nose_cap:             USB-C + LED nose cap (radar forward-end)
         """
         s = cls()
         s.add_board(
@@ -94,11 +93,6 @@ class SmashState:
             "nfc_antenna_flex", kind="flex", standalone=True,
             description="ST25DV16KC-IE8T3 dynamic NFC tag + etched "
                         "13.56 MHz spiral antenna on flex substrate")
-        s.add_board(
-            "nose_cap", kind="rigid",
-            description="Nose cap (radar forward-end): UJ31 USB-C depot "
-                        "port + status LEDs + aluminium waveguide-disk "
-                        "mount")
         return s
 
     # ── boards ───────────────────────────────────────────────────────
@@ -125,7 +119,7 @@ class SmashState:
     # ── board configurations (optional subsystems) ───────────────────
     # Each `add_*` method declares the tile(s) for one subsystem
     # listed in components.md's "Order Configurations" section. The
-    # Core (flight + wakeup + power + activation + nfc + nose) is
+    # Core (flight + wakeup + power + activation + nfc) is
     # always present; these are the optional add-ons that vary
     # between SKUs. Each method returns `self` for chaining:
     #

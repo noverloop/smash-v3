@@ -73,12 +73,11 @@ class Board:
     copper_layers: int | None = None
     # Explicit fitted-stackup thickness target (mm). None → catalog-natural
     # buildup for `copper_layers`. Set when a tile must hit a specific Z (e.g.
-    # the nose_cap at 0.60 mm for the UJ31 mid-mount + the AWR-top alignment).
+    # a tile that must sit at a set height in the stack).
     target_thickness_mm: float | None = None
     # Per-spacer milled thickness override (mm), for `kind="spacer"` tiles. A
     # spacer's milled thickness is SPACER_THICKNESS_MM (4 mm) by default; set this
-    # to size a spacer to just what it needs — the radar↔nose_cap spacer (AWR
-    # height − nose_cap thickness) and the battery-compartment thin discs (a
+    # to size a spacer to just what it needs — e.g. the battery-compartment thin discs (a
     # sub-fab-limit slice of the cell length, so the holder is a manufacturable
     # stack of thin spacers, not one thick disc). Ignored for non-spacer kinds.
     # None → SPACER_THICKNESS_MM.

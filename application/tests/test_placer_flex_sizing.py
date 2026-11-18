@@ -165,7 +165,7 @@ def test_twin_link_widths_have_expected_range():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_nose_cap, gen.build_camera_module,
+               gen.build_radar_nose_io, gen.build_camera_module,
                gen.build_aft_end_board,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
@@ -184,7 +184,8 @@ def test_twin_link_widths_have_expected_range():
     # wider links, ~5.25; not the min.) 20 if the UJ20-emptied nose_cap leaf
     # carries no crossing nets and drops out of the width count.
     # (2026-11-15 aft reorder: cell_floor + one spacer gone → 2 fewer links)
-    assert len(widths) in (18, 19)
+    # (2026-11-18: nose_cap + radar↔nose_cap spacer retired → 1 fewer link)
+    assert len(widths) in (17, 18)
     # Narrowest is now the battery-compartment gaps: little crosses → just
     # margin + GND.
     assert min(widths.values()) >= 3.0

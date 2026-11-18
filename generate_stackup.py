@@ -101,6 +101,7 @@ from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
 from smash.parts.comparators import add_tlv3691idpfr                      # noqa: E402
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
+from smash.parts.coils import add_health_coil                            # noqa: E402
 from smash.parts.hall_sensors import add_drv5032fcdbzt, add_rr123_1h02_612  # noqa: E402
 from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
 from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
@@ -361,6 +362,8 @@ def build_qpd_module(d: Design) -> None:
     different names (e.g. `QPD_TIA_A_INM`), smash auto-merges and
     keeps both names as aliases on the resulting net."""
     qpd = add_mt03_092_qpd(d, ref="U_QPD", board_tag="qpd_module")
+    # (2026-11-18) Ø34 tile now (was Ø20): carries its own IR service-link pair.
+    _add_ir_service_link(d, "qpd_module", "_Q")
 
     _net(d, "QPD_A").connect(qpd.pin("4"))
     _net(d, "QPD_VREF").connect(qpd.pin("2"))   # cathode common = the anodes' virtual-ground potential
@@ -381,6 +384,11 @@ def build_companion_compute(d: Design) -> None:
     — matches the ST footprint 1:1); the A/C bus keeps the ST reference mapping
     where it carries over. DDR4-specific A/C signals (ACT_n, BG0, muxed A14-16,
     PAR, ALERT_n) are DERIVED — cross-check vs the DDR4 reference."""
+    # (2026-11-18) NO compute-rim IR copy: the VBPW34FAS courtyard (9.4 × 4.4 mm)
+    # finds no rim spot clear of the EE-placed MPU / DDR4 / NAND_A / NAND_B, so
+    # the payload-less `core` config has no IR link yet (open item — smaller
+    # photodiode, or the layout EE frees a rim arc). Magnetic + piezo still cover it.
+
     BTAG = "companion_compute"
 
     # ── STM32MP255 — VFBGA-361 (10×10 mm), the AL/FAL3 variant (secure boot + crypto) ──────
@@ -577,6 +585,11 @@ def build_companion_compute(d: Design) -> None:
     # the deceleration. PD10 has since been taken by H3LIS_INT1.)
     # (Nose status LEDs RETIRED with the IR-link change — PG7/PG8 freed;
     # muzzle state is queried over the IR service link now.)
+    # (2026-11-18) PG7/PG8 re-used for the "healthy and running" beacons:
+    # PG7 keys the embedded aft_end coil driver, PG8 drives the piezo
+    # vibration coupling (see the piezo block).
+    _net(d, "HEALTH_COIL_TX").connect(mpu.pin("PG7"))
+    _net(d, "PIEZO_TX")      .connect(mpu.pin("PG8"))
 
     # Fins/actuator node bus (SYS_SPI master, SPI2)
     _net(d, "SYS_SPI_SCLK")  .connect(mpu.pin("PB0"))   # SPI2_SCK
@@ -1182,8 +1195,8 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     balls → external antenna) and build_radar_module_awr2e44p (waveguide
     launches → horn block). Here the 3 TX + 4 RX patches are ON the package,
     so — like the AWR2E44P — there are NO antenna balls and NO RF on the
-    laminate; the nose_cap becomes an RF-transparent **radome**, not a
-    machined block. See add_awr1843aop.
+    laminate; the nose is an RF-transparent **radome** (the PEEK-LDS cup's
+    closed end — smash.export.nose_radome). See add_awr1843aop.
 
     Architecture (radar does its own detection): the AWR1843's C674x DSP +
     Radar HWA + Cortex-R4F run the detection chain ON-CHIP (range/Doppler
@@ -1302,11 +1315,11 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
     # ── AWR1843AOP ──────────────────────────────────────────────────────────
-    # feature="rf": the AoP is the radiator → stays on the nose_cap-facing TOP
+    # feature="rf": the AoP is the radiator → stays on the nose-facing TOP
     # face. Only small/legged support opts to the bottom (the clock via
     # feature="clock", the SOT-23 bucks + boot flash via feature="bottom"); the
-    # LDO + bulk caps stay on top, their cutouts merged by _mark_radar_block_cutout's
-    # min-wall close. (Bulk caps kept top: too tall/heavy for the bottom envelope.)
+    # LDO + bulk caps stay on top, under the cup's radome pocket. (Bulk caps
+    # kept top: too tall/heavy for the bottom envelope.)
     awr = add_awr1843aop(d, ref="U_AWR", secure=_RADAR_SECURE, board_tag=BTAG)
 
     def _tie(net, *bases):
@@ -1431,7 +1444,6 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # feature="bottom": the saturated top face left no slot for the 6×5 WDFN
     # (packer parked it off-board = the radar overflow). A leadless, low-mass
     # package with its EP soldered down rides the internal bottom face fine,
-    # and it drops out of the nose_cap cutout.
     fl = add_sst26vf080a(d, ref="U_AWR_FLASH", feature="bottom", board_tag=BTAG)
     _net(d, "COMP_3V3").connect(fl.pin("VDD"))
     _net(d, "GND")     .connect(fl.pin("VSS"))
@@ -2314,6 +2326,45 @@ def build_activation_interface(d: Design) -> None:
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_COMP_PZ",
                board_tag="aft_end_board", pin=comp.pin("6"))   # local comparator decoupling
 
+    # ── "Healthy and running" beacons (2026-11-18, user: signal a fully
+    # active system to a reader clamped on / at the barrel; redundant to IR).
+    # Both are keyed by the MP25 (PG7 / PG8, freed by the retired nose LEDs),
+    # so they only ever run when the main system is up.
+    #
+    # VIBRATION: the launch disc doubles as the emitter. PIEZO_TX (MP25 PG8,
+    # a 3.3 V square wave — e.g. a coded ~kHz–tens-of-kHz burst) couples onto
+    # PIEZO_P through 1 k + 10 nF (≈ 2.7 V across the 2.1 nF disc). Idle, the
+    # pin holds low, so the 10 nF loads the disc and the launch comparator's
+    # sensitivity drops ~6× — accepted (user: launch sensing is not subtle).
+    # Firmware masks COMP_OUT while it transmits.
+    res_between(d, "PIEZO_TX", "PIEZO_TX_C", "1k", ref="R_PZ_TX",
+                board_tag="aft_end_board")
+    cap_to_gnd(d, "PIEZO_TX_C", "10nF", gnd_net="PIEZO_P", ref="C_PZ_TX",
+               board_tag="aft_end_board")
+    # MAGNETIC: an 8-turn rim spiral embedded in aft_end_board (In2.Cu,
+    # r 12–15.5 mm, In3.Cu return — away from the antennas), pulsed at
+    # 3–30 Hz from BAT_PROT through a 4 × 47 Ω bank (≈ 0.19 A ≈ 1.5 A·turns)
+    # by a low-side BSS138 (bottom face) + passives on activation_interface
+    # (aft_end's top is the battery-holder seat). smash.sim.inductive: ≥ ~45 dB at a ring
+    # clamp through 1–10 mm of barrel steel. HEALTH_COIL_TX = MP25 PG7.
+    # The coil itself is copper only — added AFTER placement by
+    # _place_health_coil (like the castellations) so the packer never sees a
+    # Ø31 obstacle; its two nets are wired there.
+    for k in range(1, 5):
+        res_between(d, "HEALTH_COIL_RET", "HEALTH_COIL_D", "47", ref=f"R_COIL_{k}",
+                    board_tag="activation_interface")
+    q_coil = add_bss138lt1g(d, ref="Q_HEALTH_COIL", board_tag="activation_interface",
+                            feature="bottom")
+    _net(d, "HEALTH_COIL_D").connect(q_coil.pin("3"))   # Drain
+    _net(d, "GND")          .connect(q_coil.pin("2"))   # Source
+    _net(d, "HEALTH_COIL_G").connect(q_coil.pin("1"))   # Gate
+    res_between(d, "HEALTH_COIL_TX", "HEALTH_COIL_G", "100", ref="R_COIL_G",
+                board_tag="activation_interface")
+    res_between(d, "HEALTH_COIL_G", "GND", "100k", ref="R_COIL_PD",
+                board_tag="activation_interface")
+    cap_to_gnd(d, "BAT_PROT", "10uF", ref="C_HEALTH_COIL",
+               board_tag="activation_interface", pin=q_coil.pin("3"))
+
     _build_activation_array(d)
 
 
@@ -2500,10 +2551,12 @@ def _build_activation_array(d: Design) -> None:
 def build_camera_module(d: Design) -> None:
     """AR0234CS 2.3-MP monochrome global-shutter image sensor (83-ball
     ODCSP) + power-rail decoupling caps + RSVD pulldown. 2-lane MIPI
-    CSI-2 + I²C + EXTCLK + RESET_BAR control. All on a small Ø15 mm
-    tile behind the 1064 nm bandpass lens. It steers the drop onto the
+    CSI-2 + I²C + EXTCLK + RESET_BAR control. On a Ø34 tile (was Ø15,
+    grown 2026-11-18 to carry the IR service-link pair and seat on the cup's
+    stop bosses) behind the nose lens. It steers the drop onto the
     illuminated aim point and, once down, looks for people."""
     cam = add_ar0234cssm00suka0_cp(d, ref="U_CAM", board_tag="camera_module")
+    _add_ir_service_link(d, "camera_module", "_C")
 
     # ── Power rails (per datasheet Table 3) ─────────────────────────
     # 1.2V (VDD, VDD_PHY, VDD_DATA): PMIC-supplied
@@ -2584,40 +2637,106 @@ def build_camera_module(d: Design) -> None:
                board_tag="camera_module", pin=(cam.ref, None))
 
 
-def build_nose_cap(d: Design) -> None:
-    """Terminal forward-end tile (radar builds only): the **nose cap** — a thin
-    (~0.6 mm) Ø34 disc that closes the projectile nose. It (1) carries the depot
-    **USB-C** on its outer, post-potting-accessible face, (2) carries the
-    **IR service-link window** (the RX/TX pair lives on the radar face under
-    its through-cuts), and (3) structurally **supports the aluminium waveguide
-    disk** so the disk's rapid-deceleration load runs nose_cap → body, NOT through the AWR.
+def _add_ir_service_link(d: Design, board_tag: str, sfx: str = "",
+                         dnp: bool = False) -> None:
+    """IR service-link pair on `board_tag`'s nose-facing TOP face: D_IR_TX
+    (VSMB1940X01 940 nm emitter + its tile-local drive loop off BAT_PROT) and
+    D_IR_WAKE (VBPW34FAS photodiode, cathode on the shared IR_WAKE wake net).
 
-    Stack (radar tile top = ref, +Z toward the nose): the AWR2E44P (1.234 mm
-    tall) sits on the radar; the radar↔nose_cap spacer is sized to
-    `AWR_height − nose_cap_thickness` so the nose_cap's OUTER face lands flush
-    with the AWR top. The waveguide disk sits just beyond, across an **air gap**
-    (choke-flange transition). That gap MUST stay air: Smash's black Stycast
-    2651MM is a ~0.8 dB/mm absorber at 77 GHz, so the **potting line stops at the
-    AWR top** and never fills the coupling gap (see ref_stycast_mmwave_loss).
+    (2026-11-18, user: "IR in every config") One copy per nose payload —
+    radar_module (sfx ""), qpd_module ("_Q"), camera_module ("_C"; both
+    payload boards grew to Ø34). (`core` has none yet — no compute-rim spot
+    fits the photodiode.) Only IR_TX / IR_WAKE / BAT_PROT / GND are
+    shared; the drive-loop nets carry the suffix so copies never short. Each
+    diode looks out through a light pipe moulded into the cup nose (kept out
+    of the black, IR-opaque potting — smash.export.cup_noses)."""
+    first = len(d.chips)
+    # D_IR_TX — VSMB1940X01 940 nm emitter, the TX half of the service link
+    # (15 ns die → kbps–MHz OOK; the wand's receiver sets the rate). The
+    # drive loop is TILE-LOCAL off BAT_PROT (alive in every state):
+    # BAT_PROT → LED → 2× 27 Ω → BSS138 → GND ≈ 44 mA @ 4 V driven rail /
+    # ≈ 31 mA @ 3.3 V shelf-diode rail (I_FM abs-max 200 mA; the split
+    # current R keeps each 0402 at ~26 mW @ 50 % modulation duty —
+    # firmware must cap continuous-ON dwell). Only the logic-level gate
+    # net IR_TX crosses the backbone (→ WBA PA6, 3 joints): the WBA keys
+    # the emitter from Standby with the MP25 dark, so a wand session — or
+    # the bore-side optical downlink, the one channel that escapes a
+    # chambered round (Ø30 steel bore is below cutoff at 2.4 GHz) — needs
+    # no rail-up. 100 k gate pull-down holds it dark whenever the WBA is
+    # unpowered (shelf); C_IR_TX is the local burst reservoir (real part,
+    # never ECM-absorbed — it feeds 44 mA edges at the end of the rail).
+    tx = add_vsmb1940x01(d, ref=f"D_IR_TX{sfx}", board_tag=board_tag)
+    _net(d, "BAT_PROT").connect(tx.pin("A"))
+    _net(d, f"IR_TX_K{sfx}") .connect(tx.pin("K"))
+    res_between(d, f"IR_TX_K{sfx}", f"IR_TX_M{sfx}", "27",
+                ref=f"R_IR_TX_A{sfx}", board_tag=board_tag)
+    res_between(d, f"IR_TX_M{sfx}", f"IR_TX_D{sfx}", "27",
+                ref=f"R_IR_TX_B{sfx}", board_tag=board_tag)
+    q_irtx = add_bss138lt1g(d, ref=f"Q_IR_TX{sfx}", board_tag=board_tag)
+    _net(d, f"IR_TX_D{sfx}").connect(q_irtx.pin("3"))   # Drain
+    _net(d, "GND")    .connect(q_irtx.pin("2"))   # Source
+    _net(d, f"IR_TX_G{sfx}").connect(q_irtx.pin("1"))   # Gate
+    res_between(d, "IR_TX",   f"IR_TX_G{sfx}", "100",
+                ref=f"R_IR_TX_G{sfx}",  board_tag=board_tag)
+    res_between(d, f"IR_TX_G{sfx}", "GND",     "100k",
+                ref=f"R_IR_TX_PD{sfx}", board_tag=board_tag)
+    cap_to_gnd(d, "BAT_PROT", "1uF", ref=f"C_IR_TX{sfx}", board_tag=board_tag, pin=tx.pin("A"))
 
-    USB-C is the depot service port — **power-in** (VBUS → BAT_PROT via the 5 A OR
-    Schottky on power_board, so the TPS25940 eFuse's reverse-blocking keeps the
+    # ── IR activation_unlock wake — VBPW34FAS daylight-filtered PIN photodiode ─────────
+    # The optical on-switch (Standby → Ready, the merged staged state):
+    # deliberate ~950 nm IR
+    # illumination at the nose wakes the WBA55 from Stop1 via EXTI12.
+    # Photoconductive mode against RPU_IR_WAKE (470 k → 3V3_AON, lives on
+    # wakeup_board beside the WBA — the high-value bias stays OFF this
+    # tile so the only long net is the photodiode's own cathode node).
+    # Wake needs the node below V_IL ≈ 1 V: (3.3 − 1) / 470 k ≈ 5 µA of
+    # photocurrent; the part delivers 45–55 µA at 1 mW/cm² (950 nm,
+    # DS 81127) — a close-range IR wand saturates the margin. Sunlight
+    # rejection is layered: the package daylight filter (λ < 780 nm
+    # blocked), the recessed cup-nose IR hole's narrow acceptance cone, and
+    # a WBA firmware persistence/pattern check (a false wake costs µJ —
+    # sample, disqualify, back to Stop1). Zero Standby power adder: the
+    # pull-up conducts only when illuminated (dark current 2–30 nA).
+    # Light path: an IR through-hole in the cup nose over the part
+    # (a light pipe moulded into the cup — smash.export.cup_noses). This REPLACES the
+    # H3LIS motion-detect as the Standby→Ready entry; the H3LIS
+    # (now on main 3V3) keeps its launch-witness + flight-recorder
+    # roles from Ready on. ⚠ CONOPS: activation_unlock is now a deliberate
+    # operator/launcher action — revises the "no launcher cooperation"
+    # ground rule in the power_states.md preamble. A round never given IR activation_unlock stays in
+    # Standby through launch (no motion fallback any more).
+    pd_wake = add_vbpw34fas(d, ref=f"D_IR_WAKE{sfx}", board_tag=board_tag)
+    _net(d, "IR_WAKE").connect(pd_wake.pin("K"))   # reverse-biased by the pull-up
+    _net(d, "GND")    .connect(pd_wake.pin("A"))
+    if dnp:
+        for c in d.chips[first:]:
+            c.dnp = True
+
+
+def build_radar_nose_io(d: Design) -> None:
+    """Radar nose I/O (radar builds only): the depot **USB-C** and the **IR
+    service-link** pair, all on `radar_module`'s nose-facing TOP face.
+
+    (2026-11-18) The nose_cap PCB is RETIRED. The nose is now the closed end of
+    the per-config one-piece PEEK-LDS **cup** (sleeve + nose in one moulding —
+    `smash.export.cup_noses` / `nose_radome`): a flat λ/2 radome over the
+    AWR1843AOP antennas-on-package, with a USB-C window over J_USB_C and IR
+    through-holes over D_IR_TX / D_IR_WAKE. The radar board is screwed or
+    glued into the cup nose before the cup goes onto the tower, then the whole
+    assembly is potted inside the cup.
+
+    USB-C is the depot service port — **power-in** (VBUS → BAT_PROT via the
+    OR switch on power_board, so the TPS25940 eFuse's reverse-blocking keeps the
     primary cells isolated while USB runs the whole unit) **+ USB2 data** (D± →
     MP25 USB-FS for SSH / USB-DFU). The connector is a Same Sky UJ20 — a 16-pin
-    USB2-only IP67 receptacle SMT-mounted on the cap's OUTER face (the cap is now
-    1.455 mm — too thick for the UJ20's ~1 mm mid-mount slot, so it surface-mounts;
-    SBU contacts unconnected)."""
-    BTAG = "nose_cap"
+    USB2-only IP67 receptacle SMT-mounted on the radar top at the north chord
+    (SBU contacts unconnected)."""
     _net(d, "GND", kind="ground")
 
     # ── Depot USB-C (UJ20 USB2 IP67, SMT on the RADAR top face) ─────────────
-    # Lowered from the nose_cap onto the radar's nose-facing top face at the SAME
-    # (0,12) north-rim spot (nothing else sits there): it pokes UP through a
-    # clearance cavity retained in the nose_cap (_mark_usb_cavity) instead of
-    # sitting on the nose_cap's OUTER face, so its body no longer protrudes past
-    # the nose tip — reclaims its height from the stack. The 17 mm N chord moves
-    # to the radar with it (kicad_pcb.py). board_tag=radar_module; the lock keeps
-    # (0,12)/face=top (radar→nose is an identity fold, so top still faces the nose).
+    # On the radar's nose-facing top face at the (0,12) north-rim spot, mouth
+    # out through the 17 mm N chord notch (kicad_pcb._tile_cuts); the cup has a
+    # matching window (smash.export.nose_radome). board_tag=radar_module.
     # 16-contact USB2 receptacle; the pads combine the A/B sides (A4_B9 = VBUS,
     # A1_B12 = GND, …) so we wire by pad NUMBER — the symbol's repeated functional
     # names arrive de-duped (VBUS__1, GND__1, SHIELD__1…), so number is the key.
@@ -2629,8 +2748,7 @@ def build_nose_cap(d: Design) -> None:
     # CC1/CC2: 5.1 kΩ Rd to GND each → UFP sink presentation (source enables 5 V).
     # CC is a static DC presentation — no SI need to sit by the connector, so the
     # two Rds live on the RADAR (like the IR service-link pair + the OR diode on power_board),
-    # keeping the nose_cap to just the connector + its mid-mount cutout. USB_CC1/CC2
-    # cross the radar↔nose_cap LGA joint.
+    # all on the radar.
     CC_BTAG = "radar_module"
     _net(d, "USB_CC1").connect(usb.pin("A5"))
     res_between(d, "USB_CC1", "GND", "5.1k", ref="R_USB_CC1", board_tag=CC_BTAG)
@@ -2653,9 +2771,9 @@ def build_nose_cap(d: Design) -> None:
     # charging — a Li primary must never be charged). Q_USB_OR's own body diode
     # blocks BAT_PROT from draining into a dead USB line on cell power, with its
     # gate drive unpowered. The OR switch + its VBUS bulk cap
-    # live on POWER_BOARD (where BAT_PROT exists) — off the nose_cap — so only
-    # USB_VBUS crosses the snake. The nose_cap is now JUST the connector — the
-    # CC Rds (above) and the IR service-link pair (below) both live on the radar.
+    # live on POWER_BOARD (where BAT_PROT exists), so only USB_VBUS crosses
+    # the snake. The CC Rds (above) and the IR service-link pair (below) live
+    # on the radar beside the connector.
     # The OR switch + VBUS bulk cap + the USB-wake interlock all carry
     # board_tag="power_board" and are authored in build_power_board (the
     # shared power tile must fab identically in EVERY config, USB depot
@@ -2668,70 +2786,11 @@ def build_nose_cap(d: Design) -> None:
     # round answers) instead of read by eye at the muzzle — power_states §4a.
     # Their slots became the IR pair: D_IR_WAKE (receiver, below) + D_IR_TX.
     #
-    # D_IR_TX — VSMB1940X01 940 nm emitter, the TX half of the service link
-    # (15 ns die → kbps–MHz OOK; the wand's receiver sets the rate). The
-    # drive loop is TILE-LOCAL off BAT_PROT (alive in every state):
-    # BAT_PROT → LED → 2× 27 Ω → BSS138 → GND ≈ 44 mA @ 4 V driven rail /
-    # ≈ 31 mA @ 3.3 V shelf-diode rail (I_FM abs-max 200 mA; the split
-    # current R keeps each 0402 at ~26 mW @ 50 % modulation duty —
-    # firmware must cap continuous-ON dwell). Only the logic-level gate
-    # net IR_TX crosses the backbone (→ WBA PA6, 3 joints): the WBA keys
-    # the emitter from Standby with the MP25 dark, so a wand session — or
-    # the bore-side optical downlink, the one channel that escapes a
-    # chambered round (Ø30 steel bore is below cutoff at 2.4 GHz) — needs
-    # no rail-up. 100 k gate pull-down holds it dark whenever the WBA is
-    # unpowered (shelf); C_IR_TX is the local burst reservoir (real part,
-    # never ECM-absorbed — it feeds 44 mA edges at the end of the rail).
-    LED_BTAG = "radar_module"
-    tx = add_vsmb1940x01(d, ref="D_IR_TX", board_tag=LED_BTAG)
-    _net(d, "BAT_PROT").connect(tx.pin("A"))
-    _net(d, "IR_TX_K") .connect(tx.pin("K"))
-    res_between(d, "IR_TX_K", "IR_TX_M", "27",
-                ref="R_IR_TX_A", board_tag=LED_BTAG)
-    res_between(d, "IR_TX_M", "IR_TX_D", "27",
-                ref="R_IR_TX_B", board_tag=LED_BTAG)
-    q_irtx = add_bss138lt1g(d, ref="Q_IR_TX", board_tag=LED_BTAG)
-    _net(d, "IR_TX_D").connect(q_irtx.pin("3"))   # Drain
-    _net(d, "GND")    .connect(q_irtx.pin("2"))   # Source
-    _net(d, "IR_TX_G").connect(q_irtx.pin("1"))   # Gate
-    res_between(d, "IR_TX",   "IR_TX_G", "100",
-                ref="R_IR_TX_G",  board_tag=LED_BTAG)
-    res_between(d, "IR_TX_G", "GND",     "100k",
-                ref="R_IR_TX_PD", board_tag=LED_BTAG)
-    cap_to_gnd(d, "BAT_PROT", "1uF", ref="C_IR_TX", board_tag=LED_BTAG, pin=tx.pin("A"))
+    _add_ir_service_link(d, "radar_module")
 
-    # ── IR activation_unlock wake — VBPW34FAS daylight-filtered PIN photodiode ─────────
-    # The optical on-switch (Standby → Ready, the merged staged state):
-    # deliberate ~950 nm IR
-    # illumination at the nose wakes the WBA55 from Stop1 via EXTI12.
-    # Photoconductive mode against RPU_IR_WAKE (470 k → 3V3_AON, lives on
-    # wakeup_board beside the WBA — the high-value bias stays OFF this
-    # tile so the only long net is the photodiode's own cathode node).
-    # Wake needs the node below V_IL ≈ 1 V: (3.3 − 1) / 470 k ≈ 5 µA of
-    # photocurrent; the part delivers 45–55 µA at 1 mW/cm² (950 nm,
-    # DS 81127) — a close-range IR wand saturates the margin. Sunlight
-    # rejection is layered: the package daylight filter (λ < 780 nm
-    # blocked), the recessed nose_cap hole's narrow acceptance cone, and
-    # a WBA firmware persistence/pattern check (a false wake costs µJ —
-    # sample, disqualify, back to Stop1). Zero Standby power adder: the
-    # pull-up conducts only when illuminated (dark current 2–30 nA).
-    # Light path: nose_cap through-hole relief, auto-generated per F.Cu
-    # part (verified by tools/check_nose_cap_cutout.py). This REPLACES the
-    # H3LIS motion-detect as the Standby→Ready entry; the H3LIS
-    # (now on main 3V3) keeps its launch-witness + flight-recorder
-    # roles from Ready on. ⚠ CONOPS: activation_unlock is now a deliberate
-    # operator/launcher action — revises the "no launcher cooperation"
-    # ground rule in the power_states.md preamble. A round never given IR activation_unlock stays in
-    # Standby through launch (no motion fallback any more).
-    pd_wake = add_vbpw34fas(d, ref="D_IR_WAKE", board_tag=LED_BTAG)
-    _net(d, "IR_WAKE").connect(pd_wake.pin("K"))   # reverse-biased by the pull-up
-    _net(d, "GND")    .connect(pd_wake.pin("A"))
-
-    # The aluminium waveguide DISK mounts on the cap's outer face and bears the
-    # rapid-deceleration load (not the AWR). The radar couples to it across the air gap over
-    # the AWR aperture (no potting in the gap — black Stycast is a 77 GHz
-    # absorber). No BLE radiator here (the disk would blind it; the WBA uses the
-    # Yagi pair). The aperture is milled by _mark_radar_block_cutout.
+    # The AoP radiates through the cup's λ/2 radome window; the air pocket
+    # over it is kept free of black Stycast (a 77 GHz absorber) by the cup's
+    # inner dam rib (smash.export.nose_radome).
 
 
 # build_nfc_antenna_flex REMOVED 2026-07-30 (NFC subsystem deleted).
@@ -3419,7 +3478,7 @@ def build_power_board(d: Design) -> None:
     # factory does — leave unconnected to match.
 
     # ── Depot-USB power OR + wake interlock (moved here from
-    # build_nose_cap 2026-08-28: these are power_board parts — "the OR
+    # the nose_cap builder 2026-08-28: these are power_board parts — "the OR
     # diode + its VBUS bulk cap live on POWER_BOARD (where BAT_PROT
     # exists)" — and the shared power tile must fab identically in every
     # config, USB depot present or not). USB 5 V VBUS ORed into BAT_PROT —
@@ -4210,9 +4269,9 @@ _BOARD_BUILDERS = {
     "power_board":          lambda d: build_power_board(d),
     "wakeup_board":         lambda d: build_wakeup_board(d),  # IMU/mag sensors folded in
     "fin_ble_board":        lambda d: build_fins_module(d),  # fins-only tile (2026-07-30 crowding split off wakeup; the WBA cluster moved back to wakeup_board 2026-07-31)
-    "radar_module":         lambda d: build_radar_module_awr1843aop(d),
+    "radar_module":         lambda d: (build_radar_module_awr1843aop(d),
+                                       build_radar_nose_io(d)),
     "companion_compute":    lambda d: build_companion_compute(d),
-    "nose_cap":             lambda d: build_nose_cap(d),
     "aft_end_board":        lambda d: build_aft_end_board(d),
     "cell_floor_board":     lambda d: build_cell_floor_board(d),
     "activation_interface": lambda d: build_activation_interface(d),
@@ -4237,7 +4296,7 @@ _BOARD_BUILDERS = {
 _MASTER_SNAKE = [
     "aft_end_board", "activation_interface", "fin_ble_board",
     "wakeup_board", "power_board", "companion_compute",
-    "radar_module", "nose_cap",
+    "radar_module",
 ]
 # Branch tiles → (parent board, flex length mm, branch_side, s_fold).
 # branch_side is "N" / "S" / "W" / "E" / None (None = inherit the panel-default).
@@ -4273,11 +4332,11 @@ def _cone_exits():
 _FLEX_LAUNCH_CATALOG = [
     ("companion_compute", "qpd_module", "N",
      ["3V3", "FLEX_GND", "QPD_TIA_A", "QPD_TIA_B", "QPD_TIA_C",
-      "QPD_TIA_D"]),
+      "QPD_TIA_D", "BAT_PROT", "IR_TX", "IR_WAKE"]),
     ("companion_compute", "camera_module", "S",
      ["CAM_CSI_CLK_N", "CAM_CSI_CLK_P", "CAM_CSI_D0_N", "CAM_CSI_D0_P",
       "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK", "COMP_1V2",
-      "COMP_1V8", "COMP_2V8", "FLEX_GND"]),
+      "COMP_1V8", "COMP_2V8", "FLEX_GND", "BAT_PROT", "IR_TX", "IR_WAKE"]),
 ]
 
 _CONE_EXITS = _cone_exits()
@@ -4312,10 +4371,11 @@ _CORE      = {"aft_end_board", "power_board",
 # core_radar is now a firmware / DNP decision, not a board-set one.)
 # nfc_antenna_flex REMOVED 2026-07-30 with the whole NFC subsystem (tag +
 # antenna + wake legs) — wake channels are now magnetic / jumpstart / USB.
-# The radar forward-end: the AWR2E44P tile + the nose_cap that closes the nose
-# (USB-C + LEDs + waveguide-disk mount). nose_cap is RADAR-ONLY — non-radar
-# configs have no post-potting service tile (they end at companion_compute).
-_RADAR     = {"radar_module", "nose_cap"}
+# The radar forward-end: the AWR1843AOP tile (+ its USB-C / IR nose I/O). The
+# nose_cap PCB is RETIRED (2026-11-18): the nose is the closed end of the
+# config's one-piece PEEK-LDS cup (smash.export.cup_noses), into which the radar
+# board is fixed before the cup goes onto the tower.
+_RADAR     = {"radar_module"}
 
 # ── battery variant ──────────────────────────────────────────────────
 # DEFAULT FLIPPED 2026-07-28 (battery review): ALL configs now default to the
@@ -4518,8 +4578,7 @@ def _export_print_stls(boards, snake_chain, out_dir, tile_step_dir=None):
 
 def _resolve_awr_placement(boards):
     """The resolved U_AWR placement on radar_module as `((cx,cy), rot_deg)`,
-    or None when there is no radar tile / chip (non-radar configs). Mirrors
-    `_mark_radar_block_cutout`'s chip_placements access."""
+    or None when there is no radar tile / chip (non-radar configs)."""
     radar = boards.get("radar_module")
     if radar is None:
         return None
@@ -4532,12 +4591,12 @@ def _resolve_awr_placement(boards):
 def _export_waveguide_stubs(boards, out_path) -> str:
     """Best-effort WR-10 throat-stub STEP for visual alignment over the
     AWR2E44P launches. Reads the resolved U_AWR placement and maps the chip's
-    footprint launches into the nose_cap frame (identity fold, see
-    `_mark_radar_block_cutout`). The export stacks the AWR footprint context
+    footprint launches into the radar top-face frame (AWR2E44P builds only —
+    the nose_cap PCB is retired). The export stacks the AWR footprint context
     (package body + BGA balls + plain verification PCB) DOWN from the launch
     plane so the stubs can be confirmed against the ball grid — no board sits
     between the launches and the stubs. Skips cleanly on non-radar configs /
-    no cadquery; never raises. Call AFTER place_design + _mark_radar_block_cutout."""
+    no cadquery; never raises. Call AFTER place_design."""
     if not _STEP_ENABLED:
         return "waveguide stubs skipped (STEP off)"
     pl = _resolve_awr_placement(boards)
@@ -4545,7 +4604,7 @@ def _export_waveguide_stubs(boards, out_path) -> str:
         return "waveguide stubs skipped (no radar tile / U_AWR)"
     # The stubs model the AWR2E44P's on-package waveguide launches. The AoP
     # (antenna-on-package) and AWR2944 (external patches) have no launches, so
-    # skip — there is nothing to couple into a horn block; the nose_cap is a
+    # skip — there is nothing to couple into a horn block; the cup nose is a
     # radome for those parts, not a waveguide block.
     radar = boards.get("radar_module")
     awr_pn = next((getattr(p.item, "manf_pn", "") or "" for p in radar.chip_placements
@@ -4672,7 +4731,7 @@ def _replay_absent_joint_fields(d, panel, boards, ref) -> int:
     by a DIFFERENT joint in this config (novel adjacency, e.g. a
     re-ordered battery column) is skipped with a warning — that board
     cannot stay identical to the maximalist part. Call right after
-    place_lga_lands (before _drop_radar_nose_spacer prunes the chain)."""
+    place_lga_lands."""
     from smash.parts.connectors import _emit_land_field
     chain = list(getattr(panel, "snake_chain", []) or [])
     idx = {n: i for i, n in enumerate(chain)}
@@ -4712,7 +4771,6 @@ _BOARD_LABELS = {
     "power_board":          "power",
     "companion_compute":    "compute",
     "radar_module":         "radar",
-    "nose_cap":             "top",
 }
 
 
@@ -5260,165 +5318,21 @@ def _apply_companion_reference_layout(d, boards: dict) -> None:
     assert_no_locked_overlaps(boards, accepted=_ACCEPTED_LOCKED_OVERLAPS)
 
 
-def _mark_radar_block_cutout(boards: dict) -> None:
-    """Radar coupling cutout: a through-cut in the nose_cap that FOLLOWS the
-    radar's top-face chips — the central AWR (the waveguide coupling aperture)
-    plus the buck / LDO / 1V0 bulk-cap ringing it — so each pokes up through the
-    nose_cap, which now stacks directly on the radar. The cutout is the shapely
-    UNION of each chip's footprint + clearance, projected into the nose_cap frame
-    (mirror_x fold), so it HUGS the chips (non-rectangular, minimal material
-    removed) instead of milling a big block. The aluminium waveguide disk/antenna
-    sits on the outer face and SEALS the opening; the radar couples to it across
-    the air gap. Emitted as `face="through"` CavityRegion(s) → Edge.Cuts windows,
-    with matching no-place Keepouts. Isolated builds (no radar tile) fall back to
-    a ~15 mm square so the aperture still renders. Call AFTER place_design."""
-    nose = boards.get("nose_cap")
-    if nose is None:
-        return
-    from shapely.geometry import box as _box, Polygon as _Poly
-    from shapely.ops import unary_union
-    from smash.state.board_geometry import Keepout
-    from smash.state.geometry.cavity import CavityRegion
-    from smash.state.topology.placement import Placement
-    CLR = 0.6
-    radar = boards.get("radar_module")
-    boxes = []
-    if radar is not None:
-        for p in radar.chip_placements:
-            fp = getattr(p.item, "footprint", None)
-            if getattr(p, "face", None) != "top" or fp is None:
-                continue
-            if getattr(p.item, "ref", None) == "J_USB_C":
-                continue  # USB-C pokes up through the N-chord NOTCH (kicad_pcb._tile_cuts), not a block cutout
-            # Cavity extent: prefer the declared body size_mm; fall back to the
-            # F.Fab body / courtyard bounding box so a top-face chip that didn't
-            # declare size_mm (e.g. a SamacSys flash) still gets a cutout rather
-            # than being silently skipped (which is exactly what dropped the
-            # SST26 flash before).
-            wh = fp.size_mm
-            if not wh:
-                poly = fp.body_outline or fp.courtyard
-                if poly:
-                    xs = [x for x, _y in poly]
-                    ys = [_y for _x, _y in poly]
-                    wh = (max(xs) - min(xs), max(ys) - min(ys))
-            if not wh:
-                continue
-            cx, cy = p.position_mm
-            w, h = wh
-            # The nose_cap stacks DIRECTLY on the radar and the backbone lands
-            # mate through the (discarded) scaffold spacer — radar→spacer→nose is
-            # two mirror_x folds = IDENTITY — so a radar chip at (cx,cy) sits under
-            # the nose_cap at the SAME (cx,cy). The cutout follows it there (no
-            # mirror), which also keeps it clear of the folded LGA lands.
-            boxes.append(_box(cx - w / 2 - CLR, cy - h / 2 - CLR,
-                              cx + w / 2 + CLR, cy + h / 2 + CLR))
-    if not boxes:                                 # isolated render: no radar tile
-        boxes = [_box(-7.5, -7.5, 7.5, 7.5)]
-    merged = unary_union(boxes)
-    # Close gaps narrower than the minimum nose_cap wall so two near-but-separate
-    # cutouts don't leave an unmillable thin sliver between them — they merge into
-    # one window (the "combine cavities when courtyards touch" rule, generalised
-    # to a min-wall threshold). Morphological close = buffer-out then buffer-in;
-    # mitre join keeps the box corners square. No-op for a single cutout.
-    _MIN_WALL_MM = 1.0
-    closed = (merged.buffer(_MIN_WALL_MM / 2, join_style=2)
-                    .buffer(-_MIN_WALL_MM / 2, join_style=2))
-    if not closed.is_empty:
-        merged = closed
-    parts = list(merged.geoms) if merged.geom_type == "MultiPolygon" else [merged]
-    rings = [[(round(x, 3), round(y, 3)) for x, y in g.exterior.coords[:-1]]
-             for g in parts]
-
-    def _apply(board, depth_mm: float, ring_list) -> None:
-        # Drop any pre-existing through-cut fully inside these cut(s) (redundant —
-        # a nested Edge.Cuts loop would stitch as a floating FR4 island), then add
-        # the chip-hugging cut(s).
-        ml = unary_union([_Poly(r) for r in ring_list])
-        board.cavity_placements = [
-            pl for pl in board.cavity_placements
-            if not (isinstance(pl.item, CavityRegion) and pl.item.face == "through"
-                    and pl.item.exterior_polygon
-                    and _Poly(pl.item.exterior_polygon).within(ml))]
-        for i, ring in enumerate(ring_list):
-            board.cavity_placements.append(Placement(
-                position_mm=(0.0, 0.0), rotation_deg=0.0, face="top",
-                item=CavityRegion(name=f"radar_chip_cutout_{i}", face="through",
-                                  exterior_polygon=ring, depth_mm=depth_mm)))
-
-    _apply(nose, 0.0, rings)                      # face=through → Edge.Cuts window
-    if getattr(nose, "geometry", None) is not None:
-        for ring in rings:
-            nose.geometry.keepouts.append(Keepout(
-                polygon=ring, scope="both", tag="awr_aperture",
-                note="Radar-chip coupling cutout (through-cut) — no parts over it."))
-    sp = boards.get("spacer_radar_module_nose_cap")   # scaffold (discarded later)
-    if sp is not None:
-        # The backbone lands are packed against the SPACER's free region then
-        # folded onto each neighbour via _fold(Q, same_row) — mirror_x OR mirror_y.
-        # The CENTRAL cut is ~symmetric so it's fine either way, but the off-centre
-        # LED lobes are not — the folded lands would clip them. Exclude all four
-        # reflections of the cut on the (thrown-away) scaffold spacer so the lands
-        # clear the real nose_cap cut regardless of fold parity.
-        refl = [[(sx * x, sy * y) for x, y in r]
-                for r in rings for sx in (1, -1) for sy in (1, -1)]
-        _apply(sp, sp.thickness_mm, refl)
-
-
-# Guaranteed air gap above the AWR top (~one fab layer). The aluminium waveguide
-# disk mounts on the nose_cap's OUTER face; sizing the radar↔nose_cap spacer a
-# touch PROUD of flush keeps the AWR top this far below the outer face, so the
-# disk never presses on the chip even with stackup tolerance. The RF choke-flange
-# coupling gap itself is set by the disk recess, not by this margin.
-_AWR_AIR_GAP_MM = 0.13
-
-
-def _mark_usb_cavity(boards: dict) -> None:
-    """No-op, kept as a documented call site (and for the spacer-discard test).
-
-    The UJ20 connector pocket used to be marked here as a separate through-cut
-    CavityRegion, but it OVERLAPPED the N chord flat in the board outline and the
-    outline boolean left stray FR4 rectangles in front of the connector. The
-    pocket is now built INTO the outline as a central notch in the chord
-    (flat -> notch -> flat, one continuous edge) -- see kicad_pcb._tile_cuts
-    (notch_width_mm/notch_depth_mm on the N flat) and the matching cut in
-    stackup_step.build_board_solid."""
-    # No-op. The UJ20 connector pocket is now built INTO the board outline as a
-    # central notch in the N chord (flat -> notch -> flat, one continuous edge) —
-    # see kicad_pcb._tile_cuts (notch_width_mm/notch_depth_mm on the N flat) and
-    # the matching cut in stackup_step.build_board_solid. The old approach put a
-    # separate through-cut CavityRegion here that OVERLAPPED the chord flat, and
-    # the outline boolean left stray FR4 rectangles in front of the connector.
-    return
-
-
 def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     """Keepouts the placer must see BEFORE place_design (chip_placements aren't
-    set yet, so this reads the AWR from `d.chips`):
+    set yet):
 
-      1. The nose_cap's central AWR coupling aperture (a through-cut) — no parts
-         may cluster there or they float over the cutout.
-      2. The radar's NORTH column where the nose_cap USB-C lands when the snake
-         folds (X-mirror → N maps to N), so no tall radar chip (e.g. the
-         LMR10510 buck) ends up under the connector through the thin spacer."""
+      1. The radar's NORTH column around the locked J_USB_C (top NE): the
+         connector mouth exits through the N chord notch and the cup's USB
+         window (smash.export.nose_radome), so no tall radar chip may crowd it.
+         (2026-11-18: the nose_cap aperture keepout went with the nose_cap PCB.)"""
     from smash.state.board_geometry import Keepout
-    nose = boards.get("nose_cap")
-    if nose is not None and getattr(nose, "geometry", None) is not None:
-        # The cutout (marked post-place) grows past the AWR to swallow the radar's
-        # top-face power chips (buck / LDO / 1V0 bulk-cap) out to ~radius 10. Keep
-        # the nose_cap's own passives clear of that whole region so they don't
-        # float — the pre-place keepout anticipates the enlarged cutout. Asymmetric
-        # in Y to preserve the north cap for the USB; locked LEDs/USB sit outside.
-        nose.geometry.keepouts.append(Keepout(
-            polygon=[(-11.5, -11.0), (11.5, -11.0), (11.5, 7.5), (-11.5, 7.5)],
-            scope="both", tag="awr_aperture",
-            note="Enlarged AWR + power-chip cutout (through-cut) — no parts over it."))
     radar = boards.get("radar_module")
     if radar is not None and getattr(radar, "geometry", None) is not None:
         radar.geometry.keepouts.append(Keepout(
             polygon=[(-6.0, 7.5), (6.0, 7.5), (6.0, 17.0), (-6.0, 17.0)],
             scope="both", tag="usb_zone",
-            note="nose_cap USB-C lands here when folded — keep tall chips out."))
+            note="USB-C mouth + cup window zone — keep tall chips out."))
 
     # 3. Battery-bracket tuck (triple mode): the compartment's two bracket
     #    faces — fin_ble's BOTTOM (the ceiling) and cell_floor's TOP — must
@@ -5536,56 +5450,6 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
                     note=f"{rs.label} of {sp} (r {rs.r_in:g}-{rs.r_out:g}) bears here"))
             n += 1
     return n
-
-
-def _set_dynamic_spacer_thickness(d: Design, boards: dict) -> None:
-    """Size the radar↔nose_cap spacer so the nose_cap's OUTER face clears the AWR
-    top by `_AWR_AIR_GAP_MM`: spacer = AWR_height − nose_cap_thickness + air_gap.
-    The AWR pokes up through this spacer + the nose_cap AWR aperture but STOPS one
-    fab layer below the outer face, guaranteeing an air gap above the chip. Call
-    BEFORE place_design so the cavity through-cut + stack height use the thickness.
-
-    Other spacers keep the uniform SPACER_THICKNESS_MM for now — minimising them
-    individually wants a per-gap chip-clearance pass + FEA re-validation (the
-    spacer launch FEA was run at 4 mm)."""
-    sp = boards.get("spacer_radar_module_nose_cap")
-    nose = boards.get("nose_cap")
-    if sp is None or nose is None:
-        return
-    awr = next((c for c in getattr(d, "chips", []) if c.ref == "U_AWR"), None)
-    if awr is None:
-        return
-    awr_h = (getattr(awr, "height_mm", None)
-             or (awr.footprint.height_mm if awr.footprint else None))
-    if not awr_h:
-        return
-    t = round(awr_h - nose.thickness_mm + _AWR_AIR_GAP_MM, 3)
-    if t > 0.0:
-        sp.thickness_override_mm = t
-
-
-def _drop_radar_nose_spacer(d: Design, panel, boards: dict) -> None:
-    """Discard the SCAFFOLD radar↔nose_cap spacer. It's created + folded like any
-    other so `place_lga_lands` lays the backbone lands on the radar TOP and
-    nose_cap BOTTOM faces — each index carrying the same net, so they mate
-    pad-to-pad on matching nets. But the thick nose_cap (1.455 mm) now clears the
-    AWR on its own, so there is NO physical spacer between the two: after the lands
-    are placed we remove it entirely — the board, its mechanical + J/P
-    pass-through land chips, those chips' net pins, and its slot in the
-    snake/stack. Radar and nose_cap end up directly stacked, joined by the
-    surviving radar-top/nose_cap-bottom lands. Call AFTER place_lga_lands."""
-    name = "spacer_radar_module_nose_cap"
-    if name not in boards:
-        return
-    dropped = {c.ref for c in d.chips if getattr(c, "board_tag", None) == name}
-    boards.pop(name, None)
-    if getattr(panel, "snake_chain", None):
-        panel.snake_chain = [n for n in panel.snake_chain if n != name]
-    if getattr(panel, "tiles", None) and name in panel.tiles:
-        panel.tiles.pop(name, None)
-    d.chips = [c for c in d.chips if c.ref not in dropped]
-    for net in d.nets:
-        net.pins = [(ref, pn) for (ref, pn) in net.pins if ref not in dropped]
 
 
 def _mark_battery_pockets(boards: dict) -> None:
@@ -5763,7 +5627,24 @@ _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
 # (2026-11-15) The launch piezo + comparator column live on aft_end's TOP,
 # in the battery holder floor's underside pocket (spacer_step.piezo_pocket).
 _PIEZO_POCKET_REFS = ("P_PIEZO", "R_PIEZO_BLEED", "R_COMP_SER", "R_THR1",
-                      "R_THR2", "U_COMP_PZ", "C_COMP_PZ")
+                      "R_THR2", "U_COMP_PZ", "C_COMP_PZ",
+                      "R_PZ_TX", "C_PZ_TX",      # vibration-beacon coupling (2026-11-18)
+                      "L_HEALTH_COIL")            # embedded coil (copper only)
+
+
+def _place_health_coil(d, boards: dict) -> None:
+    """Embed the magnetic health-beacon coil (smash.parts.coils) in
+    aft_end_board, centred, after place_design and BEFORE the castellation
+    contract (its BAT_PROT / HEALTH_COIL_RET nets need lanes). Copper only:
+    manf="project", so it is exempt from the overlap guard and the BOM."""
+    if "aft_end_board" not in boards or any(c.ref == "L_HEALTH_COIL" for c in d.chips):
+        return
+    from smash.state.topology.placement import Placement
+    coil = add_health_coil(d, ref="L_HEALTH_COIL", board_tag="aft_end_board")
+    _net(d, "BAT_PROT").connect(coil.pin("1"))
+    _net(d, "HEALTH_COIL_RET").connect(coil.pin("2"))
+    boards["aft_end_board"].chip_placements.append(Placement(
+        position_mm=(0.0, 0.0), rotation_deg=0.0, item=coil, face="top", locked=True))
 
 
 def _empty_aft_end_top(d) -> int:
@@ -6302,8 +6183,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
                                        straight=_STRAIGHT_SNAKE,
                                        battery_length_mm=_compartment_mm())
     build_spacers(d, boards)
-    _set_dynamic_spacer_thickness(d, boards)   # radar↔nose_cap = AWR − nose_cap
-    _mark_preplace_keepouts(d, boards)         # AWR aperture + USB column (pre-place)
+    _mark_preplace_keepouts(d, boards)         # battery-bracket tuck (pre-place)
     _mark_ring_band_keepouts(panel, boards)    # Al ring bands (every non-battery gap)
     # Economies of scale: shared chips lock to their maximalist positions,
     # so every config packs (and later mills/cuts) the identical board.
@@ -6312,13 +6192,12 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     for bn in board_set:
         extra_locks.update(ref.get("placements", {}).get(bn, {}))
     place_design(d, panel, boards, extra_locks=extra_locks or None)
+    _place_health_coil(d, boards)              # embedded beacon coil (copper only)
     # Size each backbone spacer to the gap it bridges (placement-dependent, so
     # post-place); battery spacers keep their cell-length override.
     size_backbone_spacers(panel, boards)
     # After place_design — the placer clears every board's cavity_placements,
     # so the metal-block through-cut is appended here (not before).
-    _mark_radar_block_cutout(boards)
-    _mark_usb_cavity(boards)            # no-op; USB notch is in the board outline (_tile_cuts)
     _mark_battery_pockets(boards)
     _mark_battery_chip_clearance(boards, panel)   # round piezo + comparator clear
     # Backbone LGA interconnect — same post-processing as the maximalist panel,
@@ -6334,7 +6213,6 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         contract=ref.get("castellations"))
     # (2026-11-15) No branch-flex launch strips: the QPD / camera links run on
     # the LDS nose cone from castellations (_CONE_EXITS → castellation contract).
-    _drop_radar_nose_spacer(d, panel, boards)   # scaffold spacer → discard
     _apply_companion_reference_layout(d, boards)
     _apply_activation_reference_layout(d, boards)
     # Economies of scale: adjacency-conforming boards inherit the maximalist
@@ -6432,7 +6310,7 @@ def main() -> int:
 
     # Boards (ordered smallest → largest)
     build_qpd_module(d)
-    build_nose_cap(d)
+    build_radar_nose_io(d)
     build_camera_module(d)
     build_aft_end_board(d)
     # (2026-11-15) cell_floor_board dropped in every mode (aft reorder).
@@ -6453,12 +6331,12 @@ def main() -> int:
     panel, boards = build_panel(straight=_STRAIGHT_SNAKE,
                                 battery_length_mm=_compartment_mm())
     build_spacers(d, boards)
-    _set_dynamic_spacer_thickness(d, boards)   # radar↔nose_cap = AWR − nose_cap
-    _mark_preplace_keepouts(d, boards)         # AWR aperture + USB column (pre-place)
+    _mark_preplace_keepouts(d, boards)         # battery-bracket tuck (pre-place)
     _mark_ring_band_keepouts(panel, boards)    # Al ring bands (every non-battery gap)
 
     # ── place + export KiCad PCBs ────────────────────────────────────
     report = place_design(d, panel, boards)
+    _place_health_coil(d, boards)              # embedded beacon coil (copper only)
     # Size each backbone spacer to the gap it bridges (placement-dependent, so
     # post-place); battery spacers keep their cell-length override.
     _sized = size_backbone_spacers(panel, boards)
@@ -6467,8 +6345,6 @@ def main() -> int:
           + "  (was 4.0 mm fixed)")
     # After place_design — the placer clears every board's cavity_placements,
     # so the metal-block through-cut is appended here (not before).
-    _mark_radar_block_cutout(boards)
-    _mark_usb_cavity(boards)            # no-op; USB notch is in the board outline (_tile_cuts)
     _mark_battery_pockets(boards)
     _mark_battery_chip_clearance(boards, panel)   # round piezo + comparator clear
 
@@ -6509,12 +6385,17 @@ def main() -> int:
     _cast_contract, _cast = place_castellations(
         d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
         cone_exits=_CONE_EXITS)
+    # Lane budget under both policies (layout-EE ask: one lane per signal).
+    from smash.parts.castellations import lane_budget
+    for _pol, _b in lane_budget(d, panel, boards, cone_exits=_CONE_EXITS).items():
+        print(f"  lane budget [{_pol}]: {_b['n_used']}/{_b['n_angles']} signal-sector angles"
+              + (f", {len(_b['overflow'])} net(s) DON'T FIT: {', '.join(_b['overflow'])}"
+                 if _b["overflow"] else ", all nets fit"))
     # (2026-11-15) No plug ring: aft_end_board's bottom-face interface stays
     # the external interface; `_plug_groups(d)` → place_castellations(…,
     # plug_groups=…) would move it onto the sleeve.
     # (2026-11-15) No branch-flex launch strips: the QPD / camera links run on
     # the LDS nose cone from castellations (_CONE_EXITS → castellation contract).
-    _drop_radar_nose_spacer(d, panel, boards)   # scaffold spacer → discard
     _apply_companion_reference_layout(d, boards)
     _apply_activation_reference_layout(d, boards)
     _mark_gap_hardware_silk(panel, boards, _foldM)  # Al rings / standoffs → silk
@@ -6700,9 +6581,13 @@ def main() -> int:
               f"{_ul['n_lanes']} lanes, {_ul['n_vias']} vias, {_ul['n_plug']} plug-ring contacts, {_ul['n_antennas']} antenna "
               f"placeholders → sleeve/sleeve_unrolled.kicad_pcb (+ sleeve_copper.step, "
               f"{_cu['n_bodies']} bodies)")
-        print(f"  LDS sleeve: 2 half-shells, {_sl['n_vias']} vias, "
-              f"{_sl['height_mm']:.1f} mm → {_sl['sleeve_dir'].relative_to(REPO)}/; "
-              f"potting mould (clamp + caps) → {_sl['mould_dir'].relative_to(REPO)}/")
+        for _cfg, _c in _sl["cups"].items():
+            print(f"  PEEK-LDS cup {_cfg}: one moulding, {_c['n_vias']} vias on "
+                  f"{_c['n_active_lanes']} active lanes, nose {_c['nose_mm']:.2f} mm "
+                  f"above the payload, {_c['height_mm']:.1f} mm → "
+                  f"{_c['dir'].relative_to(REPO)}/ (+ pot-in-cup fixture)")
+            for _w in _c["warnings"]:
+                print(f"    WARNING: {_w}")
     except ImportError:
         print("  gap hardware STEPs: SKIPPED (cadquery not installed)")
     if _STEP_ENABLED:

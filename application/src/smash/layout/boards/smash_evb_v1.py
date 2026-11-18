@@ -6,7 +6,7 @@ dict. The resulting graph projects to the same panel topology:
 
    7-tile snake (the root, activation_interface, is at one end):
 
-   activation ─ wakeup ─ fins ─ power ─ companion_compute ─ radar ─ nose
+   activation ─ wakeup ─ fins ─ power ─ companion_compute ─ radar (in the cup nose)
        │N/S            │N/S                    │N/S
        nfc          Yagi A / Yagi B         qpd / camera
 
@@ -178,11 +178,11 @@ def _lower_coins_for_top_routing(boards, n_top=N_TOP_ROUTABLE_LAYERS):
 # old "20 layers for stiffness" (radar, companion_compute) no longer applies:
 # layer count is set by routing only. 8 layers; boards with fine-pitch parts
 # (compute MP25 VFBGA361 + DDR4, wakeup WBA55 WLCSP) use HDI 2+4+2 (fab
-# detail, same 8L stack). EXCEPTION: nose_cap — its thickness is set by the
-# AWR height / waveguide air gap (see build_panel).
+# detail, same 8L stack). (The nose_cap exception went with the nose_cap PCB,
+# retired 2026-11-18 — the nose is the PEEK-LDS cup, smash.export.cup_noses.)
 STANDARD_COPPER_LAYERS = 8
 STANDARD_BOARD_THICKNESS_MM = 1.6     # fitter TARGET → fitted board = 1.315 mm with the current catalogue (accepted 2026-11-14)
-_NONSTANDARD_BOARDS = {"nose_cap"}
+_NONSTANDARD_BOARDS: set = set()
 
 
 def _align_potting_holes(chain_names: list, boards: dict) -> None:
@@ -273,15 +273,9 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     companion_compute = Board("companion_compute", copper_layers=20)
     # (its Cu T-coin was REMOVED 2026-07-04 too, freeing In1…In18 for the
     # EE reference DDR stack — see the coin note above.)
-    # Terminal cap (radar forward-end): stacks DIRECTLY on the radar — the
-    # radar↔nose_cap spacer is scaffolded for the LGA lands then discarded (see
-    # _drop_radar_nose_spacer). A 12-layer disc fitted to 1.455 mm (nearest
-    # catalog ≥ AWR 1.234 + 0.13 gap) so the AWR pokes through the nose_cap's
-    # enlarged cutout and stops ~0.22 mm below the OUTER face (the waveguide-disk
-    # air gap). Carries the USB-C + LEDs and structurally supports the aluminium
-    # waveguide disk, which seals the cutout.
-    nose_cap          = Board("nose_cap", copper_layers=12,
-                              target_thickness_mm=1.4)
+    # (2026-11-18) The nose_cap PCB is RETIRED: the radar is the terminal
+    # tile, fixed into the closed nose of the PEEK-LDS cup (radome window over
+    # the AoP — smash.export.nose_radome / cup_noses).
     activation_interface = Board("activation_interface")
 
     # ── branch tiles (off the main fold) ──────────────────────────────
@@ -316,7 +310,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # ── snake order (fixed) + compact fold via the solver ─────────────
     # MUST match generate_stackup._MASTER_SNAKE (this panel and the
     # per-config builds share the order; they're maintained in lock-step). Every
-    # snake gap carries a spacer (incl. radar→nose). Reordering = edit both.
+    # snake gap carries a spacer. Reordering = edit both.
     # power_board sits next to companion_compute so the PMIC core rails cross
     # only the power↔companion gap (PMIC stays top-side on power); compute is
     # next to radar for the Gigabit-Ethernet link; fins next to power.
@@ -340,7 +334,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
         aft_end_board, activation_interface,
         fin_ble_board, wakeup_board,
         power_board, companion_compute,
-        radar_module, nose_cap,
+        radar_module,
     ]
     chain_cells, spacers, edges = _interleave(chain, battery_length_mm)
 
@@ -408,7 +402,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
         "fin_ble_board":        fin_ble_board,
         "radar_module":         radar_module,
         "companion_compute":    companion_compute,
-        "nose_cap":             nose_cap,
         "camera_module":        camera_module,
         "qpd_module":           qpd_module,
         "activation_interface": activation_interface,
@@ -421,7 +414,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # Fit each rigid tile's real layer buildup from the FabProfile catalog
     # (radar picks up the Rogers top dielectric, camera the Al backing).
     # Spacers/flex skip — `set_fitted_stackup` is a no-op for them.
-    _standardize_board_stackups(boards)    # 8L / 1.6 mm (nose_cap excepted)
+    _standardize_board_stackups(boards)    # 8L / 1.6 mm
     _align_potting_holes(list(panel.snake_chain), boards)
     for b in boards.values():
         b.set_fitted_stackup()
@@ -435,7 +428,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
 # config tile matches its full-twin counterpart.
 _BOARD_KWARGS = {
     "radar_module": dict(copper_layers=20),  # FR4 top (RF into the Al block); 20L for mechanical stiffness
-    "nose_cap": dict(copper_layers=12, target_thickness_mm=1.4),  # thick cap (1.455mm): stacks direct on radar (spacer discarded), AWR pokes through cutout
     "camera_module": dict(al_backing_mm=0.5),
     # 20L for mechanical stiffness (the stackup that used to host the — now
     # removed — structural Cu T-coin).
@@ -501,7 +493,7 @@ def build_config_panel(board_names, *, branches=None, straight=True,
     # Fit each rigid tile's real layer buildup from the FabProfile catalog
     # (radar picks up the Rogers top dielectric, camera the Al backing).
     # Spacers/flex skip — `set_fitted_stackup` is a no-op for them.
-    _standardize_board_stackups(boards)    # 8L / 1.6 mm (nose_cap excepted)
+    _standardize_board_stackups(boards)    # 8L / 1.6 mm
     _align_potting_holes(list(panel.snake_chain), boards)
     for b in boards.values():
         b.set_fitted_stackup()

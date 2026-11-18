@@ -26,10 +26,9 @@ Frames. The smash model is math y-up; `_artifacts` negates KiCad's
 y-down on import, so a launch label at KiCad (xk, yk) is footprint-local
 (xk, -yk). The chip's resolved placement (position_mm, rotation_deg)
 maps a footprint-local point into the radar-board frame as
-`Rz(theta)*p + (cx, cy)`. radar -> nose_cap is an identity fold (two
-mirror_x, no net mirror — see `_mark_radar_block_cutout`), so the same
-(x, y) holds in the nose_cap-local frame where the waveguide block
-mounts:
+`Rz(theta)*p + (cx, cy)`. (Legacy AWR2E44P path; the waveguide block
+mounts straight over the radar, so the same (x, y) holds in the radar
+top-face frame:
 
     launch_nose = Rz(theta) . (xk, -yk) + (cx, cy)        # no mirror
 
@@ -147,7 +146,7 @@ def _place_xy_fn(placement_position_mm, placement_rotation_deg):
 def _stub_solids(launches, *, placement_position_mm, placement_rotation_deg,
                  stub_length_mm, long_mm, short_mm, base_z_mm=0.0):
     """`([(name, workplane)], {name: (x, y)})` — one WR-10 stub solid per
-    launch in the nose_cap-local frame, plus their placed centres. The
+    launch in the radar top-face frame, plus their placed centres. The
     cross-section is `long_mm` along the launch's long axis, `short_mm`
     across; the broad wall therefore matches the footprint marker. Stubs
     extrude from z=`base_z_mm` up by `stub_length_mm`."""

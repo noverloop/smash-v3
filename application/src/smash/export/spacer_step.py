@@ -562,8 +562,9 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 # ring (the old names pointed at gaps that no longer exist, which silently
 # dropped the rings). The ring IS the gap's spacer: no standoffs in it.
 GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
-# radar ↔ nose_cap: NO hardware — the nose_cap is itself the spacer.
-NO_HARDWARE_GAPS = ("spacer_radar_module_nose_cap",)
+# Gaps with NO hardware. (The radar ↔ nose_cap entry went with the nose_cap
+# PCB, retired 2026-11-18.)
+NO_HARDWARE_GAPS: tuple = ()
 # (2026-11-17, user) Gap rings are GF30 PEEK (30 % glass-filled), 2.0 mm wall,
 # CLOSED all round: RF-transparent (εr ≈ 3.8, low loss) behind the slot
 # antennas, so no openings; twice the 1 mm Al ring's area to make up for
@@ -759,8 +760,8 @@ def _battery_holder_body(cq, h):
 def gap_kind(name: str) -> str:
     if name.startswith("spacer_battery_"):
         return "battery_holder"
-    # (2026-11-15) Every non-battery gap is an Al ring, except radar ↔
-    # nose_cap, which has none (the nose_cap is the spacer). No PEEK standoffs.
+    # (2026-11-15) Every non-battery gap carries a ring (Al or GF30 PEEK, see
+    # ring_spec). No PEEK standoffs.
     if name in NO_HARDWARE_GAPS:
         return "none"
     return "ring"

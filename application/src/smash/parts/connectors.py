@@ -296,7 +296,7 @@ def _branch_launch_keepout(tile, panel):
 
 def _straddle_keepout(tile):
     """Tile-frame union of the courtyards of MID-MOUNT components on `tile` — a
-    part whose body straddles the board, embedded ~50% (the nose_cap USB-C). It
+    part whose body straddles the board, embedded ~50% (e.g. a mid-mount USB-C). It
     mounts on the OUTER face and its body protrudes AWAY from the spacer, so it
     spawns NO milled cavity and the cavity-derived free region misses it — yet an
     LGA land on the mating (opposite) face would sit directly under the embedded
@@ -1038,7 +1038,7 @@ def place_lga_lands(design, panel, boards, *, connect,
                 bko = _branch_launch_keepout(nb, panel)
                 if bko is not None:
                     free = free.difference(_fold_reflect(bko, sr))
-                # Mid-mount parts (nose_cap USB-C) straddle the board but spawn
+                # Mid-mount parts (e.g. a mid-mount USB-C) straddle the board but spawn
                 # no milled cavity — keep lands out of their full body courtyard
                 # on the mating face.
                 sko = _straddle_keepout(nb)

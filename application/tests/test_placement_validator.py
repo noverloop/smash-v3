@@ -118,7 +118,7 @@ def test_twin_panel_has_no_overlaps():
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_nose_cap, gen.build_camera_module,
+               gen.build_radar_nose_io, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
                gen.build_companion_compute,

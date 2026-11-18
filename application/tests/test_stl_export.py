@@ -159,10 +159,10 @@ class TestUniqueSymbol:
             "activation_interface", "power_board", "wakeup_board",
             "flight_board", "fins_module",
             "companion_compute", "companion_io", "radar_module",
-            "nose_cap", "camera_module", "qpd_module",
+            "camera_module", "qpd_module",
             "nfc_antenna_flex", "yagi_ant_a_flex", "yagi_ant_b_flex",
             "spacer_activation_interface_power_board",
-            "spacer_radar_module_nose_cap",
+            "spacer_companion_compute_radar_module",
         ]
         syms = {n: unique_symbol(n) for n in names}
         # Either no collisions or a very small handful — let the test

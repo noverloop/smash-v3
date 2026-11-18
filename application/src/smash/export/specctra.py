@@ -79,7 +79,6 @@ DEFAULT_BOARD_LAYOUT_ORDER = [
     "companion_compute",
     "companion_io",
     "radar_module",
-    "nose_cap",
     "camera_module",
 ]
 

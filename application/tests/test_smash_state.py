@@ -12,8 +12,7 @@ class TestCoreAndAddChain:
     def test_new_pre_declares_core_boards(self):
         s = SmashState.new()
         for name in ("power_board", "wakeup_board", "flight_board",
-                     "activation_interface", "nfc_antenna_flex",
-                     "nose_cap"):
+                     "activation_interface", "nfc_antenna_flex"):
             assert name in s.boards
 
     def test_add_companion_computer_brings_two_tiles(self):

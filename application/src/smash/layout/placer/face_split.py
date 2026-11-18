@@ -94,8 +94,8 @@ def goes_to_bottom(chip: Chip) -> bool:
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that
         # survive on the internal bottom face under rapid deceleration — e.g. the radar's
-        # SOT-23 bucks (compliant leads + low mass), kept off the nose_cap-facing
-        # top so they don't need their own coupling cutout. Tall/heavy parts
+        # SOT-23 bucks (compliant leads + low mass), kept off the nose-facing
+        # top (the cup's radome pocket). Tall/heavy parts
         # (bulk caps) are NOT opted in — they stay on top.
         return True
     # aft_end_board is the outboune wire activation board (2026-07-31): its carries a selector for with outbound sector to activate

@@ -23,7 +23,7 @@ from smash.layout.cavities import (
 EXPECTED_NAMES = {
     "power_board", "wakeup_board", "flight_board", "radar_module",
     "fins_module", "fin_ble_board",
-    "companion_compute", "companion_io", "nose_cap",
+    "companion_compute", "companion_io",
     "activation_interface", "aft_end_board", "cell_floor_board",
     "camera_module", "qpd_module",
     "nfc_antenna_flex",
@@ -57,9 +57,10 @@ def test_main_rigid_boards_are_d34_with_potting(name):
         assert r == pytest.approx(BOARD_POTTING_HOLE_RADIUS_MM, abs=1e-6)
 
 
-def test_nose_cap_has_no_potting_hole():
-    """The potting channel runs up the stack and stops under the nose cap."""
-    assert load_board_geometry("nose_cap").holes == []
+def test_nose_cap_pcb_is_retired():
+    """(2026-11-18) The nose_cap PCB is retired — the nose is the PEEK-LDS cup."""
+    with pytest.raises(KeyError):
+        load_board_geometry("nose_cap")
 
 
 def test_activation_interface_is_d34_circle_with_potting():
@@ -88,17 +89,17 @@ def test_aft_end_board_is_d34_circle_with_no_potting():
     assert g.keepouts == []
 
 
-def test_camera_module_is_d15_circle():
+def test_camera_module_is_d34_circle():  # grown 2026-11-18 (IR pair + cup stop bosses)
     g = load_board_geometry("camera_module")
     assert g.shape == "circle"
-    assert g.diameter_mm == 15.0
+    assert g.diameter_mm == 34.0
     assert g.holes == []
 
 
-def test_qpd_module_is_d20_circle():
+def test_qpd_module_is_d34_circle():  # grown 2026-11-18 (IR pair + cup stop bosses)
     g = load_board_geometry("qpd_module")
     assert g.shape == "circle"
-    assert g.diameter_mm == 20.0
+    assert g.diameter_mm == 34.0
     assert g.holes == []
 
 

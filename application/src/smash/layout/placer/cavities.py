@@ -260,7 +260,7 @@ def attach_cavities_to_spacers(
         # through — slicing the spacer in half between the two potting holes,
         # across the block window. Drop the channel on this spacer; its two Ø2
         # potting through-holes alone vent/fill it (the holes are kept).
-        no_potting_channel = (name == "spacer_radar_module_nose_cap")
+        no_potting_channel = False   # (was the retired radar↔nose_cap spacer)
 
         top_polys: list = []
         bot_polys: list = []
@@ -333,7 +333,7 @@ def attach_cavities_to_spacers(
                 n_added += 1
 
         # Through-cut depth = this spacer's actual milled thickness (per-spacer
-        # override when set, e.g. the thin radar↔nose_cap spacer; else uniform).
+        # override when set, e.g. a battery-compartment disc; else uniform).
         _emit(through_polys, "through", spacer.thickness_mm, "through_cut")
 
     return n_added

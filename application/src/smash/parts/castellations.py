@@ -73,6 +73,14 @@ ANTENNA_FEED_ANGLES_DEG = {s_.net: round(s_.feed_deg, 1) for s_ in _ANT_SLOTS}
 # (2026-11-16) Empty: the LR2021 moved next to its WBA host on wakeup, so its
 # SPI + control lines are board-local. The mechanism stays for future buses.
 GUARDED_BUSES: dict = {}
+# Lane re-use policy (2026-11-18, layout-EE input). "reuse": an angle carries
+# several nets whose board spans don't overlap (vertical lines re-allocated
+# where empty). "dedicated": ONE angle per signal over the full stack height —
+# simpler to route / inspect, but costs angles; `lane_budget` reports both.
+# Nose payloads (radar in the snake, QPD / camera via cone exits) all land on
+# companion_compute at FIXED angles in the maximalist contract, which every
+# config replays — so compute fabs identically whichever cup is fitted.
+LANE_POLICY = "reuse"
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -149,8 +157,12 @@ def _lane_angles(r: float) -> list:
 
 
 def castellation_contract(design, panel, boards, plug_groups=None,
-                          cone_exits=None) -> dict:
-    """Compute the lane contract for this (maximalist) build."""
+                          cone_exits=None, lane_policy: str | None = None) -> dict:
+    """Compute the lane contract for this (maximalist) build. `lane_policy`
+    overrides LANE_POLICY ("reuse" | "dedicated")."""
+    policy = lane_policy or LANE_POLICY
+    if policy not in ("reuse", "dedicated"):
+        raise ValueError(f"unknown lane_policy {policy!r}")
     from smash.parts.connectors import is_off_backbone
     chain = [n for n in (panel.snake_chain or []) if n in boards]
     rigid = [n for n in chain if not getattr(boards[n], "is_spacer", False)
@@ -177,6 +189,8 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     lanes: dict = {}
 
     def free(a, lo, hi):
+        if policy == "dedicated":
+            return not occupied[a]
         return all(hi < l or lo > h for l, h in occupied[a])
 
     # GND: fixed castellations in the antenna sector on every board, tied
@@ -306,7 +320,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # the parent, free from the parent to the top of the stack (where the
     # cone traces run), and a castellation at the same angle on the leaf PCB.
     # Allocated in the ANTENNA sector: above the parent, in the configs that
-    # carry a cone (qpd / camera — never with radar + nose_cap), the sleeve
+    # carry a cone (qpd / camera — never with radar), the sleeve
     # is empty there, and a cone trace over the sleeve's inner GND plane is a
     # microstrip. Clear of the GND castellations and the antenna feeds.
     half = 0.5 * math.degrees(CAST_PITCH_MM / r)
@@ -343,6 +357,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         print(f"  WARNING: castellations: {len(overflow)} net(s) short of "
               f"lanes: {', '.join(overflow[:10])}", file=sys.stderr)
     return {"pitch_mm": CAST_PITCH_MM, "radius_mm": r,
+            "lane_policy": policy, "overflow": list(overflow),
             "n_angles": len(angles), "n_used": used,
             "reserved_deg": [list(s) for s in RESERVED_SECTORS_DEG],
             "signal_sector_deg": [SIGNAL_SECTOR_CENTRE_DEG - SIGNAL_SECTOR_HALF_DEG,
@@ -351,6 +366,19 @@ def castellation_contract(design, panel, boards, plug_groups=None,
             "aft_board": rigid[0] if rigid else None,
             "plug": plug,
             "lanes": lanes}
+
+
+def lane_budget(design, panel, boards, cone_exits=None) -> dict:
+    """Signal-sector angle budget under both lane policies:
+    {policy: {"n_angles", "n_used", "overflow": [net names]}}. With "dedicated"
+    an overflow lists the nets that do NOT fit — nothing falls back silently."""
+    out = {}
+    for pol in ("reuse", "dedicated"):
+        c = castellation_contract(design, panel, boards, cone_exits=cone_exits,
+                                  lane_policy=pol)
+        out[pol] = {"n_angles": c["n_angles"], "n_used": c["n_used"],
+                    "overflow": c["overflow"]}
+    return out
 
 
 def place_castellations(design, panel, boards, *, connect,

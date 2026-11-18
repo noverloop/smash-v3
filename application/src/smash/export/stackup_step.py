@@ -49,7 +49,7 @@ def build_board_solid(board, thickness_mm: float):
     # has no edge to exit and the USB notch becomes a closed pocket that the boolean
     # leaves filled. Cut the circular segment north of the chord line. (USB-C N
     # chord, 17 mm — keep in sync with _tile_cuts.)
-    if g.shape == "circle" and g.diameter_mm and board.name in ("nose_cap", "radar_module"):
+    if g.shape == "circle" and g.diameter_mm and board.name == "radar_module":
         import math as _math
         _r = g.diameter_mm / 2.0
         _y_flat = _math.sqrt(max(_r * _r - (17.0 / 2.0) ** 2, 0.0))
@@ -57,12 +57,11 @@ def build_board_solid(board, thickness_mm: float):
                 .rect(2.2 * _r, 2.0 * _r).extrude(thickness_mm))
         body = body.cut(_seg)
         # USB-C mouth notch in the flat: per-tile width (radar 10.2 mm to clear the
-        # mouth while the flats still carry the solder lands; nose_cap 12.5 mm to
-        # clear the body poking up), reaching 6.3 mm in from the chord (floor y ~= _y_flat -
+        # mouth while the flats still carry the solder lands), reaching 6.3 mm in from the chord (floor y ~= _y_flat -
         # 6.3), connecting to the chord cut above so the outline is rim -> flat ->
         # notch -> flat -> rim. Replaces the old separate usb_mid_mount_cavity.
         # Keep in sync with _tile_cuts (kicad_pcb).
-        _nw, _nd = (10.2 if board.name == "radar_module" else 12.5), 6.3
+        _nw, _nd = 10.2, 6.3
         _nfloor, _ntop = _y_flat - _nd, _y_flat + 1.0
         _notch = (cq.Workplane("XY").center(0.0, (_nfloor + _ntop) / 2.0)
                   .rect(_nw, _ntop - _nfloor).extrude(thickness_mm))
@@ -244,7 +243,7 @@ def write_stackup_step(
     (2026-11-14) `spacer_hardware=True`: a gap is NOT an FR4 disc any more —
     it holds its generated hardware (Al ring / battery ring / PEEK standoffs,
     `spacer_step.gap_hardware_body`, physical frame, no fold flip) and the
-    potting. `with_sleeve` adds the LDS sleeve half-shells (vias from
+    potting. `with_sleeve` adds the one-piece PEEK-LDS cup (vias from
     `sleeve_contract`, the castellation contract); the potting body is then
     the sleeve bore minus boards and hardware.
 
@@ -357,11 +356,14 @@ def write_stackup_step(
     total_h = z
     segs = None
     if with_sleeve and spacer_hardware:
-        from smash.export.sleeve_step import build_sleeve, _sleeve_profile
+        # (2026-11-18) one-piece PEEK-LDS cup (sleeve + nose); the payload in
+        # this chain picks the nose (radar → radome, else a plain end).
+        from smash.export.sleeve_step import build_cup
         live = [n for n in snake_chain if n in boards]
-        sa, sb, _nv, segs = build_sleeve(boards, live, sleeve_contract)
-        asm.add(sa, name="sleeve_half_a", color=cq.Color(0.85, 0.8, 0.6, 0.6))
-        asm.add(sb, name="sleeve_half_b", color=cq.Color(0.8, 0.75, 0.55, 0.6))
+        cfg = "core_radar" if "radar_module" in live else "core"
+        cup = build_cup(boards, live, sleeve_contract, cfg)
+        segs = cup["segs"]
+        asm.add(cup["body"], name=f"cup_{cfg}", color=cq.Color(0.85, 0.8, 0.6, 0.6))
     if with_potting and segs:
         pot = None
         for z0, z1, r_in in segs:
