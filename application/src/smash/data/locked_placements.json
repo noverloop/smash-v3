@@ -710,5 +710,23 @@
   "rotation_deg": 38.0,
   "face": "top",
   "reason": "2026-11-20 (user): wire 15 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 308° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_3 → ACT_WIRE_15."
+ },
+ "L_ACTIVATE": {
+  "position_mm": [
+   0.5,
+   -6.0
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): TALL GROUP — the 2.8 mm boost inductors stack on power_board's TOP in the one pocket where companion_compute's BOTTOM is free (south, between the DDR4 and MPU decoupling fields); compute's bottom carries a matching plain keepout (_TALL_ZONE_REFS) so nothing stands over them and the power↔compute gap is sized by the 2.8 mm parts alone."
+ },
+ "L_BOOST_COMP": {
+  "position_mm": [
+   0.5,
+   -12.0
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): TALL GROUP — the 2.8 mm boost inductors stack on power_board's TOP in the one pocket where companion_compute's BOTTOM is free (south, between the DDR4 and MPU decoupling fields); compute's bottom carries a matching plain keepout (_TALL_ZONE_REFS) so nothing stands over them and the power↔compute gap is sized by the 2.8 mm parts alone."
  }
 }

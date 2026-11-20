@@ -199,3 +199,57 @@ def add_tcan1042gvdq1(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_tcan1042gvdrbrq1(design, ref: str, **overrides) -> Chip:
+    """TI TCAN1042GVDRBRQ1 — the same TCAN1042-Q1 die as TCAN1042GVDQ1 (G
+    grade, V = VIO level shifting, AEC-Q100) in the DRB VSON-8 package,
+    3.0 × 3.0 × 1.0 mm, 0.65 mm pitch, exposed thermal pad (pin 9 → GND).
+
+    (2026-11-20, user) Replaces the 1.75 mm SOIC-8 as U_CAN_GW: at 1.0 mm it
+    leaves the tall-part group (the power↔compute gap is then set by the
+    locked 2.8 mm boost inductors alone). Footprint + 3D from TI's SamacSys
+    library (SON65P300X300X100-9N-D, DRB0008F)."""
+    from smash.parts._artifacts import (src as _src, pads_from_kicad_mod as _pads,
+                                        outline_polygon as _outl, datasheet_ref as _dsref)
+    pn = "TCAN1042GVDRBRQ1"
+    fp_mod = _src(pn, "SON65P300X300X100-9N-D.kicad_mod")
+    fields = dict(
+        manf="Texas Instruments", manf_pn=pn, canonical_id="tcan1042gvdrbrq1",
+        name=pn, value=pn,
+        description=("Automotive CAN-FD transceiver, ISO 11898-2:2016, 5 Mbps (G), VIO "
+                     "level shifting (V), ±58 V bus fault protection, AEC-Q100, VSON-8 (DRB)"),
+        datasheet="application/src/smash/parts/sources/TCAN1042GVDQ1/TCAN1042-family.pdf",
+        standards=["ISO 11898-2:2016", "ISO 11898-5:2007", "AEC-Q100", "Functional Safety-Capable"],
+        package="VSON-8 (TI DRB) 3×3 mm, exposed pad",
+        size_mm=(3.0, 3.0), height_mm=1.0,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=7.0, vcc_nominal_v=5.0,
+        p_active_w=0.10, p_max_w=0.40,
+        rth_jc_cw=37.6,                     # DRB (VSON) RθJC(top), TCAN1042-Q1 DS §7.5
+        tj_max_c=150.0,
+        pins=[
+            Pin(num="1", name="TXD", type="input"),
+            Pin(num="2", name="GND", type="ground"),
+            Pin(num="3", name="VCC", type="power"),
+            Pin(num="4", name="RXD", type="output"),
+            Pin(num="5", name="VIO", type="power"),
+            Pin(num="6", name="CANL", type="io"),
+            Pin(num="7", name="CANH", type="io"),
+            Pin(num="8", name="STB", type="input",
+                note="standby select: HIGH=standby, LOW=normal. Must not float."),
+            Pin(num="9", name="EP", type="ground", note="exposed thermal pad → GND"),
+        ],
+        footprint=Footprint(
+            name="SON65P300X300X100-9N-D", package_class="VSON-8 (DRB)",
+            pads=_pads(fp_mod),
+            body_outline=_outl(fp_mod, "F.Fab"),
+            courtyard=_outl(fp_mod, "F.CrtYd"),
+            pitch_mm=0.65, size_mm=(3.0, 3.0), height_mm=1.0,
+            model_3d_path=_dsref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note="EXT_CAN PHY; VSON-8 variant of TCAN1042GVDQ1 (same die / pinout + EP).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

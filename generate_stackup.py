@@ -75,7 +75,7 @@ from smash.parts.ldos import (                                          # noqa: 
 )
 from smash.parts.pmics import add_stpmic25apqr                          # noqa: E402
 from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: E402
-from smash.parts.transceivers import add_tcan1042gvdq1                  # noqa: E402
+from smash.parts.transceivers import add_tcan1042gvdq1, add_tcan1042gvdrbrq1                  # noqa: E402
 from smash.parts.mcus import (                                          # noqa: E402
     add_stm32mp255fal3, add_stm32g0b1rei6n,
     add_stm32wba55hgf6tr, add_stm32wba55ugi7, add_stm32h562aii6,
@@ -1264,7 +1264,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # Catch diode — the LMR10510 is NON-synchronous (DS pin table: SW
     # "connect to the inductor and catch diode"); without it the inductor
     # has no off-time path and the rail can't regulate.
-    d_b12 = add_mbrs340t3g(d, ref="D_AWR_BUCK12", feature="bottom",
+    d_b12 = add_stps1l60zf(d, ref="D_AWR_BUCK12", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
                            board_tag=BTAG)
     _net(d, "AWR_1V2_SW").connect(d_b12.pin("K"))
     _net(d, "GND")       .connect(d_b12.pin("A"))
@@ -1286,7 +1286,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     ind_between(d, "AWR_1V3_SW", "AWR_1V3", "2.2uH",
                 ref="L_AWR_BUCK13", feature="bottom",
                 board_tag=BTAG)   # see L_AWR_BUCK12 note
-    d_b13 = add_mbrs340t3g(d, ref="D_AWR_BUCK13", feature="bottom",
+    d_b13 = add_stps1l60zf(d, ref="D_AWR_BUCK13", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
                            board_tag=BTAG)   # catch diode (see BUCK12)
     _net(d, "AWR_1V3_SW").connect(d_b13.pin("K"))
     _net(d, "GND")       .connect(d_b13.pin("A"))
@@ -2924,10 +2924,12 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # boost stages on power_board's TOP (that gap is set by the 2.8 mm
     # inductors anyway); CANH/CANL ride two lanes down to the aft interface.
     _CAN_TAG = "power_board"
-    can_gw = add_tcan1042gvdq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
+    # (2026-11-20, user) VSON-8 (1.0 mm) instead of the 1.75 mm SOIC-8
+    can_gw = add_tcan1042gvdrbrq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
     _net(d, "EXT_CAN_TX").connect(can_gw.pin("TXD"))
     _net(d, "EXT_CAN_RX").connect(can_gw.pin("RXD"))
     _net(d, "GND").connect(can_gw.pin("GND"))
+    _net(d, "GND").connect(can_gw.pin("EP"))       # exposed pad
     # VCC needs 4.5-5.5 V (SLLSES9D §7.4 — the GV variant UVLOs below
     # that, so a 3V3-fed PHY sits in protected mode = bus dead). COMP_5V
     # extends aft down the whole column (wakeup → activation → the battery
@@ -5397,6 +5399,9 @@ def _apply_companion_reference_layout(d, boards: dict) -> None:
     assert_no_locked_overlaps(boards, accepted=_ACCEPTED_LOCKED_OVERLAPS)
 
 
+_TALL_ZONE_REFS = ("L_ACTIVATE", "L_BOOST_COMP")   # power top ↔ compute bottom keepout
+
+
 def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     """Keepouts the placer must see BEFORE place_design (chip_placements aren't
     set yet):
@@ -5446,6 +5451,24 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
     # (2026-11-20) no tabs any more (Tadiran /P cells wired to aft_end); the
     # board sits over the 1 mm headroom (cell + pin → wire joints).
+    # (2026-11-20, user) TALL ZONE: the locked 2.8 mm boost inductors on
+    # power_board's top get a matching PLAIN keepout on companion_compute's
+    # BOTTOM (same stack frame), so no part stacks over them — the gap is then
+    # their height + clearance, not their height + a 1.45 mm cap's.
+    from smash.layout.locked import load_locked_placements as _llp
+    _locks = _llp()
+    cb = boards.get("companion_compute")
+    if cb is not None and getattr(cb, "geometry", None) is not None:
+        for _ref in _TALL_ZONE_REFS:
+            e = _locks.get(_ref)
+            if e is None:
+                continue
+            x, y = e.position_mm
+            h = 3.27 + 0.33          # footprint pad extent (±3.27) + margin
+            cb.geometry.keepouts.append(Keepout(
+                polygon=[(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)],
+                layers=("B.Cu",), scope="component", tag="tall_zone",
+                note=f"over {_ref} (power_board top, 2.8 mm)"))
     # (2026-11-20, user) …revised: LOW parts (≤ 0.8 mm, face_split) may use it,
     # outside the holder's edge-ring band and clear of the cells' + pin joints
     # and their AWG 28 wires to the potting channel (plain keepouts; the

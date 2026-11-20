@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TCAN1042GVDRBRQ1
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=9
+Version=1.1
+Released=2021-08-09 07:57:48
+Downloaded=2026-11-20 20:00:30
+3D=Y
