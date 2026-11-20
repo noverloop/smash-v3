@@ -408,3 +408,46 @@ def add_bas40_02l(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# ST STPS1L60ZF — 60 V / 1 A low-drop power Schottky, SOD-123Flat (1.10 mm)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_stps1l60zf(design, ref: str, **overrides) -> Chip:
+    """STMicroelectronics STPS1L60ZF — low-drop power Schottky rectifier,
+    V_RRM = 60 V, I_F(AV) = 1 A, SOD-123Flat (3.5 × 1.6 mm, 1.10 mm max —
+    IPC name SODFL3516X110N). Pin 1 = K, pin 2 = A (vendor symbol).
+
+    (2026-11-20, user) Replaces the 2.56 mm MBRS540T3G (SMC) as the 33 V fire
+    boost's rectifier D_ACTIVATE: 60 V gives the margin the 40 V flat parts
+    lacked, 1 A ≫ the ≤ 0.28 A output, and it drops out of the tall-part
+    group. ⚠ Confirm the assembly / test sites (no-Chinese-sites rule) and
+    the repetitive peak current against the TPS61175 switch current."""
+    pn = "STPS1L60ZF"
+    fp_mod = src(pn, "SODFL3516X110N.kicad_mod")
+    fields = dict(
+        manf="STMicroelectronics", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description="Low-drop power Schottky rectifier, V_RRM=60 V, I_F(AV)=1 A, SOD-123Flat (1.1 mm)",
+        datasheet=None,
+        standards=["RoHS", "Ecopack2"],
+        package="SOD-123Flat", size_mm=(3.5, 1.6), height_mm=1.10,
+        temp_range_c=(-40, 150),
+        voltage_rating_v=60.0, i_rms_a=1.0,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym"),
+                        types={"K": "io", "A": "io"},
+                        aliases={"K": ["Cathode"], "A": ["Anode"]}),
+        footprint=Footprint(
+            name="SODFL3516X110N", package_class="SOD-123Flat",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            pitch_mm=3.0, size_mm=(3.5, 1.6), height_mm=1.10,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note="Fire-boost rectifier (D_ACTIVATE). Vendor library: SamacSys LIB_STPS1L60ZF (2021-11-04).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

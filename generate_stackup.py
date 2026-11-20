@@ -68,7 +68,7 @@ from smash.parts.regulators import (                                    # noqa: 
 from smash.parts.motor_drivers import add_drv8428epwpr                  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
                                 add_pmeg040v050epe_qz, add_bat64_06_tp,
-                                add_bas40_02l)
+                                add_bas40_02l, add_stps1l60zf)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
     add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr,
@@ -160,7 +160,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "BAT_RAW":      4.0,
     "BAT_PROT":     4.0,
     "ACTIVATE_HV":      33.0,   # aft activation rail (TPS61175 boost off COMP_5V); cap-free, boost sources the wire directly
-    "USB_VBUS":     5.0,    # depot USB-C input; crosses nose→power_board (Q_USB_OR ideal diode) at up to the 3 A a non-PD USB-C source can deliver — size the flex as a power rail, not signal
+    "USB_VBUS":     5.0,    # depot USB-C input; the Q_USB_OR ideal diode sits ON the USB nose (2026-11-20), so the 3 A comes up as BAT_PROT and VBUS crosses only as a presence signal
     "REG_IN_MAIN":  4.0,
     "BOOST_OUT":    3.87,
     "VCAP1":        1.2,    # legacy / unused (orphaned — H562 retired)
@@ -675,8 +675,8 @@ def build_companion_compute(d: Design) -> None:
     # diagnostics, and USB-DFU for signed firmware pushes. FULL-SPEED on purpose
     # — HS (480 Mbps) can't survive the ~4 LGA joints from companion to nose;
     # FS (12 Mbps) is robust over that and ample for SSH + a depot rootfs push.
-    # Depot power DOES come in over USB VBUS (USB_VBUS → Q_USB_OR ideal diode on
-    # power_board + Q_USB_WAKE/Q_USB_WAKE2 wake; Q_ISO's reverse-block keeps the
+    # Depot power DOES come in over USB VBUS (USB_VBUS → Q_USB_OR ideal diode on the
+    # USB nose since 2026-11-20 + Q_USB_WAKE/Q_USB_WAKE2 wake; Q_ISO's reverse-block keeps the
     # cells at zero load during the session) — the old "power on the nose BAT_PROT
     # pad" note predated the USB-C wake work.
     _net(d, "USB_D_P").connect(mpu.pin("USB3DR_DP"))
@@ -2452,7 +2452,11 @@ def _build_activation_array(d: Design) -> None:
     # fine per IPC-2221, and the 5 V rail is more comfortable still); the
     # parachute_cutter_activate high-side, decoder, NFETs, monitor and bleed sit on aft_end with
     # the wires — safety topology unchanged.
-    BT_BOOST = "activation_interface"
+    # (2026-11-20, user) the fire boost moved to power_board's TOP, next to the
+    # COMP 5 V boost that feeds it: both tall boost stages face ONE gap
+    # (power↔compute); only ACTIVATE_HV (33 V, ≤ 0.12 A) runs down to the
+    # cutter / matrix on activation_interface.
+    BT_BOOST = "power_board"
     boost = add_tps61175pwpr(d, ref="U_ACTIVATE_BOOST", board_tag=BT_BOOST)
     _net(d, "COMP_5V")    .connect(boost.pin("VIN"))     # 3
     _net(d, "ACTIVATE_SW")    .connect(boost.pin("SW_1"))    # 1
@@ -2476,7 +2480,9 @@ def _build_activation_array(d: Design) -> None:
     l_activate = add_we_744043100(d, ref="L_ACTIVATE", board_tag=BT_BOOST)
     _net(d, "COMP_5V").connect(l_activate.pin("1"))
     _net(d, "ACTIVATE_SW") .connect(l_activate.pin("2"))
-    d_activate = add_mbrs540t3g(d, ref="D_ACTIVATE", board_tag=BT_BOOST)
+    # (2026-11-20, user) flat 60 V / 1 A SOD-123Flat (1.1 mm) instead of the
+    # 2.56 mm MBRS540T3G SMC — out of the tall-part group, more V_RRM margin
+    d_activate = add_stps1l60zf(d, ref="D_ACTIVATE", board_tag=BT_BOOST)
     _net(d, "ACTIVATE_SW").connect(d_activate.pin("A"))
     _net(d, "ACTIVATE_HV").connect(d_activate.pin("K"))
     # FB: VOUT = 1.229 × (1 + 261/10) = 33.3 V
@@ -2570,11 +2576,15 @@ def build_camera_module(d: Design) -> None:
     _add_ir_service_link(d, "camera_module", "_C")
 
     # ── Power rails (per datasheet Table 3) ─────────────────────────
-    # 1.2V (VDD, VDD_PHY, VDD_DATA): PMIC-supplied
+    # (2026-11-20, user) LOCAL camera rails, each with two sources: a FITTED
+    # 0 Ω from the PMIC rail (COMP_1V2 / COMP_2V8) or a DNP LP5907 low-noise
+    # LDO from BAT_PROT (already on the crown) — fit the LDO + lift the 0 Ω
+    # if the PMIC rails prove too noisy for the sensor; never both.
+    # 1.2V (VDD, VDD_PHY, VDD_DATA)
     for ball in ["A4", "A8", "A12", "B10", "D7", "E1", "G8"]:
-        _net(d, "COMP_1V2", kind="power", voltage_v=1.2).connect(cam.pin(ball))
-    _net(d, "COMP_1V2").connect(cam.pin("C8"))       # VDD_PHY
-    _net(d, "COMP_1V2").connect(cam.pin("F11"))      # VDD_DATA
+        _net(d, "CAM_VDD_1V2", kind="power", voltage_v=1.2).connect(cam.pin(ball))
+    _net(d, "CAM_VDD_1V2").connect(cam.pin("C8"))       # VDD_PHY
+    _net(d, "CAM_VDD_1V2").connect(cam.pin("F11"))      # VDD_DATA
 
     # 1.8V (VDD_IO, VDDIO_PHY): logic level for MP25 SDIO/CSI
     for ball in ["A7", "B4", "B5", "B11", "D3", "D6", "F1", "G12"]:
@@ -2583,10 +2593,25 @@ def build_camera_module(d: Design) -> None:
 
     # 2.8V (VAA, VAA_PIX, VAA_PHY): analog supply for image sensor
     for ball in ["A10", "B1", "G2", "G7"]:
-        _net(d, "COMP_2V8", kind="power", voltage_v=2.8).connect(cam.pin(ball))  # VAA
+        _net(d, "CAM_VAA_2V8", kind="power", voltage_v=2.8).connect(cam.pin(ball))  # VAA
     for ball in ["B8", "C2", "G1", "G9"]:
-        _net(d, "COMP_2V8").connect(cam.pin(ball))   # VAA_PIX
-    _net(d, "COMP_2V8").connect(cam.pin("F8"))       # VAA_PHY
+        _net(d, "CAM_VAA_2V8").connect(cam.pin(ball))   # VAA_PIX
+    _net(d, "CAM_VAA_2V8").connect(cam.pin("F8"))       # VAA_PHY
+    CT = "camera_module"
+    res_between(d, "COMP_1V2", "CAM_VDD_1V2", "0", ref="R_CAM_VDD_SRC", board_tag=CT)
+    res_between(d, "COMP_2V8", "CAM_VAA_2V8", "0", ref="R_CAM_VAA_SRC", board_tag=CT)
+    for ref, factory, out, cin, cout in (
+            ("U_CAM_LDO_VDD", add_lp5907mfx_1_2_nopb, "CAM_VDD_1V2", "1uF", "2.2uF"),
+            ("U_CAM_LDO_VAA", add_lp5907mfx_2_8_nopb, "CAM_VAA_2V8", "1uF", "4.7uF")):
+        ldo = factory(d, ref=ref, board_tag=CT)
+        _net(d, "BAT_PROT").connect(ldo.pin("1"))   # IN
+        _net(d, "GND")     .connect(ldo.pin("2"))
+        _net(d, "BAT_PROT").connect(ldo.pin("3"))   # EN tied IN
+        _net(d, out)       .connect(ldo.pin("5"))   # OUT
+        ldo.dnp = True
+        for c in (cap_to_gnd(d, "BAT_PROT", cin, ref=f"C_{ref[2:]}_IN", board_tag=CT, pin=ldo.pin("1"))
+                  + cap_to_gnd(d, out, cout, ref=f"C_{ref[2:]}_OUT", board_tag=CT, pin=ldo.pin("5"))):
+            c.dnp = True
 
     # ── Grounds ─────────────────────────────────────────────────────
     for ball in ["A2", "A3", "A6", "B2", "C1", "C5", "D8", "D9",
@@ -2634,17 +2659,17 @@ def build_camera_module(d: Design) -> None:
     # ── Power-rail decoupling ───────────────────────────────────────
     # 100 nF HF caps absorbed by the ECM laminate; 1 µF bulk stays
     # discrete for frame-rate current swings.
-    cap_to_gnd(d, "COMP_1V2", "100nF", ref="C_CAM_VDD_1",
+    cap_to_gnd(d, "CAM_VDD_1V2", "100nF", ref="C_CAM_VDD_1",
                embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "COMP_1V2", "1uF",   ref="C_CAM_VDD_BULK",
+    cap_to_gnd(d, "CAM_VDD_1V2", "1uF",   ref="C_CAM_VDD_BULK",
                board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_VDDIO_1",
                embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
     cap_to_gnd(d, "COMP_1V8", "1uF",   ref="C_CAM_VDDIO_BULK",
                board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "COMP_2V8", "100nF", ref="C_CAM_VAA_1",
+    cap_to_gnd(d, "CAM_VAA_2V8", "100nF", ref="C_CAM_VAA_1",
                embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "COMP_2V8", "1uF",   ref="C_CAM_VAA_BULK",
+    cap_to_gnd(d, "CAM_VAA_2V8", "1uF",   ref="C_CAM_VAA_BULK",
                board_tag="camera_module", pin=(cam.ref, None))
 
 
@@ -2895,8 +2920,11 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # BOTTOM face: the SOIC-8 is 1.75 mm tall; on fin_ble's top it faced
     # wakeup's bottom and grew that ~3.0 mm gap to 3.5 mm (2026-11-17 build).
     # The activation↔fin_ble gap below is already 4.4 mm.
-    _CAN_TAG = "fin_ble_board"
-    can_gw = add_tcan1042gvdq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG, feature="bottom")
+    # (2026-11-20, user) tall parts grouped: the 1.75 mm SOIC-8 joins the
+    # boost stages on power_board's TOP (that gap is set by the 2.8 mm
+    # inductors anyway); CANH/CANL ride two lanes down to the aft interface.
+    _CAN_TAG = "power_board"
+    can_gw = add_tcan1042gvdq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
     _net(d, "EXT_CAN_TX").connect(can_gw.pin("TXD"))
     _net(d, "EXT_CAN_RX").connect(can_gw.pin("RXD"))
     _net(d, "GND").connect(can_gw.pin("GND"))
@@ -2993,7 +3021,8 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     d.merge_nets("3V3", "FLEX_3V3")
     d.merge_nets("SYS_I2C_SCL", "FLEX_I2C_SCL")
     d.merge_nets("SYS_I2C_SDA", "FLEX_I2C_SDA")
-    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_VDD", embedded_cap_absorbs=True, board_tag=BTAG)
+    # (2026-11-20) C_CAM_VDD removed: a stray COMP_1V8 cap, the rail's only
+    # user on this board (the camera has its own VDDIO decoupling).
 
     # Launch detect (piezo comparator) lives on fin_ble_board — it sits by
     # the piezo disk (the battery-compartment ceiling's top face since the
@@ -3120,8 +3149,10 @@ def build_power_board(d: Design) -> None:
     # dropped — the TLM-1530M/S passes Tadiran's external-short safety
     # test, so an unprotected short does not vent — and (1), the safety-
     # critical one, is kept as a nanopower P-FET ideal diode (Q_ISO).
-    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK1", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK2", board_tag=BTAG)
+    # (2026-11-20) polymer bulk (1.4 mm, ≤ the 1.5 mm tall-part line) on the
+    # BOTTOM: power's top carries both boost stages (tall parts grouped)
+    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK1", board_tag=BTAG, feature="bottom")
+    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK2", board_tag=BTAG, feature="bottom")
 
     # Q_ISO — ideal-diode reverse-block, BAT_RAW (cell) → BAT_PROT (load /
     # USB-OR point). Body diode (drain=BAT_RAW → source=BAT_PROT) passes
@@ -3170,8 +3201,8 @@ def build_power_board(d: Design) -> None:
     res_between(d, "USB_VBUS",      "BAT_ISO_USBG", "100k", ref="R_ISO_USB_H", board_tag=BTAG)
     res_between(d, "BAT_ISO_USBG",  "GND",          "100k", ref="R_ISO_USB_L", board_tag=BTAG)
 
-    cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT1", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT2", board_tag=BTAG)
+    cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT1", board_tag=BTAG, feature="bottom")
+    cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT2", board_tag=BTAG, feature="bottom")
     cap_to_gnd(d, "BAT_PROT", "1uF",   ref="CBAT3", board_tag=BTAG)
 
     # ── add_companion_power — ONE shared 5 V boost (PMIC + fins) ─────
@@ -3189,8 +3220,8 @@ def build_power_board(d: Design) -> None:
     # 3.0×4.4) overflows the saturated power↔companion joint by 5 lands in
     # core_radar — bottom face also co-locates it with L_BOOST_COMP (tight
     # SW loop on one face).
-    boost = add_tps61175pwpr(d, ref="U_COMP_BOOST", board_tag=BTAG,
-                             feature="bottom")
+    # (2026-11-20) TOP face with the fire boost (tall parts grouped on one face)
+    boost = add_tps61175pwpr(d, ref="U_COMP_BOOST", board_tag=BTAG)
     _net(d, "REG_IN_MAIN") .connect(boost.pin("VIN"))     # 3
     _net(d, "COMP_5V_SW")  .connect(boost.pin("SW_1"))    # 1 ┐ switch node
     _net(d, "COMP_5V_SW")  .connect(boost.pin("SW_2"))    # 2 ┘
@@ -3224,8 +3255,7 @@ def build_power_board(d: Design) -> None:
     # §6.3) replaces the Isat-marginal 1.2 A TMS 2.2 µH. 4.8×4.8×2.8 mm
     # body goes on the bottom (wakeup-facing) face: the power↔companion
     # joint face is saturated (see L_PMIC_BUCK5) and must not grow.
-    l_boost = add_we_744043100(d, ref="L_BOOST_COMP", board_tag=BTAG,
-                               feature="bottom")
+    l_boost = add_we_744043100(d, ref="L_BOOST_COMP", board_tag=BTAG)
     _net(d, "REG_IN_MAIN").connect(l_boost.pin("1"))
     _net(d, "COMP_5V_SW") .connect(l_boost.pin("2"))
     # PMEG040V050EPE-QZ 5 A/40 V low-V_F Schottky (was an MBRS540T3G in SMC
@@ -3243,7 +3273,7 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_1"))
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_2"))
     _net(d, "COMP_5V_RAW").connect(d_boost.pin("K"))
-    cap_to_gnd(d, "COMP_5V_RAW", "47uF",  ref="C_BOOST_OUT1", board_tag=BTAG, pin=(boost.ref, None))
+    cap_to_gnd(d, "COMP_5V_RAW", "47uF",  ref="C_BOOST_OUT1", board_tag=BTAG, pin=(boost.ref, None), feature="bottom")
     cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref="C_BOOST_OUT3",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(boost.ref, None))
@@ -3464,26 +3494,8 @@ def build_power_board(d: Design) -> None:
     res_between(d, "3V3", "PMIC_PWR_OK", "10k",
                 ref="R_PMIC_PWR_OK", board_tag=BTAG)
 
-    # ── add_optional_camera_ldos — DNP'd LP5907 ×2 for camera rails ──
-    ldo_vdd = add_lp5907mfx_1_2_nopb(d, ref="U_CAM_LDO_VDD",
-                                      board_tag=BTAG)
-    _net(d, "COMP_5V") .connect(ldo_vdd.pin("1"))   # IN
-    _net(d, "GND")     .connect(ldo_vdd.pin("2"))   # GND
-    _net(d, "COMP_5V") .connect(ldo_vdd.pin("3"))   # EN tied IN
-    _net(d, "COMP_1V2").connect(ldo_vdd.pin("5"))   # OUT
-    ldo_vdd.dnp = True
-    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VDD_IN",  board_tag=BTAG, pin=ldo_vdd.pin("1"))
-    cap_to_gnd(d, "COMP_1V2", "2.2uF", ref="C_CAM_LDO_VDD_OUT", board_tag=BTAG, pin=ldo_vdd.pin("5"))
-
-    ldo_vaa = add_lp5907mfx_2_8_nopb(d, ref="U_CAM_LDO_VAA",
-                                      board_tag=BTAG)
-    _net(d, "COMP_5V") .connect(ldo_vaa.pin("1"))
-    _net(d, "GND")     .connect(ldo_vaa.pin("2"))
-    _net(d, "COMP_5V") .connect(ldo_vaa.pin("3"))
-    _net(d, "COMP_2V8").connect(ldo_vaa.pin("5"))
-    ldo_vaa.dnp = True
-    cap_to_gnd(d, "COMP_5V",  "1uF",   ref="C_CAM_LDO_VAA_IN",  board_tag=BTAG, pin=ldo_vaa.pin("1"))
-    cap_to_gnd(d, "COMP_2V8", "4.7uF", ref="C_CAM_LDO_VAA_OUT", board_tag=BTAG, pin=ldo_vaa.pin("5"))
+    # (2026-11-20, user) the optional DNP camera LDOs moved to camera_module
+    # (local rails, 0 Ω-selectable) — see build_camera_module.
 
     # ── add_tmp117(1, I2C2_SCL, I2C2_SDA) ────────────────────────────
     tmp = add_tmp117maidrvr(d, ref="U_TMP1", board_tag=BTAG)
@@ -3539,13 +3551,16 @@ def build_power_board(d: Design) -> None:
     # keeps Q_ISO's body diode off GROWS from ~0.35 V to ~0.94 V.
     # Purely hardware: firmware is not in this path at all.
     #
-    # BOTTOM (wakeup-facing) face, as the SMC was: the saturated top face
-    # has no room — same offload as L_BOOST_COMP.
+    # (2026-11-20, user) ON THE USB NOSE, next to the USB-C: the OR + its
+    # VBUS-presence driver + VBUS bulk only exist where the connector does
+    # (`core`), not in every config. The 3 A now comes up the crown as
+    # BAT_PROT (3 teeth); VBUS crosses only as a presence signal (1 tooth)
+    # for Q_ISO_USB / the USB wake / the MP25 VBUS detect, which stay put.
     # NOTE: like Q_ISO, the forward drop and the gate-drive timing want
     # bench confirmation before fab (analog behaviour, not modelled by
     # the connectivity build).
-    q_usb_or = add_dmp6110svt_7(d, ref="Q_USB_OR", feature="bottom",
-                                board_tag=BTAG)
+    UT = "usb_nose"
+    q_usb_or = add_dmp6110svt_7(d, ref="Q_USB_OR", board_tag=UT)
     for dp in ("D_1", "D_2", "D_3", "D_4"):
         _net(d, "USB_VBUS").connect(q_usb_or.pin(dp))   # drains → VBUS side
     _net(d, "BAT_PROT")   .connect(q_usb_or.pin("S"))   # source → load side
@@ -3556,20 +3571,18 @@ def build_power_board(d: Design) -> None:
     # R_DS(on) 130 mΩ, inside the ±20 V V_GSS). The 110k chain draws
     # ~45 µA ONLY while USB is live — i.e. off the depot supply, never
     # off the cells.
-    res_between(d, "BAT_PROT",  "USB_OR_G",  "100k", ref="R_USBOR_H", board_tag=BTAG)
-    res_between(d, "USB_OR_G",  "USB_OR_GD", "10k",  ref="R_USBOR_L", board_tag=BTAG)
-    q_usbor_drv = add_bss138lt1g(d, ref="Q_USBOR_DRV", board_tag=BTAG,
-                                 feature="bottom")
+    res_between(d, "BAT_PROT",  "USB_OR_G",  "100k", ref="R_USBOR_H", board_tag=UT)
+    res_between(d, "USB_OR_G",  "USB_OR_GD", "10k",  ref="R_USBOR_L", board_tag=UT)
+    q_usbor_drv = add_bss138lt1g(d, ref="Q_USBOR_DRV", board_tag=UT)
     _net(d, "USB_OR_GD").connect(q_usbor_drv.pin("3"))   # drain → gate divider
     _net(d, "GND")      .connect(q_usbor_drv.pin("2"))   # source
     _net(d, "USB_OR_EN").connect(q_usbor_drv.pin("1"))   # gate ← VBUS presence
     # VBUS-presence divider (same idiom as R_ISO_USB_H/L on the interlock):
     # VBUS 5 V → USB_OR_EN 2.5 V, well above the BSS138 V_GS(th) 0.8-1.5 V;
     # VBUS absent → 0 V through R_USBOR_USB_L, so the P-FET defaults OFF.
-    res_between(d, "USB_VBUS",   "USB_OR_EN", "100k", ref="R_USBOR_USB_H", board_tag=BTAG)
-    res_between(d, "USB_OR_EN",  "GND",       "100k", ref="R_USBOR_USB_L", board_tag=BTAG)
-    cap_to_gnd(d, "USB_VBUS", "10uF", ref="C_USB_VBUS",
-               feature="bottom", board_tag=BTAG)
+    res_between(d, "USB_VBUS",   "USB_OR_EN", "100k", ref="R_USBOR_USB_H", board_tag=UT)
+    res_between(d, "USB_OR_EN",  "GND",       "100k", ref="R_USBOR_USB_L", board_tag=UT)
+    cap_to_gnd(d, "USB_VBUS", "10uF", ref="C_USB_VBUS", board_tag=UT)
 
     # ── Depot-USB WAKE: VBUS presence joins the MAIN_SW_GATE open-drain
     # OR (4th member after the NFC GPO diode, QHOLD/MP25, QHOLD2/WBA) —
@@ -5427,17 +5440,36 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                 run_start = None
     # fin_ble's bottom: since the 2026-11-14 headroom it is FREE inside
     # the holder's edge ring (r < 15.8) — only the ring band is blocked.
+    import math as _m
     from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
                                           BATT_PART_CLEARANCE_MM)
-    # (2026-11-20, user) the WHOLE bottom face is EMPTY: no tabs any more
-    # (Tadiran /P cells wired to aft_end), and the board mates flat over the
-    # 1 mm headroom (cell + pin → wire joints only).
+    ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
+    # (2026-11-20) no tabs any more (Tadiran /P cells wired to aft_end); the
+    # board sits over the 1 mm headroom (cell + pin → wire joints).
+    # (2026-11-20, user) …revised: LOW parts (≤ 0.8 mm, face_split) may use it,
+    # outside the holder's edge-ring band and clear of the cells' + pin joints
+    # and their AWG 28 wires to the potting channel (plain keepouts; the
+    # packer only knows axis-aligned rects → the corridors are 1 mm squares).
     fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
     if fb is not None and getattr(fb, "geometry", None) is not None:
-        fb.geometry.keepouts.append(Keepout(
-            polygon=[(-17.5, -17.5), (17.5, -17.5), (17.5, 17.5), (-17.5, 17.5)],
-            layers=("B.Cu",), scope="component", tag="battery_ceiling_empty",
-            note="battery ceiling: bottom face EMPTY (2026-11-20)"))
+        def _sq(x, y, h, tag, note):
+            fb.geometry.keepouts.append(Keepout(
+                polygon=[(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)],
+                layers=("B.Cu",), scope="component", tag=tag, note=note))
+        for (x0, y0, x1, y1) in ring_rects:
+            fb.geometry.keepouts.append(Keepout(
+                polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                layers=("B.Cu",), scope="component", tag="battery_ring_band",
+                note="battery holder edge ring (r 16–17) bears here"))
+        from smash.export.spacer_step import cell_centres_xy, _batt_channel_xy
+        chx, chy = _batt_channel_xy()
+        for cx, cy in cell_centres_xy():
+            _sq(cx, cy, 1.5, "cell_pin_joint", "cell + pin → wire solder joint")
+            n_st = max(1, int(_m.hypot(chx - cx, chy - cy) / 0.8))
+            for k in range(n_st + 1):
+                t = k / n_st
+                _sq(cx + (chx - cx) * t, cy + (chy - cy) * t, 1.0, "cell_wire",
+                    "cell + wire to the potting channel")
     for bname, cu in (("cell_floor_board", "F.Cu"),):
         b = boards.get(bname)
         if b is None or getattr(b, "geometry", None) is None:
@@ -6006,9 +6038,14 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                     issues.append(f"{nbr}/top: {ref} under the battery holder / "
                                   "cells (only cell-tab pads allowed)")
                     continue
-                # (2026-11-20, user) the battery ceiling's bottom face is EMPTY
-                issues.append(f"{nbr}/bottom: {ref} on the battery ceiling "
-                              "(its bottom face must stay empty)")
+                # (2026-11-20, user) only LOW parts on the battery ceiling
+                from smash.export.spacer_step import (BATT_HEADROOM_MM,
+                                                      BATT_PART_CLEARANCE_MM)
+                ht = (getattr(c, "height_mm", None)
+                      or getattr(getattr(c, "footprint", None), "height_mm", None) or 0)
+                if ht > BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:
+                    issues.append(f"{nbr}/bottom: {ref} too tall for the battery "
+                                  f"headroom ({ht:g} mm > {BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:g})")
     return issues
 
 

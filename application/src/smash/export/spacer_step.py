@@ -574,7 +574,6 @@ NO_HARDWARE_GAPS: tuple = ()
 RING_MATERIAL = "PEEK GF30 (30 % glass-filled), annealed after machining"
 RING_IS_METAL = False
 RING_LABEL = "PEEK RING"
-RING_NOTCH_RADIUS_MM = 0.3                    # radiused notch corners: GF30 is notch-sensitive
 RING_R_IN_MM, RING_R_OUT_MM = 15.0, 17.0      # 2.0 mm wall, OD 34 = board edge; bears on the
                                               # mask-tented castellation annuli (mask + anodise = 2× insulation)
 
@@ -667,7 +666,6 @@ BATT_PART_CLEARANCE_MM = 0.2
 
 SLOT_W_MM = 2.0                               # notch width (tangential)
 NOTCH_DEPTH_MM = 0.5                          # notch depth (axial), top + bottom edge
-SLOT_ANGLES_DEG = (105.0, 285.0)              # = sleeve seams / feed + vent grooves
 STANDOFF_D_MM = 1.2
 # (2026-11-15) Standoffs sit fully INSIDE the aluminium rings' bore (incl. the
 # ring's clearance), so they never overlap a ring / the holder's top ring:
@@ -828,10 +826,9 @@ def gap_kind(name: str) -> str:
 
 
 def _ring_body(cq, r_in, r_out, h, open_sector=None):
-    """C-ring: OPEN over `open_sector` (the antenna sector, 2026-11-17),
-    with potting NOTCHES at its top and bottom edges (at the feed / vent
-    angles). Potting runs in along the board face through the notch on
-    each end."""
+    """C-ring: OPEN over `open_sector` (the antenna sector, 2026-11-17).
+    (2026-11-20, user) NO potting notches any more — the potting runs up the
+    main potting-hole axis through the boards, not along the board faces."""
     import math
     body = (cq.Workplane("XY").circle(r_out).circle(r_in).extrude(h))
     if open_sector:
@@ -841,16 +838,6 @@ def _ring_body(cq, r_in, r_out, h, open_sector=None):
                                R * math.sin(math.radians(a0 + (a1 - a0) * k / 16)))
                               for k in range(17)]
         body = body.cut(cq.Workplane("XY").polyline(pts).close().extrude(h))
-    d = min(NOTCH_DEPTH_MM, h / 3.0)
-    for ang in SLOT_ANGLES_DEG:
-        a = math.radians(ang)
-        rm = (r_in + r_out) / 2.0
-        for z0 in (0.0, h - d):
-            cut = (cq.Workplane("XY").center(rm * math.cos(a), rm * math.sin(a))
-                   .transformed(rotate=(0, 0, ang))
-                   .rect((r_out - r_in) * 3.0, SLOT_W_MM).extrude(d)
-                   .translate((0, 0, z0)))
-            body = body.cut(cut)
     return body
 
 
@@ -957,11 +944,8 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
         step, stl = d / f"{label}.step", d / f"{label}.stl"
         cq.exporters.export(body, str(step))
         cq.exporters.export(body, str(stl))
-        slots = (f"- Potting notches {SLOT_W_MM} mm wide × {NOTCH_DEPTH_MM} mm deep "
-                 f"(corners radiused R{RING_NOTCH_RADIUS_MM:g} — GF30 is notch-sensitive; "
-                 "break all edges) at the TOP and BOTTOM edge at "
-                 f"{', '.join(f'{a:.0f}°' for a in SLOT_ANGLES_DEG)} "
-                 "(= the sleeve's feed / vent grooves).\n"
+        slots = ("- No potting notches (potting rises through the boards' potting holes); "
+                 "break all edges — GF30 is notch-sensitive.\n"
                  if kind == "ring" else "")
         (d / f"{label}_cam.md").write_text(
             f"# {label} — gap hardware (generated)\n\n"

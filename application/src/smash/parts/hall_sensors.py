@@ -133,6 +133,7 @@ def add_rr123_1h02_612(design, ref: str, **overrides) -> Chip:
         ),
         datasheet=datasheet_ref(pn, "redrock-rr123-datasheet.pdf"),
         package="LGA-4 (1.45x1.45 mm)",
+        size_mm=(1.45, 1.45), height_mm=0.44,      # datasheet (gap sizing assumed 2.0)
         temp_range_c=(-40, 85),
         voltage_rating_v=3.6,
         pins=build_pins(src(pn, f"{pn}.kicad_sym")),
@@ -141,7 +142,7 @@ def add_rr123_1h02_612(design, ref: str, **overrides) -> Chip:
             pads=pads_from_kicad_mod(fp_mod),
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),
-            pitch_mm=0.8,
+            pitch_mm=0.8, size_mm=(1.45, 1.45), height_mm=0.44,
             model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
             source="samacsys",
         ),

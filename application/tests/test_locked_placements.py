@@ -67,7 +67,9 @@ def test_real_data_has_all_anchors():
     QSPI NOR) was dropped entirely when flight control consolidated onto
     the MP25 Cortex-M33."""
     locked = load_locked_placements()
-    expected = {"U_PMIC", "U_MPU", "U_DDR4",
+    # (2026-11-20, user) the routed power_board's locks (U_PMIC …) were
+    # dropped — every board is being re-routed; the packer places them.
+    expected = {"U_MPU", "U_DDR4",
                 "P_CELL_PIN_NEG1", "P_CELL_PIN_NEG2", "P_CELL_PIN_NEG3",
                 "P_CELL_WIRE_POS1", "P_CELL_WIRE_POS2", "P_CELL_WIRE_POS3"}
     assert expected <= set(locked)

@@ -40,6 +40,11 @@ _MATING_PAD_REF_PREFIX = "P_"
 _ECM_DESCRIPTION_FLAG = "[DNP/ECM]"
 
 
+TALL_PART_MM = 1.5
+CEILING_PART_MAX_MM = 0.8
+_PAYLOAD_TAGS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
+
+
 def is_mating_pad(chip: Chip) -> bool:
     """Board-to-board LGA pad: refs `P_*` mate with `J_*` on the
     adjacent tile. The `P_` side lives on the bottom face."""
@@ -90,11 +95,20 @@ def goes_to_bottom(chip: Chip) -> bool:
     keeps the crowded top face for the processor + memory."""
     if getattr(chip, "feature", None) == "rf":
         return False
-    # (2026-11-20, user) activation_interface is the battery CEILING: its
-    # bottom face stays EMPTY (mates flat over the cells' + pin wires), so no
-    # opt-in may send a part there.
-    if getattr(chip, "board_tag", None) == "activation_interface":
-        return is_mating_pad(chip) or is_test_point(chip)
+    tag = getattr(chip, "board_tag", None)
+    h = (getattr(chip, "height_mm", None)
+         or getattr(getattr(chip, "footprint", None), "height_mm", None) or 0.0)
+    # (2026-11-20, user) TALL parts (> 1.5 mm) are grouped on TOP faces of the
+    # core boards so they share few gaps; payloads exempt (the radar's bottom
+    # faces the fixed 9 mm anchor gap).
+    if h > TALL_PART_MM and tag not in _PAYLOAD_TAGS:
+        return False
+    # (2026-11-20, user) activation_interface is the battery CEILING: only LOW
+    # passives (≤ 0.8 mm) may use its bottom — the 1 mm headroom carries the
+    # cells' + pin → wire joints (their corridors are plain keepouts).
+    if tag == "activation_interface":
+        return (is_mating_pad(chip) or is_test_point(chip)
+                or (is_embeddable_passive(chip) and h <= CEILING_PART_MAX_MM))
     if getattr(chip, "feature", None) in ("clock", "bottom"):
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that

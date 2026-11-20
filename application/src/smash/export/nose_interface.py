@@ -117,7 +117,9 @@ def cone_z(r: float, z_base: float) -> float:
     return z_base - (CROWN_R_OUT_MM - r) * math.tan(math.radians(BEVEL_CONE_DEG))
 CROWN_PHASE_DEG = 3.75           # tooth centres off the 0° lane centre
 # Nets that need more than one tooth (current): VBUS up to ~3 A on depot USB.
-MULTIPLICITY = {"USB_VBUS": 3, "BAT_PROT": 2, "COMP_3V3": 2, "3V3": 1}
+# (2026-11-20) the USB ideal-diode OR moved onto the USB nose: depot power (≤ 3 A)
+# now crosses the crown as BAT_PROT (3 teeth); USB_VBUS is only a presence signal.
+MULTIPLICITY = {"USB_VBUS": 1, "BAT_PROT": 3, "COMP_3V3": 2, "3V3": 1}
 DIFF_PAIRS = (("CAM_CSI_CLK_P", "CAM_CSI_CLK_N"), ("CAM_CSI_D0_P", "CAM_CSI_D0_N"),
               ("CAM_CSI_D1_P", "CAM_CSI_D1_N"), ("USB_D_P", "USB_D_N"))
 PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
@@ -358,12 +360,17 @@ def _seg_dist(p1, p2, q1, q2) -> float:
     return min(pt(p1, q1, q2), pt(p2, q1, q2), pt(q1, p1, p2), pt(q2, p1, p2))
 
 
-def fan_unit_segments(x_slot: float, xs_teeth: list, h: float) -> list:
-    """The fan copper of one unit in (x, z) mm, z = 0 at the fan bottom: a
-    diagonal from its compute slot to the mean of its teeth, then a bar over its
-    teeth at the top (a merged power run / a single tooth: no bar)."""
+FAN_DROPS_MM = (0.0, 0.5, 1.0, 1.5)    # diagonal start lift options (stagger)
+
+
+def fan_unit_segments(x_slot: float, xs_teeth: list, h: float, z0: float = 0.0) -> list:
+    """The fan copper of one unit in (x, z) mm, z = 0 at the fan bottom: up at
+    its compute slot to `z0` (the stagger lift), a diagonal to the mean of its
+    teeth at h, then a bar over its teeth (a merged power run / a single
+    tooth: no bar)."""
     xm = sum(xs_teeth) / len(xs_teeth)
-    segs = [((x_slot, 0.0), (xm, h))]
+    segs = [((x_slot, 0.0), (x_slot, z0))] if z0 > 0 else []
+    segs.append(((x_slot, z0), (xm, h)))
     if len(xs_teeth) > 1:
         segs.append(((min(xs_teeth), h), (max(xs_teeth), h)))
     return segs
@@ -371,54 +378,60 @@ def fan_unit_segments(x_slot: float, xs_teeth: list, h: float) -> list:
 
 def fan_gap(a: tuple, b: tuple, h: float, r: float) -> float:
     """Copper gap (edge to edge) between two fan units a, b = (slot_deg,
-    [tooth_deg…], width_mm), angles already unwrapped."""
+    [tooth_deg…], width_mm[, z0_mm]), angles already unwrapped."""
     mm = lambda d: math.radians(d) * r
-    sa = fan_unit_segments(mm(a[0]), [mm(t) for t in a[1]], h)
-    sb = fan_unit_segments(mm(b[0]), [mm(t) for t in b[1]], h)
+    sa = fan_unit_segments(mm(a[0]), [mm(t) for t in a[1]], h, a[3] if len(a) > 3 else 0.0)
+    sb = fan_unit_segments(mm(b[0]), [mm(t) for t in b[1]], h, b[3] if len(b) > 3 else 0.0)
     d = min(_seg_dist(p1, p2, q1, q2) for p1, p2 in sa for q1, q2 in sb)
     return d - 0.5 * (a[2] + b[2])
 
 
 def fan_slots(units: list, free: list, start: float, r: float = None,
               h: float = FAN_H_MM, clear: float = LANE_CLEAR_MM) -> tuple:
-    """Order-preserving units → free compute slots for the crown fan.
-    `units` = [(key, [tooth_deg…], width_mm)], `free` = slot angles, both
-    cyclic from `start`. Minimises (worst clearance shortfall, total jog): every
-    neighbouring pair keeps `clear` along its diagonals when possible.
-    → ({key: slot_deg}, worst_gap_mm)."""
+    """Order-preserving units → free compute slots (+ a diagonal start lift,
+    FAN_DROPS_MM) for the crown fan. `units` = [(key, [tooth_deg…], width_mm)],
+    `free` = slot angles, both cyclic from `start`. Minimises (worst clearance
+    shortfall, total jog + lift): every neighbouring pair keeps `clear` along
+    its real copper when possible. → ({key: (slot_deg, lift_mm)}, worst_gap_mm)."""
     r = CROWN_R_OUT_MM if r is None else r
     if not units or not free:
         return {}, float("inf")
     uw = lambda a: (a - start) % 360.0
     us = sorted(units, key=lambda u: uw(sum(u[1]) / len(u[1])))
     fr = sorted(free, key=uw)
-    C, F = len(us), len(fr)
+    C, F, D = len(us), len(fr), len(FAN_DROPS_MM)
     if F < C:
         return {}, float("-inf")
     INF = (float("inf"), float("inf"))
     tdeg = [[uw(t) for t in u[1]] for u in us]
     jog = lambda i, j: abs(uw(fr[j]) - sum(tdeg[i]) / len(tdeg[i]))
-    cost = [[INF] * F for _ in range(C)]
-    back = [[-1] * F for _ in range(C)]
+    cost = [[[INF] * D for _ in range(F)] for _ in range(C)]
+    back = [[[None] * D for _ in range(F)] for _ in range(C)]
     for j in range(F - C + 1):
-        cost[0][j] = (0.0, jog(0, j))
+        for d in range(D):
+            cost[0][j][d] = (0.0, jog(0, j) + 0.01 * FAN_DROPS_MM[d])
     for i in range(1, C):
         for j in range(i, F - (C - 1 - i)):
-            for jp in range(i - 1, j):
-                c0 = cost[i - 1][jp]
-                if c0 == INF:
-                    continue
-                g = fan_gap((uw(fr[jp]), tdeg[i - 1], us[i - 1][2]),
-                            (uw(fr[j]), tdeg[i], us[i][2]), h, r)
-                c = (max(c0[0], max(0.0, clear - g)), c0[1] + jog(i, j))
-                if c < cost[i][j]:
-                    cost[i][j], back[i][j] = c, jp
-    j = min(range(F), key=lambda k: cost[C - 1][k])
-    short = cost[C - 1][j][0]
+            for d in range(D):
+                for jp in range(max(i - 1, j - 10), j):   # neighbours sit close
+                    for dp in range(D):
+                        c0 = cost[i - 1][jp][dp]
+                        if c0 == INF:
+                            continue
+                        g = fan_gap((uw(fr[jp]), tdeg[i - 1], us[i - 1][2], FAN_DROPS_MM[dp]),
+                                    (uw(fr[j]), tdeg[i], us[i][2], FAN_DROPS_MM[d]), h, r)
+                        c = (max(c0[0], max(0.0, clear - g)),
+                             c0[1] + jog(i, j) + 0.01 * FAN_DROPS_MM[d])
+                        if c < cost[i][j][d]:
+                            cost[i][j][d], back[i][j][d] = c, (jp, dp)
+    j, d = min(((jj, dd) for jj in range(F) for dd in range(D)),
+               key=lambda t: cost[C - 1][t[0]][t[1]])
+    short = cost[C - 1][j][d][0]
     out = {}
     for i in range(C - 1, -1, -1):
-        out[us[i][0]] = fr[j]
-        j = back[i][j]
+        out[us[i][0]] = (fr[j], FAN_DROPS_MM[d])
+        if i:
+            j, d = back[i][j][d]
     return out, clear - short
 
 

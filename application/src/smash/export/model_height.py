@@ -11,13 +11,13 @@ each footprint's height. Resolution order, most → least trustworthy:
      `SON127P800X600X65-8N` → the trailing `X65-8N` ⇒ 0.65 mm. This is the
      part's actual spec'd height (SamacSys bakes the datasheet dimension into
      the name), NOT a package-family guess.
-  3. a worst-case assumption (default 2.0 mm) when neither is available.
-
-NOTE — the STEP 3D model is deliberately NOT in this chain. bbox-Z looks like
-the obvious height source but it's unreliable: KiCad 3D models aren't
-consistently oriented, so a part lying on its side reports its body length as
-"height" (e.g. the MT29F SPI-NAND's model gives bbox-Z = 6.0 mm vs. its true
-0.65 mm). `step_height_mm()` is kept for manual cross-checking only.
+  3. (2026-11-20, user) the TOP of the vendor STEP model AFTER the
+     footprint's KiCad model transform (rotation + offset, as KiCad's STEP
+     export applies it). The raw bbox-Z was unreliable — models lie on their
+     side (the MT29F SPI-NAND read 6.0 mm vs 0.65) — but with the transform
+     applied 38/48 models match the datasheet within 15 % and the rest within
+     0.3 mm (nominal vs max), the NAND included. Cached on disk.
+  4. a worst-case assumption (default 2.0 mm) when none is available.
 """
 from __future__ import annotations
 
@@ -74,6 +74,60 @@ def step_height_mm(step_path: str | pathlib.Path) -> float | None:
     return h
 
 
+def _model_cache_path():
+    return pathlib.Path(__file__).resolve().parents[4] / ".cache" / "model_heights.json"
+
+
+def model_top_mm(footprint) -> float | None:
+    """Top (mm above the board) of `footprint`'s STEP model after its KiCad
+    model transform; None without a usable model. Disk-cached per file."""
+    mp = getattr(footprint, "model_3d_path", None)
+    if not mp or mp.startswith("${"):
+        return None
+    import json
+    from smash.export.kicad_pcb import _parse_kicad_mod_model_xform, resolve_repo_path
+    path = resolve_repo_path(mp)
+    if not path.exists():
+        return None
+    off, rot = getattr(footprint, "model_offset_mm", None), getattr(footprint, "model_rotate_deg", None)
+    if off is None and rot is None:
+        off, rot = next((x for x in (_parse_kicad_mod_model_xform(m)
+                                     for m in sorted(path.parent.glob("*.kicad_mod"))) if x),
+                        ((0, 0, 0), (0, 0, 0)))
+    off, rot = tuple(off or (0, 0, 0)), tuple(rot or (0, 0, 0))
+    st = path.stat()
+    key = f"{path}|{st.st_size}|{int(st.st_mtime)}|{off}|{rot}"
+    if key in _step_height_cache:
+        return _step_height_cache[key]
+    cp = _model_cache_path()
+    disk = {}
+    try:
+        disk = json.loads(cp.read_text())
+    except Exception:
+        pass
+    if key in disk:
+        _step_height_cache[key] = disk[key]
+        return disk[key]
+    try:
+        import cadquery as cq
+        sh = cq.importers.importStep(str(path)).val()
+        sh = (sh.rotate((0, 0, 0), (1, 0, 0), -rot[0]).rotate((0, 0, 0), (0, 1, 0), -rot[1])
+              .rotate((0, 0, 0), (0, 0, 1), -rot[2]).translate(off))
+        top = round(float(sh.BoundingBox().zmax), 3)
+    except Exception:
+        top = None
+    if top is not None and top <= 0.05:
+        top = None                                   # model below the board: unusable
+    _step_height_cache[key] = top
+    try:
+        disk[key] = top
+        cp.parent.mkdir(parents=True, exist_ok=True)
+        cp.write_text(json.dumps(disk, indent=0))
+    except Exception:
+        pass
+    return top
+
+
 def footprint_height_mm(
     footprint,
     *,
@@ -81,7 +135,7 @@ def footprint_height_mm(
 ) -> tuple[float, str]:
     """Best-known height (mm) for `footprint` + its source tag.
 
-    Returns ``(height_mm, source)`` where source is "datasheet", "name", or
+    Returns ``(height_mm, source)`` where source is "datasheet", "name", "model", or
     "assumed". `assume_mm` is the worst-case fallback when there is neither a
     datasheet height nor a name-encoded one.
     """
@@ -93,4 +147,7 @@ def footprint_height_mm(
     nh = ipc_name_height_mm(getattr(footprint, "name", None))
     if nh is not None:
         return nh, "name"
+    mh = model_top_mm(footprint)
+    if mh is not None:
+        return mh, "model"
     return assume_mm, "assumed"

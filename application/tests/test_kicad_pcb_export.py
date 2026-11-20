@@ -956,7 +956,11 @@ def test_full_twin_exports_clean(tmp_path):
     # → 691 (2026-11-20): parachute 4 × 4 DIODE MATRIX driven by the fin MCU —
     #   −18 (CD74HC4514, 16 DMN6075, common tab) +48 (4 rows × PFET/LS/2R/PD,
     #   4 columns × NFET/PD/tab, 16 BAS40-02L steering diodes).
-    assert total_fps == 691
+    # → 693 (2026-11-20): the DNP camera LDOs (+ caps) moved power_board →
+    #   camera_module (±0) with two FITTED 0 Ω source-select links (+2).
+    # → 692 (2026-11-20): stray COMP_1V8 cap C_CAM_VDD on wakeup removed (−1);
+    #   the USB ideal-diode OR + VBUS bulk moved power_board → usb_nose (±0).
+    assert total_fps == 692
 
     # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
     # to its symbol in stackup.kicad_sch, written beside the PCB like each

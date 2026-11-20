@@ -171,6 +171,35 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     fz = ((contract.get("aft_cap") or {}).get("fan_zone"))
     fan_z = ((zmap[fz[0]][1] + 1.0, zmap[fz[1]][0] - 1.0)
              if fz and fz[0] in zmap and fz[1] in zmap else None)
+    # (2026-11-20) STAGGERED fan diagonals: two wide neighbours jogging the
+    # same way run parallel and close up to (spacing × cos φ). Each lane's
+    # diagonal may start lower (0.5 mm steps) until it keeps the LDS clearance
+    # to every neighbour already drawn — checked on the real geometry.
+    fan_drop = {}
+    if fan_z is not None:
+        from smash.export.nose_interface import _seg_dist, LANE_CLEAR_MM
+        fl = [(k, ln) for k, ln in lanes.items() if ln.get("fan")]
+        fl.sort(key=lambda kl: _x_of(kl[1]["fan"]["top_deg"], r_out))
+        drawn = []                         # (xt, xb, drop, w)
+        zt, zb = fan_z[1], fan_z[0]
+
+        def segs(xt, xb, drop):
+            return [((xt, zt + 5.0), (xt, zt - drop)), ((xt, zt - drop), (xb, zb))]
+        for k, ln in fl:
+            w = ln.get("width_mm", 0.2)
+            xt = _x_of(ln["fan"]["top_deg"], r_out)
+            xb = _x_of(ln["fan"]["bottom_deg"], r_out)
+            xb = xt + ((xb - xt + W / 2) % W - W / 2)          # short way round
+            drop = 0.0
+            while drop < 0.6 * (zt - zb):
+                mine = segs(xt, xb, drop)
+                if all(_seg_dist(a1, a2, b1, b2) - 0.5 * (w + ow) >= LANE_CLEAR_MM
+                       for (oxt, oxb, od, ow) in drawn[-6:]
+                       for a1, a2 in mine for b1, b2 in segs(oxt, oxb, od)):
+                    break
+                drop += 0.5
+            fan_drop[k] = drop
+            drawn.append((xt, xb, drop, w))
     for net, lane in lanes.items():
         kind = lane.get("kind", "signal")
         if kind == "crown_payload":
@@ -192,7 +221,8 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 items.append(f'\t(via (at {xa} {Y(zc)}) (size {VIA_PAD_MM}) '
                              f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1
-            items += path([(xt, z_hi), (xt, fan_z[1]), (xb, fan_z[0]), (xb, z_lo)], w, n)
+            zd = fan_z[1] - fan_drop.get(net, 0.0)
+            items += path([(xt, z_hi), (xt, zd), (xb, fan_z[0]), (xb, z_lo)], w, n)
             n_lanes += 1
             continue
         for ang in lane["angles"]:
@@ -229,6 +259,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 z_base = z_ring + NI.CROWN_BASE_MM
                 zc_top = max(z1 for b_, (z0_, z1) in zmap.items() if b_ in lane["boards"])
                 zf0, zf1 = zc_top + NI.FAN_MARGIN_MM, z_ring - NI.FAN_MARGIN_MM
+                zf0 += lane.get("fan_lift_mm", 0.0)       # stagger (fan_slots)
                 items += path([(xr, zs[0]), (xr, zf0), (xm, zf1)], w, n)
                 if len(xts) > 1:                  # tooth to tooth (path wraps the seam)
                     items += path([(xt % W, zf1) for xt in xts], w, n)

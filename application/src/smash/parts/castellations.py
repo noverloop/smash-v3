@@ -475,9 +475,11 @@ def castellation_contract(design, panel, boards, plug_groups=None,
                       file=sys.stderr)
             for u in units:
                 if u["key"] in got:
+                    slot, lift = got[u["key"]]
+                    u["lift"] = lift
                     units_of[u["key"]] = u
                     for k in u["teeth"]:
-                        comp[k] = got[u["key"]]
+                        comp[k] = slot
         for c in crown:
             if c.tooth in ring and c.tooth not in comp:
                 comp[c.tooth] = "ring"
@@ -495,6 +497,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
                     "angles": [comp[c.tooth]], "boards": [crown_host], "net": c.net,
                     "kind": "crown_top", "tooth": c.tooth, "tooth_angle": c.angle_deg,
                     "teeth": list(u["teeth"]), "tooth_angles": list(u["angles"]),
+                    "fan_lift_mm": u.get("lift", 0.0),
                     "gnd_ring": c.role == "gnd", "width_mm": w, "payloads": used_by}
             lanes[f"CROWNP:{c.tooth}:{c.net}"] = {
                 "angles": [c.angle_deg], "boards": list(payloads), "net": c.net,
@@ -622,36 +625,52 @@ def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
         return max(SEP, int(math.ceil(math.degrees(need / R_SKIN) / RES)))
     INF = float("inf")
     I = len(items)
-    def ok(it, q):
-        if it[1] == "T":
-            good = q in tooth_set
-        else:
-            good = m_ok[q]
-        if good and it[1] == "M" and wid(it) > 0.4:      # cap teeth are fixed
-            d = abs(q * RES - it[0]) % 360.0
-            good = min(d, 360.0 - d) <= jog_max
-        return good
-    cost = [[INF] * NPOS for _ in range(I)]
-    back = [[-1] * NPOS for _ in range(I)]
-    for q in range(NPOS if items else 0):
-        if ok(items[0], q):
-            cost[0][q] = abs(q * RES - items[0][0])
-    for i in range(1, I):
-        best, arg = INF, -1
-        sep_i = sep_q(items[i - 1], items[i])
-        for q in range(NPOS):
-            qq = q - sep_i
-            if qq >= 0 and cost[i - 1][qq] < best:
-                best, arg = cost[i - 1][qq], qq
-            if best < INF and ok(items[i], q):
-                cost[i][q] = best + abs(q * RES - items[i][0])
-                back[i][q] = arg
-    assign = {}
-    if items and min(cost[I - 1]) < INF:
+
+    def _solve(t_tan):
+        """Order-preserving DP; wide M lanes jog ≤ JOG_TAN, wide T (cap-tooth)
+        lanes ≤ t_tan (None = free) over the zone height."""
+        t_max = (math.degrees(t_tan * (BATTERY_LENGTH_MM - 2.0) / R_SKIN)
+                 if t_tan is not None else None)
+
+        def ok(it, q):
+            good = (q in tooth_set) if it[1] == "T" else m_ok[q]
+            if good and wid(it) > 0.4:
+                lim = jog_max if it[1] == "M" else t_max
+                if lim is not None:
+                    d = abs(q * RES - it[0]) % 360.0
+                    good = min(d, 360.0 - d) <= lim
+            return good
+        cost = [[INF] * NPOS for _ in range(I)]
+        back = [[-1] * NPOS for _ in range(I)]
+        for q in range(NPOS if items else 0):
+            if ok(items[0], q):
+                cost[0][q] = abs(q * RES - items[0][0])
+        for i in range(1, I):
+            best, arg = INF, -1
+            sep_i = sep_q(items[i - 1], items[i])
+            for q in range(NPOS):
+                qq = q - sep_i
+                if qq >= 0 and cost[i - 1][qq] < best:
+                    best, arg = cost[i - 1][qq], qq
+                if best < INF and ok(items[i], q):
+                    cost[i][q] = best + abs(q * RES - items[i][0])
+                    back[i][q] = arg
+        if not items or min(cost[I - 1]) == INF:
+            return None
+        out = {}
         q = min(range(NPOS), key=lambda x: cost[I - 1][x])
         for i in range(I - 1, -1, -1):
-            assign[items[i][2]] = round((start + q * RES) % 360.0, 4)
+            out[items[i][2]] = round((start + q * RES) % 360.0, 4)
             q = back[i][q]
+        return out
+    # (2026-11-20) wide cap-tooth lanes too: two 0.6 mm lanes jogging ~60° side
+    # by side closed to 0.03 mm. Tightest jog cap that still fits wins.
+    assign = {}
+    for t_tan in (JOG_TAN, 0.6, 0.8, None):
+        got = _solve(t_tan)
+        if got is not None:
+            assign = got
+            break
     by_angle = {round(aft_tooth_angle(k), 4): k for k in teeth}
     used = {}
     n_fan = 0
