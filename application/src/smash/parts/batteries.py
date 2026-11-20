@@ -20,6 +20,15 @@ from smash.parts._slug import canonical_id
 # 11.25 A pulse pack.
 # ═════════════════════════════════════════════════════════════════════════
 
+# (2026-11-20, user) ORDER the /P termination (axial pins, one per end): the −
+# pin goes through the holder floor into aft_end_board, the + pin gets an AWG 28
+# wire down the holder's potting channel to aft_end_board. /S = "standard"
+# (bare, for pack welding), not "solderable". ⚠ Confirm with Tadiran that the
+# TLM-1520HPM is offered as /P and its pin Ø (Ø0.8 assumed).
+TLM_1520_ORDER_PN = "TLM-1520HPM/P"
+TLM_1520_PIN_D_MM = 0.8          # placeholder
+
+
 def add_tlm_1520hpms(design, ref: str, **overrides) -> Battery:
     """Tadiran TLM-1520HPM/S — high-power Lithium Organic (Li-MnO₂)
     primary cell. Ø14.8 × 21 mm cylindrical, 125 mAh, 1.75 A continuous,

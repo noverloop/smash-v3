@@ -110,6 +110,9 @@ def size_backbone_spacers(
         if lower is None or upper is None:
             continue
         t = gap_required_thickness(lower, upper, clearance=clearance, floor=floor)
+        from smash.export import nose_interface as NI   # (2026-11-18) nose anchor gap
+        if lower.name == NI.HOST and upper.name in NI.PAYLOAD_BOARDS:
+            t = max(t, NI.ANCHOR_GAP_MIN_MM)            # Al ring (M2.5 helicoils) + crown
         b.thickness_override_mm = t
         sized[name] = t
     return sized

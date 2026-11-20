@@ -136,6 +136,35 @@ def place_design(
     seed: int = 42,
     extra_locks: dict | None = None,
 ) -> DesignPlacementReport:
+    """Cached front of `_place_design` (smash.layout.placer.cache): the same
+    inputs + the same placer code → the stored result, restored in place."""
+    from smash.layout.placer import cache
+    kw = {"n_random_orderings": n_random_orderings, "seed": seed,
+          "extra_locks": extra_locks}
+    if not cache.enabled():
+        return _place_design(design, panel, boards, **kw)
+    try:
+        k = cache.key(design, panel, boards, kw)
+    except Exception:
+        return _place_design(design, panel, boards, **kw)
+    hit = cache.load(k)
+    if hit is not None:
+        cache.restore_into(design, panel, boards, hit)
+        return hit["report"]
+    report = _place_design(design, panel, boards, **kw)
+    cache.store(k, {"design": design, "panel": panel, "boards": boards, "report": report})
+    return report
+
+
+def _place_design(
+    design,
+    panel,
+    boards: dict,
+    *,
+    n_random_orderings: int = 40,
+    seed: int = 42,
+    extra_locks: dict | None = None,
+) -> DesignPlacementReport:
     """Place every chip in `design` onto its target board.
 
     `boards` must include every board referenced by `chip.board_tag`

@@ -90,6 +90,11 @@ def goes_to_bottom(chip: Chip) -> bool:
     keeps the crowded top face for the processor + memory."""
     if getattr(chip, "feature", None) == "rf":
         return False
+    # (2026-11-20, user) activation_interface is the battery CEILING: its
+    # bottom face stays EMPTY (mates flat over the cells' + pin wires), so no
+    # opt-in may send a part there.
+    if getattr(chip, "board_tag", None) == "activation_interface":
+        return is_mating_pad(chip) or is_test_point(chip)
     if getattr(chip, "feature", None) in ("clock", "bottom"):
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that

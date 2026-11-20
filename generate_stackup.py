@@ -50,7 +50,7 @@ from smash.state import (                                              # noqa: E
 )
 from smash.parts.mechanical import (                                   # noqa: E402
     add_mt03_092_qpd, add_nfc_antenna_flex_27x50,
-    add_pogo_pad, add_cell_contacts_3, add_cell_solder_tab, add_piezo_disc_smd10t04r111,
+    add_pogo_pad, add_clamp_tab, add_cell_contacts_3, add_cell_solder_tab, add_cell_lead_pth, add_piezo_disc_smd10t04r111,
     add_mechanical_spacer_34mm,
 )
 from smash.parts.castellations import (place_castellations,             # noqa: E402
@@ -67,7 +67,8 @@ from smash.parts.regulators import (                                    # noqa: 
 )
 from smash.parts.motor_drivers import add_drv8428epwpr                  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
-                                add_pmeg040v050epe_qz, add_bat64_06_tp)
+                                add_pmeg040v050epe_qz, add_bat64_06_tp,
+                                add_bas40_02l)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
     add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr,
@@ -103,7 +104,8 @@ from smash.parts.comparators import add_tlv3691idpfr                      # noqa
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
 from smash.parts.coils import add_health_coil                            # noqa: E402
 from smash.parts.hall_sensors import add_drv5032fcdbzt, add_rr123_1h02_612  # noqa: E402
-from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67            # noqa: E402
+from smash.parts.usb import (add_uj20_c_h_g_msmt_1a_p16_tr_67,              # noqa: E402
+                             add_uj20_c_v_g_smt_23b_p16_tr_x5)
 from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa: E402
                             add_bgs12p2l6e6327xtsa1, add_pe64906b_z,
                             add_adf4351bcpz, add_ltc5549iudb, add_grf5126,
@@ -2007,6 +2009,12 @@ def build_fins_module(d: Design) -> None:
     """
     BTAG = "fin_ble_board"   # fin actuators on their own tile (2026-07-30 split off wakeup; fins-only since 2026-07-31)
     g = _g0b1_node(d, suffix="FIN", board_tag=BTAG)
+    # (2026-11-20) parachute-matrix SELECT lines (rows PA0..3, columns PA5..8)
+    # → the BSS138 gates on activation_interface (see _build_activation_array)
+    for k, pin in enumerate(("PA0", "PA1", "PA2", "PA3")):
+        _net(d, f"ACT_ROW_SEL_{k}").connect(g.pin(pin))
+    for k, pin in enumerate(("PA5", "PA6", "PA7", "PA8")):
+        _net(d, f"ACT_COL_SEL_{k}").connect(g.pin(pin))
     # Shared enable + per-fin PH/EN control lines from the node MCU.
     _net(d, "FIN_NSLEEP").connect(g.pin("PB7"))
     _fin_aen = {1: "PC0", 2: "PC1", 3: "PC2", 4: "PC3"}   # PWM (enable A)
@@ -2252,7 +2260,11 @@ def build_activation_interface(d: Design) -> None:
         # Pogo pads have no MFG PN; system.py treats them as bare PCB
         # geometry. Smash factory defaults to manf_pn="Pogo_Pad_D2.0mm"
         # (the part's internal designation) — override to match.
-        pad = add_pogo_pad(d, ref=ref, board_tag="aft_end_board",
+        # (2026-11-19, user) the bench pads become CONTACTS of the aft_end_cap's
+        # crown (the public interface; no PCB — board_tag AFT_CAP is virtual);
+        # only the two parachute-cutter pads stay, centred on aft_end's bottom.
+        btag = "aft_end_board" if ref in _AFT_CUTTER_PADS else AFT_CAP
+        pad = add_pogo_pad(d, ref=ref, board_tag=btag,
                            manf_pn=None, square=ref in SQUARE_STARTS)
         _net(d, net).connect(pad.pin("1"))
 
@@ -2344,7 +2356,8 @@ def build_activation_interface(d: Design) -> None:
     # MAGNETIC: an 8-turn rim spiral embedded in aft_end_board (In2.Cu,
     # r 12–15.5 mm, In3.Cu return — away from the antennas), pulsed at
     # 3–30 Hz from BAT_PROT through a 4 × 47 Ω bank (≈ 0.19 A ≈ 1.5 A·turns)
-    # by a low-side BSS138 (bottom face) + passives on activation_interface
+    # by a low-side BSS138 (top face — the battery ceiling's bottom stays empty,
+    # 2026-11-20) + passives on activation_interface
     # (aft_end's top is the battery-holder seat). smash.sim.inductive: ≥ ~45 dB at a ring
     # clamp through 1–10 mm of barrel steel. HEALTH_COIL_TX = MP25 PG7.
     # The coil itself is copper only — added AFTER placement by
@@ -2353,8 +2366,7 @@ def build_activation_interface(d: Design) -> None:
     for k in range(1, 5):
         res_between(d, "HEALTH_COIL_RET", "HEALTH_COIL_D", "47", ref=f"R_COIL_{k}",
                     board_tag="activation_interface")
-    q_coil = add_bss138lt1g(d, ref="Q_HEALTH_COIL", board_tag="activation_interface",
-                            feature="bottom")
+    q_coil = add_bss138lt1g(d, ref="Q_HEALTH_COIL", board_tag="activation_interface")
     _net(d, "HEALTH_COIL_D").connect(q_coil.pin("3"))   # Drain
     _net(d, "GND")          .connect(q_coil.pin("2"))   # Source
     _net(d, "HEALTH_COIL_G").connect(q_coil.pin("1"))   # Gate
@@ -2388,16 +2400,16 @@ def _build_activation_array(d: Design) -> None:
     well within the boost's ~280 mA @ 33 V output, so the old cutter cap
     (and the cell-pulse problem it solved) is GONE — the wire is the load.
 
-    Selection:  GPIO_EXT_0..3 → CD74HC4514 4-to-16 decoder (powered from
-                BAT_PROT so it is dead in shelf/standby AND its ~4 V outputs
-                fully drive the DMN6075 gates while the 3.3 V GPIO inputs
-                stay valid HC highs; a 5 V VCC would fail V_IH). E tied low
-                (always decoding), LE tied high (transparent). Y0..Y15 → 16
-                low-side DMN6075 select NFETs (full 16-sector array).
-    Set/activate: PARACHUTE_CUTTER_SET → DMP6110 high side
-                (ACTIVATE_HV → PARACHUTE_CUTTER_ACTIVATE → the sector
-                commons). Without PARACHUTE_CUTTER_ACTIVATE, ACTIVATE_HV
-                can't reach any wire even if a select NFET shorts. The
+    Selection (2026-11-20): a 4 × 4 DIODE MATRIX driven straight by the fin
+                MCU (G0B1 PA0..3 = rows, PA5..8 = columns). Row = DMP6110
+                high side (BSS138 level shift), column = BSS138 low side; each
+                wire has its own BAS40-02L steering diode (aft_end top) — no
+                sneak paths, 8 nets to aft_end instead of 17. Replaces the
+                CD74HC4514 decoder + 16 DMN6075 select NFETs.
+    Set/activate: PARACHUTE_CUTTER_SET (MP25) → DMP6110 master high side
+                (ACTIVATE_HV → PARACHUTE_CUTTER_ACTIVATE → the 4 row PFETs).
+                Without it ACTIVATE_HV reaches no wire even if a row and a
+                column switch both short. The
                 PFET gate is a resistor divider (R1=R2=100k off
                 ACTIVATE_HV) → V_GS ≈ -16.5 V at 33 V, inside the ±20 V
                 limit (no zener).
@@ -2500,51 +2512,50 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "GND")        .connect(q_unlock.pin("2"))   # source
     _net(d, "PARACHUTE_CUTTER_SET").connect(q_unlock.pin("1"))  # gate ← MP25 PARACHUTE_CUTTER_SET
 
-    # ── 4-to-16 sector decoder (CD74HC4514PW, BAT_PROT-powered) ───────
-    # Back on aft_end's TOP face with the select NFETs it drives (a brief
-    # 2026-07-31 hop to fin_ble_board was superseded the same day by the
-    # stack reorder: the piezo cluster left for fin_ble instead, freeing
-    # this face) — the 16 Y*_ACTIVATE_SEL gate nets are tile-local, and its
-    # A0..A3 / BAT_PROT inputs already terminate at aft_end bench pogos.
-    dec = add_cd74hc4514pw(d, ref="U_ACTIVATE_DEC", board_tag=BT)  # TSSOP-24, aft_end top
-    _net(d, "BAT_PROT").connect(dec.pin("VCC"))
-    _net(d, "GND")     .connect(dec.pin("GND"))
-    _net(d, "GPIO_EXT_0").connect(dec.pin("A0"))
-    _net(d, "GPIO_EXT_1").connect(dec.pin("A1"))
-    _net(d, "GPIO_EXT_2").connect(dec.pin("A2"))
-    _net(d, "GPIO_EXT_3").connect(dec.pin("A3"))
-    _net(d, "GND")     .connect(dec.pin("~{E}"))     # active-low enable → always decoding
-    _net(d, "BAT_PROT").connect(dec.pin("~{LE}"))    # active-high latch → transparent
-
-    # ── 16 low-side select NFETs + outbound activate-wire pads ─────────────
-    # ALL 16 decoder outputs Y0..Y15 are used → a full 16-sector radial array
-    # (30°→22.5° per sector.
-    # Each sector: PARACHUTE_CUTTER_ACTIVATE (common) → restraint wire → ACT_WIRE_i pad →
-    # DMN6075 drain; source → GND. Only the addressed sector's gate is high,
-    # and only while PARACHUTE_CUTTER_SET holds the high side on does current
-    # flow → exactly one parachute restraint cuts.
-    # NB: no spare Y12..Y15 "no-sector" idle code anymore — the safe idle state is
-    # the DMP6110 parachute_cutter_activate (ACTIVATE_HV gated off); tie ~E to a GPIO if a hard all-off
-    # decoder state is also wanted.
-    # Restraint-wire pads on aft_end_board's BOTTOM face — the parachute
-    # lines attach here. With the NFETs + PARACHUTE_CUTTER_ACTIVATE back on
-    # aft_end's top face (2026-07-31), ACT_WIRE_i (drain → pad)
-    # and PARACHUTE_CUTTER_ACTIVATE (high-side → common) are plain top↔bottom vias through this
-    # one tile — nothing on the cutter side crosses the battery compartment. Pads laid
-    # out as a ring of 16 around the rim (one per sector) via
-    # locked_placements; common centred.
-    common = add_pogo_pad(d, ref="P_ACTIVATE_COMMON", board_tag="aft_end_board", manf_pn=None, feature="bottom")
-    _net(d, "PARACHUTE_CUTTER_ACTIVATE").connect(common.pin("1"))
+    # ── (2026-11-20, user) 4 × 4 DIODE MATRIX, driven straight by the fin MCU ──
+    # Wire k = (row k // 4, column k % 4): row PFET (high side, behind the
+    # master PARACHUTE_CUTTER_ACTIVATE PFET) → D_ACT_WIRE_k (BAS40-02L, on
+    # aft_end's TOP in the holder floor's annular pocket) → ACT_WIRE_k clamp
+    # tab → nichrome → its column tab ACT_COL_j → column NFET → GND. Only 8
+    # nets (ACT_ROW_0..3, ACT_COL_0..3) cross to aft_end (was 16 wires + the
+    # common); the series diodes leave NO sneak path. Selection comes from the
+    # fin MCU (G0B1, PA0..3 rows / PA5..8 columns: logic-level BSS138s, 100 k
+    # pull-downs → all off while it is unpowered), the release from the MP25
+    # (PARACHUTE_CUTTER_SET → master PFET): TWO processors must agree.
+    # Firmware rule: at most ONE row and ONE column at a time.
+    for r in range(4):
+        row = f"ACT_ROW_{r}"
+        q = add_dmp6110svt_7(d, ref=f"Q_ACT_ROW{r}", board_tag=BT)
+        for dp in ("D_1", "D_2", "D_3", "D_4"):
+            _net(d, row).connect(q.pin(dp))
+        _net(d, "PARACHUTE_CUTTER_ACTIVATE").connect(q.pin("S"))
+        _net(d, f"{row}_G").connect(q.pin("G"))
+        # gate divider off the PFET's own source: V_GS ≈ −16.5 V on, 0 V off
+        res_between(d, "PARACHUTE_CUTTER_ACTIVATE", f"{row}_G", "100k",
+                    ref=f"R_ACT_ROW{r}_H", board_tag=BT)
+        res_between(d, f"{row}_G", f"{row}_GD", "100k", ref=f"R_ACT_ROW{r}_L", board_tag=BT)
+        ls = add_bss138lt1g(d, ref=f"Q_ACT_ROW{r}_LS", board_tag=BT)
+        _net(d, f"{row}_GD").connect(ls.pin("3"))
+        _net(d, "GND").connect(ls.pin("2"))
+        _net(d, f"ACT_ROW_SEL_{r}").connect(ls.pin("1"))
+        res_between(d, f"ACT_ROW_SEL_{r}", "GND", "100k", ref=f"R_ACT_ROW{r}_PD", board_tag=BT)
+    for c in range(4):
+        q = add_bss138lt1g(d, ref=f"Q_ACT_COL{c}", board_tag=BT)
+        _net(d, f"ACT_COL_{c}").connect(q.pin("3"))
+        _net(d, "GND").connect(q.pin("2"))
+        _net(d, f"ACT_COL_SEL_{c}").connect(q.pin("1"))
+        res_between(d, f"ACT_COL_SEL_{c}", "GND", "100k", ref=f"R_ACT_COL{c}_PD", board_tag=BT)
+        # column clamp tab: the return ends of its 4 wires
+        ct = add_clamp_tab(d, ref=f"P_ACT_COL_{c}", board_tag="aft_end_board", feature="bottom")
+        _net(d, f"ACT_COL_{c}").connect(ct.pin("1"))
+    # Restraint-wire clamp tabs (aft_end BOTTOM, r 6.4 ring) + their series
+    # steering diodes right above them (aft_end TOP, holder-floor pocket).
     for i in range(16):
-        nfet = add_dmn6075sq_7(d, ref=f"Q_ACTIVATE_N{i}", board_tag=BT)
-        _net(d, f"Y{i}_ACTIVATE_SEL").connect(nfet.pin("G"))
-        _net(d, f"ACT_WIRE_{i}") .connect(nfet.pin("D"))
-        _net(d, "GND")           .connect(nfet.pin("S"))
-        _net(d, f"Y{i}_ACTIVATE_SEL").connect(dec.pin(f"Y{i}"))
-        # Sector 0 is SQUARE — the ring's start marker, so the 16 outbound
-        # lands can be counted round from a known origin during harnessing.
-        pad = add_pogo_pad(d, ref=f"P_ACT_WIRE_{i}", board_tag="aft_end_board",
-                           manf_pn=None, feature="bottom", square=(i == 0))
+        dk = add_bas40_02l(d, ref=f"D_ACT_WIRE_{i}", board_tag="aft_end_board")
+        _net(d, f"ACT_ROW_{i // 4}").connect(dk.pin("A"))
+        _net(d, f"ACT_WIRE_{i}").connect(dk.pin("K"))
+        pad = add_clamp_tab(d, ref=f"P_ACT_WIRE_{i}", board_tag="aft_end_board",
+                            feature="bottom")
         _net(d, f"ACT_WIRE_{i}").connect(pad.pin("1"))
 
 
@@ -2714,42 +2725,52 @@ def _add_ir_service_link(d: Design, board_tag: str, sfx: str = "",
 
 
 def build_radar_nose_io(d: Design) -> None:
-    """Radar nose I/O (radar builds only): the depot **USB-C** and the **IR
-    service-link** pair, all on `radar_module`'s nose-facing TOP face.
+    """Radar nose I/O: the IR service-link pair on radar_module's nose-facing
+    top face. (2026-11-18) The depot USB-C moved to its own USB NOSE
+    (build_usb_nose) — every nose plugs into the same crown interface, so
+    USB is fitted by swapping the nose, not tied to the radar."""
+    _add_ir_service_link(d, "radar_module")
 
-    (2026-11-18) The nose_cap PCB is RETIRED. The nose is now the closed end of
-    the per-config one-piece PEEK-LDS **cup** (sleeve + nose in one moulding —
-    `smash.export.cup_noses` / `nose_radome`): a flat λ/2 radome over the
-    AWR1843AOP antennas-on-package, with a USB-C window over J_USB_C and IR
-    through-holes over D_IR_TX / D_IR_WAKE. The radar board is screwed or
-    glued into the cup nose before the cup goes onto the tower, then the whole
-    assembly is potted inside the cup.
+
+def build_usb_nose(d: Design) -> None:
+    """USB NOSE (2026-11-18, user): a nose module carrying the depot **USB-C**
+    (UJ20, power-in + USB2 data) + its CC Rds + an IR service-link pair. It
+    is the default nose on `core` (doubles as the protective cap) and is
+    swapped onto any config for programming: unscrew the payload nose, screw
+    the USB nose onto the same crown interface (smash.export.nose_interface).
 
     USB-C is the depot service port — **power-in** (VBUS → BAT_PROT via the
-    OR switch on power_board, so the TPS25940 eFuse's reverse-blocking keeps the
-    primary cells isolated while USB runs the whole unit) **+ USB2 data** (D± →
-    MP25 USB-FS for SSH / USB-DFU). The connector is a Same Sky UJ20 — a 16-pin
-    USB2-only IP67 receptacle SMT-mounted on the radar top at the north chord
-    (SBU contacts unconnected)."""
+    OR switch on power_board, so the TPS25940 eFuse's reverse-blocking keeps
+    the primary cells isolated while USB runs the whole unit) **+ USB2 data**
+    (D± → MP25 USB-FS for SSH / USB-DFU). UJ20 16-pin USB2-only IP67
+    receptacle SMT on the nose board's top at the north chord, mouth radially
+    out through the cone's window (SBU contacts unconnected).
+
+    (2026-11-18, user) VERTICAL USB-C at the nose tip: the receptacle stands at
+    the board centre and the plug goes in axially through the flat face —
+    (2026-11-19) Same Sky UJ20-C-V-G-SMT-23B-P16-TR-X5 (6.3 mm tall).
+    ⚠ Check its country of origin."""
     _net(d, "GND", kind="ground")
 
-    # ── Depot USB-C (UJ20 USB2 IP67, SMT on the RADAR top face) ─────────────
+    # ── Depot USB-C (vertical UJ20, SMT at the USB nose board's centre) ───────
     # On the radar's nose-facing top face at the (0,12) north-rim spot, mouth
     # out through the 17 mm N chord notch (kicad_pcb._tile_cuts); the cup has a
     # matching window (smash.export.nose_radome). board_tag=radar_module.
     # 16-contact USB2 receptacle; the pads combine the A/B sides (A4_B9 = VBUS,
     # A1_B12 = GND, …) so we wire by pad NUMBER — the symbol's repeated functional
     # names arrive de-duped (VBUS__1, GND__1, SHIELD__1…), so number is the key.
-    usb = add_uj20_c_h_g_msmt_1a_p16_tr_67(d, ref="J_USB_C", board_tag="radar_module")
-    for nm in ("A4_B9", "B4_A9"):                                 # VBUS
+    # (2026-11-19) VERTICAL USB-C: Same Sky UJ20-C-V-G-SMT-23B-P16-TR-X5 —
+    # separate A/B pads (no combined A4_B9 etc.), MP1–4 shell tabs.
+    usb = add_uj20_c_v_g_smt_23b_p16_tr_x5(d, ref="J_USB_C", board_tag="usb_nose")
+    for nm in ("A4", "A9", "B4", "B9"):                           # VBUS
         _net(d, "USB_VBUS").connect(usb.pin(nm))
-    for nm in ("A1_B12", "B1_A12", "SH1", "SH2", "SH3", "SH4"):   # GND + shield posts
+    for nm in ("A1", "A12", "B1", "B12", "MP1", "MP2", "MP3", "MP4"):   # GND + shell
         _net(d, "GND").connect(usb.pin(nm))
     # CC1/CC2: 5.1 kΩ Rd to GND each → UFP sink presentation (source enables 5 V).
     # CC is a static DC presentation — no SI need to sit by the connector, so the
     # two Rds live on the RADAR (like the IR service-link pair + the OR diode on power_board),
     # all on the radar.
-    CC_BTAG = "radar_module"
+    CC_BTAG = "usb_nose"
     _net(d, "USB_CC1").connect(usb.pin("A5"))
     res_between(d, "USB_CC1", "GND", "5.1k", ref="R_USB_CC1", board_tag=CC_BTAG)
     _net(d, "USB_CC2").connect(usb.pin("B5"))
@@ -2786,7 +2807,7 @@ def build_radar_nose_io(d: Design) -> None:
     # round answers) instead of read by eye at the muzzle — power_states §4a.
     # Their slots became the IR pair: D_IR_WAKE (receiver, below) + D_IR_TX.
     #
-    _add_ir_service_link(d, "radar_module")
+    _add_ir_service_link(d, "usb_nose", "_U")
 
     # The AoP radiates through the cup's λ/2 radome window; the air pocket
     # over it is kept free of black Stycast (a 77 GHz absorber) by the cup's
@@ -3061,14 +3082,20 @@ def build_power_board(d: Design) -> None:
     # (2026-11-15 aft reorder) BOTH tab sets land on activation_interface's
     # BOTTOM face — the compartment ceiling; aft_end's top (the floor) is
     # bare for the glued + screwed Al compartment.
+    # (2026-11-20, user) NO TABS: Tadiran /P cells (axial pins). Both leads
+    # land on aft_end_board, soldered from below before the aft cap goes on:
+    # − pins straight through the holder floor (P_CELL_PIN_NEG*, at the cell
+    # axes); + pins via AWG 28 wires down the holder's potting channel
+    # (P_CELL_WIRE_POS*, round the channel exit). activation_interface's
+    # bottom face is EMPTY (it mates flat over the 1 mm headroom).
     for _k in (1, 2, 3):
-        ptab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_POS{_k}",
-                                   board_tag="activation_interface")
-        _net(d, f"BAT_CELL{_k}_POS").connect(ptab.pin("1"))
+        pw = add_cell_lead_pth(d, ref=f"P_CELL_WIRE_POS{_k}", role="wire",
+                               board_tag="aft_end_board")
+        _net(d, f"BAT_CELL{_k}_POS").connect(pw.pin("1"))
     for _k in (1, 2, 3):
-        tab = add_cell_solder_tab(d, ref=f"P_CELL_TAB_NEG{_k}",
-                                  board_tag="activation_interface")
-        _net(d, "GND").connect(tab.pin("1"))
+        pn = add_cell_lead_pth(d, ref=f"P_CELL_PIN_NEG{_k}", role="pin",
+                               board_tag="aft_end_board")
+        _net(d, "GND").connect(pn.pin("1"))
 
     # The 3× 200 mΩ iso resistors are UNCONDITIONAL: power_board is a
     # shared part across every config (economies of scale), so its copper
@@ -3759,9 +3786,10 @@ def build_wakeup_board(d: Design) -> None:
     # the rest of the bench array's 2.0 mm size (uniform field, one fixture
     # pitch) and give a coin or clip more copper to land on. JUMP_WAKE carries
     # the square group-start silhouette.
-    tp_jw = add_pogo_pad(d, ref="TP_JUMP_WAKE", board_tag="aft_end_board",
+    # (2026-11-19) contacts of the aft_end_cap crown (the public interface)
+    tp_jw = add_pogo_pad(d, ref="TP_JUMP_WAKE", board_tag=AFT_CAP,
                          manf_pn=None, square=True)
-    tp_jg = add_pogo_pad(d, ref="TP_JUMP_GND", board_tag="aft_end_board",
+    tp_jg = add_pogo_pad(d, ref="TP_JUMP_GND", board_tag=AFT_CAP,
                          manf_pn=None)
     _net(d, "JUMP_PAD").connect(tp_jw.pin("1"))
     _net(d, "GND")     .connect(tp_jg.pin("1"))
@@ -4271,6 +4299,7 @@ _BOARD_BUILDERS = {
     "fin_ble_board":        lambda d: build_fins_module(d),  # fins-only tile (2026-07-30 crowding split off wakeup; the WBA cluster moved back to wakeup_board 2026-07-31)
     "radar_module":         lambda d: (build_radar_module_awr1843aop(d),
                                        build_radar_nose_io(d)),
+    "usb_nose":             lambda d: build_usb_nose(d),
     "companion_compute":    lambda d: build_companion_compute(d),
     "aft_end_board":        lambda d: build_aft_end_board(d),
     "cell_floor_board":     lambda d: build_cell_floor_board(d),
@@ -4311,6 +4340,9 @@ _BRANCH_PARENT = {
     # per-config side flip would move the strip and fork the layout.
     "qpd_module":       ("companion_compute", 70.0, "N", False),
     "camera_module":    ("companion_compute", 70.0, "S", False),  # mutually excl.
+    # (2026-11-18) USB nose: a nose module like qpd / camera. In a config its
+    # parent compute is the snake's tail, so its EAST edge is free.
+    "usb_nose":         ("companion_compute", 70.0, "E", False),
 }
 
 # Branch-flex launch CONTRACT — the fixed companion-side interface
@@ -4337,6 +4369,8 @@ _FLEX_LAUNCH_CATALOG = [
      ["CAM_CSI_CLK_N", "CAM_CSI_CLK_P", "CAM_CSI_D0_N", "CAM_CSI_D0_P",
       "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK", "COMP_1V2",
       "COMP_1V8", "COMP_2V8", "FLEX_GND", "BAT_PROT", "IR_TX", "IR_WAKE"]),
+    ("companion_compute", "usb_nose", "E",
+     ["USB_VBUS", "USB_D_P", "USB_D_N", "BAT_PROT", "IR_TX", "IR_WAKE"]),
 ]
 
 _CONE_EXITS = _cone_exits()
@@ -4400,11 +4434,13 @@ _RADAR     = {"radar_module"}
 # compartment depth, and _config_boards (cell_floor drop) all read it. Any
 # code that builds a config's boards/panel (config_costs, config_heights)
 # calls _set_battery_mode.
+from smash.export.spacer_step import (BATT_FLOOR_MM as _BATT_FLOOR,          # noqa: E402
+                                      BATT_CELL_LENGTH_MM as _BATT_CELLS,
+                                      BATT_HEADROOM_MM as _BATT_HEAD)
 _BATTERY_MODES = {
-    "triple": {"compartment_mm": 24.2},   # +1.2 mm closed floor (piezo pocket, 2026-11-15)   # 21 mm cells + 2 mm headroom under
-                                          #   fin_ble (holder = edge ring there)
-                                          # 3× TLM-1520HPM/S vertical on
-                                          #   cell_floor_board (DEFAULT)
+    # (2026-11-20) derived from the holder: 1.2 mm closed floor + 21 mm cells
+    # + 1 mm headroom (Tadiran /P + pin → wire joints; was 2 mm for tabs) = 23.2
+    "triple": {"compartment_mm": round(_BATT_FLOOR + _BATT_CELLS + _BATT_HEAD, 3)},
 }
 _BATTERY_BY_CONFIG: dict = {}   # every config = triple (core_1cell dropped 2026-11-16: always 3 cells)
 _BATTERY_MODE = "triple"                          # default = maximalist 3-cell superset
@@ -4438,7 +4474,7 @@ def _compartment_mm() -> float:
 # stays, on wakeup_board, so the full power_states.md ladder works in every
 # config).
 CONFIGS: dict[str, set[str]] = {
-    "core":         _CORE,                          # no seeker
+    "core":         _CORE | {"usb_nose"},           # no seeker; USB nose = the cap
     "core_radar":   _CORE | _RADAR,   # RF-dark = firmware/DNP (no RF leaves since 2026-11-14)
     "core_qpd":     _CORE | {"qpd_module"},
     "core_camera":  _CORE | {"camera_module"},
@@ -4486,6 +4522,14 @@ _MAXIMALIST_DIR = _DIST / "maximalist"
 # at a few minutes/regen — set SMASH_STACKUP_ALL=0 to skip them for fast
 # iteration.
 _STACKUP_ALL = os.environ.get("SMASH_STACKUP_ALL", "1") != "0"
+# (2026-11-19, user) Only the COMPONENT stackups are reviewed: the mass-block
+# FEA tower (stackup.step + stackup_no_potting.step) and the waveguide stubs
+# are opt-in — SMASH_FEA_STEP=1. The tile / gap-hardware / sleeve STEPs the
+# component stackups are built from are still written.
+_FEA_STEP = os.environ.get("SMASH_FEA_STEP", "0") == "1"
+# (2026-11-19, user) 3D-PRINT STLs (per-board split halves, consolidated_stackup.stl,
+# housing.stl) are opt-in too — SMASH_PRINT_STL=1.
+_PRINT_STL = os.environ.get("SMASH_PRINT_STL", "0") == "1"
 
 # Radar (AWR1843AOP) security tier. Default OFF = the General orderable
 # (AWR1843ARBGALPQ1) for prototypes/bring-up — no secure boot, easy sourcing.
@@ -4537,21 +4581,23 @@ def _export_stackup(design, boards, snake_chain, out_path, tiles=None,
 
 
 def _export_components_stackup(boards, snake_chain, tile_step_dir, out_path,
-                               tiles=None):
+                               tiles=None, nose_key="core_radar"):
     # (2026-11-14) gap hardware + the LDS sleeve (from <tile_step_dir>/sleeve/)
     """Component-render sibling of `_export_stackup` — fold the detailed per-tile
     STEPs (real component bodies, not mass boxes) into the same tower. Needs the
     tile + spacer STEPs already on disk under `tile_step_dir`. Never raises."""
     try:
+        # sleeve / crown / nose cone come from the maximalist build (one core
+        # sleeve; one nose per config) — dist/maximalist/sleeve/
         r = write_stackup_components_step(
             boards, snake_chain, tile_step_dir, out_path, tiles=tiles,
-            sleeve_dir=pathlib.Path(tile_step_dir) / "sleeve")
+            sleeve_dir=_MAXIMALIST_DIR / "sleeve", nose_key=nose_key)
     except ImportError:
         return "components stackup skipped (no cadquery)"
     except Exception as e:                       # keep generation resilient
         return f"components stackup FAILED ({type(e).__name__})"
-    return (f"components stackup {r['n_tiles']} tiles, {r['height_mm']} mm "
-            f"-> {pathlib.Path(r['output_path']).name}")
+    return (f"components stackup {r['n_tiles']} tiles + {r['n_nose_parts']} sleeve/nose "
+            f"parts ({nose_key}), {r['height_mm']} mm -> {pathlib.Path(r['output_path']).name}")
 
 
 def _export_print_stls(boards, snake_chain, out_dir, tile_step_dir=None):
@@ -4810,6 +4856,64 @@ def _write_names_md(path, rows) -> None:
     path.write_text("\n".join(lines))
 
 
+def _board_export_bundle(name, b, tile_dir, tile_pcb, gcli, cli, fab) -> dict:
+    """Gerbers + kicad-cli STEP + split STLs + layered STEP for one rigid board
+    (cached as a unit by smash.export.export_cache). Never raises."""
+    from smash.export.layered_step import write_layered_board_step
+    r = {"gerber": 0, "failed_gerber": [], "step": 0, "failed_step": [],
+         "stl": 0, "failed_stl": [], "layered": 0, "failed_layered": []}
+    # Manufacturing set: gerbers/ + <name>_gerbers.zip beside the pcb.
+    if gcli is not None:
+        try:
+            write_gerbers(tile_pcb, b, kicad_cli=gcli)
+            r["gerber"] += 1
+        except Exception as e:               # keep run resilient
+            r["failed_gerber"].append(f"{name}({type(e).__name__})")
+    if cli is None:
+        return r   # per-board .kicad_pcb written; STEP/STL export off
+    step_path = tile_dir / f"{name}.step"
+    try:
+        write_kicad_step(tile_pcb, step_path, kicad_cli=cli)
+        r["step"] += 1
+    except Exception as e:                         # keep run resilient
+        r["failed_step"].append(f"{name}({type(e).__name__})")
+        return r
+    # STL — read back the STEP, split at the PCB midplane, stamp a pairing
+    # symbol; two halves print flat with no supports (see export.stl).
+    # Opt-in (SMASH_PRINT_STL=1).
+    if _PRINT_STL:
+        try:
+            from smash.export.stl import (
+                write_split_stls_from_step, unique_symbol,
+                TILE_TOLERANCE_MM, TILE_ANGULAR_TOLERANCE,
+            )
+            for old in (tile_dir / f"{name}.stl",):    # stale single-STL
+                if old.exists():
+                    old.unlink()
+            write_split_stls_from_step(
+                step_path, tile_dir / name,
+                z_split=b.thickness_mm / 2,
+                tolerance=TILE_TOLERANCE_MM,
+                angular_tolerance=TILE_ANGULAR_TOLERANCE,
+                symbol=unique_symbol(name),
+            )
+            r["stl"] += 1
+        except Exception as e:
+            r["failed_stl"].append(f"{name}({type(e).__name__})")
+    # Layered STEP — one solid per copper foil / dielectric (+ chip blocks)
+    # with a JSON manifest of material properties (FEA / EM-sim ingestion).
+    if (b.stackup or []):
+        try:
+            write_layered_board_step(
+                b, tile_dir / f"{name}_layered.step", fab=fab,
+                with_components=True, with_al_backing=True,
+            )
+            r["layered"] += 1
+        except Exception as e:
+            r["failed_layered"].append(f"{name}({type(e).__name__})")
+    return r
+
+
 def _export_tile_steps(design, panel, boards, out_dir,
                        cutouts_ref: dict | None = None) -> str:
     """Export each rigid board *tile* to its own STEP in `out_dir` —
@@ -4950,65 +5054,27 @@ def _export_tile_steps(design, panel, boards, out_dir,
             _board_sch(name, b, tile_dir, refs.mapping)
         written.append(tile_pcb)
         n_pcb += 1
-        # Manufacturing set: gerbers/ + <name>_gerbers.zip beside the pcb.
-        if gcli is not None:
-            try:
-                write_gerbers(tile_pcb, b, kicad_cli=gcli)
-                ok_gerber += 1
-            except Exception as e:               # keep run resilient
-                failed_gerber.append(f"{name}({type(e).__name__})")
-        if cli is None:
-            continue   # per-board .kicad_pcb written; STEP/STL export off
-        step_path = tile_dir / f"{name}.step"
-        try:
-            write_kicad_step(tile_pcb, step_path, kicad_cli=cli)
-            ok += 1
-        except Exception as e:                         # keep run resilient
-            failed.append(f"{name}({type(e).__name__})")
-            continue
-        # STL — read back the STEP, split at the PCB midplane (so the
-        # cut goes through FR4 substrate, not through chip bodies),
-        # stamp a 2-char pairing-aid symbol (raised on the bottom
-        # half's outer face, recessed on the top half's outer face),
-        # and write `<name>_top.stl` + `<name>_bot.stl`. Each half
-        # prints flat-down on the bed with no supports. Tile-specific
-        # tolerance (0.3 mm linear, below a 0.4 mm FDM nozzle's print
-        # resolution) keeps the per-component 3D models embedded by
-        # kicad-cli from bloating output files.
-        try:
-            from smash.export.stl import (
-                write_split_stls_from_step, unique_symbol,
-                TILE_TOLERANCE_MM, TILE_ANGULAR_TOLERANCE,
-            )
-            # Stale single-STL from a previous build at the old shape.
-            for old in (tile_dir / f"{name}.stl",):
-                if old.exists():
-                    old.unlink()
-            write_split_stls_from_step(
-                step_path, tile_dir / name,
-                z_split=b.thickness_mm / 2,
-                tolerance=TILE_TOLERANCE_MM,
-                angular_tolerance=TILE_ANGULAR_TOLERANCE,
-                symbol=unique_symbol(name),
-            )
-            ok_stl += 1
-        except Exception as e:
-            failed_stl.append(f"{name}({type(e).__name__})")
-        # Layered STEP — walk the board's stackup and emit ONE solid per
-        # copper foil + per dielectric (+ optional Al backing + chip
-        # blocks) with a sidecar JSON manifest that maps body name to
-        # mechanical + EM properties (E, ν, ρ, ε_r, tan δ, σ). This is
-        # the FEA / EM-sim ingestion format — separate bodies so the
-        # mesher can assign per-layer material properties.
-        if (b.stackup or []):
-            try:
-                write_layered_board_step(
-                    b, tile_dir / f"{name}_layered.step", fab=fab,
-                    with_components=True, with_al_backing=True,
-                )
-                ok_layered += 1
-            except Exception as e:
-                failed_layered.append(f"{name}({type(e).__name__})")
+        # (2026-11-19) The board's export bundle (gerbers, kicad-cli STEP,
+        # split STLs, layered STEP) is cached on its final .kicad_pcb + stackup
+        # + exporter code (smash.export.export_cache): unchanged boards are
+        # restored instead of re-exported (~20 s each).
+        from smash.export import export_cache
+        from smash.layout.placer.cache import _canon
+        bkey = export_cache.key(
+            [tile_pcb, name, b.thickness_mm, repr(_canon(b.stackup or [], {})),
+             repr(fab), gcli is not None, cli is not None, _PRINT_STL], cli=cli or gcli)
+        res, _hit = export_cache.run_cached(
+            bkey, tile_dir,
+            lambda: _board_export_bundle(name, b, tile_dir, tile_pcb, gcli, cli, fab),
+            exclude=[tile_pcb])
+        ok_gerber += res["gerber"]
+        failed_gerber += res["failed_gerber"]
+        ok += res["step"]
+        failed += res["failed_step"]
+        ok_stl += res["stl"]
+        failed_stl += res["failed_stl"]
+        ok_layered += res["layered"]
+        failed_layered += res["failed_layered"]
     # Portable projects — LAST, so kicad-cli plotted gerbers/STEP against the
     # absolute library + 3D-model paths first. Each board directory becomes a
     # standalone KiCad project: its own <Lib>.pretty, its own 3dmodels/, and
@@ -5322,17 +5388,12 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     """Keepouts the placer must see BEFORE place_design (chip_placements aren't
     set yet):
 
-      1. The radar's NORTH column around the locked J_USB_C (top NE): the
+      1. The USB nose's NORTH column around the locked J_USB_C: the
          connector mouth exits through the N chord notch and the cup's USB
          window (smash.export.nose_radome), so no tall radar chip may crowd it.
          (2026-11-18: the nose_cap aperture keepout went with the nose_cap PCB.)"""
     from smash.state.board_geometry import Keepout
-    radar = boards.get("radar_module")
-    if radar is not None and getattr(radar, "geometry", None) is not None:
-        radar.geometry.keepouts.append(Keepout(
-            polygon=[(-6.0, 7.5), (6.0, 7.5), (6.0, 17.0), (-6.0, 17.0)],
-            scope="both", tag="usb_zone",
-            note="USB-C mouth + cup window zone — keep tall chips out."))
+    # (2026-11-18) USB-C is vertical at the USB nose's centre — no rim keepout.
 
     # 3. Battery-bracket tuck (triple mode): the compartment's two bracket
     #    faces — fin_ble's BOTTOM (the ceiling) and cell_floor's TOP — must
@@ -5368,14 +5429,15 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     # the holder's edge ring (r < 15.8) — only the ring band is blocked.
     from smash.export.spacer_step import (BATT_TOP_RING_R_IN_MM,
                                           BATT_PART_CLEARANCE_MM)
-    ring_rects = _ring_band_rects(BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM)
+    # (2026-11-20, user) the WHOLE bottom face is EMPTY: no tabs any more
+    # (Tadiran /P cells wired to aft_end), and the board mates flat over the
+    # 1 mm headroom (cell + pin → wire joints only).
     fb = boards.get("activation_interface")   # the ceiling since 2026-11-15
     if fb is not None and getattr(fb, "geometry", None) is not None:
-        for (x0, y0, x1, y1) in ring_rects:
-            fb.geometry.keepouts.append(Keepout(
-                polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
-                layers=("B.Cu",), scope="component", tag="battery_ring_band",
-                note="battery holder edge ring (r 16–17) bears here"))
+        fb.geometry.keepouts.append(Keepout(
+            polygon=[(-17.5, -17.5), (17.5, -17.5), (17.5, 17.5), (-17.5, 17.5)],
+            layers=("B.Cu",), scope="component", tag="battery_ceiling_empty",
+            note="battery ceiling: bottom face EMPTY (2026-11-20)"))
     for bname, cu in (("cell_floor_board", "F.Cu"),):
         b = boards.get(bname)
         if b is None or getattr(b, "geometry", None) is None:
@@ -5449,7 +5511,47 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
                     layers=(cu,), scope="component", tag="al_ring_band",
                     note=f"{rs.label} of {sp} (r {rs.r_in:g}-{rs.r_out:g}) bears here"))
             n += 1
+    # (2026-11-18) The compute↔payload gap's ring is the nose ANCHOR ring:
+    # radial screw TIPS in the bore (no bosses; nose_interface.SCREW_ANGLES_DEG)
+    # → keep compute's TOP and every nose payload's BOTTOM clear there; the
+    # payload leaves (qpd / camera / usb_nose) also get the ring band.
+    from smash.export import nose_interface as NI
+    from smash.parts.castellations import _local_xy
+    anchor = next((sp for sp, b0, b1 in _gap_neighbours(chain, boards)
+                   if b0 == NI.HOST and b1 in NI.PAYLOAD_BOARDS), None)
+    if anchor is not None and NI.HOST in fold_M:
+        M = fold_M[NI.HOST]
+        r0, r1 = NI.SCREW_BOSS_R_MM[0] - 0.3, RING_R_BAND_MM
+        faces = [(NI.HOST, "F.Cu")] + [(pb, "B.Cu") for pb in NI.PAYLOAD_BOARDS if pb in boards]
+        rs = ring_spec(anchor)
+        for bname, cu in faces:
+            b = boards[bname]
+            if getattr(b, "geometry", None) is None:
+                continue
+            if cu == "B.Cu":
+                # (2026-11-19) the Ø34 payload SITS on the nose cone's land ring
+                # (r CROWN_R_IN → edge): its bottom face is bare there
+                for (x0, y0, x1, y1) in _ring_band_rects(NI.CROWN_R_IN_MM - 0.3):
+                    b.geometry.keepouts.append(Keepout(
+                        polygon=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)],
+                        layers=(cu,), scope="component", tag="nose_land_ring",
+                        note=f"nose land ring (r {NI.CROWN_R_IN_MM:g}+) bears here"))
+                n += 1
+                continue                       # the band screws are below it
+            import math
+            da_b = math.degrees((0.5 * NI.SCREW_BOSS_W_MM + 0.3) / r0)
+            for ang in NI.SCREW_ANGLES_DEG:
+                pts = [_local_xy(M, ang + da, rr) for da in (-da_b, da_b) for rr in (r0, r1)]
+                xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+                b.geometry.keepouts.append(Keepout(
+                    polygon=[(min(xs), min(ys)), (max(xs), min(ys)), (max(xs), max(ys)), (min(xs), max(ys))],
+                    layers=(cu,), scope="component", tag="nose_screw_boss",
+                    note=f"anchor-ring screw tip at {ang:g}° (radial {NI.SCREW.split(' ')[0]})"))
+            n += 1
     return n
+
+
+RING_R_BAND_MM = 16.2
 
 
 def _mark_battery_pockets(boards: dict) -> None:
@@ -5595,7 +5697,13 @@ _PIEZO_DISC_R_MM = 5.0      # Ø10 Steminc SMD10T04R111 disc (SMD on fin_ble top
 # which end a run starts at. Boxes are drawn AFTER _mark_spacer_cavity_silk
 # (which clears every board's overlays before drawing the spacer-cut ghosts),
 # so ordering of the two calls matters.
-_AFT_SILK_GROUPS = [
+# (2026-11-19) The aft public interface moved onto the aft_end_cap's crown
+# (smash.export.aft_cap). Pads that STAY on aft_end_board's bottom face:
+AFT_CAP = "aft_end_cap"                       # virtual board tag of the cap contacts
+_AFT_CUTTER_PADS = ("TP_ACT_CONFIRM", "TP_PARACHUTE_CUTTER_SET")
+# Cap crown order (functional groups, cyclic): every group but the parachute ones.
+AFT_CAP_GROUPS = None                         # filled below from _AFT_SILK_GROUPS_ALL
+_AFT_SILK_GROUPS_ALL = [
     ("SPI",           ["TP_SPI_MOSI", "TP_SPI_CS_FIN", "TP_SPI_MISO", "TP_SPI_SCLK"]),
     ("FIN 1",         ["TP_FIN1_A1", "TP_FIN1_A2", "TP_FIN1_B1", "TP_FIN1_B2"]),
     ("FIN 3",         ["TP_FIN3_A1", "TP_FIN3_A2", "TP_FIN3_B1", "TP_FIN3_B2"]),
@@ -5603,7 +5711,7 @@ _AFT_SILK_GROUPS = [
     ("FIN 4",         ["TP_FIN4_A1", "TP_FIN4_A2", "TP_FIN4_B1", "TP_FIN4_B2"]),
     ("CAN",           ["TP_CAN_N", "TP_CAN_P"]),
     ("BAT",           ["TP_BAT_RAW", "TP_BAT_PROT"]),
-    ("PARACHUTE WIRES", ["P_ACTIVATE_COMMON"]),
+    ("PARACHUTE WIRES", [f"P_ACT_COL_{c}" for c in range(4)]),
     ("GROUND",        ["TP_GND_ACT"]),
     ("PARACHUTE CUTTER", ["TP_ACT_CONFIRM", "TP_PARACHUTE_CUTTER_SET"]),  # set + rail monitor
     ("HALL",          ["TP_FIN_HALL", "TP_HALL_VIN"]),
@@ -5613,6 +5721,11 @@ _AFT_SILK_GROUPS = [
                        "TP_MP25_GND1", "TP_SWO", "TP_MP25_GND2", "TP_BOOT0"]),
     ("GPIO",          ["TP_GPIO_0", "TP_GPIO_1", "TP_GPIO_2", "TP_GPIO_3"]),
 ]
+AFT_CAP_GROUPS = [(lb, refs) for lb, refs in _AFT_SILK_GROUPS_ALL
+                  if lb not in ("PARACHUTE WIRES", "PARACHUTE CUTTER")]
+# aft_end_board's own bottom silk: the cutter pads (centre) + the clamp-tab ring
+_AFT_SILK_GROUPS = [(lb, refs) for lb, refs in _AFT_SILK_GROUPS_ALL
+                    if lb in ("PARACHUTE WIRES", "PARACHUTE CUTTER")]
 # Schematic: aft_end's bottom-face pads drawn as these same groups (the
 # PARACHUTE WIRES group also takes the 16 outbound restraint-wire pads).
 _SCH_PAD_GROUPS = {"aft_end_board": [
@@ -5657,7 +5770,7 @@ def _empty_aft_end_top(d) -> int:
     for c in d.chips:
         ref = getattr(c, "ref", "")
         if (getattr(c, "board_tag", None) == "aft_end_board"
-                and not ref.startswith(("TP_", "P_ACT", "J_CAST_"))
+                and not ref.startswith(("TP_", "P_ACT", "J_CAST_", "P_CELL_", "D_ACT_WIRE_"))
                 and ref not in _PIEZO_POCKET_REFS):
             c.board_tag = "activation_interface"
             n += 1
@@ -5805,8 +5918,8 @@ def _mark_gap_hardware_silk(panel, boards: dict, fold_M: dict) -> None:
                     ov.pop()        # upper board: no cavity outline, just the ring
                     ov.append((layer, circle(0, 0, BATT_TOP_RING_R_IN_MM
                                              - BATT_PART_CLEARANCE_MM),
-                               f"BATT RING r{BATT_TOP_RING_R_IN_MM:g}-17 KEEPOUT; "
-                               f"PARTS <= {BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:.1f} mm"))
+                               f"BATTERY CEILING — NO PARTS ({BATT_HEADROOM_MM:g} mm over "
+                               "the cells' + pin wires)"))
             elif kind == "standoffs":
                 for k, ang in enumerate(STANDOFF_ANGLES_DEG):
                     x, y = _local_xy(fold_M[nbr], ang, STANDOFF_R_MM)
@@ -5882,7 +5995,7 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                 ref = getattr(c, "ref", "")
                 if ref.startswith(("P_", "TP_", "J_")):
                     continue                       # pads: cell tabs / contacts
-                if face == "top" and ref in _PIEZO_POCKET_REFS:
+                if face == "top" and (ref in _PIEZO_POCKET_REFS or ref.startswith("D_ACT_WIRE_")):
                     from smash.export.spacer_step import piezo_pocket
                     from shapely.geometry import box as _bx
                     w, h = (sz[0], sz[1]) if sz else (0.5, 0.5)
@@ -5893,20 +6006,9 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                     issues.append(f"{nbr}/top: {ref} under the battery holder / "
                                   "cells (only cell-tab pads allowed)")
                     continue
-                from smash.export.spacer_step import (
-                    BATT_TOP_RING_R_IN_MM, BATT_PART_CLEARANCE_MM, BATT_HEADROOM_MM)
-                r_free = BATT_TOP_RING_R_IN_MM - BATT_PART_CLEARANCE_MM
-                w, h = (sz[0], sz[1]) if sz else (0.5, 0.5)
-                far = max(_m.hypot(x + sx * w / 2, y + sy * h / 2)
-                          for sx in (-1, 1) for sy in (-1, 1))
-                ht = (getattr(c, "height_mm", None)
-                      or getattr(getattr(c, "footprint", None), "height_mm", None) or 0)
-                if far > r_free:
-                    issues.append(f"{nbr}/bottom: {ref} reaches the battery "
-                                  f"holder edge ring (r {far:.1f} > {r_free:g})")
-                elif ht > BATT_HEADROOM_MM - BATT_PART_CLEARANCE_MM:
-                    issues.append(f"{nbr}/bottom: {ref} too tall for the battery "
-                                  f"headroom ({ht:g} mm)")
+                # (2026-11-20, user) the battery ceiling's bottom face is EMPTY
+                issues.append(f"{nbr}/bottom: {ref} on the battery ceiling "
+                              "(its bottom face must stay empty)")
     return issues
 
 
@@ -6167,7 +6269,12 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     board_set = _config_boards(name, board_set)   # single drops cell_floor_board
     d = Design()
     _prime_power_rails(d)
-    for bn in board_set:
+    # (2026-11-19) DETERMINISTIC build order: iterating the `board_set` set
+    # followed Python's per-process string hashing, so chip / net order —
+    # and with it the placement-cache key — changed from run to run.
+    ordered = ([bn for bn in _BOARD_BUILDERS if bn in board_set]
+               + sorted(bn for bn in board_set if bn not in _BOARD_BUILDERS))
+    for bn in ordered:
         _BOARD_BUILDERS[bn](d)
     snake = [b for b in _MASTER_SNAKE if b in board_set]
     branches = [
@@ -6189,7 +6296,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     # so every config packs (and later mills/cuts) the identical board.
     ref = _MAX_REF or {}
     extra_locks: dict = {}
-    for bn in board_set:
+    for bn in ordered:
         extra_locks.update(ref.get("placements", {}).get(bn, {}))
     place_design(d, panel, boards, extra_locks=extra_locks or None)
     _place_health_coil(d, boards)              # embedded beacon coil (copper only)
@@ -6266,15 +6373,19 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         from smash.export.spacer_step import write_gap_hardware
         sp = write_gap_hardware(boards, list(panel.snake_chain), cfg_dir)
         if _STACKUP_ALL:
-            _export_stackup(d, boards, panel.snake_chain,
-                            _DIST / f"stackup_{name}.step",
-                            tiles=panel.tiles,
-                            contract=ref.get("castellations"))
-            _export_components_stackup(boards, panel.snake_chain, cfg_dir,
-                                       _DIST / f"stackup_{name}_components.step",
-                                       tiles=panel.tiles)
-            _export_print_stls(boards, panel.snake_chain, cfg_dir, cfg_dir)
-        wg_msg = _export_waveguide_stubs(boards, cfg_dir / "waveguide_stubs.step")
+            if _FEA_STEP:
+                _export_stackup(d, boards, panel.snake_chain,
+                                _DIST / f"stackup_{name}.step",
+                                tiles=panel.tiles,
+                                contract=ref.get("castellations"))
+            print("  " + _export_components_stackup(
+                boards, panel.snake_chain, cfg_dir,
+                _DIST / f"stackup_{name}_components.step",
+                tiles=panel.tiles, nose_key=name))
+            if _PRINT_STL:
+                _export_print_stls(boards, panel.snake_chain, cfg_dir, cfg_dir)
+        wg_msg = (_export_waveguide_stubs(boards, cfg_dir / "waveguide_stubs.step")
+                  if _FEA_STEP else "waveguide stubs skipped (SMASH_FEA_STEP=0)")
         steps_msg = f"{len(sp)} spacers; {name}/ {tiles_msg}; {wg_msg}"
     else:
         steps_msg = f"{name}/ {tiles_msg}; 3D STEP skipped"
@@ -6311,6 +6422,7 @@ def main() -> int:
     # Boards (ordered smallest → largest)
     build_qpd_module(d)
     build_radar_nose_io(d)
+    build_usb_nose(d)
     build_camera_module(d)
     build_aft_end_board(d)
     # (2026-11-15) cell_floor_board dropped in every mode (aft reorder).
@@ -6351,9 +6463,9 @@ def main() -> int:
     if report.untagged_refs:
         print(f"WARN: {len(report.untagged_refs)} chips have no board_tag "
               f"(skipped): {report.untagged_refs[:5]}{'…' if len(report.untagged_refs) > 5 else ''}")
-    if report.unknown_board_refs:
-        print(f"WARN: {len(report.unknown_board_refs)} chips reference "
-              f"unknown boards: {report.unknown_board_refs[:5]}")
+    _unk = [r for r in report.unknown_board_refs if r[1] != AFT_CAP]   # cap contacts: virtual board
+    if _unk:
+        print(f"WARN: {len(_unk)} chips reference unknown boards: {_unk[:5]}")
     if report.any_overflow:
         bad = [s.board_name for s in report.per_board if s.overflow]
         print(f"WARN: {len(bad)} board(s) overflow: {bad}")
@@ -6567,6 +6679,14 @@ def main() -> int:
         from smash.export.sleeve_step import write_sleeve_and_mould
         _sl = write_sleeve_and_mould(boards, list(panel.snake_chain),
                                      _cast_contract, _MAXIMALIST_DIR)
+        # (2026-11-19) aft public interface: the aft_end_cap crown
+        from smash.export.aft_cap import write_aft_cap
+        _ac = write_aft_cap(_cast_contract, _MAXIMALIST_DIR / "sleeve" / "aft_end_cap")
+        if _ac:
+            print(f"  aft_end_cap: {_ac['n_signal']} crown contacts, solid "
+                  f"{'ok' if _ac['valid'] and _ac['solids'] == 1 else 'INVALID'} → "
+                  f"{_ac['dir'].relative_to(REPO)}/ (+ contact map, face drawing)"
+                  + (f"; ⚠ no tooth for {', '.join(_ac['missing'])}" if _ac["missing"] else ""))
         from smash.export.sleeve_layout import (write_unrolled_sleeve,
                                                 write_sleeve_copper_step)
         _ul = write_unrolled_sleeve(boards, list(panel.snake_chain), _cast_contract,
@@ -6582,7 +6702,7 @@ def main() -> int:
               f"placeholders → sleeve/sleeve_unrolled.kicad_pcb (+ sleeve_copper.step, "
               f"{_cu['n_bodies']} bodies)")
         for _cfg, _c in _sl["cups"].items():
-            print(f"  PEEK-LDS cup {_cfg}: one moulding, {_c['n_vias']} vias on "
+            print(f"  PEEK-LDS nose cone {_cfg} on the core sleeve crown: {_c['n_vias']} vias on "
                   f"{_c['n_active_lanes']} active lanes, nose {_c['nose_mm']:.2f} mm "
                   f"above the payload, {_c['height_mm']:.1f} mm → "
                   f"{_c['dir'].relative_to(REPO)}/ (+ pot-in-cup fixture)")
@@ -6591,10 +6711,13 @@ def main() -> int:
     except ImportError:
         print("  gap hardware STEPs: SKIPPED (cadquery not installed)")
     if _STEP_ENABLED:
-        print(f"  {_export_stackup(d, boards, panel.snake_chain, pcb_out / 'stackup.step', tiles=panel.tiles, contract=_cast_contract)}")
+        if _FEA_STEP:                    # mass-block FEA tower: opt-in
+            print(f"  {_export_stackup(d, boards, panel.snake_chain, pcb_out / 'stackup.step', tiles=panel.tiles, contract=_cast_contract)}")
         print(f"  {_export_components_stackup(boards, panel.snake_chain, _MAXIMALIST_DIR, pcb_out / 'stackup_components.step', tiles=panel.tiles)}")
-        print(f"  {_export_print_stls(boards, panel.snake_chain, pcb_out, _MAXIMALIST_DIR)}")
-        print(f"  {_export_waveguide_stubs(boards, pcb_out / 'waveguide_stubs.step')}")
+        if _PRINT_STL:                   # 3D-print STLs: opt-in
+            print(f"  {_export_print_stls(boards, panel.snake_chain, pcb_out, _MAXIMALIST_DIR)}")
+        if _FEA_STEP:
+            print(f"  {_export_waveguide_stubs(boards, pcb_out / 'waveguide_stubs.step')}")
     else:
         print("  3D STEP (spacers + stackup): SKIPPED (SMASH_STEP_EXPORT=0); per-board PCBs written")
     # Stackup project made portable LAST (like the boards): its own

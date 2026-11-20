@@ -605,6 +605,8 @@ def _bss138lt1g_footprint() -> Footprint:
         size_mm=(2.90, 1.30),         # D × E1 nominal
         height_mm=1.11,               # A max
         model_3d_path="application/src/smash/parts/sources/BSS138LT1G/BSS138LT1G.stp",
+        # (2026-11-20) the vendor STEP is centred on z = 0 (−0.53…+0.47): lift it
+        model_offset_mm=(0.0, 0.0, 0.53),
         source="onsemi-datasheet",
         note=(
             "Built from onsemi datasheet p6 'Recommended Mounting "

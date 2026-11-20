@@ -37,9 +37,11 @@ import math
 from smash.export import nose_radome as NR
 
 # Config → nose payload board (None = plain closed end).
-PAYLOADS = {"core": None, "core_radar": "radar_module",
+# (2026-11-18) `core` wears the USB nose (doubles as the cap); every nose plugs
+# into the same crown (nose_interface).
+PAYLOADS = {"core": "usb_nose", "core_radar": "radar_module",
             "core_qpd": "qpd_module", "core_camera": "camera_module"}
-PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module")
+PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
 CORE_TOP = "companion_compute"
 SLEEVE_SPLIT = "unified"        # "unified" (one moulding) | "nose_cup" (fallback)
 
@@ -57,18 +59,21 @@ PART_CLEARANCE_MM = 0.3         # inner nose surface → payload part tops
 # ratio + shoulder length want a CFD / ballistic check per launch platform
 # (Bofors 40 mm, M777, M252 — sim/launch/platforms.py in smash-electronics).
 NOSE_PROFILE = {
-    None:            {"meplat_r": 10.0, "shoulder_mm": 5.0},   # core: plain end
+    None:            {"meplat_r": 10.0, "shoulder_mm": 5.0},   # no nose module
+    "usb_nose":      {"meplat_r": 10.0, "shoulder_mm": 4.0},   # USB-C side window + IR pipes
     "radar_module":  {"meplat_r": 13.0, "shoulder_mm": 3.5},   # very flat (radome)
     "qpd_module":    {"meplat_r": 8.0, "shoulder_mm": 6.0},
     "camera_module": {"meplat_r": 8.0, "shoulder_mm": 6.0},
 }
 SHOULDER_MIN_MM = 1.5
+USB_VERT_H_MM = 6.3              # Same Sky UJ20-C-V-G-SMT-23B-P16-TR-X5 (vendor STEP)
+USB_MOUTH_SLOT_MM = (9.4, 3.8)   # plug opening in the nose flat face (mouth 8.94 × 3.26 + margin)
 SHOULDER_STEP_MM = 0.25
 RADOME_MAX_ORDER = 4            # radome gap may step to k·λ0/2, k ≤ this
 CORE_RAISE_MAX_MM = 10.0
 OPTICAL_DAM_W_MM = 0.8          # light-tube wall from the payload top to the lens collar
 # Payload stop bosses (axial datum + screw / glue land on the payload's top face).
-STOP_R_MM = 15.0
+STOP_R_MM = 11.5                # inside the Ø27 payload board (2026-11-18)
 STOP_D_MM = 2.4
 STOP_PILOT_D_MM = 1.1           # M1.4 thread-forming screw into PEEK (board hole Ø1.6)
 STOP_PILOT_DEPTH_MM = 2.5
@@ -76,6 +81,40 @@ STOP_CANDIDATES_DEG = (285.0, 165.0, 45.0, 135.0, 225.0, 315.0, 15.0, 195.0, 75.
 # Fallback joint screws (radial, into the compute↔payload gap ring).
 JOINT_SCREW_D_MM = 1.6
 JOINT_SCREW_ANGLES_DEG = (285.0, 165.0, 45.0)
+
+
+# (2026-11-19, user) "the nose doesn't have to close; a flat ridge on the side is
+# enough": every nose cone is an OPEN straight shell (no shoulder / meplat).
+OPEN_NOSE = True
+OPEN_RIDGE_CLEAR_MM = 0.3       # ridge top over the tallest payload part
+# (2026-11-20, user) NOSE CAP on top of the open nose cone: a λ/2 radome lid
+# that CARRIES the 2 retaining tabs (stainless inserts); the tabs drop through
+# SLOTS in the nose cone to the screws in the sleeve band. Its inner PRESS RIM
+# bears on the payload board's edge: cap → board → land ring → crown is ONE
+# clamp, so payload PEEK + board are pressure-fixed (pins only locate them).
+CAP_T_MM = None                 # None → the radar's λ/2 window (nose_radome)
+CAP_RIDGE_GAP_MM = 0.1          # lid underside over the nose-cone ridge (rim bears first)
+CAP_RIM_W_MM = 0.8              # press rim on the board edge annulus (r_in − w … r_in − 0.05)
+CAP_MOUTH_MARGIN_MM = 0.2       # lid cut-out round a part that rises through it (USB-C)
+TAB_SLOT_CLEAR_MM = 0.1         # nose-cone slot round the cap's tab (each side)
+
+
+def cap_t_mm() -> float:
+    from smash.export import nose_radome as NR
+    return CAP_T_MM if CAP_T_MM is not None else round(NR.window_thickness_mm(), 4)
+
+
+def _open_profile(prof, parts, z_board: float, z_feature: float):
+    """Straight open shell up to max(feature top, tallest part + clearance)."""
+    tallest = max([z_board + p.height for p in parts] or [z_board])
+    z_top = _ceil4(max(z_feature, tallest + OPEN_RIDGE_CLEAR_MM))
+    return NoseProfile(prof.r_out, END_WALL_MM, prof.r_out - END_WALL_MM, z_top, z_top,
+                       open=True)
+
+
+def _ceil4(z: float) -> float:
+    """Round UP to 0.1 µm: the nose top must never dip below what it clears."""
+    return math.ceil(z * 1e4 - 1e-9) / 1e4
 
 
 @dataclasses.dataclass
@@ -89,6 +128,7 @@ class NoseProfile:
     meplat_r: float
     z_s: float
     z_top: float
+    open: bool = False           # (2026-11-19, user) open straight shell, flat ridge
 
     @property
     def L(self) -> float:
@@ -116,6 +156,8 @@ class NoseProfile:
 
     def inner_z_at(self, r: float) -> float:
         """Height of the inner nose surface above radius r."""
+        if self.open:
+            return float("inf")                # open front: nothing overhead
         if r <= self.meplat_r:
             return self.z_top_in
         a = self.r_in - self.meplat_r
@@ -126,6 +168,11 @@ class NoseProfile:
 
     def aero_md(self) -> str:
         R = self.r_out
+        if self.open:
+            return (f"- Nose: OPEN straight shell (user 2026-11-19), Ø{2 * R:.1f}, wall "
+                    f"{self.wall:g} mm, ending in a FLAT RIDGE at {self.z_top:.2f} mm — no "
+                    "shoulder, no closed face; the potted payload is the front. Radome / lens "
+                    "are separate inserts.\n")
         return (f"- Nose: flat face Ø{2 * self.meplat_r:.1f} (meplat ratio "
                 f"{self.meplat_r / R:.2f}, area {100 * (self.meplat_r / R) ** 2:.0f} % of the "
                 f"calibre) + elliptical shoulder {self.L:.2f} mm long ({self.L / (2 * R):.2f} "
@@ -201,9 +248,24 @@ def _top_parts(board, M) -> list:
     return out
 
 
+_STOP_EXTRA_KEEP: list = []
+
+
+def _hole_keeps(board, M) -> list:
+    """(x, y, half, half) keep regions for the board's potting holes (physical)."""
+    out = []
+    g = getattr(board, "geometry", None)
+    for h in (getattr(g, "holes", None) or []):
+        if getattr(h, "tag", "") == "potting":
+            x, y = NR._phys(M, *h.position_mm)
+            out.append((x, y, h.diameter_mm / 2 + 0.3, h.diameter_mm / 2 + 0.3))
+    return out
+
+
 def _pick_stops(parts, keep=(), n=3) -> list:
     """n stop-boss angles at STOP_R_MM, clear of the payload's top-face parts
     and of any extra (x, y, half-w, half-h) keep regions, spread round."""
+    keep = list(keep) + list(_STOP_EXTRA_KEEP)
     def clear(a):
         x, y = STOP_R_MM * math.cos(math.radians(a)), STOP_R_MM * math.sin(math.radians(a))
         r = STOP_D_MM / 2 + 0.3
@@ -242,7 +304,7 @@ def _fit_shoulder(r_out, wall, meplat_r, z_top, L_max, z_floor, parts, z_board, 
     while L >= SHOULDER_MIN_MM - 1e-9:
         z_s = z_top - L
         if z_s >= z_floor - 1e-9 and L > wall + 0.2:
-            prof = NoseProfile(r_out, wall, meplat_r, round(z_s, 4), round(z_top, 4))
+            prof = NoseProfile(r_out, wall, meplat_r, round(z_s, 4), _ceil4(z_top))
             bad = _misfits(prof, parts, z_board, skip)
             if not bad:
                 return prof, []
@@ -251,7 +313,7 @@ def _fit_shoulder(r_out, wall, meplat_r, z_top, L_max, z_floor, parts, z_board, 
         L -= SHOULDER_STEP_MM
     if best is None:                 # nose lower than the shortest shoulder allows
         L = max(SHOULDER_MIN_MM, wall + 0.25)
-        prof = NoseProfile(r_out, wall, meplat_r, round(z_top - L, 4), round(z_top, 4))
+        prof = NoseProfile(r_out, wall, meplat_r, round(z_top - L, 4), _ceil4(z_top))
         best = (prof, _misfits(prof, parts, z_board, skip))
     return best
 
@@ -297,8 +359,50 @@ def optical_bands(payload: str) -> list:
     return list(OPTICS[payload]["bands"]) if payload in OPTICS else [None]
 
 
+def _ridge_height(boards: dict, chain: list) -> float:
+    """(2026-11-19, user) ONE nose-cone height for every config, set by the
+    radar (cfr. radar): its tallest top-face part + clearance above the board."""
+    rb = boards.get("radar_module")
+    if rb is None:
+        return 2.0
+    parts = _top_parts(rb, _fold_M(chain, "radar_module"))
+    need = max([p.height for p in parts] or [1.7]) + OPEN_RIDGE_CLEAR_MM
+    # (2026-11-20) the CAP is the radome: its underside sits k·λ0/2 above the
+    # AoP top (smallest k that clears every radar part); ridge = that − gap
+    from smash.export import nose_radome as NR
+    aop = next((p.height for p in parts if p.ref == "U_AWR"), None)
+    if aop is None:
+        return round(need, 4)
+    half = NR.wavelength_mm() / 2.0
+    k = max(1, math.ceil((need + CAP_RIDGE_GAP_MM - aop) / half - 1e-9))
+    return round(aop + k * half - CAP_RIDGE_GAP_MM, 4)
+
+
 def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
               r_out: float | None = None) -> NoseSpec:
+    """Per-config nose; with OPEN_NOSE every shell ends at the SAME ridge height
+    above its payload board (the radar's) — the configuration-specific shapes
+    (lens, USB mouth, radome) belong to the finishing container (OD 40)."""
+    n = _nose_spec(config, boards, chain, band=band, r_out=r_out)
+    if not (OPEN_NOSE and n.payload and n.z_payload):
+        return n
+    z_top = _ceil4(n.z_payload[1] + _ridge_height(boards, chain))
+    pr = n.profile
+    n.profile = NoseProfile(pr.r_out, END_WALL_MM, pr.r_out - END_WALL_MM, z_top, z_top, open=True)
+    if n.tube is not None:                  # optical: light-tube DAM only, up to the ridge
+        n.tube = dict(n.tube, z1=z_top, collar_r_out=None, collar_z0=None)
+    if n.lens is not None and n.payload in ("qpd_module", "camera_module"):
+        n.lens = dict(n.lens, in_capsule=True)
+    n.notes = [x for x in n.notes if not x.startswith("- Nose:")] + [n.profile.aero_md(),
+               f"- Uniform nose ridge {z_top - n.z_payload[1]:.2f} mm above the payload board "
+               "(all configs, set by the radar). Lens / USB mouth / radome = the finishing "
+               "container (OD 40), configuration-specific.\n"]
+    n.warnings = [w for w in n.warnings if "lens" not in w and "light-tube" not in w]
+    return n
+
+
+def _nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
+               r_out: float | None = None) -> NoseSpec:
     """Numbers for one config's nose (no cadquery). Optical payloads take a
     wavelength `band` (default: the first in nose_optics.OPTICS)."""
     from smash.export.sleeve_step import stack_z_map, SLEEVE_GAP_MM, SLEEVE_WALL_MM
@@ -340,6 +444,48 @@ def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
     z0, z1 = zmap[payload]
     M = _fold_M(chain, payload)
     parts = _top_parts(boards[payload], M)
+    _STOP_EXTRA_KEEP[:] = _hole_keeps(boards[payload], M)   # stop bosses avoid potting holes
+
+    if payload == "usb_nose":
+        wall = END_WALL_MM
+        h_c = max([p.height for p in parts if _part_r(p) <= prm["meplat_r"]] or [0.5])
+        z_top = z1 + h_c + PART_CLEARANCE_MM + wall
+        prof, bad = _fit_shoulder(r_out, wall, prm["meplat_r"], z_top, prm["shoulder_mm"],
+                                  z1, parts, z1)
+        raise_mm = 0.0
+        while bad and raise_mm < CORE_RAISE_MAX_MM:
+            raise_mm += SHOULDER_STEP_MM
+            prof, bad = _fit_shoulder(r_out, wall, prm["meplat_r"], z_top + raise_mm,
+                                      prm["shoulder_mm"], z1, parts, z1)
+        hoods = _hoods_for(bad, z1)
+        if bad:
+            warnings.append(f"{config}: hoods needed over {', '.join(p.ref for p in bad)}")
+        usb = next((p for p in parts if p.ref == "J_USB_C"), None)
+        wins, holes = [], []
+        if usb is not None:
+            # VERTICAL USB-C (user): its mouth is flush with the flat face, the
+            # plug goes in axially through a slot in the nose tip.
+            z_need = z1 + USB_VERT_H_MM
+            if prof.z_top < z_need:
+                prof, bad2 = _fit_shoulder(r_out, wall, max(prm["meplat_r"], math.hypot(usb.x, usb.y) + 6.5),
+                                           z_need, prm["shoulder_mm"], z1, parts, z1)
+            holes.append(("usb_slot", usb.x, usb.y,
+                          (USB_MOUTH_SLOT_MM[0], USB_MOUTH_SLOT_MM[1])))
+        pipes = _ir_pipes(parts, z1)
+        if OPEN_NOSE:           # receptacle top flush with the ridge; IR sees out directly
+            prof = _open_profile(prof, parts, z1, z1 + USB_VERT_H_MM)
+            holes, hoods, pipes = [], [], []
+            warnings = [w for w in warnings if "hoods" not in w]
+        notes.append(prof.aero_md())
+        notes.append("- USB NOSE (the core's default cap): VERTICAL depot USB-C at the nose tip, "
+                     f"mouth flush in a {USB_MOUTH_SLOT_MM[0]} × {USB_MOUTH_SLOT_MM[1]} mm slot in the "
+                     "flat face (plug it while potting) + IR pair. Receptacle: Same Sky "
+                     f"UJ20-C-V-G-SMT-23B-P16-TR-X5, {USB_VERT_H_MM} mm tall (⚠ check COO).\n")
+        notes.append(_pipes_md(pipes))
+        stops = _pick_stops(parts, [(q["x"], q["y"], q["r_out"], q["r_out"]) for q in pipes]
+                            + [(usb.x, usb.y, 5.5, 3.0)] if usb is not None else [])
+        return NoseSpec(config, payload, None, (z0, z1), prof, hoods, holes, None, None, None,
+                        wins, stops, notes, warnings, pipes)
 
     if payload == "radar_module":
         rn = NR.radar_nose(boards[payload], M)
@@ -363,17 +509,33 @@ def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
         gap = prof.z_top_in - (z1 + rn.aop.height)
         holes = []
         pipes = _ir_pipes(parts, z1)
+        radome_t = wall
+        if OPEN_NOSE:
+            # (2026-11-19, user) NO radome in the cone: the final capsule (OD 40)
+            # carries it. The open shell keeps only an AoP DAM collar insert so
+            # the black potting stays off the antennas.
+            prof = _open_profile(prof, parts, z1, z1 + rn.aop.height + 0.5)
+            gap, k = None, None
+            hoods, pipes = [], []
+            warnings = [w for w in warnings if "hoods" not in w]
         wins = []
         if rn.usb_window and rn.usb is not None:
             u = rn.usb
             wins.append({"angle_deg": rn.usb_window["angle_deg"], "w": rn.usb_window["w"],
                          "z0": z1 + rn.usb_window["z0"], "z1": z1 + rn.usb_window["z1"],
                          "r_from": max(0.0, math.hypot(u.x, u.y) - 0.5),
-                         "what": "USB-C mouth (UJ20)"})
+                         "what": "USB-C mouth (UJ20 vertical)"})
         keep = [(rn.aop.x, rn.aop.y, rn.aop.w / 2 + NR.DAM_MARGIN_MM + NR.DAM_RIB_W_MM,
                  rn.aop.h / 2 + NR.DAM_MARGIN_MM + NR.DAM_RIB_W_MM)]
         keep += [(q["x"], q["y"], q["r_out"], q["r_out"]) for q in pipes]
-        stops = _pick_stops(parts, keep)
+        stops = _pick_stops(parts, keep)       # payload board screwed into the cap
+        if gap is None:          # open nose, no radome: FoV is the capsule's concern
+            return NoseSpec(config, payload, None, (z0, z1), prof, [], [], rn.dam, None,
+                            {"radome": None}, [], stops, notes + [prof.aero_md(),
+                            "- Radar: NO radome in the nose cone — the final capsule (OD 40) "
+                            "carries it. An AoP DAM collar (insert, board → ridge) keeps the "
+                            "black potting off the antennas; the space above the AoP stays air.\n"],
+                            warnings + rn.warnings, [])
         reach = (gap + wall) * math.tan(math.radians(NR.RADOME_FOV_HALF_DEG))
         fov_half = (rn.aop.w / 2 + reach, rn.aop.h / 2 + reach)
         fov_r = math.hypot(*fov_half)
@@ -407,7 +569,8 @@ def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
                          "plug the receptacle during the pour. ⚠ A standard USB-C plug "
                          "overmould (~12.4 × 6.5 mm) does not fit — slim plug or a pocket.\n")
         return NoseSpec(config, payload, None, (z0, z1), prof, hoods, holes, rn.dam, None,
-                        {"radome_order": k, "gap_mm": round(gap, 4), "fov_r_mm": round(fov_r, 2)},
+                        {"radome_order": k, "gap_mm": round(gap, 4), "fov_r_mm": round(fov_r, 2),
+                         "radome_t": radome_t, "z_in": round(z1 + rn.aop.height + gap, 4)},
                         wins, stops, notes, warnings, pipes)
 
     # optical payloads: plano-convex lens, flat side flush with the meplat
@@ -452,6 +615,10 @@ def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
     if dome_low < z_sensor + 0.2:
         warnings.append(f"{config}/{band}: lens dome hits the sensor (f too short)")
     pipes = _ir_pipes(parts, z1)
+    if OPEN_NOSE:               # lens + light tube = a separate OPTIC INSERT
+        prof = _open_profile(prof, parts, z1, z_top)
+        hoods, pipes = [], []
+        warnings = [w for w in warnings if "hoods" not in w and "under the shoulder" not in w]
     stops = _pick_stops(parts, [(sensor.x, sensor.y, r_collar + OPTICAL_DAM_W_MM,
                                  r_collar + OPTICAL_DAM_W_MM)]
                         + [(q["x"], q["y"], q["r_out"], q["r_out"]) for q in pipes])
@@ -482,15 +649,26 @@ def nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
                     [], stops, notes, warnings, pipes)
 
 
-def active_lanes(contract: dict | None, present: set) -> dict:
+def active_lanes(contract: dict | None, present: set, payload: str | None = None) -> dict:
     """{lane_key: [boards that get a via]} for the boards a cup holds. A lane is
     lasered only if it connects ≥ 2 present boards (GND plane / antenna feed /
     single-board exits: any present board). Unused compute castellations stay
-    bare and unlasered."""
+    bare. (2026-11-19) Crown lanes are LASERED on every sleeve (one LDS pattern)
+    but only get a VIA / are used where this config's payload needs the net
+    (GND teeth: always)."""
     out = {}
     for key, lane in (contract or {}).get("lanes", {}).items():
         on = [b for b in lane.get("boards", []) if b in present]
         kind = lane.get("kind")
-        if (kind in ("gnd_plane", "antenna_feed") and on) or len(on) >= 2:
+        uses = lane.get("payloads")
+        needed = uses is None or (payload is not None and payload in uses)
+        if kind == "crown_top":
+            if on and needed:
+                out[key] = on
+        elif kind == "crown_payload":
+            if payload and payload in lane.get("boards", []) and needed:
+                out[key] = [payload]
+        elif ((kind in ("gnd_plane", "antenna_feed") and on) or len(on) >= 2
+              or (lane.get("aft_cap") and on)):         # runs on to the aft_end_cap
             out[key] = on
     return out

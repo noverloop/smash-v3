@@ -107,7 +107,7 @@ def test_aft_end_top_face_is_empty(built):
         ref = pl.item.ref
         if ref.startswith("J_") and "spacer" in ref:
             continue                     # legacy LGA land chip (this fixture only)
-        assert (ref.startswith(("TP_", "P_ACT", "J_CAST_"))
+        assert (ref.startswith(("TP_", "P_ACT", "J_CAST_", "P_CELL_", "D_ACT_WIRE_"))
                 or ref in gen._PIEZO_POCKET_REFS), ref
 
 
@@ -145,15 +145,17 @@ def _placement(board, ref):
 
 
 def test_cell_contacts_3cell_split(built):
-    """(2026-11-15) Both tab sets (+ and −, one per cell) land on
-    activation_interface's BOTTOM face — the compartment ceiling."""
+    """(2026-11-20, user) no tabs: Tadiran /P cells. Both leads land on
+    aft_end_board (− pins at the cell axes, + wires round the potting-channel
+    exit); the ceiling (activation_interface) carries no cell contact."""
     _gen, _d, _panel, boards = built
-    act = boards["activation_interface"]
+    act, aft = boards["activation_interface"], boards["aft_end_board"]
     assert _placement(act, "P_CELL_CONTACTS") is None
     for k in (1, 2, 3):
-        for pol in ("POS", "NEG"):
-            pl = _placement(act, f"P_CELL_TAB_{pol}{k}")
-            assert pl is not None and pl.face == "bottom", f"P_CELL_TAB_{pol}{k}"
+        assert _placement(act, f"P_CELL_TAB_POS{k}") is None
+        for ref in (f"P_CELL_PIN_NEG{k}", f"P_CELL_WIRE_POS{k}"):
+            pl = _placement(aft, ref)
+            assert pl is not None and pl.face == "top", ref
 
 
 # ── no structural Cu coins remain anywhere ────────────────────────────
@@ -232,7 +234,10 @@ def test_potting_holes_on_activation_not_aft(built):
     _gen, _d, _panel, boards = built
     aft = boards["aft_end_board"].geometry
     act = boards["activation_interface"].geometry
-    assert (aft.holes or []) == []          # sealed aft floor
+    # sealed aft floor: no POTTING holes (the 3 aft_end_cap screw holes are
+    # filled by their M2 screws, 2026-11-19)
+    assert [h for h in (aft.holes or []) if h.tag == "potting"] == []
+    assert {h.tag for h in (aft.holes or [])} <= {"aft_cap_screw"}
     assert len(act.holes or []) == 1        # potting enters here
     assert all(h.tag == "potting" for h in act.holes)
 

@@ -49,7 +49,7 @@ def build_board_solid(board, thickness_mm: float):
     # has no edge to exit and the USB notch becomes a closed pocket that the boolean
     # leaves filled. Cut the circular segment north of the chord line. (USB-C N
     # chord, 17 mm — keep in sync with _tile_cuts.)
-    if g.shape == "circle" and g.diameter_mm and board.name == "radar_module":
+    if g.shape == "circle" and g.diameter_mm and board.name == "__no_usb_chord__":
         import math as _math
         _r = g.diameter_mm / 2.0
         _y_flat = _math.sqrt(max(_r * _r - (17.0 / 2.0) ** 2, 0.0))
@@ -355,7 +355,9 @@ def write_stackup_step(
 
     total_h = z
     segs = None
-    if with_sleeve and spacer_hardware:
+    from smash.export.sleeve_step import CORE_TOP_NAME as _CORE_TOP
+    # the cup hangs on the anchor band over compute: no compute → no cup
+    if with_sleeve and spacer_hardware and _CORE_TOP in boards and _CORE_TOP in snake_chain:
         # (2026-11-18) one-piece PEEK-LDS cup (sleeve + nose); the payload in
         # this chain picks the nose (radar → radome, else a plain end).
         from smash.export.sleeve_step import build_cup
@@ -412,6 +414,8 @@ def write_stackup_components_step(
     tiles: dict | None = None,
     spacer_hardware: bool = True,
     sleeve_dir=None,
+    nose_key: str | None = None,
+    compute_name: str = "companion_compute",
 ) -> dict:
     """Fold the DETAILED per-tile STEPs into the tower — the component-render
     counterpart of `write_stackup_step`'s mass-block FEA tower.
@@ -435,6 +439,9 @@ def write_stackup_components_step(
     z = 0.0
     prev = None
     n_tiles = 0
+    compute_top = None
+    compute_pose = None
+    added = set()
     for name in snake_chain:
         b = boards.get(name)
         if b is None:            # dropped scaffold spacer — tiles mate directly
@@ -454,15 +461,21 @@ def write_stackup_components_step(
             if step_path is not None and step_path.exists():
                 asm.add(cq.importers.importStep(str(step_path)).translate((0, 0, z)),
                         name=step_path.stem)
+                added.add(name)
                 n_tiles += 1
             z += t
             prev = name
             continue
+        if name == compute_name:
+            compute_top = z + t
         if step_path.exists():
             mx, my, mz = _tile_pose(tiles, snake_chain, prev, name, is_spacer)
+            if name == compute_name:
+                compute_pose = (mx, my, mz)
             body = _apply_pose(cq.importers.importStep(str(step_path)),
                                mx, my, mz, z, t)
             asm.add(body, name=name)
+            added.add(name)
             # Embedded Cu coins: the per-tile STEP is FR4-only, so add the coin
             # prisms here (Cu-coloured) — otherwise the coin only appears in the
             # per-board LAYERED STEP, and edits to it look like they "didn't take"
@@ -480,19 +493,107 @@ def write_stackup_components_step(
         z += t
         prev = name
 
-    if sleeve_dir is not None:
-        sp = pathlib.Path(sleeve_dir) / "sleeve.step"
-        if sp.exists():
-            asm.add(cq.importers.importStep(str(sp)), name="sleeve",
-                    color=cq.Color(0.85, 0.8, 0.6, 0.6))
+    n_nose = 0
+    if sleeve_dir is not None and compute_top is not None:
+        sd = pathlib.Path(sleeve_dir)
+        n_nose = _add_sleeve_and_nose(cq, asm, sd, nose_key, compute_top)
+        # (2026-11-19) a payload hanging off the panel as a BRANCH (USB / QPD /
+        # camera configs) is not in the snake chain: place it at the cup's frame
+        # (the anchor band is part of the sleeve).
+        n_tiles += _add_branch_payload(cq, asm, sd, nose_key, compute_top, compute_pose,
+                                       boards, tile_step_dir, added)
     out = pathlib.Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     if hasattr(asm, "export"):
         asm.export(str(out))
     else:                                   # older cadquery
         asm.save(str(out))
-    return {"output_path": str(out), "n_tiles": n_tiles,
+    return {"output_path": str(out), "n_tiles": n_tiles, "n_nose_parts": n_nose,
             "height_mm": round(z, 2)}
+
+
+# (2026-11-19) sleeve / crown / nose colours in the components stackup
+_NOSE_PART_COLORS = {
+    "core_sleeve":      (0.85, 0.80, 0.60, 0.45),   # PEEK-LDS, see-through
+    "crown":            (0.55, 0.45, 0.30, 1.0),    # PEEK-LDS crown (darker)
+    "nose_cone":        (0.85, 0.80, 0.60, 0.6),
+    "nose_cap":         (0.95, 0.90, 0.75, 0.7),    # λ/2 radome lid + retaining tabs
+    "retaining_ring":   (0.75, 0.75, 0.80, 1.0),    # stainless ring + OD-40 bump + tabs + feet
+    "thread_inserts":   (0.80, 0.70, 0.40, 1.0),    # M3 inserts moulded in the sleeve band
+    "radome_insert":    (0.95, 0.90, 0.75, 0.7),    # λ/2 PEEK disc + dam rib (open nose)
+    "optic_insert":     (0.30, 0.30, 0.32, 1.0),    # light-tube dam (open nose)
+    "aop_dam":          (0.30, 0.30, 0.32, 1.0),    # radar AoP dam collar (open nose)
+    "aft_end_cap":      (0.85, 0.80, 0.60, 1.0),    # PEEK-LDS aft public-interface cap
+    "screws":           (0.35, 0.35, 0.38, 1.0),    # M3 countersunk, black oxide
+    "lens":             (0.60, 0.80, 1.00, 0.5),
+}
+
+
+def _add_branch_payload(cq, asm, sleeve_dir, nose_key, compute_top, compute_pose,
+                        boards, tile_step_dir, added) -> int:
+    import json
+    vd = _nose_variant_dir(sleeve_dir, nose_key)
+    if vd is None or not (vd / "frame.json").exists():
+        return 0
+    fr = json.loads((vd / "frame.json").read_text())
+    pb = fr.get("payload")
+    if not pb or pb in added or not fr.get("z_payload") or pb not in boards:
+        return 0
+    dz = compute_top - fr["compute_top_z"]
+    n = 0
+    step = pathlib.Path(tile_step_dir) / pb / f"{pb}.step"
+    if step.exists() and compute_pose is not None:
+        mx, my, mz = compute_pose
+        z0 = fr["z_payload"][0] + dz
+        asm.add(_apply_pose(cq.importers.importStep(str(step)), mx, my, mz, z0,
+                            boards[pb].thickness_mm), name=pb)
+        n += 1
+    return n
+
+
+def _nose_variant_dir(sleeve_dir: pathlib.Path, nose_key: str | None):
+    """sleeve/<config>[/<band>] holding nose_cone.step etc. (optical configs:
+    the first band found)."""
+    if not nose_key:
+        return None
+    d = sleeve_dir / nose_key
+    if (d / "nose_cone.step").exists():
+        return d
+    if d.is_dir():
+        for sub in sorted(d.iterdir()):
+            if (sub / "nose_cone.step").exists():
+                return sub
+    return None
+
+
+def _add_sleeve_and_nose(cq, asm, sleeve_dir: pathlib.Path, nose_key, compute_top: float) -> int:
+    """Add the core sleeve (+ the config's crown, nose cone, retaining plates,
+    lens) from `write_sleeve_and_mould`'s outputs, shifted so their compute-top
+    reference (core_sleeve/frame.json) lands on this stack's compute top."""
+    import json
+    frame = sleeve_dir / "core_sleeve" / "frame.json"
+    if not frame.exists():
+        return 0
+    dz = compute_top - json.loads(frame.read_text())["compute_top_z"]
+    vd = _nose_variant_dir(sleeve_dir, nose_key)
+    own = vd / "core_sleeve.step" if vd is not None else None
+    paths = [("core_sleeve", own if own is not None and own.exists()
+              else sleeve_dir / "core_sleeve" / "core_sleeve.step")]
+    if vd is not None:
+        paths += [(n, vd / f"{n}.step") for n in ("thread_inserts", "nose_cone", "nose_cap", "retaining_ring", "screws",
+                                                  "radome_insert", "optic_insert", "aop_dam", "lens")]
+    cap = sleeve_dir / "aft_end_cap" / "aft_end_cap.step"   # aft public interface (z ≤ 0)
+    if cap.exists():
+        paths.append(("aft_end_cap", cap))
+    n = 0
+    for name, path in paths:
+        if path.exists():
+            # the aft cap hangs off the stack's aft face (z = 0 in every config)
+            shift = 0.0 if name == "aft_end_cap" else dz
+            asm.add(cq.importers.importStep(str(path)).translate((0, 0, shift)), name=name,
+                    color=cq.Color(*_NOSE_PART_COLORS[name]))
+            n += 1
+    return n
 
 
 def _max_face_height_mm(board, face: str) -> float:

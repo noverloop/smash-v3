@@ -55,9 +55,9 @@ from smash.state        import Board, Flex
 # activation_interface (ACTIVATE boost) and the compartment sits nose-ward, up
 # to the fin_ble_board ceiling. Single-cell mode still drops the tile (the
 # one horizontal cell lies on aft_end directly).
-BATTERY_HEADROOM_MM = 2.0          # (2026-11-14) free space above the cells under
-                                   # fin_ble_board — the battery holder is only an
-                                   # edge ring there (spacer_step.BATT_HEADROOM_MM)
+BATTERY_HEADROOM_MM = 1.0          # (2026-11-20, user) was 2.0 mm of tab headroom:
+                                   # the /P cells' + pin → wire joints + the wires
+                                   # to the potting channel only (spacer_step)
 BATTERY_LENGTH_MM = 21.0 + BATTERY_HEADROOM_MM   # compartment = cell length + headroom
                                    # (was 21.0) = TLM-1520HPM/S
                                    # length; cells stand flat on cell_floor.
@@ -295,6 +295,8 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # nfc_antenna_flex Board REMOVED 2026-07-30 (NFC subsystem deleted)
     camera_module     = Board("camera_module", al_backing_mm=0.5)
     qpd_module        = Board("qpd_module")   # rigid sensor tile (QPD + 4 TIAs + PLL)
+    # (2026-11-18) USB nose module (USB-C + IR pair) — the core's default cap.
+    usb_nose          = Board("usb_nose")
     # Two 2.4 GHz meandered-Yagi flex tiles on body meridians (90° apart,
     # 12 o'clock and 3 o'clock) for backward CP telemetry off the WBA52.
     # The metal sonde body acts as the Yagi's back-reflector — feature,
@@ -371,6 +373,11 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
             Flex(length_mm=70.0, branch_side="N")),
         (companion_compute, camera_module,
             Flex(length_mm=70.0, branch_side="S")),
+        # USB nose: compute's N/S/E/W are all taken in this superset, so it
+        # hangs off the snake TAIL (radar, free east edge) here. Electrically
+        # it is a compute leaf (castellation cone exits re-host it there).
+        (radar_module, usb_nose,
+            Flex(length_mm=70.0, branch_side="E")),
     ]
 
     if straight:
@@ -404,6 +411,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
         "companion_compute":    companion_compute,
         "camera_module":        camera_module,
         "qpd_module":           qpd_module,
+        "usb_nose":             usb_nose,
         "activation_interface": activation_interface,
         _AFT_END:               aft_end_board,
     }

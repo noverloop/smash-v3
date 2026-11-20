@@ -99,7 +99,8 @@ def test_locks_applied_and_packer_runs_around_them():
     # U_MPU's locked position should win
     mpu = next(p for p in board.chip_placements if p.item.ref == "U_MPU")
     assert mpu.locked is True
-    assert mpu.position_mm == (-7.7, -2.7)
+    from smash.layout.locked import load_locked_placements
+    assert mpu.position_mm == tuple(load_locked_placements()["U_MPU"].position_mm)
     stats = rep.per_board[0]
     assert stats.n_locked == 1
     assert stats.n_packed == 3

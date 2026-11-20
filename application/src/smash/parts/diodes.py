@@ -365,3 +365,46 @@ def add_bat64_06_tp(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Infineon BAS40-02L — 40 V / 120 mA Schottky, TSLP-2-1 (1.0 × 0.6 × 0.39)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_bas40_02l(design, ref: str, **overrides) -> Chip:
+    """Infineon BAS40-02L (BAS4002LE6327XTMA1) — Si Schottky, V_R = 40 V,
+    I_F = 120 mA, I_FSM = 200 mA (t ≤ 10 ms), V_F ≤ 1.0 V @ 40 mA, I_R ≤ 1 µA
+    @ 30 V, P_tot 250 mW, leadless TSLP-2-1 (1.0 × 0.6 × 0.4 (+0.1) mm),
+    marking "FF". Not AEC-Q101 (datasheet BAS40.../BAS140W, 2013-01-11).
+
+    (2026-11-20) Steering diode of the 4 × 4 parachute-restraint MATRIX: one in
+    series with each nichrome wire (anode = its row line, cathode = its wire
+    tab), on aft_end_board's TOP face in the holder floor's annular pocket.
+    A wire draws ~20–120 mA for ~5 ms (≤ I_F, ≤ I_FSM); unselected columns
+    float up to the 33 V rail (< V_R 40 V).
+
+    Footprint = the datasheet's TSLP-2-1 recommended land pattern (p.14):
+    two 0.6 × 0.35 mm copper pads, 0.3 mm gap (0.65 mm pitch); solder mask
+    0.6 × 1.0 mm over both. Pin 1 = CATHODE (cathode marking at pin 1)."""
+    pn = "BAS40-02L"
+    pads = [Pad(num="1", position_mm=(-0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="2", position_mm=(0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu")]
+    fp = Footprint(name="Infineon_TSLP-2-1", package_class="TSLP-2-1 (1.0 × 0.6 mm)",
+                   pads=pads, size_mm=(1.0, 0.6), height_mm=0.5, pitch_mm=0.65,
+                   source="Infineon BAS40 datasheet p.14 (TSLP-2-1 recommended footprint)")
+    fp.ensure_courtyard_clearance()
+    fields = dict(
+        manf="Infineon", manf_pn="BAS4002LE6327XTMA1", canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description="Schottky diode, V_R=40 V, I_F=120 mA, I_FSM=200 mA (≤10 ms), TSLP-2-1",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        standards=["RoHS", "Pb-Free"],
+        package="TSLP-2-1", size_mm=(1.0, 0.6), height_mm=0.5,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=40.0, i_rms_a=0.12, power_rating_w=0.25, tj_max_c=150.0,
+        pins=[Pin(num="1", name="K", type="passive"), Pin(num="2", name="A", type="passive")],
+        footprint=fp,
+        note="Parachute-matrix steering diode. Pin 1 = cathode (datasheet p.14).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

@@ -32,6 +32,7 @@ The output STEP can be loaded into FreeCAD / Fusion / mesh tools for
 from __future__ import annotations
 
 import dataclasses
+import math
 
 import pathlib
 from typing import Iterable
@@ -651,7 +652,16 @@ BATT_FLOOR_MM = 1.2
 BATT_PZ_POCKET_DEPTH_MM = 0.6
 BATT_PZ_DISC_POCKET_R_MM = 5.4                  # Ø10 disc + 0.4 radial clearance
 BATT_PZ_SLOT_MM = (4.6, -2.4, 10.4, 2.4)        # comparator column slot (x0, y0, x1, y1)
-BATT_HEADROOM_MM = 2.0
+BATT_HEADROOM_MM = 1.0           # (2026-11-20) + pin→wire joints + wires (was 2.0 for tabs)
+# (2026-11-20, user) Tadiran /P cells (axial pins), no tabs: each − pin goes
+# straight down through a floor hole into a PTH on aft_end_board; each + pin
+# gets a short AWG 28 wire that runs across the cell tops, DOWN THE POTTING
+# CHANNEL (potted → locked) and through a fan-out pocket in the floor's
+# underside to a PTH on aft_end_board. Everything solders on aft_end from below.
+CELL_PIN_HOLE_D_MM = 1.2         # floor hole round the Ø0.8 − pin (placeholder)
+WIRE_FAN_R_MM = 2.4              # + wire PTHs: this far from the channel centre …
+WIRE_FAN_DIRS_DEG = (285.0, 330.0, 15.0)    # … in these directions (clear of the cap screw)
+WIRE_FAN_POCKET_DEPTH_MM = 0.6
 BATT_TOP_RING_R_IN_MM = 16.0
 BATT_PART_CLEARANCE_MM = 0.2
 
@@ -706,6 +716,32 @@ def _batt_channel_xy():
     return BATT_CHANNEL_R_MM * math.cos(a), BATT_CHANNEL_R_MM * math.sin(a)
 
 
+def cell_centres_xy() -> list:
+    """Cell axes (physical frame) — the − pins / floor holes."""
+    import math
+    return [(BATT_CLUSTER_R_MM * math.cos(math.radians(a)),
+             BATT_CLUSTER_R_MM * math.sin(math.radians(a))) for a in BATT_CELL_ANGLES_DEG]
+
+
+def cell_wire_pads_xy() -> list:
+    """+ wire PTHs on aft_end_board round the potting-channel exit."""
+    import math
+    cx, cy = _batt_channel_xy()
+    return [(round(cx + WIRE_FAN_R_MM * math.cos(math.radians(d)), 3),
+             round(cy + WIRE_FAN_R_MM * math.sin(math.radians(d)), 3)) for d in WIRE_FAN_DIRS_DEG]
+
+
+def wire_fan_pocket():
+    """Shapely outline of the floor-underside pocket that leads the + wires
+    from the channel exit to their PTHs."""
+    from shapely.geometry import MultiPoint, Point
+    cx, cy = _batt_channel_xy()
+    pts = [Point(cx, cy).buffer(BATT_CHANNEL_D_MM / 2.0, 48)] + \
+          [Point(x, y).buffer(0.9, 32) for x, y in cell_wire_pads_xy()]
+    from shapely.ops import unary_union
+    return unary_union(pts).convex_hull
+
+
 def _poly_extrude(cq, poly, h, z0=0.0):
     # drop sub-µm segments from the buffered unions (OCC rejects them)
     poly = poly.simplify(0.003, preserve_topology=True)
@@ -718,10 +754,20 @@ def _poly_extrude(cq, poly, h, z0=0.0):
     return wp
 
 
+# (2026-11-20) + an ANNULUS for the parachute matrix's 16 steering diodes
+# (BAS40-02L, 0.39 mm tall) on aft_end's top at r 6.4: same 0.6 mm depth; the
+# floor keeps 0.6 mm over the 2 mm span (~130 MPa under the cells' setback).
+BATT_DIODE_RING_MM = (7.2, 9.0)
+
+
 def piezo_pocket():
-    """Shapely outline of the floor-underside pocket (physical frame)."""
+    """Shapely outline of the floor-underside pocket (physical frame):
+    piezo disc + comparator slot + the steering-diode annulus."""
     from shapely.geometry import Point, box
-    return Point(0, 0).buffer(BATT_PZ_DISC_POCKET_R_MM, 96).union(box(*BATT_PZ_SLOT_MM))
+    ring = Point(0, 0).buffer(BATT_DIODE_RING_MM[1], 96).difference(
+        Point(0, 0).buffer(BATT_DIODE_RING_MM[0], 96))
+    return (Point(0, 0).buffer(BATT_PZ_DISC_POCKET_R_MM, 96).union(box(*BATT_PZ_SLOT_MM))
+            .union(ring))
 
 
 def _battery_holder_body(cq, h):
@@ -733,6 +779,10 @@ def _battery_holder_body(cq, h):
     hc = min(BATT_CELL_LENGTH_MM, h - f)
     floor = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(f)
     floor = floor.cut(_poly_extrude(cq, piezo_pocket(), BATT_PZ_POCKET_DEPTH_MM))
+    floor = floor.cut(_poly_extrude(cq, wire_fan_pocket(), WIRE_FAN_POCKET_DEPTH_MM))
+    for x, y in cell_centres_xy():                 # − pins through the floor
+        floor = floor.cut(cq.Workplane("XY").center(x, y)
+                          .circle(CELL_PIN_HOLE_D_MM / 2.0).extrude(f))
     block = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(hc).translate((0, 0, f))
     block = block.cut(_poly_extrude(cq, battery_holder_cavity(), hc, z0=f))
     body = floor.union(block)
@@ -755,6 +805,16 @@ def _battery_holder_body(cq, h):
                    .rect(r1 - r0, SLOT_W_MM).extrude(NOTCH_DEPTH_MM)
                    .translate((0, 0, z0)))
             body = body.cut(cut)
+    # (2026-11-19, user) TAPPED M2 holes for the aft_end_cap screws, from the
+    # holder's bottom face, in the solid webs BETWEEN the cells (never into a
+    # cell bore): aft_cap.CAP_SCREW_ANGLES_DEG at CAP_SCREW_R_MM.
+    from smash.export.aft_cap import (CAP_SCREW_ANGLES_DEG, CAP_SCREW_R_MM,
+                                      HOLDER_TAP_DRILL_MM, HOLDER_TAP_DEPTH_MM)
+    for ang in CAP_SCREW_ANGLES_DEG:
+        a = math.radians(ang)
+        body = body.cut(cq.Workplane("XY").center(CAP_SCREW_R_MM * math.cos(a),
+                                                  CAP_SCREW_R_MM * math.sin(a))
+                        .circle(HOLDER_TAP_DRILL_MM / 2.0).extrude(HOLDER_TAP_DEPTH_MM))
     return body
 
 def gap_kind(name: str) -> str:
@@ -794,6 +854,16 @@ def _ring_body(cq, r_in, r_out, h, open_sector=None):
     return body
 
 
+ANCHOR_GAP = "spacer_companion_compute_radar_module"   # (no hardware: PEEK band of the sleeve)
+
+
+def is_anchor_gap(name: str) -> bool:
+    """compute ↔ any nose payload (radar / QPD / camera / USB nose): the Al
+    anchor ring under the crown, in every config."""
+    from smash.export import nose_interface as NI
+    return any(name == f"spacer_{NI.HOST}_{p}" for p in NI.PAYLOAD_BOARDS)
+
+
 def _standoffs_body(cq, h):
     import math
     body = None
@@ -823,6 +893,8 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
     if kind == "none":
         return None
     if kind == "ring":
+        if is_anchor_gap(name):
+            return None          # (2026-11-19) PEEK anchor band = part of the sleeve moulding
         rs = ring_spec(name)
         return _ring_body(cq, rs.r_in, rs.r_out, h, ring_open_sector(name)), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
@@ -858,8 +930,12 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{BATT_CHANNEL_D_MM} channel at {BATT_CHANNEL_ANGLE_DEG:g}°; above the "
                     f"{BATT_CELL_LENGTH_MM:g} mm cell block only a 1 mm EDGE RING (r "
                     f"{BATT_TOP_RING_R_IN_MM:g}–{BATT_HOLDER_R_OUT_MM:g}) over the "
-                    f"{BATT_HEADROOM_MM:g} mm headroom under fin_ble; the cells' + tab "
-                    "extensions bend across it to P_CELL_CONTACTS")
+                    f"{BATT_HEADROOM_MM:g} mm headroom under activation_interface (its bottom "
+                    "face EMPTY); Tadiran /P cells: − pins through Ø"
+                    f"{CELL_PIN_HOLE_D_MM:g} floor holes into aft_end PTHs, + pins → AWG 28 wires "
+                    "down the potting channel + a floor-underside fan-out pocket → aft_end PTHs")
+        elif kind == "ring" and is_anchor_gap(name):
+            continue             # (2026-11-19) PEEK anchor band = part of the sleeve moulding
         elif kind == "ring":
             h = b.thickness_mm
             osec = ring_open_sector(name)

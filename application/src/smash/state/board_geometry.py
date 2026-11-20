@@ -218,7 +218,30 @@ def _from_entry(entry: dict) -> BoardGeometry:
         dxf_path=pathlib.Path(entry["dxf_path"])
                  if entry.get("dxf_path") else None,
     )
-    if entry.get("potting_holes"):
+    for spec in entry.get("holes") or []:
+        # (2026-11-19) explicit mechanical holes (e.g. the aft_end_cap screws)
+        x, y = spec["position_mm"]
+        d = spec["diameter_mm"]
+        h = d / 2.0 + 0.4
+        geom.holes.append(Hole(position_mm=(x, y), diameter_mm=d, plated=False,
+                               tag=spec.get("tag", "mount")))
+        geom.keepouts.append(Keepout(
+            polygon=[(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)],
+            scope="component", tag=spec.get("tag", "mount")))
+    ph = entry.get("potting_holes")
+    if isinstance(ph, list):
+        # (2026-11-19) explicit holes, e.g. the Ø27 nose payloads where the
+        # standard r 13 pair would cut the edge: [{"position_mm", "diameter_mm"}]
+        for spec in ph:
+            x, y = spec["position_mm"]
+            d = spec.get("diameter_mm", POTTING_HOLE_DIA_MM)
+            h = d / 2.0 + 0.3
+            geom.holes.append(Hole(position_mm=(x, y), diameter_mm=d, plated=False,
+                                   tag="potting"))
+            geom.keepouts.append(Keepout(
+                polygon=[(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)],
+                scope="component", tag="potting_hole"))
+    elif ph:
         holes, keepouts = _synth_potting_holes()
         geom.holes.extend(holes)
         geom.keepouts.extend(keepouts)

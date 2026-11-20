@@ -6,25 +6,244 @@
     "spacer_potting_note": "Spacers carry NO fixed potting holes. attach_cavities_to_spacers() drills 2 Ø3.0 mm NPTH through-holes per spacer at the fold-projected positions of the neighbouring tiles' potting holes, so they always align with the PCB through the accordion fold (a fixed pair would land on the wrong diagonal after the mirror)."
   },
   "_spacer_default": {
-    "shape":          "circle",
-    "diameter_mm":    34.0
+    "shape": "circle",
+    "diameter_mm": 34.0
   },
   "boards": {
-    "power_board":          { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "wakeup_board":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "fin_ble_board":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "flight_board":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "radar_module":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "fins_module":          { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "companion_compute":    { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "companion_io":         { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "activation_interface": { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "aft_end_board":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
-    "cell_floor_board":     { "shape": "circle", "diameter_mm": 34.0, "potting_holes": true },
-    "camera_module":        { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
-    "qpd_module":           { "shape": "circle", "diameter_mm": 34.0, "potting_holes": false },
-    "nfc_antenna_flex":     { "shape": "circle", "diameter_mm": 22.0, "potting_holes": false },
-    "yagi_ant_a_flex":      { "shape": "rect",   "rect_dimensions": [20.0, 40.0], "potting_holes": false },
-    "yagi_ant_b_flex":      { "shape": "rect",   "rect_dimensions": [20.0, 40.0], "potting_holes": false }
+    "power_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "wakeup_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "fin_ble_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "flight_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "radar_module": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": [
+        {
+          "position_mm": [
+            -11.28,
+            -4.1
+          ],
+          "diameter_mm": 2.5
+        }
+      ],
+      "_note_potting": "2026-11-20: moved from (0,−11) — it sat under the LOCKED D_IR_WAKE. One Ø2.5 potting hole at r 12 / 20° in the placement frame (written here pre-rotation: potting holes of the nose-ward tiles turn 180°), clear of every locked part on both faces and inside the land ring (r < 13.6), so the nose-cone pour reaches the 51 bottom-face parts.",
+      "holes": [
+        {
+          "position_mm": [
+            4.95,
+            14.583
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            -15.104,
+            -3.004
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            12.805,
+            -8.556
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        }
+      ],
+      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+    },
+    "fins_module": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "companion_compute": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "companion_io": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "activation_interface": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "aft_end_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": false,
+      "holes": [
+        {
+          "position_mm": [
+            9.445,
+            4.812
+          ],
+          "diameter_mm": 2.2,
+          "tag": "aft_cap_screw"
+        },
+        {
+          "position_mm": [
+            -9.445,
+            4.812
+          ],
+          "diameter_mm": 2.2,
+          "tag": "aft_cap_screw"
+        },
+        {
+          "position_mm": [
+            0.555,
+            -10.585
+          ],
+          "diameter_mm": 2.2,
+          "tag": "aft_cap_screw"
+        }
+      ],
+      "_note_holes": "2026-11-19: 3× M2 clearance for the aft_end_cap screws at the cap's screw positions (60-position cap grid, teeth 4/25/45 = 27/153/273°), r 10.6 — into TAPPED holes in the Al battery holder's solid webs between the cells (cells at 90/210/330°)."
+    },
+    "cell_floor_board": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": true
+    },
+    "camera_module": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": false,
+      "holes": [
+        {
+          "position_mm": [
+            4.95,
+            14.583
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            -15.104,
+            -3.004
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            12.805,
+            -8.556
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        }
+      ],
+      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+    },
+    "qpd_module": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": false,
+      "holes": [
+        {
+          "position_mm": [
+            4.95,
+            14.583
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            -15.104,
+            -3.004
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            12.805,
+            -8.556
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        }
+      ],
+      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+    },
+    "usb_nose": {
+      "shape": "circle",
+      "diameter_mm": 34.0,
+      "potting_holes": false,
+      "holes": [
+        {
+          "position_mm": [
+            4.95,
+            14.583
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            -15.104,
+            -3.004
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        },
+        {
+          "position_mm": [
+            12.805,
+            -8.556
+          ],
+          "diameter_mm": 1.6,
+          "tag": "nose_stop"
+        }
+      ],
+      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+    },
+    "nfc_antenna_flex": {
+      "shape": "circle",
+      "diameter_mm": 22.0,
+      "potting_holes": false
+    },
+    "yagi_ant_a_flex": {
+      "shape": "rect",
+      "rect_dimensions": [
+        20.0,
+        40.0
+      ],
+      "potting_holes": false
+    },
+    "yagi_ant_b_flex": {
+      "shape": "rect",
+      "rect_dimensions": [
+        20.0,
+        40.0
+      ],
+      "potting_holes": false
+    }
   }
 }

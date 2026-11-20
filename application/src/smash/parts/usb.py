@@ -119,3 +119,46 @@ def add_uj20_c_h_g_msmt_1a_p16_tr_67(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_uj20_c_v_g_smt_23b_p16_tr_x5(design, ref: str, **overrides) -> Chip:
+    """Same Sky UJ20-C-V-G-SMT-23B-P16-TR-X5 — USB-C **2.0** receptacle,
+    **VERTICAL** SMT (2026-11-19, user-chosen for the USB nose: the plug goes
+    in axially through the nose's flat face). 16 contacts + 4 shell SMT tabs.
+
+    Unlike the horizontal UJ20 the A / B rows have SEPARATE pads: A1/A12/B1/
+    B12 GND, A4/A9/B4/B9 VBUS, A5/B5 CC1/CC2, A6/B6 DP, A7/B7 DN, A8/B8 SBU;
+    MP1–4 = shell tabs (GND). MH1 (Ø0.5) / MH2 (Ø0.87) are NPTH locating posts
+    (no pin). Body 10.39 × 5.05 mm, 6.3 mm above the board, posts 1.7 mm into
+    it (vendor STEP bounding box). Library: Same Sky / SamacSys export
+    (no datasheet PDF in the download)."""
+    base = "UJ20-C-V-G-SMT-23B-P16-TR-X5"
+    fp_mod = src(base, f"SAMESKY_{base}.kicad_mod")
+    pads = pads_from_kicad_mod(fp_mod)
+    pins = build_pins(src(base, f"{base}.kicad_sym"))
+    copper = {p.num for p in pads if not p.num.startswith("MH")}   # MH1/2 = NPTH posts
+    if {p.num for p in pins} != copper:
+        raise ValueError(f"{base}: pin/pad mismatch")
+    fields = dict(
+        manf="Same Sky", manf_pn=base, canonical_id=canonical_id(base),
+        name=base, value=base,
+        description=("USB Type-C 2.0 receptacle, VERTICAL SMT, 16-contact + 4 shell "
+                     "tabs (power + USB2)"),
+        datasheet=None,
+        package="USB-C 2.0 receptacle (vertical SMT)",
+        size_mm=(10.39, 5.05), height_mm=6.3,
+        pins=pins,
+        footprint=Footprint(
+            name=f"SAMESKY_{base}", package_class="USB-C",
+            pads=pads,
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            model_3d_path=datasheet_ref(base, f"Same_Sky_{base}.step"),
+            source="samesky",
+        ),
+        note=("Vertical: the mouth faces +Z (nose tip). Only power + USB2 wired; "
+              "SBU1/2 open. Shell tabs MP1–4 to GND. ⚠ Check country of origin "
+              "(Same Sky connectors are often built in CN/TW)."),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

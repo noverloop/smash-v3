@@ -23,19 +23,19 @@
  },
  "U_MPU": {
   "position_mm": [
-   -7.7,
-   -2.7
+   7.7,
+   2.7
   ],
-  "rotation_deg": 0,
-  "reason": "VFBGA-361 (10x10 mm body, 12x12 courtyard). Hand-placed + locked at (-7.7, 2.7) KiCad-frame, SW of the disc; Y negated for the math-Y-up placement frame. Rotation 0 deg per the ST AN5724 STM32MP25xxAK reference. Diagonal with U_DDR4 (NE) so the pair clears the NW/SE potting holes and leaves the centre/south of the top face for the SPI-NAND + DDR decoupling."
+  "rotation_deg": 180,
+  "reason": "VFBGA-361 (10x10 mm body, 12x12 courtyard). Hand-placed + locked at (-7.7, 2.7) KiCad-frame, SW of the disc; Y negated for the math-Y-up placement frame. Rotation 0 deg per the ST AN5724 STM32MP25xxAK reference. Diagonal with U_DDR4 (NE) so the pair clears the NW/SE potting holes and leaves the centre/south of the top face for the SPI-NAND + DDR decoupling. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "U_DDR4": {
   "position_mm": [
-   6.9,
-   2.3
+   -6.9,
+   -2.3
   ],
-  "rotation_deg": 0,
-  "reason": "SMARTsemi KTDM4G4B626BGIEAT DDR4 (FBGA-96 7.5x13, courtyard 9.6x15.1). Hand-placed + locked at (6.9, -2.3) KiCad-frame, NE of the 34 mm disc; un-rotated (0 deg) per the STM32MP2 DDR4 reference (was 270 deg DDR3L). Diagonal with U_MPU (SW): the un-rotated 15.1 mm-tall courtyard sits between the NW/SE potting holes (radius 14, 135/315 deg), clearing both, and leaves the centre/south of the top face for the two SPI-NAND dies. Refdes renamed U_DDR3 -> U_DDR4 in the DDR3->DDR4 swap."
+  "rotation_deg": 180,
+  "reason": "SMARTsemi KTDM4G4B626BGIEAT DDR4 (FBGA-96 7.5x13, courtyard 9.6x15.1). Hand-placed + locked at (6.9, -2.3) KiCad-frame, NE of the 34 mm disc; un-rotated (0 deg) per the STM32MP2 DDR4 reference (was 270 deg DDR3L). Diagonal with U_MPU (SW): the un-rotated 15.1 mm-tall courtyard sits between the NW/SE potting holes (radius 14, 135/315 deg), clearing both, and leaves the centre/south of the top face for the two SPI-NAND dies. Refdes renamed U_DDR3 -> U_DDR4 in the DDR3->DDR4 swap. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "ANT_NFC": {
   "position_mm": [
@@ -63,185 +63,149 @@
   "face": "bottom",
   "reason": "Single-cell (−) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was aft_end_board's top) at the SOUTH cell end (0, −13.9), 180° opposite P_CELL_TAB_POS on the vertical N–S cell axis. - -> GND. Side tabs, not end pins (2026-07-30). Real tab-land footprint TBD."
  },
- "P_CELL_TAB_NEG1": {
-  "position_mm": [
-   -0.5,
-   1.5
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Triple-mode cell 1 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 90-deg cell's bore lobe near its axis-side edge (7.1 mm from the cell centre (0, 8.6), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 150-deg valley (r=12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
- },
- "P_CELL_TAB_NEG2": {
-  "position_mm": [
-   -1.8,
-   -2.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Triple-mode cell 2 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 210-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (-7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley west seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
- },
- "P_CELL_TAB_NEG3": {
-  "position_mm": [
-   1.8,
-   -2.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Triple-mode cell 3 (-) SIDE SOLDER-TAB land on activation_interface's BOTTOM face (2026-11-15 aft reorder; was cell_floor_board's top), INSIDE the 330-deg cell's bore lobe near its axis-side edge (6.1 mm from the cell centre (7.45, -4.3), bore r=7.6): the tab folds down under the cell's rim, so the land rides wholly within the compartment cutout that already exists for the cell. Hand-moved by the user 2026-07-31 from the 270-deg valley east seat (r~12) - battery-compartment faces keep every land/chip inside the 3 bore circles so the spacers give up no extra cutout and the perimeter ring keeps its LGA interconnect area. - -> FLEX_GND. Only exists in triple mode. Real tab-land footprint TBD."
- },
- "P_ACTIVATE_COMMON": {
-  "position_mm": [
-   0.0,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "PARACHUTE_CUTTER_ACTIVATE common burn-wire node, centred on aft_end_board's BOTTOM face so the 16 sector outbound wires run RADIALLY from here out to the P_ACT_WIRE ring at r=15 (one wire per sector). Opposite the piezo disc on the top face."
- },
  "P_ACT_WIRE_0": {
   "position_mm": [
-   15.0,
+   6.4,
    0.0
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 0 of 16, aft_end_board BOTTOM (activation interface), 0.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_0 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_1": {
   "position_mm": [
-   13.86,
-   5.74
+   5.968,
+   2.312
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 1 of 16, aft_end_board BOTTOM (activation interface), 22.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_1 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_2": {
   "position_mm": [
-   10.61,
-   10.61
+   4.73,
+   4.311
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 2 of 16, aft_end_board BOTTOM (activation interface), 45.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_2 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_3": {
   "position_mm": [
-   5.74,
-   13.86
+   2.852,
+   5.729
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 3 of 16, aft_end_board BOTTOM (activation interface), 67.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_3 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_4": {
   "position_mm": [
-   0.0,
-   15.0
+   0.591,
+   6.373
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 4 of 16, aft_end_board BOTTOM (activation interface), 90.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_4 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_5": {
   "position_mm": [
-   -5.74,
-   13.86
+   -1.751,
+   6.156
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 5 of 16, aft_end_board BOTTOM (activation interface), 112.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_5 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_6": {
   "position_mm": [
-   -10.61,
-   10.61
+   -3.857,
+   5.107
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 6 of 16, aft_end_board BOTTOM (activation interface), 135.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_6 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_7": {
   "position_mm": [
-   -13.86,
-   5.74
+   -5.441,
+   3.369
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 7 of 16, aft_end_board BOTTOM (activation interface), 157.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_7 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_8": {
   "position_mm": [
-   -15.0,
-   0.0
+   -6.291,
+   1.176
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 8 of 16, aft_end_board BOTTOM (activation interface), 180.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_8 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_9": {
   "position_mm": [
-   -13.86,
-   -5.74
+   -6.291,
+   -1.176
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 9 of 16, aft_end_board BOTTOM (activation interface), 202.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_9 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_10": {
   "position_mm": [
-   -10.61,
-   -10.61
+   -5.441,
+   -3.369
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 10 of 16, aft_end_board BOTTOM (activation interface), 225.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_10 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_11": {
   "position_mm": [
-   -5.74,
-   -13.86
+   -3.857,
+   -5.107
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 11 of 16, aft_end_board BOTTOM (activation interface), 247.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_11 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_12": {
   "position_mm": [
-   -0.0,
-   -15.0
+   -1.751,
+   -6.156
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 12 of 16, aft_end_board BOTTOM (activation interface), 270.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_12 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_13": {
   "position_mm": [
-   5.74,
-   -13.86
+   0.591,
+   -6.373
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 13 of 16, aft_end_board BOTTOM (activation interface), 292.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_13 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_14": {
   "position_mm": [
-   10.61,
-   -10.61
+   2.852,
+   -5.729
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 14 of 16, aft_end_board BOTTOM (activation interface), 315.0 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_14 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "P_ACT_WIRE_15": {
   "position_mm": [
-   13.86,
-   -5.74
+   4.73,
+   -4.311
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "Burn-wire pad, sector 15 of 16, aft_end_board BOTTOM (activation interface), 337.5 deg on a r=15mm rim ring. One outbound wire per sector from the centred P_ACTIVATE_COMMON out to here; ACT_WIRE_15 crosses to its DMN6075 on activation_interface."
+  "reason": "2026-11-19 (user): parachute clamp TABS (nichrome wires are clamped, not soldered) on a r=6.4 circle (2026-11-20: was 7.4 — moved in to clear the cells' − pin PTHs at r 8.6) on aft_end_board's BOTTOM, exposed through the aft_end_cap's central opening; 17 positions = 16 sector wires + the common."
  },
  "U_TIA_A": {
   "position_mm": [
@@ -282,11 +246,11 @@
  "J_USB_C": {
   "position_mm": [
    0.0,
-   12.3
+   0.0
   ],
-  "rotation_deg": 180,
+  "rotation_deg": 0,
   "face": "top",
-  "reason": "UJ20 USB-C, SMT on the RADAR top (F.Cu, nose-facing) face: north rim, mouth radially OUT (north). LOWERED here from the nose_cap north-rim spot (empty on the radar) so the body pokes UP through the USB notch and the cap stays flush. y=12.3 (nudged 0.3 mm radially OUT from the original 12.0 for mouth protrusion). rotation_deg=180: the radar's top face has NO B.Cu->F.Cu flip (unlike the nose_cap), so the footprint's in-plane orientation is reversed vs the nose_cap - 180 points the contact row / mouth NORTH (radially out); 0 pointed it inboard (south). The kicad_mod (model) pose was pre-rotated by -180 (rotate Z 180->0, offset negated) so the 3D body stays seated + north under this 180. Pads are symmetric (x +/-5.745); the USB notch is sized from them."
+  "reason": "2026-11-18 (user): USB nose = VERTICAL USB-C at the nose tip, plugged axially through the flat face. ⚠ Footprint/pinout = UJ20 placeholder until a vertical USB-C receptacle PN is chosen (check country of origin)."
  },
  "D_NOSE_G": {
   "position_mm": [
@@ -387,410 +351,23 @@
   "face": "top",
   "reason": "2026-11-15: launch piezo cluster on aft_end_board's TOP (nose-facing: the disc is loaded in compression against FR4), inside the battery holder floor's underside pocket (spacer_step.piezo_pocket, 0.6 mm deep). Disc on the spin axis; comparator column in the pocket's slot so PIEZO_P stays short on one face."
  },
- "TP_SPI_MOSI": {
-  "position_mm": [
-   3.04,
-   10.81
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SPI_CS_FIN": {
-  "position_mm": [
-   0.939,
-   10.81
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SPI_MISO": {
-  "position_mm": [
-   -1.162,
-   10.81
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SPI_SCLK": {
-  "position_mm": [
-   -3.263,
-   10.81
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN1_A1": {
-  "position_mm": [
-   7.76,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN1_A2": {
-  "position_mm": [
-   5.659,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN1_B1": {
-  "position_mm": [
-   3.558,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN1_B2": {
-  "position_mm": [
-   1.457,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN3_A1": {
-  "position_mm": [
-   -1.61,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN3_A2": {
-  "position_mm": [
-   -3.711,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN3_B1": {
-  "position_mm": [
-   -5.812,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN3_B2": {
-  "position_mm": [
-   -7.913,
-   7.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN2_A1": {
-  "position_mm": [
-   7.76,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN2_A2": {
-  "position_mm": [
-   5.659,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN2_B1": {
-  "position_mm": [
-   3.558,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN2_B2": {
-  "position_mm": [
-   1.457,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN4_A1": {
-  "position_mm": [
-   -1.61,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN4_A2": {
-  "position_mm": [
-   -3.711,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN4_B1": {
-  "position_mm": [
-   -5.812,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN4_B2": {
-  "position_mm": [
-   -7.913,
-   4.3
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_CAN_N": {
-  "position_mm": [
-   11.02,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_BAT_RAW": {
-  "position_mm": [
-   7.31,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_BAT_PROT": {
-  "position_mm": [
-   5.209,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
  "TP_ACT_CONFIRM": {
   "position_mm": [
-   -6.5,
+   -1.6,
    0.0
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
+  "reason": "2026-11-19 (user): the parachute-cutter bench pads sit at the CENTRE of the clamp-tab ring on aft_end_board's bottom (not on the aft_end_cap crown)."
  },
  "TP_PARACHUTE_CUTTER_SET": {
   "position_mm": [
-   -8.601,
+   1.6,
    0.0
   ],
   "rotation_deg": 0,
   "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_GND_ACT": {
-  "position_mm": [
-   -3.5,
-   0.0
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_CAN_P": {
-  "position_mm": [
-   11.02,
-   -2.101
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_FIN_HALL": {
-  "position_mm": [
-   7.31,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_HALL_VIN": {
-  "position_mm": [
-   5.209,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_I2C_SDA": {
-  "position_mm": [
-   0.69,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_I2C_SCL": {
-  "position_mm": [
-   -1.411,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_JUMP_WAKE": {
-  "position_mm": [
-   -5.7,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_JUMP_GND": {
-  "position_mm": [
-   -7.801,
-   -3.49
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_VDD": {
-  "position_mm": [
-   7.31,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SWDIO": {
-  "position_mm": [
-   5.209,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_NRST": {
-  "position_mm": [
-   3.108,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SWCLK": {
-  "position_mm": [
-   1.007,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_MP25_GND1": {
-  "position_mm": [
-   -1.094,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_SWO": {
-  "position_mm": [
-   -3.195,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_MP25_GND2": {
-  "position_mm": [
-   -5.296,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_BOOT0": {
-  "position_mm": [
-   -7.397,
-   -6.78
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_GPIO_0": {
-  "position_mm": [
-   3.04,
-   -9.97
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_GPIO_1": {
-  "position_mm": [
-   0.939,
-   -9.97
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_GPIO_2": {
-  "position_mm": [
-   -1.162,
-   -9.97
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
- },
- "TP_GPIO_3": {
-  "position_mm": [
-   -3.263,
-   -9.97
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "aft_end_board BOTTOM-face bench pad map, 2026-09-10 re-layout. Grouped by function in rows around the centred P_ACTIVATE_COMMON (PARACHUTE_CUTTER_ACTIVATE) at the array's 2.101 mm pitch, inside the P_ACT_WIRE outbound ring at r=15. Board-local X is the MIRROR of the aft (back) view these positions were drawn in — the exporter renders a bottom-face pad mirrored, exactly as the pre-existing ring already does (P_ACT_WIRE_0 is locked at x=+15 and appears at the LEFT of a back view). Pinned so the silkscreen group boxes, the bench fixture and the netlist stay in step; each fin's coil pair lands ADJACENT so go/return cancel. Every fin now surfaces its FULL bipolar pair (A1/A2 + B1/B2) — the old single-phase TP_ACT_MOTOR* probes are retired."
+  "reason": "2026-11-19 (user): the parachute-cutter bench pads sit at the CENTRE of the clamp-tab ring on aft_end_board's bottom (not on the aft_end_cap crown)."
  },
  "CBAT1": {
   "position_mm": [
@@ -1757,48 +1334,21 @@
  },
  "R_USBOR_USB_L": {
   "position_mm": [
-   7.6,
-   -7.464
+   7.172,
+   -7.044
   ],
   "rotation_deg": 90,
   "face": "bottom",
-  "reason": "Sjoert's final routed power_board (WIP/Sjoert/power_board_generated, 2026-09-28) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter)."
+  "reason": "Sjoert's final routed power_board (WIP/Sjoert/power_board_generated, 2026-09-28) — locked as routed so the spacer cavities and LGA fields are cut against the board as built, not the packer's layout. Bottom-face rotation_deg = -KiCad rotation (round-trips through the exporter). (2026-11-20: pulled 0.6 mm inward — it clipped the potting hole at (9.19,−9.19).)"
  },
  "U_NAND_B": {
   "position_mm": [
-   3.273,
-   -8.599
+   -3.273,
+   8.599
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
-  "reason": "SPI-NAND die B, locked 2026-11-14 at the spot the packer used to find next to the (now removed) SE potting hole: with ONE potting hole per board the packer lost that anchor and could not seat it. Point-mirror of U_NAND_A. Placeholder until the layout EE re-places companion_compute."
- },
- "P_CELL_TAB_POS1": {
-  "position_mm": [
-   0.0,
-   12.5
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Cell 1 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 90° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
- },
- "P_CELL_TAB_POS2": {
-  "position_mm": [
-   -10.825,
-   -6.25
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Cell 2 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 210° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
- },
- "P_CELL_TAB_POS3": {
-  "position_mm": [
-   10.825,
-   -6.25
-  ],
-  "rotation_deg": 0,
-  "face": "bottom",
-  "reason": "Cell 3 (+) TAB-EXTENSION land on activation_interface's BOTTOM face (compartment ceiling since the 2026-11-15 aft reorder) at r 12.5, 330° — over the OUTER half of the cell (centre r 8.6, Ø14.8), so the cell's existing tab extension bends up across the 2 mm battery headroom to land here, leaving the board centre free for the G0B1 LQFP-64 (2026-11-14). Real tab-land footprint TBD."
+  "reason": "SPI-NAND die B, locked 2026-11-14 at the spot the packer used to find next to the (now removed) SE potting hole: with ONE potting hole per board the packer lost that anchor and could not seat it. Point-mirror of U_NAND_A. Placeholder until the layout EE re-places companion_compute. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "U_G0B1_FIN": {
   "position_mm": [
@@ -1812,38 +1362,38 @@
  "D_IR_WAKE_Q": {
   "position_mm": [
    0.0,
-   12.8
+   11.0
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_TX_Q": {
   "position_mm": [
-   -9.5,
-   9.5
+   -10.6,
+   4.0
   ],
-  "rotation_deg": 45,
+  "rotation_deg": 90,
   "face": "top",
-  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_WAKE_C": {
   "position_mm": [
    0.0,
-   12.8
+   9.0
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_TX_C": {
   "position_mm": [
-   -9.5,
-   9.5
+   -9.0,
+   4.0
   ],
-  "rotation_deg": 45,
+  "rotation_deg": 90,
   "face": "top",
-  "reason": "2026-11-18: IR service-link pair at the board rim (user: IR in every config), outside the lens light tube / sensor, under its own light pipe in the cup nose."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "R_PZ_TX": {
   "position_mm": [
@@ -1865,20 +1415,308 @@
  },
  "Q_IR_TX_Q": {
   "position_mm": [
-   -6.5,
-   12.5
+   -10.6,
+   -4.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 90,
   "face": "top",
-  "reason": "2026-11-18: IR emitter low-side switch at the rim beside D_IR_TX — clear of the lens light tube and both IR light pipes."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "Q_IR_TX_C": {
   "position_mm": [
-   -6.5,
-   12.5
+   -9.0,
+   -4.0
+  ],
+  "rotation_deg": 90,
+  "face": "top",
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
+ },
+ "D_IR_WAKE_U": {
+  "position_mm": [
+   0.0,
+   9.5
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-18: IR emitter low-side switch at the rim beside D_IR_TX — clear of the lens light tube and both IR light pipes."
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
+ },
+ "D_IR_TX_U": {
+  "position_mm": [
+   -9.0,
+   4.0
+  ],
+  "rotation_deg": 90,
+  "face": "top",
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
+ },
+ "Q_IR_TX_U": {
+  "position_mm": [
+   -9.0,
+   -4.0
+  ],
+  "rotation_deg": 90,
+  "face": "top",
+  "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
+ },
+ "D_IR_WAKE": {
+  "position_mm": [
+   0.0,
+   10.6
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
+ },
+ "D_IR_TX": {
+  "position_mm": [
+   -10.6,
+   3.0
+  ],
+  "rotation_deg": 90,
+  "face": "top",
+  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
+ },
+ "Q_IR_TX": {
+  "position_mm": [
+   -10.6,
+   -3.0
+  ],
+  "rotation_deg": 90,
+  "face": "top",
+  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
+ },
+ "P_CELL_PIN_NEG1": {
+  "position_mm": [
+   0.0,
+   8.6
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 1 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 90°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+ },
+ "P_CELL_PIN_NEG2": {
+  "position_mm": [
+   -7.448,
+   -4.3
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 2 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 210°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+ },
+ "P_CELL_PIN_NEG3": {
+  "position_mm": [
+   7.448,
+   -4.3
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 3 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 330°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+ },
+ "P_CELL_WIRE_POS1": {
+  "position_mm": [
+   -8.571,
+   6.874
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 1 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL1_POS."
+ },
+ "P_CELL_WIRE_POS2": {
+  "position_mm": [
+   -7.114,
+   7.992
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 2 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL2_POS."
+ },
+ "P_CELL_WIRE_POS3": {
+  "position_mm": [
+   -6.874,
+   9.814
+  ],
+  "rotation_deg": 0,
+  "face": "top",
+  "reason": "2026-11-20 (user): cell 3 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL3_POS."
+ },
+ "P_ACT_COL_0": {
+  "position_mm": [
+   2.687,
+   2.687
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "2026-11-20 (user): parachute MATRIX column 0 clamp tab — the return ends of wires 0, 4, 8, 12; inner ring r 3.8 on aft_end_board's BOTTOM, inside the aft cap's opening."
+ },
+ "P_ACT_COL_1": {
+  "position_mm": [
+   -2.687,
+   2.687
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "2026-11-20 (user): parachute MATRIX column 1 clamp tab — the return ends of wires 1, 5, 9, 13; inner ring r 3.8 on aft_end_board's BOTTOM, inside the aft cap's opening."
+ },
+ "P_ACT_COL_2": {
+  "position_mm": [
+   -2.687,
+   -2.687
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "2026-11-20 (user): parachute MATRIX column 2 clamp tab — the return ends of wires 2, 6, 10, 14; inner ring r 3.8 on aft_end_board's BOTTOM, inside the aft cap's opening."
+ },
+ "P_ACT_COL_3": {
+  "position_mm": [
+   2.687,
+   -2.687
+  ],
+  "rotation_deg": 0,
+  "face": "bottom",
+  "reason": "2026-11-20 (user): parachute MATRIX column 3 clamp tab — the return ends of wires 3, 7, 11, 15; inner ring r 3.8 on aft_end_board's BOTTOM, inside the aft cap's opening."
+ },
+ "D_ACT_WIRE_0": {
+  "position_mm": [
+   6.925,
+   4.202
+  ],
+  "rotation_deg": 121.25,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 0 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 31.25° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_0 → ACT_WIRE_0."
+ },
+ "D_ACT_WIRE_1": {
+  "position_mm": [
+   5.652,
+   5.802
+  ],
+  "rotation_deg": 135.75,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 1 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 45.75° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_0 → ACT_WIRE_1."
+ },
+ "D_ACT_WIRE_2": {
+  "position_mm": [
+   4.019,
+   7.032
+  ],
+  "rotation_deg": 150.25,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 2 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 60.25° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_0 → ACT_WIRE_2."
+ },
+ "D_ACT_WIRE_3": {
+  "position_mm": [
+   2.131,
+   7.815
+  ],
+  "rotation_deg": 164.75,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 3 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 74.75° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_0 → ACT_WIRE_3."
+ },
+ "D_ACT_WIRE_4": {
+  "position_mm": [
+   -3.927,
+   7.084
+  ],
+  "rotation_deg": 209.0,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 4 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 119° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_1 → ACT_WIRE_4."
+ },
+ "D_ACT_WIRE_5": {
+  "position_mm": [
+   -5.576,
+   5.876
+  ],
+  "rotation_deg": 223.5,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 5 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 133.5° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_1 → ACT_WIRE_5."
+ },
+ "D_ACT_WIRE_6": {
+  "position_mm": [
+   -6.869,
+   4.292
+  ],
+  "rotation_deg": 238.0,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 6 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 148° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_1 → ACT_WIRE_6."
+ },
+ "D_ACT_WIRE_7": {
+  "position_mm": [
+   -7.725,
+   2.436
+  ],
+  "rotation_deg": 252.5,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 7 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 162.5° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_1 → ACT_WIRE_7."
+ },
+ "D_ACT_WIRE_8": {
+  "position_mm": [
+   -8.087,
+   0.459
+  ],
+  "rotation_deg": 266.75,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 8 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 176.75° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_2 → ACT_WIRE_8."
+ },
+ "D_ACT_WIRE_9": {
+  "position_mm": [
+   -7.944,
+   -1.58
+  ],
+  "rotation_deg": 281.25,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 9 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 191.25° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_2 → ACT_WIRE_9."
+ },
+ "D_ACT_WIRE_10": {
+  "position_mm": [
+   -4.588,
+   -6.675
+  ],
+  "rotation_deg": 325.5,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 10 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 235.5° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_2 → ACT_WIRE_10."
+ },
+ "D_ACT_WIRE_11": {
+  "position_mm": [
+   -2.77,
+   -7.612
+  ],
+  "rotation_deg": 340.0,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 11 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 250° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_2 → ACT_WIRE_11."
+ },
+ "D_ACT_WIRE_12": {
+  "position_mm": [
+   -0.776,
+   -8.063
+  ],
+  "rotation_deg": 354.5,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 12 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 264.5° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_3 → ACT_WIRE_12."
+ },
+ "D_ACT_WIRE_13": {
+  "position_mm": [
+   1.267,
+   -8.0
+  ],
+  "rotation_deg": 9.0,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 13 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 279° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_3 → ACT_WIRE_13."
+ },
+ "D_ACT_WIRE_14": {
+  "position_mm": [
+   3.23,
+   -7.428
+  ],
+  "rotation_deg": 23.5,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 14 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 293.5° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_3 → ACT_WIRE_14."
+ },
+ "D_ACT_WIRE_15": {
+  "position_mm": [
+   4.987,
+   -6.383
+  ],
+  "rotation_deg": 38.0,
+  "face": "top",
+  "reason": "2026-11-20 (user): wire 15 series steering diode (BAS40-02L) on aft_end_board's TOP, r 8.1 at 308° — outside the piezo disc's square courtyard, clear of the comparator slot (0°), the cells' − pin PTHs (90/210/330°) and the cap screws; in the holder floor's annular pocket. Row ACT_ROW_3 → ACT_WIRE_15."
  }
 }

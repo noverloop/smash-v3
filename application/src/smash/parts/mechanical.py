@@ -305,6 +305,55 @@ def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
 # Pogo_Pad_D2.0mm — 2 mm round pogo TestPoint (22× on activation_interface)
 # ═════════════════════════════════════════════════════════════════════════
 
+def add_cell_lead_pth(design, ref: str, role: str = "pin", **overrides) -> Chip:
+    """(2026-11-20, user) ONE plated through-hole on aft_end_board for a cell
+    lead, soldered from below before the aft cap goes on:
+      role="pin"  — the − AXIAL PIN of a Tadiran /P cell, straight down through
+                    the holder floor (hole Ø1.0 for a Ø0.8 pin, placeholder);
+      role="wire" — the + lead: an insulated AWG 28 wire soldered to the cell's
+                    top + pin, run down the holder's potting channel (hole Ø0.8).
+    The lead stub + fillet stands ~0.8 mm proud of the BOTTOM face (the aft
+    cap pockets it)."""
+    from smash.state.pad import Pad
+    drill, pad_d = (1.0, 1.6) if role == "pin" else (0.8, 1.3)
+    pad = Pad(num="1", position_mm=(0.0, 0.0), size_mm=(pad_d, pad_d),
+              shape="circle", layer="F.Cu", drill_mm=drill)
+    name = f"CellLead_PTH_{'Pin' if role == 'pin' else 'Wire'}_D{drill:g}"
+    fp = Footprint(name=name, pads=[pad],
+                   package_class=f"cell {role} lead plated through-hole",
+                   source="project (Tadiran /P cell lead, placeholder Ø)",
+                   note="Pin Ø0.8 is a placeholder until Tadiran confirms the /P lead.")
+    fp.ensure_courtyard_clearance()
+    fields = dict(
+        manf="project", manf_pn=name, name=name,
+        description=f"Battery cell {role} lead PTH (aft_end_board)",
+        datasheet=None, package="PTH land", footprint=fp,
+        pins=[Pin(num="1", name="1", type="passive")],
+        weight_g=0.0, height_mm=0.0,
+        note="Cell lead soldered through from the aft face.")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_clamp_tab(design, ref: str, **overrides) -> Chip:
+    """(2026-11-19) PLACEHOLDER parachute clamp tab on aft_end_board's bottom:
+    the nichrome restraint wires are CLAMPED, not soldered. A Ø1.6 SMD land
+    until the clamp part is chosen (17 on a r 6.4 circle; was 7.4 until 2026-11-20)."""
+    part = "Clamp_Tab_D1.6mm"
+    fp = _project_footprint(part, part, package_class="parachute wire clamp tab (placeholder)",
+                            size_mm=(1.6, 1.6),
+                            note="Placeholder land; replace with the chosen clamp part.")
+    fields = dict(
+        manf="project", manf_pn=part, name=part,
+        description="Parachute nichrome-wire clamp tab (placeholder land)",
+        footprint=fp, pins=[Pin(num="1", name="1", type="passive")],
+        weight_g=0.0, height_mm=0.0,
+        note="Clamp tab — nichrome wires are clamped, not soldered. Part TBD.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 def add_pogo_pad(design, ref: str, square: bool = False, **overrides) -> Chip:
     """2 mm pogo TestPoint. Used on the aft bench array and on
     `activation_interface` as a dev-fixture pogo landing pad

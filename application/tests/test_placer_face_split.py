@@ -187,6 +187,8 @@ def test_twin_no_overflow_with_face_split():
                gen.build_power_board, gen.build_wakeup_board,
                gen.build_spacers]:   # wakeup_board folds in the IMU/mag (build_flight_board)
         fn(d)
+    gen._empty_aft_end_top(d)        # as the generator: aft_end keeps only its interface
+                                     # pads + the cells' lead PTHs (2026-11-20)
 
     panel, boards = build_panel()
     rep = place_design(d, panel, boards)

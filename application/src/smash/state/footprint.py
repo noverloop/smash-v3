@@ -77,6 +77,10 @@ class Footprint:
                                       # "TO-220" | "LGA" | "ODCSP" | ...
     # Provenance / artifacts
     model_3d_path: str | None = None  # path to STEP / WRL
+    # (2026-11-20) explicit KiCad model transform (mm / deg) for models with no
+    # sibling .kicad_mod (or a wrong one); None → read the vendor .kicad_mod
+    model_offset_mm: tuple | None = None
+    model_rotate_deg: tuple | None = None
     source: str | None = None         # "samacsys", "kicad-stock", "custom"
     note: str | None = None
 

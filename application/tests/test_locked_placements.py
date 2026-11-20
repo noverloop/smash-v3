@@ -35,11 +35,13 @@ def test_real_data_has_mpu_and_ddr4_anchors():
 
 
 def test_u_ddr4_rotation_is_zero():
-    """DDR (now DDR4 KTDM4G4B626BGIEAT) un-rotated at 0°: the STM32MP2
-    DDR4 reference places the DRAM un-rotated east of the MPU. Was 270°
-    for the DDR3L AN5724 reference before the DDR4 swap."""
+    """DDR4 (KTDM4G4B626BGIEAT) keeps the STM32MP2 reference's orientation
+    RELATIVE to the MPU (the reference places the DRAM un-rotated beside it).
+    (2026-11-20, user) the whole compute layout was turned 180° so U_NAND_B
+    clears the main-axis potting hole: MPU and DDR4 share one rotation."""
     locked = load_locked_placements()
-    assert locked["U_DDR4"].rotation_deg == 0.0
+    assert locked["U_DDR4"].rotation_deg in (0.0, 180.0)
+    assert locked["U_DDR4"].rotation_deg == locked["U_MPU"].rotation_deg
 
 
 def test_u_mpu_west_of_ddr4_no_overlap():
@@ -51,8 +53,8 @@ def test_u_mpu_west_of_ddr4_no_overlap():
     locked = load_locked_placements()
     mpu_x = locked["U_MPU"].position_mm[0]
     ddr_x = locked["U_DDR4"].position_mm[0]
-    assert mpu_x < 0 < ddr_x
-    assert ddr_x - mpu_x >= 10.8
+    assert mpu_x * ddr_x < 0                  # opposite sides (layout turned 180° 2026-11-20)
+    assert abs(ddr_x - mpu_x) >= 10.8
 
 
 def test_real_data_has_all_anchors():
@@ -66,7 +68,8 @@ def test_real_data_has_all_anchors():
     the MP25 Cortex-M33."""
     locked = load_locked_placements()
     expected = {"U_PMIC", "U_MPU", "U_DDR4",
-                "P_CELL_TAB_POS1", "P_CELL_TAB_POS2", "P_CELL_TAB_POS3"}
+                "P_CELL_PIN_NEG1", "P_CELL_PIN_NEG2", "P_CELL_PIN_NEG3",
+                "P_CELL_WIRE_POS1", "P_CELL_WIRE_POS2", "P_CELL_WIRE_POS3"}
     assert expected <= set(locked)
     for ref in ("P_AFT_LGA", "U1", "U_WLE", "U_WIFI", "U_FLASH",
                 "P_CELL_CONTACTS"):   # split into 3 tab lands 2026-11-14

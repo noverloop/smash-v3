@@ -22,6 +22,7 @@ config). Nets absent from a config still get their pad (unconnected).
 """
 from __future__ import annotations
 
+import dataclasses
 import math
 import sys
 
@@ -81,6 +82,10 @@ GUARDED_BUSES: dict = {}
 # companion_compute at FIXED angles in the maximalist contract, which every
 # config replays — so compute fabs identically whichever cup is fitted.
 LANE_POLICY = "reuse"
+# Lanes from wakeup upward may use the antenna sector (both slot antennas sit
+# below wakeup). Off since the crown moved onto compute's top-face pads
+# (2026-11-18): the signal sector has room again.
+UPPER_ANTENNA_LANES = False
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -157,20 +162,38 @@ def _lane_angles(r: float) -> list:
 
 
 def castellation_contract(design, panel, boards, plug_groups=None,
-                          cone_exits=None, lane_policy: str | None = None) -> dict:
+                          cone_exits=None, lane_policy: str | None = None,
+                          quiet: bool = False) -> dict:
     """Compute the lane contract for this (maximalist) build. `lane_policy`
     overrides LANE_POLICY ("reuse" | "dedicated")."""
     policy = lane_policy or LANE_POLICY
     if policy not in ("reuse", "dedicated"):
         raise ValueError(f"unknown lane_policy {policy!r}")
     from smash.parts.connectors import is_off_backbone
+    from smash.export import nose_interface as NI
     chain = [n for n in (panel.snake_chain or []) if n in boards]
+    # (2026-11-18) Nose modules (radar / QPD / camera / USB) are separate
+    # cones on the standard CROWN: electrically they hang off compute, their
+    # nets leave the core sleeve only through the crown (nose_interface).
+    crown_host = NI.HOST if NI.HOST in chain else None
+    payloads = [b for b in NI.PAYLOAD_BOARDS if b in boards] if crown_host else []
     rigid = [n for n in chain if not getattr(boards[n], "is_spacer", False)
-             and getattr(boards[n], "kind", "rigid") != "flex"]
+             and getattr(boards[n], "kind", "rigid") != "flex"
+             and n not in payloads]
     pos = {n: i for i, n in enumerate(rigid)}
     # Branch leaves (qpd / camera on their flex) are reached THROUGH their
     # parent tile, so their pins count as the parent's for lane spans.
     parent = {dst: src for src, dst in (getattr(panel, "branches", None) or [])}
+    # Nose leaves are electrically compute leaves whatever panel edge they
+    # hang from (the USB nose hangs off the radar tail in the maximalist panel).
+    for src, leaf, _nets in (cone_exits or []):
+        parent[leaf] = src
+    for pb in payloads:
+        parent[pb] = crown_host
+    # (2026-11-19) aft_end_cap contacts (virtual board): allocated as if on the
+    # aft board, so their lanes run all the way down to the aft rim.
+    if rigid:
+        parent[AFT_CAP_TAG] = rigid[0]
 
     def host(b):
         seen = set()
@@ -185,7 +208,16 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     if g is not None and getattr(g, "outline_radius_mm", None):
         r = g.outline_radius_mm
     angles = _lane_angles(r)
-    occupied = {a: [] for a in angles}     # angle → [(lo, hi)]
+    # (2026-11-18) ANTENNA-sector angles open to lanes that start at the
+    # wakeup board or above: both slot antennas (S1, S4) sit below wakeup, so
+    # the sector above it is free copper-wise — needed once the nose crown
+    # reserves compute pads under its teeth. GND / feed castellations stay clear.
+    _half = 0.5 * math.degrees(CAST_PITCH_MM / r)
+    _fixed = list(GND_CAST_ANGLES_DEG) + list(ANTENNA_FEED_ANGLES_DEG.values())
+    upper_angles = ([a for a in _ring_angles(r) if not _in_signal_sector(a)
+                     and all(min(abs(a - f), 360 - abs(a - f)) > 2 * _half for f in _fixed)]
+                    if UPPER_ANTENNA_LANES else [])
+    occupied = {a: [] for a in angles + upper_angles}     # angle → [(lo, hi)]
     lanes: dict = {}
 
     def free(a, lo, hi):
@@ -209,6 +241,26 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         if fb:
             feeds[fname] = {"angles": [fang], "boards": fb[:1],
                             "kind": "antenna_feed"}
+
+    # ── Nose crown (2026-11-19): the crown is the TOP of the one-piece PEEK-LDS
+    # sleeve, hanging on the Ø34 Al anchor ring. Each groove's LDS runs down the
+    # sleeve's OUTER face to its own EDGE castellation on compute (allocated
+    # below, after the core lanes, in a free rim slot — order-preserving so the
+    # single-layer fan over the ring never crosses), soldered with the sides.
+    crown = []
+    if payloads:
+        raw = {c.ref: getattr(c, "board_tag", None) for c in design.chips
+               if getattr(c, "manf_pn", None) not in ("LGA_lands", MANF_PN)}
+        cnets = set()
+        users: dict = {}                      # crown net → payload boards using it
+        for net in design.nets:
+            if gnd is not None and (net is gnd or _is_gnd(net)):
+                continue
+            bs = {raw.get(rf) for rf, _p in net.pins} - {None}
+            if bs & set(payloads) and bs - set(payloads):
+                cnets.add(net.name)
+                users[net.name] = sorted(bs & set(payloads))
+        # allocated after the core lanes (below): needs compute's free rim slots
 
     # Guarded buses first: one contiguous run of angles (in ring order, so
     # the block is physically adjacent) free over the bus span.
@@ -267,9 +319,10 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # Longest spans first, then by start — first-fit over the angle ring.
     todo.sort(key=lambda t: (-(t[1] - t[0]), t[0], t[2].name))
     overflow = []
+    lo_upper = pos.get("wakeup_board", len(pos) + 1)
     for lo, hi, net, bset in todo:
         need, got = _mult(net), []
-        for a in angles:
+        for a in (angles + upper_angles if lo >= lo_upper else angles):
             if len(got) == need:
                 break
             if free(a, lo, hi):
@@ -284,6 +337,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
                                "width_mm": (POWER_LANE_WIDTH_MM
                                             if getattr(net, "kind", None) == "power"
                                             else SIGNAL_LANE_WIDTH_MM)}
+    aft_cap = _aft_cap_contract(design, lanes, rigid, r, gnd, quiet=quiet)
     # Plug-ring exits on the aft board (rigid[0]).
     plug = []
     if plug_groups and rigid:
@@ -331,7 +385,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         key=lambda a: abs(a - 180.0))
     cone_used = set()
     cone_over = []
-    for parent, leaf, nets in (cone_exits or []):
+    for parent, leaf, nets in ([] if payloads else (cone_exits or [])):
         if parent not in pos:
             continue
         for n in nets:
@@ -351,21 +405,300 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     if cone_over:
         print(f"  WARNING: castellations: {len(cone_over)} nose-cone net(s) short "
               f"of angles: {', '.join(cone_over)}", file=sys.stderr)
-    used = sum(1 for a in angles if occupied[a])
+    # Crown → compute castellations: free compute rim slots (whole ring — above
+    # compute the antenna sector carries no antenna), clear of every other
+    # compute castellation by one pitch and of the nose cone's retaining
+    # plates (they cover the sleeve at the screw angles: no lane under / across
+    # one → fans are assigned per sector between screws). Each sector gets at
+    # most as many plated teeth as it has free slots; the rest stay unplated.
+    crown_over, comp, crown_ring = [], {}, []
+    if payloads:
+        step = math.degrees(CAST_PITCH_MM / r)
+        taken = [float(a) for ln in list(lanes.values()) + list(feeds.values())
+                 if crown_host in ln.get("boards", []) and ln.get("kind") not in
+                 ("crown_top", "crown_payload") for a in ln["angles"]]
+        plate_half = math.degrees((0.5 * NI.PLATE_W_MM + 0.4) / r)
+        scr = sorted(NI.SCREW_ANGLES_DEG)
+        free_slots = [a for a in _ring_angles(r)
+                      # a FULL pitch from every other compute castellation: the
+                      # GND / feed ones sit off the lane grid (124.5° vs 123°
+                      # merged two vias into a slot)
+                      if all(min(abs(a - t), 360 - abs(a - t)) >= step - 1e-6 for t in taken)
+                      and all(min(abs(a - sa), 360 - abs(a - sa)) > plate_half for sa in scr)]
+        caps = {}
+        for a in free_slots:
+            caps[NI.screw_sector(a)] = caps.get(NI.screw_sector(a), 0) + 1
+        try:
+            crown = NI.allocate(sorted(cnets), NI.group_order(cnets),
+                                teeth=NI.usable_teeth(caps))
+        except ValueError as e:
+            crown_over = sorted(cnets)
+            print(f"  WARNING: castellations: crown: {e} (free compute slots per "
+                  f"sector {caps})", file=sys.stderr)
+            crown = []
+        # (2026-11-20) fan UNITS per sector: a run of adjacent teeth of one power
+        # rail joins into ONE lane (Y over its teeth); GND teeth sit on the
+        # crown's inner-edge LDS GND RING, which ONE GND lane per sector links
+        # to compute. Units → slots by fan_slots (clearance along the diagonal).
+        comp, units_of, ring = {}, {}, []
+        pw = lambda role: POWER_LANE_WIDTH_MM if role in ("power", "gnd") else SIGNAL_LANE_WIDTH_MM
+        for sk in range(len(scr)):
+            start = scr[sk - 1]
+            uw = lambda a: (a - start) % 360.0
+            cs = sorted((c for c in crown if NI.screw_sector(c.angle_deg) == sk),
+                        key=lambda c: uw(c.angle_deg))
+            fs = [a for a in free_slots if NI.screw_sector(a) == sk]
+            if not cs:
+                continue
+            gnds = [c for c in cs if c.role == "gnd"]
+            ring += [c.tooth for c in gnds]
+            # the ring link: the GND tooth nearest a free slot
+            link = min(gnds, key=lambda c: min((abs(uw(c.angle_deg) - uw(a)) for a in fs),
+                                               default=0.0)) if gnds else None
+            units = []
+            for c in cs:
+                if c.role == "gnd" and c is not link:
+                    continue
+                u = units[-1] if units else None
+                if (u and c.role == "power" and u["role"] == "power" and u["net"] == c.net
+                        and c.tooth == u["teeth"][-1] + 1):
+                    u["teeth"].append(c.tooth)
+                    u["angles"].append(c.angle_deg)
+                    continue
+                units.append({"key": c.tooth, "teeth": [c.tooth], "angles": [c.angle_deg],
+                              "net": c.net, "role": c.role})
+            got, gap = NI.fan_slots([(u["key"], u["angles"], pw(u["role"])) for u in units],
+                                    fs, start)
+            if units and gap < NI.LANE_CLEAR_MM - 1e-6:
+                print(f"  WARNING: castellations: crown fan sector {sk}: lane gap "
+                      f"{gap:.2f} mm < {NI.LANE_CLEAR_MM} mm over the anchor band",
+                      file=sys.stderr)
+            for u in units:
+                if u["key"] in got:
+                    units_of[u["key"]] = u
+                    for k in u["teeth"]:
+                        comp[k] = got[u["key"]]
+        for c in crown:
+            if c.tooth in ring and c.tooth not in comp:
+                comp[c.tooth] = "ring"
+        for c in crown:
+            w = pw(c.role)
+            used_by = users.get(c.net, list(payloads))
+            if c.tooth not in comp:
+                crown_over.append(c.net)
+                continue
+            # (2026-11-19) every crown lane is LASERED on every sleeve; a via is
+            # only drilled where this payload uses the net (GND: always)
+            u = units_of.get(c.tooth)
+            if u is not None:
+                lanes[f"CROWN:{c.tooth}:{c.net}"] = {
+                    "angles": [comp[c.tooth]], "boards": [crown_host], "net": c.net,
+                    "kind": "crown_top", "tooth": c.tooth, "tooth_angle": c.angle_deg,
+                    "teeth": list(u["teeth"]), "tooth_angles": list(u["angles"]),
+                    "gnd_ring": c.role == "gnd", "width_mm": w, "payloads": used_by}
+            lanes[f"CROWNP:{c.tooth}:{c.net}"] = {
+                "angles": [c.angle_deg], "boards": list(payloads), "net": c.net,
+                "kind": "crown_payload", "tooth": c.tooth, "width_mm": w,
+                "payloads": used_by}
+        crown_ring = sorted(ring)
+        if crown_over:
+            print(f"  WARNING: castellations: {len(crown_over)} crown contact(s) short of a "
+                  f"compute rim slot", file=sys.stderr)
+    # (2026-11-18) capacity counts the signal sector + the upper antenna-sector
+    # angles (open to lanes from wakeup upward); a crown pad reservation only
+    # occupies its angle at compute.
+    used = sum(1 for a in angles + upper_angles if occupied[a])
     lanes.update(feeds)
-    if overflow:
+    if overflow and not quiet:      # (lane_budget's "dedicated" estimate runs quiet)
         print(f"  WARNING: castellations: {len(overflow)} net(s) short of "
               f"lanes: {', '.join(overflow[:10])}", file=sys.stderr)
     return {"pitch_mm": CAST_PITCH_MM, "radius_mm": r,
             "lane_policy": policy, "overflow": list(overflow),
-            "n_angles": len(angles), "n_used": used,
+            "n_angles": len(angles) + len(upper_angles), "n_used": used,
             "reserved_deg": [list(s) for s in RESERVED_SECTORS_DEG],
             "signal_sector_deg": [SIGNAL_SECTOR_CENTRE_DEG - SIGNAL_SECTOR_HALF_DEG,
                                   SIGNAL_SECTOR_CENTRE_DEG + SIGNAL_SECTOR_HALF_DEG],
             "seam_deg": list(SEAM_ANGLES_DEG),
             "aft_board": rigid[0] if rigid else None,
+            "crown": [dataclasses.asdict(c) for c in crown],
+            "crown_host": crown_host, "crown_overflow": crown_over,
+            "aft_cap": aft_cap,
+            "crown_compute_angles": {c.tooth: comp[c.tooth] for c in crown if c.tooth in comp},
+            "crown_gnd_ring": crown_ring,
             "plug": plug,
             "lanes": lanes}
+
+
+AFT_CAP_TAG = "aft_end_cap"         # virtual board of the aft public-interface contacts
+# (2026-11-19) the cap crown has its OWN, finer grid (independent of the nose
+# crown): 60 positions at 6°, phase 3° — room for the battery-zone fan.
+AFT_CAP_N_TEETH = 60
+AFT_CAP_PHASE_DEG = 3.0
+AFT_CAP_SCREW_TEETH = (4, 25, 45)   # 27 / 153 / 273° — between the cells; uneven = the key
+
+
+def aft_tooth_angle(k: int) -> float:
+    return round((AFT_CAP_PHASE_DEG + k * 360.0 / AFT_CAP_N_TEETH) % 360.0, 4)
+
+
+def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
+                      quiet: bool = False) -> dict | None:
+    """(2026-11-19, user) aft_end_cap crown: every net with a contact on the cap
+    (board_tag AFT_CAP_TAG) keeps its sleeve lane, which now runs down past the
+    aft board to the aft rim (no castellation on the aft board unless the net
+    really has a pin there) and fans over the cap's outer skin into its groove.
+    Teeth are assigned ORDER-PRESERVING to the lanes' angles (no crossings);
+    three blank SCREW positions (uneven = the key); spare teeth are GND, joined by an
+    LDS ring at the crown's inner edge and linked to the nearest GND
+    castellation on the aft board."""
+    from smash.export import nose_interface as NI
+    if not rigid:
+        return None
+    aft = rigid[0]
+    cap_refs = {c.ref for c in design.chips if getattr(c, "board_tag", None) == AFT_CAP_TAG}
+    if not cap_refs:
+        return None
+    on_aft = {c.ref for c in design.chips if getattr(c, "board_tag", None) == aft}
+    cap_nets, label = [], {}
+    for net in design.nets:
+        refs = {rf for rf, _p in net.pins}
+        if not refs & cap_refs or (gnd is not None and (net is gnd or _is_gnd(net))):
+            continue
+        cap_nets.append(net.name)
+        label[net.name] = sorted(rf.removeprefix("TP_") for rf in refs & cap_refs)[0]
+        ln = lanes.get(net.name)
+        if ln is None:
+            continue
+        ln["aft_cap"] = True
+        if not refs & on_aft and aft in ln.get("boards", []):
+            ln["boards"] = [b for b in ln["boards"] if b != aft]     # no aft castellation
+    missing = [n for n in cap_nets if n not in lanes or not lanes[n]["angles"]]
+    # (2026-11-19, user) The FAN happens on the sleeve alongside the BATTERY
+    # compartment (no antennas, ~24 mm tall), not on the cap skin. Every lane
+    # crossing that zone takes part, in ONE cyclic order (so none cross):
+    #   • cap lanes  → a crown TOOTH angle (then straight down onto the cap);
+    #   • aft-board lanes (their own castellations on the aft board) → a
+    #     castellation slot BETWEEN teeth (tooth + half a pitch); the aft
+    #     board's castellation moves there.
+    # Three SCREW positions (no groove, no label; uneven = the key).
+    pitch = 360.0 / AFT_CAP_N_TEETH
+    start = aft_tooth_angle(AFT_CAP_SCREW_TEETH[0])
+    unwrap = lambda a: (a - start) % 360.0
+    teeth = [k for k in range(AFT_CAP_N_TEETH) if k not in AFT_CAP_SCREW_TEETH]
+    fixed = [float(a) for a in GND_CAST_ANGLES_DEG] + [float(a) for a in ANTENNA_FEED_ANGLES_DEG.values()]
+    step = math.degrees(CAST_PITCH_MM / r)
+    # Bottom positions on a FINE grid (0.25°): cap lanes exactly on a usable
+    # tooth; aft-board lanes anywhere ≥ one lane pitch from the fixed GND /
+    # feed castellations; consecutive bottoms ≥ one lane pitch apart.
+    RES = 0.25
+    NPOS = int(round(360.0 / RES))
+    tooth_set = {round(unwrap(aft_tooth_angle(k)) / RES) for k in teeth}
+    def dfix(a):
+        return min((min(abs(a - f) % 360.0, 360.0 - abs(a - f) % 360.0) for f in fixed),
+                   default=999.0)
+    m_ok = [dfix((start + q * RES) % 360.0) >= step for q in range(NPOS)]
+    items = []                                     # (unwrapped lane angle, type, lane key)
+    for n in cap_nets:
+        if n in lanes and lanes[n]["angles"]:
+            items.append((unwrap(lanes[n]["angles"][0]), "T", n))
+    for key, ln in lanes.items():
+        if (ln.get("aft_cap") or ln.get("kind") in ("gnd_plane", "antenna_feed",
+                                                    "crown_top", "crown_payload")):
+            continue
+        if aft in ln.get("boards", []) and ln["angles"]:
+            items.append((unwrap(ln["angles"][0]), "M", key))
+    items.sort()
+    SEP = int(math.ceil(step / RES))
+    # (2026-11-20) single-layer LDS: two WIDE (power) neighbours running a
+    # long parallel jog close up to (spacing × cos φ). So: wide pairs start
+    # further apart, and a wide lane's jog is limited to tan φ ≤ JOG_TAN over
+    # the zone (≈ cell length) — keeps ≥ the LDS clearance along the diagonal.
+    from smash.layout.boards.smash_evb_v1 import BATTERY_LENGTH_MM
+    R_SKIN, CLR, JOG_TAN = 17.9, 0.15, 0.45
+    jog_max = math.degrees(JOG_TAN * (BATTERY_LENGTH_MM - 2.0) / R_SKIN)
+    wid = lambda it: lanes[it[2]].get("width_mm", 0.2)
+    def sep_q(a, b):
+        need = 0.5 * (wid(a) + wid(b)) + CLR + 0.1
+        return max(SEP, int(math.ceil(math.degrees(need / R_SKIN) / RES)))
+    INF = float("inf")
+    I = len(items)
+    def ok(it, q):
+        if it[1] == "T":
+            good = q in tooth_set
+        else:
+            good = m_ok[q]
+        if good and it[1] == "M" and wid(it) > 0.4:      # cap teeth are fixed
+            d = abs(q * RES - it[0]) % 360.0
+            good = min(d, 360.0 - d) <= jog_max
+        return good
+    cost = [[INF] * NPOS for _ in range(I)]
+    back = [[-1] * NPOS for _ in range(I)]
+    for q in range(NPOS if items else 0):
+        if ok(items[0], q):
+            cost[0][q] = abs(q * RES - items[0][0])
+    for i in range(1, I):
+        best, arg = INF, -1
+        sep_i = sep_q(items[i - 1], items[i])
+        for q in range(NPOS):
+            qq = q - sep_i
+            if qq >= 0 and cost[i - 1][qq] < best:
+                best, arg = cost[i - 1][qq], qq
+            if best < INF and ok(items[i], q):
+                cost[i][q] = best + abs(q * RES - items[i][0])
+                back[i][q] = arg
+    assign = {}
+    if items and min(cost[I - 1]) < INF:
+        q = min(range(NPOS), key=lambda x: cost[I - 1][x])
+        for i in range(I - 1, -1, -1):
+            assign[items[i][2]] = round((start + q * RES) % 360.0, 4)
+            q = back[i][q]
+    by_angle = {round(aft_tooth_angle(k), 4): k for k in teeth}
+    used = {}
+    n_fan = 0
+    missing += [key for _u, typ, key in items if typ == "T" and key not in assign]
+    for _u, typ, key in items:
+        b = assign.get(key)
+        if b is None:
+            continue
+        ln = lanes[key]
+        ln["fan"] = {"top_deg": ln["angles"][0], "bottom_deg": b}
+        n_fan += 1
+        if typ == "M" or aft in ln.get("boards", []):
+            ln.setdefault("board_angles", {})[aft] = [b]     # aft castellation moves
+        if typ == "T":
+            b = aft_tooth_angle(by_angle[round(b, 4)])
+            ln["fan"]["bottom_deg"] = b
+            used[by_angle[round(b, 4)]] = {"tooth": by_angle[round(b, 4)], "angle_deg": b, "net": key,
+                                 "lane_angle": ln["angles"][0], "role": "signal",
+                                 "label": label.get(key, key)}
+    out = []
+    for k in range(AFT_CAP_N_TEETH):
+        if k in AFT_CAP_SCREW_TEETH:
+            out.append({"tooth": k, "angle_deg": aft_tooth_angle(k), "net": None,
+                        "role": "screw", "label": ""})
+        elif k in used:
+            out.append(used[k])
+        else:
+            out.append({"tooth": k, "angle_deg": aft_tooth_angle(k),
+                        "net": gnd.name if gnd is not None else "GND", "role": "gnd",
+                        "label": "GND"})
+    # GND link: the GND tooth nearest a GND castellation on the aft board
+    g_angles = list(GND_CAST_ANGLES_DEG)
+    best = None
+    for t in out:
+        if t["role"] != "gnd":
+            continue
+        for ga in g_angles:
+            d = min(abs(t["angle_deg"] - ga), 360 - abs(t["angle_deg"] - ga))
+            if best is None or d < best[0]:
+                best = (d, t["tooth"], ga)
+    if missing and not quiet:
+        print(f"  WARNING: aft_end_cap: {len(missing)} net(s) without a cap tooth / lane: "
+              f"{', '.join(missing[:8])}", file=sys.stderr)
+    return {"n_teeth": AFT_CAP_N_TEETH, "screw_teeth": list(AFT_CAP_SCREW_TEETH), "contacts": out,
+            "fan_zone": [aft, rigid[1] if len(rigid) > 1 else aft], "n_fan": n_fan,
+            "gnd_link": ({"tooth": best[1], "castellation_deg": best[2]} if best else None),
+            "missing": missing}
 
 
 def lane_budget(design, panel, boards, cone_exits=None) -> dict:
@@ -375,7 +708,7 @@ def lane_budget(design, panel, boards, cone_exits=None) -> dict:
     out = {}
     for pol in ("reuse", "dedicated"):
         c = castellation_contract(design, panel, boards, cone_exits=cone_exits,
-                                  lane_policy=pol)
+                                  lane_policy=pol, quiet=True)
         out[pol] = {"n_angles": c["n_angles"], "n_used": c["n_used"],
                     "overflow": c["overflow"]}
     return out
@@ -406,7 +739,9 @@ def place_castellations(design, panel, boards, *, connect,
     for net_name, lane in contract["lanes"].items():
         for b in lane["boards"]:
             if b in boards and b in M:
-                for a in lane["angles"]:
+                # (2026-11-19) a lane may meet one board at another angle (the
+                # battery-zone fan moves the aft board's castellations)
+                for a in lane.get("board_angles", {}).get(b, lane["angles"]):
                     per_board.setdefault(b, []).append((a, net_name))
     ab = contract.get("aft_board")
     for e in contract.get("plug", []):
@@ -451,3 +786,4 @@ def place_castellations(design, panel, boards, *, connect,
             face="top", locked=True))
         counts[b] = len(pads)
     return contract, counts
+

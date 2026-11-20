@@ -2,7 +2,7 @@
   "_meta": {
     "source": "output/system_bom.csv (seed) + Octopart/Nexar API (gap fills)",
     "generated": "2026-05-25 seed; 2026-06-05 Octopart gap-fill",
-    "note": "Sourcing overlay joined onto each Chip/Battery by canonical_id (price_1pc, price_20kpc, currency, fab_country, weight_g). TWO provenance tiers: (1) the BULK was seeded 2026-05-25 from output/system_bom.csv, whose prices trace to components.md / Octopart collected ~April 2026 - treat as STALE, re-collect before quoting. (2) Entries carrying a _source:'octopart/nexar API...' field were collected FRESH 2026-06-05 to fill gaps left by recent part swaps (AWR2E44P, STM32MP255DAL3, STM32WBA55, DRV8428E, TLV3691, DSC1001 freq-variants); the Kingston DDR4 was carried from its DDR3 predecessor (Octopart lacks the PN). Hand-maintained - build_assumptions.py OVERWRITES manual edits, so re-seed deliberately. Some entries are for swapped-away parts (no current BOM match); they are harmless dead weight kept as predecessor reference. (3) Entries with _source:'estimate...' are TYPE-BASED typical-market estimates for parts with no quote (passives, inductors, LEDs, USB-C, the QPD detector) \u2014 replace with real quotes before locking BOM cost."
+    "note": "Sourcing overlay joined onto each Chip/Battery by canonical_id (price_1pc, price_20kpc, currency, fab_country, weight_g). TWO provenance tiers: (1) the BULK was seeded 2026-05-25 from output/system_bom.csv, whose prices trace to components.md / Octopart collected ~April 2026 - treat as STALE, re-collect before quoting. (2) Entries carrying a _source:'octopart/nexar API...' field were collected FRESH 2026-06-05 to fill gaps left by recent part swaps (AWR2E44P, STM32MP255DAL3, STM32WBA55, DRV8428E, TLV3691, DSC1001 freq-variants); the Kingston DDR4 was carried from its DDR3 predecessor (Octopart lacks the PN). Hand-maintained - build_assumptions.py OVERWRITES manual edits, so re-seed deliberately. Some entries are for swapped-away parts (no current BOM match); they are harmless dead weight kept as predecessor reference. (3) Entries with _source:'estimate...' are TYPE-BASED typical-market estimates for parts with no quote (passives, inductors, LEDs, USB-C, the QPD detector) — replace with real quotes before locking BOM cost."
   },
   "parts": {
     "tlm_1530m_s": {
@@ -676,6 +676,12 @@
       "price_1pc": 0.6,
       "currency": "USD",
       "_source": "estimate (typical 1pc market, NOT a quote) 2026-08-07"
+    },
+    "uj20_c_v_g_smt_23b_p16_tr_x5": {
+      "manf_pn": "UJ20-C-V-G-SMT-23B-P16-TR-X5",
+      "price_1pc": 0.9,
+      "currency": "USD",
+      "_source": "estimate (typical 1pc market, NOT a quote) 2026-11-19; fab_country UNVERIFIED — check with Same Sky"
     }
   }
 }

@@ -43,7 +43,8 @@ def built():
 
 
 def _cast_chips(d):
-    return [c for c in d.chips if getattr(c, "manf_pn", None) == "CASTELLATIONS"]
+    return [c for c in d.chips if getattr(c, "manf_pn", None) == "CASTELLATIONS"
+            and not c.ref.startswith("J_CROWN_")]
 
 
 def test_every_rigid_snake_board_gets_castellations(built):
@@ -62,7 +63,7 @@ def test_no_lane_shared_on_a_board(built):
     seen = {}
     for net, lane in contract["lanes"].items():
         for b in lane["boards"]:
-            for a in lane["angles"]:
+            for a in lane.get("board_angles", {}).get(b, lane["angles"]):
                 key = (b, a)
                 assert key not in seen, f"{net} and {seen[key]} share {a}° on {b}"
                 seen[key] = net
@@ -71,6 +72,8 @@ def test_no_lane_shared_on_a_board(built):
 def test_lanes_avoid_reserved_sectors(built):
     _d, _p, _b, contract, _n, _M = built
     for net, lane in contract["lanes"].items():
+        if lane.get("kind") in ("crown_payload", "crown_top"):
+            continue      # crown tooth angles — the seams / grooves are core-sleeve only
         for a in lane["angles"]:
             for c, hw in contract["reserved_deg"]:
                 assert min(abs(a - c), 360 - abs(a - c)) >= hw, (net, a)
@@ -101,7 +104,8 @@ def test_each_lane_is_one_physical_angle_through_the_fold(built):
             px, py = m11 * x + m21 * y, m12 * x + m22 * y
             phys = math.degrees(math.atan2(py, px)) % 360
             assert min(abs(phys - ang), 360 - abs(phys - ang)) < 1e-3, (c.ref, net)
-            assert ang in contract["lanes"][net]["angles"]
+            ln = contract["lanes"][net]
+            assert ang in ln.get("board_angles", {}).get(c.board_tag, ln["angles"])
 
 
 def test_lane_capacity_headroom(built):
@@ -140,10 +144,14 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
         kind = lane.get("kind", "signal")
         kinds.add(kind)
         for a in lane["angles"]:
-            if kind == "cone_exit":
-                continue                     # nose-cone exits: antenna sector (cone over GND)
+            if kind in ("cone_exit", "crown_top", "crown_payload"):
+                continue                     # nose crown: all round the rim (nose_interface)
             if kind in ("signal", "power", "plug_exit", "gnd_guard"):
-                assert in_signal(a), (net, a)
+                # (2026-11-18) lanes from the wakeup board upward may also use
+                # the antenna sector — both slot antennas sit below wakeup
+                upper = all(b not in ("aft_end_board", "activation_interface", "fin_ble_board")
+                            for b in lane["boards"])
+                assert in_signal(a) or upper, (net, a)
             else:
                 assert not in_signal(a), (net, a)
     assert {"gnd_plane", "antenna_feed"} <= kinds
@@ -209,18 +217,42 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     assert "J_SLEEVE" in (tmp_path / "smash.kicad_sch").read_text()
 
 
-def test_nose_cone_exits_replace_the_branch_flex(built):
-    """QPD / camera links leave companion_compute through castellations (one
-    angle per net, free above compute) and land on the leaf PCB at the
-    same angle; GND rides the GND castellations on the leaves too."""
+def test_nose_payloads_use_the_crown(built):
+    """(2026-11-18) Every nose payload (radar / QPD / camera / USB) reaches
+    compute through the standard crown: compute edge castellations (outer
+    sleeve lanes up to the grooves), payload pads AT the teeth — no cone
+    exits, no lanes through the payload boards."""
     d, _p, boards, contract, counts, _M = built
-    cone = {k: v for k, v in contract["lanes"].items() if v["kind"] == "cone_exit"}
-    assert cone
-    for k, v in cone.items():
-        assert v["boards"][0] == "companion_compute"
-        assert v["boards"][1] in ("qpd_module", "camera_module")
-    for leaf in ("qpd_module", "camera_module"):
-        assert counts.get(leaf, 0) >= 1
+    assert not any(v["kind"] == "cone_exit" for v in contract["lanes"].values())
+    crown = {k: v for k, v in contract["lanes"].items() if v["kind"] == "crown_top"}
+    assert crown and all(v["boards"] == ["companion_compute"] for v in crown.values())
+    # (2026-11-19) each crown contact = its own compute EDGE castellation
+    assert not contract.get("crown_overflow")
+    assert all(len(v["angles"]) == 1 for v in crown.values())
+    comp = [a for ln in contract["lanes"].values()
+            if "companion_compute" in ln["boards"] for a in ln["angles"]]
+    assert len(comp) == len(set(comp))                     # no shared compute slot
+    step = math.degrees(0.8 / contract["radius_mm"])       # CAST_PITCH_MM
+    cs_ = sorted(comp)
+    gaps = [(b - a) % 360 for a, b in zip(cs_, cs_[1:] + cs_[:1])]
+    assert min(gaps) >= step - 1e-3                         # no two vias merge
+    # never under a retaining plate; fan order-preserving per screw sector
+    from smash.export import nose_interface as NI
+    scr = sorted(NI.SCREW_ANGLES_DEG)
+    half = math.degrees((0.5 * NI.PLATE_W_MM) / contract["radius_mm"])
+    sec = NI.screw_sector
+    for v in crown.values():
+        a = v["angles"][0]
+        assert all(min(abs(a - sa), 360 - abs(a - sa)) > half for sa in scr)
+        assert sec(a) == sec(v["tooth_angle"])
+    for sk in range(len(scr)):
+        vs = sorted((v for v in crown.values() if sec(v["tooth_angle"]) == sk),
+                    key=lambda v: (v["tooth_angle"] - scr[sk - 1]) % 360)
+        cs = [(v["angles"][0] - scr[sk - 1]) % 360 for v in vs]
+        assert cs == sorted(cs)                                # never crosses
+    for leaf in ("qpd_module", "camera_module", "radar_module"):
+        if leaf in boards:
+            assert counts.get(leaf, 0) >= len(crown)
     assert not any(c.ref.startswith("J_FLEX") or "LAUNCH" in c.ref.upper()
                    for c in d.chips)
 

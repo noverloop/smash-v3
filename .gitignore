@@ -142,3 +142,6 @@ Reviewed/spacer_fin_ble_board_wakeup_board/.history/
 # deletes them on the next export)
 Unrouted/**/*.kicad_prl
 Unrouted/**/*-backups/
+
+# placement cache (smash.layout.placer.cache)
+/.cache/

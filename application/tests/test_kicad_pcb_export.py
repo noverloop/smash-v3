@@ -168,13 +168,15 @@ def test_potting_holes_emitted(tmp_pcb):
 
 
 def test_camera_module_no_potting_holes(tmp_pcb):
-    """camera_module has potting_holes=false."""
+    """camera_module has potting_holes=false: its only NPTH are the 3 nose-stop
+    screw holes (board screwed into the nose cone, 2026-11-19)."""
     d = Design(); board = Board("camera_module")
     write_kicad_pcb(d, board, tmp_pcb)
     sexp = _parse_sexp(tmp_pcb.read_text())
     assert len(list(_find_all(sexp, "gr_circle"))) == 1   # just the outline
     pads = list(_find_all(sexp, "pad"))
-    assert not [p for p in pads if len(p) > 2 and p[2] == "np_thru_hole"]
+    npth = [p for p in pads if len(p) > 2 and p[2] == "np_thru_hole"]
+    assert len(npth) == 3                                  # nose stops only
 
 
 # ── footprints ────────────────────────────────────────────────────────
@@ -379,7 +381,8 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # antenna in the PEEK battery compartment.)
     # → 22 (2026-11-15 aft reorder): cell_floor_board and its spacer gone.
     # → 20 (2026-11-18): nose_cap PCB + the radar↔nose_cap spacer retired.
-    assert r["n_tiles"] == 20
+    # → 21: + the usb_nose module tile.
+    assert r["n_tiles"] == 21
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
@@ -627,7 +630,7 @@ def test_full_twin_exports_clean(tmp_path):
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in [gen.build_qpd_module,
-               gen.build_radar_nose_io, gen.build_camera_module,
+               gen.build_radar_nose_io, gen.build_usb_nose, gen.build_camera_module,
                gen.build_activation_interface, gen.build_radar_module,
                gen.build_fins_module,
                gen.build_companion_compute,
@@ -945,7 +948,15 @@ def test_full_twin_exports_clean(tmp_path):
     # → 666 (2026-11-18): the nose_cap tile (its castellation footprint) retired.
     # → 696 (2026-11-18): IR service-link copies on qpd / camera (2 × 8),
     #   piezo vibration-beacon coupling (2), health-coil driver (12).
-    assert total_fps == 696
+    # → 704: the USB nose module (its IR pair, 8; the USB-C + CC Rds moved off the radar).
+    # → 661 (2026-11-19): the 43 bench pads left aft_end_board for the aft_end_cap
+    #   crown (virtual board, no PCB footprint).
+    # → 661 (2026-11-20): Tadiran /P cells — the 6 activation-face tab lands
+    #   became 6 lead PTHs on aft_end (±0).
+    # → 691 (2026-11-20): parachute 4 × 4 DIODE MATRIX driven by the fin MCU —
+    #   −18 (CD74HC4514, 16 DMN6075, common tab) +48 (4 rows × PFET/LS/2R/PD,
+    #   4 columns × NFET/PD/tab, 16 BAS40-02L steering diodes).
+    assert total_fps == 691
 
     # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
     # to its symbol in stackup.kicad_sch, written beside the PCB like each

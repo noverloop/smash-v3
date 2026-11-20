@@ -1,6 +1,8 @@
 """Tests for smash.state.board_geometry — value objects + JSON loader."""
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from smash.state import Board
@@ -25,7 +27,7 @@ EXPECTED_NAMES = {
     "fins_module", "fin_ble_board",
     "companion_compute", "companion_io",
     "activation_interface", "aft_end_board", "cell_floor_board",
-    "camera_module", "qpd_module",
+    "camera_module", "qpd_module", "usb_nose",
     "nfc_antenna_flex",
     "yagi_ant_a_flex", "yagi_ant_b_flex",
 }
@@ -38,7 +40,7 @@ def test_registry_contains_all_evb_boards():
 # ── per-board geometry sanity ─────────────────────────────────────────
 
 @pytest.mark.parametrize("name", [
-    "power_board", "wakeup_board", "flight_board", "radar_module",
+    "power_board", "wakeup_board", "flight_board",
     "fins_module",
     "companion_compute", "companion_io",
 ])
@@ -55,6 +57,21 @@ def test_main_rigid_boards_are_d34_with_potting(name):
     for h in g.holes:
         r = (h.position_mm[0] ** 2 + h.position_mm[1] ** 2) ** 0.5
         assert r == pytest.approx(BOARD_POTTING_HOLE_RADIUS_MM, abs=1e-6)
+
+
+@pytest.mark.parametrize("name", ["radar_module", "qpd_module", "camera_module", "usb_nose"])
+def test_payload_boards_sit_on_the_land_ring(name):
+    """(2026-11-19, user) Nose payloads are Ø34 again, seated on the nose
+    cone's land ring, held by 3 screws into its top (holes at r 15.4)."""
+    from smash.export import nose_interface as NI
+    g = load_board_geometry(name)
+    assert g.shape == "circle" and g.diameter_mm / 2 == NI.PAYLOAD_R_MM == 17.0
+    stops = [h for h in g.holes if h.tag == "nose_stop"]
+    assert len(stops) == 3
+    for h in stops:
+        assert math.hypot(*h.position_mm) == pytest.approx(NI.PAYLOAD_STOP_R_MM, abs=1e-2)
+    pot = [h for h in g.holes if h.tag == "potting"]
+    assert len(pot) == (1 if name == "radar_module" else 0)   # radar: 51 bottom parts
 
 
 def test_nose_cap_pcb_is_retired():
@@ -85,22 +102,22 @@ def test_aft_end_board_is_d34_circle_with_no_potting():
     g = load_board_geometry("aft_end_board")
     assert g.shape == "circle"
     assert g.diameter_mm == 34.0
-    assert g.holes == []
-    assert g.keepouts == []
+    # (2026-11-19) only the 3 aft_end_cap screw holes (+ their keep-outs)
+    assert [h for h in g.holes if h.tag == "potting"] == []
+    assert len(g.holes) == 3 and all(h.tag == "aft_cap_screw" for h in g.holes)
+    assert len(g.keepouts) == 3
 
 
-def test_camera_module_is_d34_circle():  # grown 2026-11-18 (IR pair + cup stop bosses)
+def test_camera_module_is_d34_circle():  # 2026-11-19: Ø34, seated on the land ring
     g = load_board_geometry("camera_module")
     assert g.shape == "circle"
     assert g.diameter_mm == 34.0
-    assert g.holes == []
 
 
-def test_qpd_module_is_d34_circle():  # grown 2026-11-18 (IR pair + cup stop bosses)
+def test_qpd_module_is_d34_circle():  # 2026-11-19: Ø34, seated on the land ring
     g = load_board_geometry("qpd_module")
     assert g.shape == "circle"
     assert g.diameter_mm == 34.0
-    assert g.holes == []
 
 
 def test_nfc_antenna_flex_is_round():
@@ -226,7 +243,12 @@ def test_potting_hole_is_one_channel_up_the_stack():
         b = boards[n]
         if b.is_spacer or b.kind != "rigid" or b.geometry is None:
             continue
+        from smash.export import nose_interface as NI
+        if n in NI.PAYLOAD_BOARDS:
+            continue            # nose payloads: potted with the nose cone (own hole)
         for h in b.geometry.holes:
+            if h.tag != "potting":
+                continue            # mechanical holes (aft_end_cap screws)
             x, y = h.position_mm
             if is_rotated_180(chain, n):
                 x, y = -x, -y

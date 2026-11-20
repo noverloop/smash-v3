@@ -892,6 +892,8 @@ def _grf5126_footprint() -> Footprint:
         courtyard=[(-1.9, -1.9), (1.9, -1.9), (1.9, 1.9), (-1.9, 1.9)],
         pitch_mm=0.5, size_mm=(3.0, 3.0), height_mm=0.85,
         model_3d_path=datasheet_ref("GRF5126", "GRF5126.stp"),
+        # (2026-11-20) the vendor STEP is Y-up (height along +Y): stand it up
+        model_rotate_deg=(-90.0, 0.0, 0.0),
         source="custom")
 
 

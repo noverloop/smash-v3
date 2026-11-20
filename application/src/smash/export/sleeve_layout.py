@@ -106,6 +106,18 @@ def _antenna_copper(boards, zmap, H):
             slot_rects, windows)
 
 
+def _crown_z(boards, chain, zmap) -> float:
+    """z of the crown plane: the top of the compute↔payload gap (payload bottom)."""
+    from smash.export import nose_interface as NI
+    for i, nm in enumerate(chain):
+        if nm == NI.HOST:
+            for nx in chain[i + 1:]:
+                if nx in boards and not boards[nx].is_spacer:
+                    return zmap[nx][0] if nx in zmap else max(z for _a, z in zmap.values())
+            return zmap[nm][1]
+    return max(z for _a, z in zmap.values())
+
+
 def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                           out_path) -> dict:
     """Write the unrolled sleeve as a 2-layer KiCad board. Returns a summary."""
@@ -132,12 +144,57 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     def X(x):
         return round(OX + x, 4)
 
+    def path(pts, w, n):
+        """Polyline on the unroll (pts = [(x on the unroll, z)]). A step that
+        crosses the 105° seam is drawn the SHORT way: out of one sheet edge
+        and back in at the other (it is a small jog on the cylinder)."""
+        out = []
+        for (xa, za), (xb, zb) in zip(pts, pts[1:]):
+            if abs(xa - xb) < 1e-9 and abs(za - zb) < 1e-9:
+                continue
+            if abs(xb - xa) > W / 2:                       # wrap over the seam
+                xb2 = xb - W if xb > xa else xb + W
+                xe = W if xb2 > xa else 0.0
+                t = (xe - xa) / (xb2 - xa)
+                zm = za + t * (zb - za)
+                segs_ = [((xa, za), (xe, zm)), ((W - xe, zm), (xb, zb))]
+            else:
+                segs_ = [((xa, za), (xb, zb))]
+            for (x1, z1), (x2, z2) in segs_:
+                out.append(f'\t(segment (start {X(x1)} {Y(z1)}) (end {X(x2)} {Y(z2)}) '
+                           f'(width {w}) (layer "F.Cu") (net {n}))')
+        return out
+
     items, n_vias, n_lanes = [], 0, 0
     lanes = contract.get("lanes", {})
+    # battery-zone fan band: aft board top → next rigid board bottom (+ margins)
+    fz = ((contract.get("aft_cap") or {}).get("fan_zone"))
+    fan_z = ((zmap[fz[0]][1] + 1.0, zmap[fz[1]][0] - 1.0)
+             if fz and fz[0] in zmap and fz[1] in zmap else None)
     for net, lane in lanes.items():
         kind = lane.get("kind", "signal")
+        if kind == "crown_payload":
+            continue                       # nose-cone copper, not the core sleeve
         n = nid("GND" if kind == "gnd_plane" else lane.get("net", net))
         zs = sorted(sum(zmap[b]) / 2.0 for b in lane["boards"] if b in zmap)
+        fan = lane.get("fan")
+        if fan and fan_z is not None:
+            # (2026-11-19) battery-zone FAN: down at the lane angle to the top of
+            # the zone, diagonal to the bottom angle, then down at that angle to
+            # the aft board's castellation (or on to the rim → aft_end_cap)
+            w = lane.get("width_mm", 0.2)
+            xt, xb = _x_of(fan["top_deg"], r_out), _x_of(fan["bottom_deg"], r_out)
+            z_hi = max(zs) if zs else fan_z[1]
+            z_lo = 0.0 if lane.get("aft_cap") else min(zs) if zs else 0.0
+            for zc in zs:
+                bn_ = next(b for b in lane["boards"] if b in zmap and abs(sum(zmap[b]) / 2.0 - zc) < 1e-9)
+                xa = X(_x_of(lane.get("board_angles", {}).get(bn_, [fan["top_deg"]])[0], r_out))
+                items.append(f'\t(via (at {xa} {Y(zc)}) (size {VIA_PAD_MM}) '
+                             f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
+                n_vias += 1
+            items += path([(xt, z_hi), (xt, fan_z[1]), (xb, fan_z[0]), (xb, z_lo)], w, n)
+            n_lanes += 1
+            continue
         for ang in lane["angles"]:
             x = X(_x_of(ang, r_out))
             for zc in zs:
@@ -148,6 +205,42 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 # runs up to the sleeve's nose rim → continues on the LDS cone
                 items.append(f'\t(segment (start {x} {Y(zs[0])}) (end {x} {Y(H)}) '
                              f'(width {lane.get("width_mm", 0.2)}) (layer "F.Cu") (net {n}))')
+                n_lanes += 1
+            elif kind in ("crown", "crown_top") and zs:
+                # (2026-11-19) compute edge castellation → up the sleeve's outer
+                # face over the Al ring, jogging to its tooth angle (order-
+                # preserving fan, never under a plate), then straight onto the
+                # crown base, where the groove floor continues on the cone.
+                # Straight UP out of compute's via row first; the fan runs over
+                # the anchor band (nothing else there), the jog takes the short
+                # way over the seam.
+                from smash.export import nose_interface as NI
+                # (2026-11-20) a merged power run: the diagonal ends at the mean of
+                # its teeth, a bar spans them, one riser per tooth (NI.fan_slots
+                # checked this geometry for clearance)
+                w = lane.get("width_mm", 0.2)
+                xr = _x_of(ang, r_out)
+                xts = [_x_of(a, r_out) for a in lane.get("tooth_angles", [lane["tooth_angle"]])]
+                xts = [xts[0] + ((xt - xts[0] + W / 2) % W - W / 2) for xt in xts]   # unwrap
+                xm = (sum(xts) / len(xts)) % W
+                xts = sorted(xt % W for xt in xts) if max(xts) - min(xts) < W / 2 else xts
+                z_top = _crown_z(boards, chain, zmap)
+                z_ring = z_top - NI.CROWN_STACK_MM
+                z_base = z_ring + NI.CROWN_BASE_MM
+                zc_top = max(z1 for b_, (z0_, z1) in zmap.items() if b_ in lane["boards"])
+                zf0, zf1 = zc_top + NI.FAN_MARGIN_MM, z_ring - NI.FAN_MARGIN_MM
+                items += path([(xr, zs[0]), (xr, zf0), (xm, zf1)], w, n)
+                if len(xts) > 1:                  # tooth to tooth (path wraps the seam)
+                    items += path([(xt % W, zf1) for xt in xts], w, n)
+                for xt in (x % W for x in xts):
+                    items += path([(xt, zf1), (xt, z_base)], w, n)
+                n_lanes += 1
+            elif kind in ("signal", "power", "gnd_guard") and lane.get("aft_cap") and zs:
+                # (2026-11-19) continues past the aft board to the aft rim (z 0)
+                # and on over the aft_end_cap's skin into its crown groove
+                w = lane.get("width_mm", 0.2)
+                items.append(f'\t(segment (start {x} {Y(0.0)}) (end {x} {Y(zs[-1])}) '
+                             f'(width {w}) (layer "F.Cu") (net {n}))')
                 n_lanes += 1
             elif kind in ("signal", "power", "gnd_guard") and len(zs) >= 2:
                 w = lane.get("width_mm", 0.2)
@@ -284,7 +377,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
         square = e["ref"].endswith("_0") or e["ref"] in ("P_ACT_WIRE_0",)
         short = {"P_ACTIVATE_COMMON": "COM", "TP_PARACHUTE_CUTTER_SET": "SET",
                  "TP_ACT_CONFIRM": "CONF", "TP_SPI_CS_FIN": "CS"}.get(
-            e["ref"], e["ref"].replace("TP_", "").replace("P_ACT_WIRE_", "W")
+            e["ref"], e["ref"].replace("TP_", "").replace("P_ACT_WIRE_", "W").replace("P_ACT_COL_", "C")
             .replace("SPI_", "").replace("I2C_", "").replace("JUMP_", "J")
             .replace("MP25_", "").replace("GPIO_", "IO").replace("FIN", "F")
             .replace("BAT_", "").replace("CAN_", "CAN").replace("HALL_", "H"))

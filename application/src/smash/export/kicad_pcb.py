@@ -511,7 +511,8 @@ def _emit_footprint(
     # <lib>.3dshapes/<fp_name>.step`.
     model = fp.model_3d_path or _kicad_stock_model_path(fp.name)
     if model:
-        parts.append(_emit_model(model))
+        parts.append(_emit_model(model, offset=getattr(fp, "model_offset_mm", None),
+                                 rotate=getattr(fp, "model_rotate_deg", None)))
 
     parts.append("\t)")
     return "\n".join(parts)
@@ -557,7 +558,7 @@ def _kicad_stock_model_path(fp_name: str) -> str | None:
     return str(candidate)
 
 
-def _emit_model(model_path: str) -> str:
+def _emit_model(model_path: str, offset=None, rotate=None) -> str:
     """`(model ...)` block referencing a 3D .stp/.wrl file.
 
     Three input forms:
@@ -581,8 +582,10 @@ def _emit_model(model_path: str) -> str:
         out_path = str(resolved)
         kicad_mod_search_dir = resolved.parent
 
-    offset, rotate = (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
-    if kicad_mod_search_dir and kicad_mod_search_dir.is_dir():
+    explicit = offset is not None or rotate is not None
+    offset = tuple(offset) if offset is not None else (0.0, 0.0, 0.0)
+    rotate = tuple(rotate) if rotate is not None else (0.0, 0.0, 0.0)
+    if not explicit and kicad_mod_search_dir and kicad_mod_search_dir.is_dir():
         for mod_file in kicad_mod_search_dir.glob("*.kicad_mod"):
             parsed = _parse_kicad_mod_model_xform(mod_file)
             if parsed is not None:
@@ -614,6 +617,15 @@ _MODEL_BLOCK_RX = _re.compile(
 )
 
 
+_MODEL_OFFSET_RX = _re.compile(
+    r"\(model\s+\S+\s*"
+    r"\(\s*offset\s*\(\s*xyz\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\)\s*\)\s*"
+    r"\(\s*scale\s*\(\s*xyz\s+[-\d.]+\s+[-\d.]+\s+[-\d.]+\s*\)\s*\)\s*"
+    r"\(\s*rotate\s*\(\s*xyz\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s*\)\s*\)\s*\)",
+    _re.IGNORECASE,
+)
+
+
 def _parse_kicad_mod_model_xform(
     path: pathlib.Path,
 ) -> tuple | None:
@@ -624,6 +636,15 @@ def _parse_kicad_mod_model_xform(
     except OSError:
         return None
     m = _MODEL_BLOCK_RX.search(text)
+    if m:
+        nums = [float(g) for g in m.groups()]
+        # (2026-11-20) a legacy `(module …)` file (KiCad 5 — every SamacSys
+        # export) gives the model `(at …)` in INCHES; KiCad's `(offset …)` that
+        # we emit is in mm. Newer `(footprint …)` files written with `(at …)`
+        # (e.g. Same Sky) already carry mm values.
+        k = 25.4 if text.lstrip().startswith("(module") else 1.0
+        return (tuple(v * k for v in nums[:3]), tuple(nums[3:]))
+    m = _MODEL_OFFSET_RX.search(text)                 # KiCad 6+: (offset …) in mm
     if not m:
         return None
     nums = [float(g) for g in m.groups()]
@@ -1740,8 +1761,18 @@ def _cutouts_for_tile(
     # the overlap was confusing the outline boolean and leaving stray FR4
     # rectangles. The notch is CENTRED, depth 6.3 mm (floor y~8.42, clearing the
     # radar Cu coin at y~8.0); the WIDTH is per-tile (see below).
-    if name == "radar_module":
-        # The connector MOUNTS on the radar. Its notch is 10.2 mm (+/-5.1) ->
+    # (2026-11-19, user) Compute is KEYED to the one-piece sleeve: an edge notch
+    # at nose_interface.KEY_ANGLE_DEG (physical) takes the sleeve's inner rib.
+    from smash.export import nose_interface as _NI
+    if name == _NI.HOST and name in (panel.snake_chain or []):
+        from smash.parts.castellations import board_fold_transforms, _local_xy
+        _M = board_fold_transforms(panel, list(panel.snake_chain)).get(name)
+        if _M is not None:
+            _lx, _ly = _local_xy(_M, _NI.KEY_ANGLE_DEG, 17.0)
+            cuts.append(make_cutout(math.degrees(math.atan2(_ly, _lx)) % 360.0,
+                                    _NI.KEY_W_MM, depth_mm=_NI.KEY_DEPTH_MM, kind="notch"))
+    if False:   # (2026-11-18) USB-C is VERTICAL at the nose tip now — no chord / notch
+        # The connector MOUNTS on the USB nose (moved off the radar 2026-11-18). Its notch is 10.2 mm (+/-5.1) ->
         # wide enough to clear the ~8.3 mm mouth while the flat segments beside
         # it (~3.4 mm each) still carry the solder lands (pads at x +/-5.745,
         # just outside the wall). (The nose_cap's 12.5 mm notch went with the

@@ -130,6 +130,34 @@ def _inside_outline_circle(
     return (far_x * far_x + far_y * far_y) <= radius * radius
 
 
+class _RectGrid:
+    """Uniform-grid bucket index of AABBs → candidate indices for a query
+    box (a superset of the true overlaps; callers run the exact test)."""
+    CELL = 2.0
+
+    def __init__(self):
+        self._cells: dict = {}
+
+    def _span(self, a0, a1):
+        c = self.CELL
+        return range(math.floor(a0 / c) - 1, math.floor(a1 / c) + 2)
+
+    def add(self, idx, x1, y1, x2, y2):
+        for i in self._span(x1, x2):
+            for j in self._span(y1, y2):
+                self._cells.setdefault((i, j), []).append(idx)
+
+    def query(self, x1, y1, x2, y2):
+        seen = set()
+        c = self.CELL
+        for i in range(math.floor(x1 / c), math.floor(x2 / c) + 1):
+            for j in range(math.floor(y1 / c), math.floor(y2 / c) + 1):
+                for idx in self._cells.get((i, j), ()):
+                    if idx not in seen:
+                        seen.add(idx)
+                        yield idx
+
+
 def _keepout_blocks(
     keepout_rects: list[tuple[float, float, float, float]],
     cx: float, cy: float, w: float, h: float,
@@ -200,7 +228,25 @@ def _try_single_packing(
     # `packed_only_extents` mirrors just the last category so the final
     # max_reach calculation isn't biased by edge-touching potting-hole
     # keepouts (whose AABBs extend marginally past the outline radius).
-    extents = list(already_placed)
+    # (2026-11-19) Spatial hash over the obstacles: `collides` only runs the
+    # exact tests (unchanged) against rects in the grid cells the candidate
+    # touches — a superset of every real overlap, so results are identical.
+    ext_grid = _RectGrid()
+    ko_grid = _RectGrid()
+    for i, ko in enumerate(keepout_rects):
+        ko_grid.add(i, ko[0], ko[1], ko[2], ko[3])
+
+    class _Extents(list):
+        def append(self, e):                       # keep the grid in sync
+            px, py, pw, ph = e
+            g = COMP_GAP_MM
+            ext_grid.add(len(self), px - pw / 2 - g, py - ph / 2 - g,
+                         px + pw / 2 + g, py + ph / 2 + g)
+            super().append(e)
+
+    extents = _Extents()
+    for e in already_placed:
+        extents.append(e)
     for (kx1, ky1, kx2, ky2) in keepout_rects:
         kw = kx2 - kx1
         kh = ky2 - ky1
@@ -208,12 +254,16 @@ def _try_single_packing(
     packed_only_extents: list[tuple[float, float, float, float]] = []
 
     def collides(x: float, y: float, w: float, h: float) -> bool:
-        for px, py, pw, ph in extents:
+        x1, y1, x2, y2 = x - w / 2, y - h / 2, x + w / 2, y + h / 2
+        for i in ext_grid.query(x1, y1, x2, y2):
+            px, py, pw, ph = extents[i]
             if (abs(x - px) < (w + pw) / 2 + COMP_GAP_MM
                     and abs(y - py) < (h + ph) / 2 + COMP_GAP_MM):
                 return True
-        if _keepout_blocks(keepout_rects, x, y, w, h):
-            return True
+        chip_rect = (x1, y1, x2, y2)
+        for i in ko_grid.query(x1, y1, x2, y2):
+            if rects_overlap(chip_rect, keepout_rects[i]):
+                return True
         return False
 
     # Margin (mm) within which a chip is "near" a flex chord and needs the
@@ -270,15 +320,18 @@ def _try_single_packing(
                     and inside_outline(0.0, 0.0, w, h)):
                 if best is None or 0.0 < best[3]:
                     best = (0.0, 0.0, rot, 0.0, w, h)
-            for (px, py, pw, ph) in extents:
+            for (px, py, pw, ph) in list(extents):
                 for ax, ay in _anchors_with_alignment(px, py, pw, ph, w, h):
+                    d2 = ax * ax + ay * ay
+                    # can't beat the current best (strict <): skip the
+                    # expensive tests — same outcome, far fewer checks
+                    if best is not None and d2 >= best[3]:
+                        continue
                     if collides(ax, ay, w, h):
                         continue
                     if not inside_outline(ax, ay, w, h):
                         continue
-                    d2 = ax * ax + ay * ay
-                    if best is None or d2 < best[3]:
-                        best = (ax, ay, rot, d2, w, h)
+                    best = (ax, ay, rot, d2, w, h)
 
         if best is None:
             # Pathological fallback — no anchor fits. Drop the chip far
