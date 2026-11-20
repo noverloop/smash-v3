@@ -962,3 +962,61 @@ def add_stlq020c33r(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_tps7a0233pdqnr(design, ref: str, **overrides) -> Chip:
+    """TI TPS7A0233PDQNR — the same TPS7A02 nanopower 3.3 V / 200 mA LDO as
+    TPS7A0233PDBVR, in the 1 × 1 × 0.4 mm X2SON-4 (DQN0004A) package.
+
+    (2026-11-20, user) Low-profile swap for U_AON_LDO / U_TMR_LDO: the
+    1.45 mm SOT-23-5 set the wakeup↔power gap. Trade-off vs the DBV: no
+    leads (the DBV was picked as "leaded + shock-robust"), so the joint
+    relies on the potting + underfill like the other leadless parts.
+
+    Pins (DS Table 5-1, DQN): 1 OUT, 2 GND, 3 EN, 4 IN, 5 thermal pad (GND).
+    Land pattern per DS DQN0004A "EXAMPLE BOARD LAYOUT" (4215302/E): pads
+    0.36 × 0.21 at (±0.43, ±0.325); the 0.48 mm 45°-rotated thermal pad is
+    modelled as its inscribed axis-aligned 0.34 mm square (the pad model has
+    no rotation) — the layout EE should use TI's diamond. 3D: SamacSys STEP
+    (Y-up → rotate X −90)."""
+    pn = "TPS7A0233PDQNR"
+    pads = [
+        Pad(num="1", position_mm=(-0.43, -0.325), size_mm=(0.36, 0.21), shape="rect"),
+        Pad(num="2", position_mm=(-0.43, 0.325), size_mm=(0.36, 0.21), shape="rect"),
+        Pad(num="3", position_mm=(0.43, 0.325), size_mm=(0.36, 0.21), shape="rect"),
+        Pad(num="4", position_mm=(0.43, -0.325), size_mm=(0.36, 0.21), shape="rect"),
+        Pad(num="5", position_mm=(0.0, 0.0), size_mm=(0.34, 0.34), shape="rect",
+            note="TI: 0.48 mm square rotated 45° (diamond); inscribed square here"),
+    ]
+    box = [(-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5)]
+    crt = [(-0.75, -0.65), (0.75, -0.65), (0.75, 0.65), (-0.75, 0.65)]
+    fields = dict(
+        manf="Texas Instruments", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("Nanopower LDO 200 mA, IQ 25 nA, V_OUT=3.3 V fixed, VIN=1.5..6.0 V, "
+                     "X2SON-4 1×1×0.4 mm (DQN)"),
+        datasheet=datasheet_ref("TPS7A0233PDBVR", "tps7a02.pdf"),
+        package="X2SON-4 (DQN) 1×1 mm",
+        size_mm=(1.0, 1.0), height_mm=0.40,
+        temp_range_c=(-40, 125),
+        voltage_rating_v=6.0,
+        pins=[
+            Pin(num="1", name="OUT", type="power"),
+            Pin(num="2", name="GND", type="ground"),
+            Pin(num="3", name="EN", type="input",
+                note="smart enable: internal pull-down, floating = OFF"),
+            Pin(num="4", name="IN", type="power"),
+            Pin(num="5", name="EP", type="ground", note="thermal pad → GND"),
+        ],
+        footprint=Footprint(
+            name="TI_DQN0004A_X2SON-4", package_class="X2SON-4",
+            pads=pads, body_outline=box, courtyard=crt,
+            pitch_mm=0.65, size_mm=(1.0, 1.0), height_mm=0.40,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            model_rotate_deg=(-90.0, 0.0, 0.0),
+            source="datasheet",
+        ),
+        note="X2SON variant of TPS7A0233PDBVR (same die); EP to GND.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

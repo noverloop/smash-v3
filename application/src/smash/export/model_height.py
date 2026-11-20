@@ -142,7 +142,10 @@ def footprint_height_mm(
     if footprint is None:
         return assume_mm, "assumed"
     h = getattr(footprint, "height_mm", None)
-    if h:
+    # `is not None`, not truthiness: an explicit 0.0 is a real height (copper
+    # in the board — the embedded health coil, castellations) and must not
+    # fall through to the 2 mm worst-case assumption.
+    if h is not None:
         return float(h), "datasheet"
     nh = ipc_name_height_mm(getattr(footprint, "name", None))
     if nh is not None:

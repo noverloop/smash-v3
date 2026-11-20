@@ -74,6 +74,7 @@ def add_vbpw34fas(design, ref: str, **overrides) -> Chip:
         pins=build_pins(src(pn, f"{pn}.kicad_sym")),
         footprint=Footprint(
             name=pn, package_class="SMD-GW",
+            height_mm=1.2,          # DS 81127 package drawing (6.4 × 3.9 × 1.2)
             pads=pads_from_kicad_mod(fp_mod),
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),
@@ -128,6 +129,7 @@ def add_vsmb1940x01(design, ref: str, **overrides) -> Chip:
         pins=build_pins(src(pn, f"{pn}.kicad_sym")),
         footprint=Footprint(
             name=pn, package_class="LED-0805",
+            height_mm=0.85,         # DS 81933 package drawing (2.0 × 1.25 × 0.85)
             pads=pads_from_kicad_mod(fp_mod),
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),

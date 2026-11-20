@@ -32,6 +32,7 @@ from smash.parts.passives import (
     add_capacitor_x7r_0402_kemet,
     add_capacitor_x7r_0603_kemet_mil,
     add_capacitor_x7r_0805_kemet_mil,
+    add_capacitor_x7r_0603_kemet_c0603c105k3ractu,
     add_capacitor_c0g_0603_avx_sqcs,
     add_capacitor_tantalum_3528_kemet_t491,
     add_capacitor_polymer_7343_kemet_t528,
@@ -98,6 +99,10 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         return add_capacitor_x7r_0402_kemet, 1
     if farads < 0.9e-6:
         return add_capacitor_x7r_0603_kemet_mil, 1
+    if farads <= 1.1e-6:
+        # (2026-11-20, user) 1 µF → 0603 25 V X7R (0.95 mm max) instead of
+        # the 1.45 mm 0805 MIL part: these set most core gaps.
+        return add_capacitor_x7r_0603_kemet_c0603c105k3ractu, 1
     if farads < 2.2e-6:
         # 0.9–<2.2 µF goes to 0805 — system.py's `_cap_fp` boundary;
         # below 0.9 µF stays in 0603.

@@ -443,3 +443,41 @@ def add_sit1630ae_s6_dcc_32_768e(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_sit1533ai_h4_dcc_32_768e(design, ref: str, **overrides) -> Chip:
+    """SiTime SIT1533AI-H4-DCC-32.768E — 32.768 kHz MEMS XO, LVCMOS out,
+    1.5–3.63 V, ±100 ppm, 2.0 × 1.2 × 0.55 mm (2012 XTAL-footprint
+    compatible: big pads 1/3, small GND/VDD pads between).
+
+    (2026-11-20, user) Replaces the 1.45 mm SOT23-5 SiT1630 as Y_MPU_LSE
+    (it set compute's bottom height). Pins: 1 NC, 2 GND, 3 CLK_OUT, 4 VDD.
+    SamacSys footprint + STEP."""
+    pn = "SIT1533AI-H4-DCC-32.768E"
+    fp_mod = src(pn, "SIT1533AIH4DCC32768E.kicad_mod")
+    fields = dict(
+        manf="SiTime", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value="32.768kHz",
+        description="32.768 kHz MEMS oscillator, LVCMOS, 1.5–3.63 V, 2.0×1.2×0.55 mm",
+        datasheet=None,
+        package="SMD 2012 4-pin", size_mm=(2.0, 1.2), height_mm=0.55,
+        temp_range_c=(-40, 85), voltage_rating_v=3.63,
+        pins=[
+            Pin(num="1", name="NC", type="nc", note="no connect"),
+            Pin(num="2", name="GND", type="ground"),
+            Pin(num="3", name="CLK_OUT", type="output"),
+            Pin(num="4", name="VDD", type="power"),
+        ],
+        footprint=Footprint(
+            name="SIT1533AIH4DCC32768E", package_class="SMD-2012-4",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            size_mm=(2.0, 1.2), height_mm=0.55,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note="LSE source for the STM32MP25 (OSC32_IN, bypass mode).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

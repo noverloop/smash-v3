@@ -38,7 +38,7 @@ N_TEETH = 48                     # 7.5° pitch (≈ 2.2 mm at r 16.8)
 # is the orientation key — a nose only meshes one way round. Chosen where
 # compute's top face has room for the Al-ring screw bosses (EE-placed MPU /
 # DDR4 / NAND_A / NAND_B; compute sits turned 180° in the stack).
-SCREW_TEETH = (25, 43)           # 2 screws (user 2026-11-19): 135° / 225° = the key
+SCREW_TEETH = (25, 43)           # the 2 HOOK teeth (no contact): 135° / 225° = the key
 
 # Teeth left unplated. Was (3, 4, 29) while the crown landed on compute
 # top-face pads (MPU / DDR4 corners); the outer-lane castellations free them.
@@ -65,25 +65,49 @@ LAND_RING_TOP_MM = 0.8           # PEEK above the land roots at the outer edge (
 PAYLOAD_STOP_R_MM = 15.4         # payload LOCATING pins into the land-ring top (cap clamps it)
 PAYLOAD_STOP_ANGLES_DEG = (71.25, 191.25, 326.25)
 PAYLOAD_STOP_HOLE_D_MM = 1.6
-# (2026-11-19, user) The anchor "ring" is a PEEK BAND of the one-piece sleeve
-# moulding (r ANCHOR_BAND_R_IN → skin), bearing on compute's top ring band —
-# no Al part. The M3 threads are moulded-in stainless THREAD INSERTS in two
-# small inward bosses (PEEK alone strips at ~0.5 kN < 0.7 kN/screw, and creeps).
-ANCHOR_BAND_R_IN_MM = 16.0
-THREAD_INSERT = "M3 stainless moulded-in threaded insert, Ø4.2 × 2.6 (radial)"
-THREAD_INSERT_OD_MM = 4.2
-# (2026-11-20) inward of the tab's 1.3 mm steel FOOT (+0.1): r 13.9–16.5
-THREAD_INSERT_R_MM = (17.9 - 1.3 - 0.1 - 2.6, 17.9 - 1.3 - 0.1)
-# (2026-11-20, user: tab too short / head too big / pull-down too weak) the
-# screw sits HIGH in the band so head + steel foot lie wholly on the tab
-# (tab starts compute top + 0.4); the band is as tall as the insert's top.
-TAB_BOTTOM_MM = 0.4              # tab lower end above compute's top
-SCREW_HEAD_D_MM = 5.5            # ISO 7046-1 M3, 90°
-SCREW_HEAD_K_MM = (5.5 - 3.0) / 2.0          # 90° countersink depth (1.25)
-TAB_FOOT_T_MM = 1.3              # stainless FOOT under the head: countersink ≥ k, flush
-TAB_FOOT_H_MM = SCREW_HEAD_D_MM + 0.8        # foot height (axial) round the head
-SCREW_Z_MM = TAB_BOTTOM_MM + TAB_FOOT_H_MM / 2.0 + 0.05   # screw axis above compute top
-ANCHOR_RING_MIN_MM = round(SCREW_Z_MM + THREAD_INSERT_OD_MM / 2.0, 3)   # band height (≈5.7)
+# (2026-11-20, user) SNAP RETENTION. The anchor gap holds a 7075 Al SNAP RING
+# (Ø34, bore r 16, like the other gaps' rings) with two inward CATCH LIPS at
+# the key angles, right under its top face. The nose cap's stainless ring
+# carries two spring HOOKS that run down INSIDE the bore (past notches in the
+# payload board's edge and slots in the land ring + crown) and snap OUTWARD
+# under the lips (lead-in ramp below, flat catch face on top). A pin tool
+# through a Ø1 RELEASE HOLE in the sleeve + ring wall pushes each barb inward
+# to lift the cap. No screws, inserts or outer tab recesses: the sleeve's
+# outer lanes stay free (only the Ø1 pin holes, at the lane-free key angles).
+RETENTION = "snap"
+SNAP_RING = "7075-T6 aluminium, hard anodised: Ø34 ring, bore Ø32, 2 inward catch lips"
+SNAP_RING_R_MM = (16.0, 17.0)
+ANCHOR_BAND_R_IN_MM = SNAP_RING_R_MM[0]      # ring bore (crown nook / funnel reference)
+HOOK_N = 2
+HOOK_MATERIAL = ("301 stainless, full hard (1.4310 C1300) spring legs, spot-welded "
+                 "to the 17-4PH cap ring")
+HOOK_W_MM = 5.0                  # leg width (tangential)
+HOOK_T_MM = 0.5                  # leg thickness (radial)
+HOOK_R_IN_MM = 15.0              # leg r 15.0–15.5 (inside the lip)
+SNAP_LIP_R_IN_MM = 15.55         # lip inner face (leg passes with 0.05)
+BARB_R_OUT_MM = 15.95            # barb crest (0.05 inside the bore r 16)
+SNAP_ENGAGE_MM = round(BARB_R_OUT_MM - SNAP_LIP_R_IN_MM, 3)   # 0.40 radial catch
+SNAP_LIP_H_MM = 1.2              # lip axial thickness (Al, top flush with the ring top)
+SNAP_LIP_W_MM = HOOK_W_MM + 0.4  # lip tangential width (inside the 5.6 mm crown slot)
+BARB_CATCH_H_MM = 0.4            # flat catch band under the lip
+BARB_RAMP_H_MM = 0.6             # lead-in ramp (≈ 34° to the axis over 0.4)
+HOOK_TIP_CLEAR_MM = 0.5          # hook tip above compute's top
+RELEASE_PIN_D_MM = 1.0           # pin-tool hole through sleeve skin + ring wall
+RELEASE_EXCL_W_MM = RELEASE_PIN_D_MM + 1.0   # lane exclusion round each pin hole
+HOOK_NOTCH_W_MM = HOOK_W_MM + 0.6            # payload / land-ring / crown slot width
+HOOK_NOTCH_R_MM = HOOK_R_IN_MM - 0.2         # payload-board edge notch reaches in to r 14.8
+CRUSH_RIB_H_MM = 0.15            # preload: crush rib under the cap's press rim
+CRUSH_RIB_W_MM = 0.3
+# ring height = lip + barb (catch + ramp) + tip clearance over compute
+ANCHOR_RING_MIN_MM = round(SNAP_LIP_H_MM + BARB_CATCH_H_MM + BARB_RAMP_H_MM
+                           + HOOK_TIP_CLEAR_MM, 3)                    # 2.7
+# release hole: just under the lip (its top tangent to the lip's underside),
+# the pin bears on the barb's catch band + ramp
+SNAP_Z_BELOW_TOP_MM = SNAP_LIP_H_MM + 0.5 * RELEASE_PIN_D_MM + 0.02
+# per hook: the Al lip shears over w × lip height (0.6 × Rm 572 MPa)
+SNAP_LIP_SHEAR_KN = round(HOOK_W_MM * SNAP_LIP_H_MM * 0.6 * 0.572, 2)
+# per hook: the steel leg in tension (301 FH Rp0.2 ≈ 1000 MPa)
+HOOK_TENSION_KN = round(HOOK_W_MM * HOOK_T_MM * 1.0, 2)
 # Compute ↔ sleeve KEY (user): a notch in compute's edge + a rib on the sleeve's
 # inner wall at compute height, at the first screw angle (no castellations
 # there; under the ring band). Only compute reaches the rib (tower enters aft).
@@ -124,33 +148,9 @@ DIFF_PAIRS = (("CAM_CSI_CLK_P", "CAM_CSI_CLK_N"), ("CAM_CSI_D0_P", "CAM_CSI_D0_N
               ("CAM_CSI_D1_P", "CAM_CSI_D1_N"), ("USB_D_P", "USB_D_N"))
 PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
 HOST = "companion_compute"
-# Retention (user): retaining tabs of the nose cone (stainless insert) + screws
-# into the Al anchor ring, reachable from OUTSIDE to swap noses, so they run
-# RADIALLY — through the plate and a clearance hole in the sleeve wall into an
-# inward boss of the ring. Reverse load puts them in SHEAR; spin torque rides
-# the teeth. (2026-11-19, user) TWO fat, short screws (thread within the 4 mm
-# ring height) instead of three M2.5: frees the 93.75° sector for crown lanes.
-SCREW = "M3 × 4 90° countersunk (ISO 7046-1, Ø5.5 head), class 8.8 (radial, in shear)"
-SCREW_N = 2
-SCREW_L_MM = 4.0
-# The screw threads into the band's moulded insert; the crown funnel keeps a
-# clearance notch round the insert boss.
-SCREW_TIP_R_MM = 17.9 - SCREW_L_MM          # head flush with the Ø35.8 skin
-SCREW_BOSS_R_MM = (THREAD_INSERT_R_MM[0] - 0.3, 16.0)   # inward PEEK boss round the insert
-SCREW_BOSS_W_MM = 5.4
-SCREW_SHEAR_KN = 1.93            # per M3 8.8: 0.6 × 640 MPa × 5.03 mm²
-# M3 tapped DIRECTLY in the ring wall: an M3 helicoil (Ø3.9 tap) would not fit
-# the 4 mm ring; a few nose swaps are fine in 7075 threads.
-HELICOIL = THREAD_INSERT
-HELICOIL_TAP_D_MM = 2.5
-# (2026-11-19, user) The retaining "plate" is a TAB of the nose cone (one PEEK
-# moulding) with an OBLONG slot (axial, so the tab can shift aft while the
-# countersunk head seats). Plain PEEK is overstressed in bearing at ~0.7 kN per
-# screw, so a thin stainless INSERT (same slot, formed countersink) is
-# overmoulded inside the tab and carries the screw load.
-PLATE_T_MM = 0.6                 # PEEK tab thickness, in a flush SLEEVE recess
-PLATE_W_MM = 7.0                 # M3 head Ø5.5 + 0.75 each side
-TAB_INSERT_W_MM = PLATE_W_MM                 # steel tab / foot width (head Ø5.5 + 0.75 each side)
+# (2026-11-20) screws / inserts / tab feet retired for the SNAP hooks (above).
+# The two hook angles keep the old screw teeth (no contact there): their uneven
+# spacing is still the orientation key.
 # (2026-11-20, user: "the steel insert doesn't convince me") the tabs are STEEL,
 # integral with a RETAINING RING along the nose cap's edge — one stainless part
 # (17-4PH H1025, MIM or machined): ring flush in the lid's top outer edge, two
@@ -162,25 +162,13 @@ CAP_RING_T_MM = 0.5              # axial, flush with the lid top (PEEK under it)
 CAP_RING_MATERIAL = "17-4PH stainless (1.4542, H1025), MIM / machined"
 # (2026-11-20, user) the real nose cap also carries a BUMP, OD 40, so the Ø35.8
 # body keeps its distance from the bore (standoff / bourrelet). Stainless,
-# machined INTEGRAL with the retaining ring (user: "can be stainless too") —
-# no braze joint; one part = ring + bump + tabs + feet.
+# machined INTEGRAL with the retaining ring. ROUND on the OD (line contact →
+# least friction): a circular-arc profile skin (r 17.9) → OD-40 crest → skin,
+# top flush with the lid. R 5 (user) — the screw heads it had to clear are gone.
 CAP_BUMP_R_MM = 20.0
-# (2026-11-20, user) wider, ROUND on the OD (line contact → least friction):
-# a circular-arc profile from the skin (r 17.9) to the OD-40 crest; the width
-# follows from R and the 2.1 mm step, top flush with the lid. (user) it ENDS
-# ABOVE THE SCREW HEADS (no cut-outs): R 4.4 → ≈ 7.5 mm wide, ≥ 0.3 mm clear.
-CAP_BUMP_ARC_R_MM = 4.4
-BUMP_SCREW_CLEAR_MM = 0.3
+CAP_BUMP_ARC_R_MM = 5.0
 _s = CAP_BUMP_R_MM - 17.9
 CAP_BUMP_H_MM = round(2.0 * math.sqrt(2.0 * CAP_BUMP_ARC_R_MM * _s - _s * _s), 3)   # axial width
-TAB_SLOT_EXTRA_MM = 0.2          # slot length − clearance Ø (axial travel ±0.1 ≥ PRELOAD_OFFSET)
-# (2026-11-19, user) Contact preload from the 90° countersunk head: the plate's
-# (dimpled) countersink sits PRELOAD_OFFSET forward of the ring's thread axis,
-# so seating the head pulls the nose CAP aft (≈ 0.5–1 kN per screw at ~1 N·m).
-# (2026-11-20) The head now seats ENTIRELY on steel: the strip ends in a 1.3 mm
-# stainless FOOT (countersunk 90°, flush with the skin) in a deeper recess of
-# the sleeve band — the wedge acts steel on steel, no PEEK under the head.
-PRELOAD_OFFSET_MM = 0.05
 NOSE_MASS_G = 20.0               # potted nose module, est.
 
 
@@ -196,7 +184,8 @@ def tooth_angle(k: int) -> float:
     return round((CROWN_PHASE_DEG + k * 360.0 / N_TEETH) % 360.0, 4)
 
 
-SCREW_ANGLES_DEG = tuple(tooth_angle(k) for k in SCREW_TEETH)
+SCREW_ANGLES_DEG = tuple(tooth_angle(k) for k in SCREW_TEETH)   # = the HOOK angles
+HOOK_ANGLES_DEG = SCREW_ANGLES_DEG
 KEY_ANGLE_DEG = SCREW_ANGLES_DEG[0]          # compute key notch / sleeve rib (physical)
 
 
@@ -339,7 +328,14 @@ def usable_teeth(caps: dict) -> list:
 # whole DIAGONAL — a long, shallow jog squeezes 0.6 mm power lanes together
 # (the unroll showed them merging). fan_slots() checks the real geometry.
 FAN_MARGIN_MM = 0.4
-FAN_H_MM = ANCHOR_RING_MIN_MM - 2 * FAN_MARGIN_MM
+# (2026-11-20) the fan diagonal runs from just above compute's castellation
+# VIA (mid-board) to just under the crown floor's outer edge (one moulding:
+# sleeve skin over the snap ring + crown rim) — not only over the ring: the
+# 2.7 mm snap ring alone left a 1.9 mm fan, too steep for 0.15 mm clearance.
+COMPUTE_VIA_BELOW_TOP_MM = 0.65  # compute (1.315 mm) castellation via at mid-board
+FAN_MARGIN_BOTTOM_MM = 0.5       # above the via (clear of its pad)
+FAN_H_MM = round(ANCHOR_RING_MIN_MM + CROWN_BASE_MM + COMPUTE_VIA_BELOW_TOP_MM
+                 - FAN_MARGIN_BOTTOM_MM - FAN_MARGIN_MM, 3)
 LANE_CLEAR_MM = 0.15
 
 
@@ -474,14 +470,27 @@ def compute_side_angles(contacts: list, free: list, ring_step: float,
 
 
 def retention_md() -> str:
+    """Reverse-load check of the SNAP hooks (per hook: Al lip shear vs steel
+    leg tension, the weaker governs) + the snap-in bending strain."""
     g = 9.81
-    lines = ["| platform | setback kG | setback N (nose) | reverse 15 % N | screw SF |", "|---|---|---|---|---|"]
+    per_hook = min(SNAP_LIP_SHEAR_KN, HOOK_TENSION_KN) * 1e3
+    lines = ["| platform | setback kG | setback N (nose) | reverse 15 % N | snap SF |",
+             "|---|---|---|---|---|"]
     for name, kg in (("Bofors 40 mm", 46.7), ("M777 155 mm", 13.9), ("M252 81 mm", 13.8)):
         f = NOSE_MASS_G * 1e-3 * kg * 1e3 * g
         rev = 0.15 * f
-        sf = SCREW_N * SCREW_SHEAR_KN * 1e3 / rev
-        lines.append(f"| {name} | {kg:g} | {f:.0f} | {rev:.0f} | {sf:.1f} |")
+        lines.append(f"| {name} | {kg:g} | {f:.0f} | {rev:.0f} | {HOOK_N * per_hook / rev:.1f} |")
+    lines.append("")
+    lines.append(f"Per hook: Al lip shear {SNAP_LIP_SHEAR_KN} kN, leg tension {HOOK_TENSION_KN} kN. "
+                 f"Snap-in strain ε = 1.5·t·y/L² = {snap_strain(8.0) * 100:.2f} % at L 8 mm "
+                 f"(301 FH allows ≈ 0.6 %).")
     return "\n".join(lines)
+
+
+def snap_strain(free_len_mm: float) -> float:
+    """Peak bending strain of a hook leg (cantilever, tip deflection = the
+    engagement) — 1.5 · t · y / L²."""
+    return 1.5 * HOOK_T_MM * SNAP_ENGAGE_MM / free_len_mm ** 2
 
 
 def crown_md(contacts: list, comp_angles: dict) -> str:
@@ -497,31 +506,31 @@ def crown_md(contacts: list, comp_angles: dict) -> str:
         f"{360 / N_TEETH:g}° pitch, r {CROWN_R_IN_MM}–{CROWN_R_OUT_MM} mm, wall / land height "
         f"{TOOTH_H_MM} mm, groove {2 * GROOVE_HALF_DEG:.2f}°, land {2 * LAND_HALF_DEG:.2f}° "
         f"({TOOTH_SIDE_CLEAR_MM} mm side clearance at r_in), {TOOTH_TOP_GAP_MM} mm gap over the "
-        f"walls. Positions {', '.join(str(k) for k in SCREW_TEETH)} are SCREW positions (no "
+        f"walls. Positions {', '.join(str(k) for k in SCREW_TEETH)} are HOOK positions (no "
         "groove / no land; the uneven spacing is the orientation key).\n\n"
         "- Contacts = LDS only (user): the CROWN carries LDS on its GROOVE FLOORS, the CAP on "
-        "its LAND TOPS; both lie on the cone, so the screw clamp presses them together. Walls "
+        "its LAND TOPS; both lie on the cone, so the cap's press-rim preload presses them together. Walls "
         "between grooves are bare PEEK (isolation). Finish Cu + Ni/Au. The crown is the top "
         "of the one-piece sleeve: each groove's LDS runs down the sleeve's OUTER face over the "
-        "anchor band to an edge castellation on companion_compute (column 'compute °'), "
-        "soldered with the sides; no lane passes under a retaining plate. The fan over the "
-        f"band (≥ {FAN_H_MM:g} mm tall) keeps ≥ {LANE_CLEAR_MM} mm between lanes: repeated "
+        "anchor ring to an edge castellation on companion_compute (column 'compute °'), "
+        "soldered with the sides; no lane crosses a release-pin hole. The fan over the "
+        f"ring + crown rim (≥ {FAN_H_MM:g} mm tall) keeps ≥ {LANE_CLEAR_MM} mm between lanes: repeated "
         "power teeth of one rail join (Y) into ONE lane / castellation, and the GND teeth are "
         "tied by an LDS GND RING at the crown's inner edge (signal grooves stop 0.3 mm short "
-        "of it), linked to compute by one GND lane per screw sector.\n"
-        f"- Retention: {SCREW_N} TABS of the NOSE CAP (the λ/2 radome lid on the nose cone; "
-        "they drop through SLOTS in the nose cone, whose land ring + payload board the cap's "
-        f"press rim clamps onto the crown) — {PLATE_T_MM} × {PLATE_W_MM} mm STEEL tabs integral "
-        f"with a {CAP_RING_W_MM} × {CAP_RING_T_MM} mm retaining RING along the cap's edge "
-        f"(+ integral OD {2 * CAP_BUMP_R_MM:g} standoff BUMP) "
-        f"({CAP_RING_MATERIAL}; overmoulded by the PEEK lid), {TAB_FOOT_T_MM} mm countersunk "
-        f"feet, axial OBLONG slot +{TAB_SLOT_EXTRA_MM} mm — "
-        "lie in FLUSH recesses in the sleeve's PEEK anchor band; one "
-        f"{SCREW} per tab at {', '.join(f'{a:g}°' for a in SCREW_ANGLES_DEG)} into a "
-        f"{THREAD_INSERT} in a small inward boss of the band. The sleeve's crown sits on the "
-        "band (one moulding); the screws clamp nose → crown/band. Compute is KEYED to the sleeve "
-        f"(edge notch + rib at {KEY_ANGLE_DEG:g}°). Heads "
-        "reachable from outside (nose swap); OD stays Ø35.8.\n"
+        "of it), linked to compute by one GND lane per hook sector.\n"
+        f"- Retention (SNAP, user 2026-11-20): {HOOK_N} spring HOOKS ({HOOK_MATERIAL}; "
+        f"{HOOK_T_MM} × {HOOK_W_MM} mm legs at r {HOOK_R_IN_MM}–{HOOK_R_IN_MM + HOOK_T_MM}) hang "
+        f"from the NOSE CAP's {CAP_RING_W_MM} × {CAP_RING_T_MM} mm retaining RING "
+        f"({CAP_RING_MATERIAL}, + integral OD {2 * CAP_BUMP_R_MM:g} standoff BUMP; overmoulded "
+        "by the PEEK lid). They run down INSIDE the bore — past notches in the payload board's "
+        "edge and slots in the land ring + crown — and snap OUTWARD under the catch lips of the "
+        f"anchor gap's {SNAP_RING} ({SNAP_ENGAGE_MM} mm engagement, {SNAP_LIP_H_MM} mm lip, "
+        f"flat catch face, lead-in ramp below) at {', '.join(f'{a:g}°' for a in HOOK_ANGLES_DEG)}. "
+        "The cap's press rim clamps payload board → land ring → crown → ring top; a "
+        f"{CRUSH_RIB_H_MM} mm crush rib under the rim sets the preload. RELEASE: a pin tool "
+        f"through the Ø{RELEASE_PIN_D_MM:g} hole in the sleeve + ring wall at each hook angle "
+        "pushes the barb inward. Compute is KEYED to the sleeve "
+        f"(edge notch + rib at {KEY_ANGLE_DEG:g}°). OD stays Ø35.8 (bump OD 40).\n"
         "- Same pattern on every nose (radar / QPD / camera / USB): tooth k = the same net.\n\n"
         "## Retention loads (nose ≈ " + f"{NOSE_MASS_G:g} g)\n\n" + retention_md() + "\n\n"
         "## Contact map\n\n" + "\n".join(rows) + "\n")

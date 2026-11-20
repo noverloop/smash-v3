@@ -311,6 +311,42 @@ def add_capacitor_x7r_0603_kemet_mil(design, ref: str, *, value: str, **override
     return design.add_chip(ref=ref, **fields)
 
 
+# ── capacitor: 0603 X7R 1 µF commercial (KEMET C0603C105K3RACTU) ────────
+
+
+def add_capacitor_x7r_0603_kemet_c0603c105k3ractu(design, ref: str, *, value: str = "1uF",
+                                                   **overrides) -> Chip:
+    """KEMET C0603C105K3RACTU — 1 µF ±10 % 25 V X7R 0603, AEC-Q200
+    (commercial C-series, not MIL-PRF-32535: no 0603 1 µF in that QPL).
+    Thickness code CJ: 0.80 ± 0.15 → 0.95 mm max (DS Table 2A).
+
+    (2026-11-20, user) Replaces the 1.45 mm-max 0805 MIL part at 1 µF
+    positions — those caps set four of the five core gaps. Note the DC-bias
+    derating of a 25 V 0603 at 5 V (≈ −30 %) vs the 0805."""
+    fp = _stock_smd_2pad(
+        name="Capacitor_SMD:C_0603_1608Metric",
+        size_mm=(1.6, 0.8), height_mm=0.95,
+        pad_size=(0.85, 0.95), pad_pitch_mm=1.60,
+        package_class="0603",
+    )
+    fields = dict(
+        manf="KEMET", manf_pn="C0603C105K3RACTU", value=value,
+        name="C_0603_1uF_25V",
+        description="KEMET 0603 X7R 1 µF 25 V ±10 %, AEC-Q200",
+        datasheet=datasheet_ref("KEMET_C-Series_X7R", "kemet_c-series_x7r_commercial.pdf"),
+        package="0603", dielectric="X7R BME",
+        size_mm=(1.6, 0.8), height_mm=0.95,
+        capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=25.0, temp_range_c=(-55, 125),
+        weight_g=weight_g_for_passive("0603"),
+        standards=["AEC-Q200", "RoHS"],
+        pins=_two_pin(), footprint=fp,
+        note="1 µF 0603 X7R 25 V (thickness CJ, 0.95 max).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ── capacitor: 0805 X7R MIL-PRF-32535 ───────────────────────────────────
 
 

@@ -202,7 +202,8 @@ class TestCapToGndDispatch:
         ("10pF",   "add_capacitor_c0g_0603_avx_sqcs", 1),
         ("100nF",  "add_capacitor_x7r_0402_kemet",    1),
         ("470nF",  "add_capacitor_x7r_0603_kemet_mil", 1),   # <0.9 µF → 0603
-        ("1uF",    "add_capacitor_x7r_0805_kemet_mil", 1),   # ≥0.9 µF → 0805
+        ("1uF",    "add_capacitor_x7r_0603_kemet_c0603c105k3ractu", 1),   # 1 µF → 0603 25 V (2026-11-20)
+        ("1.5uF",  "add_capacitor_x7r_0805_kemet_mil", 1),   # >1.1 µF → 0805
                                                              # (matches system.py:_cap_fp)
         ("2.2uF",  "add_capacitor_x7r_0603_kemet_mil", 1),  # parallel of 1
         ("4.7uF",  "add_capacitor_x7r_0603_kemet_mil", 2),  # 2×2.2 µF

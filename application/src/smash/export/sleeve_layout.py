@@ -258,7 +258,10 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 z_ring = z_top - NI.CROWN_STACK_MM
                 z_base = z_ring + NI.CROWN_BASE_MM
                 zc_top = max(z1 for b_, (z0_, z1) in zmap.items() if b_ in lane["boards"])
-                zf0, zf1 = zc_top + NI.FAN_MARGIN_MM, z_ring - NI.FAN_MARGIN_MM
+                # (2026-11-20) diagonal from just over the compute via to just
+                # under the crown floor (snap ring: the ring alone is too short)
+                zf0 = zs[0] + NI.FAN_MARGIN_BOTTOM_MM
+                zf1 = z_base - NI.FAN_MARGIN_MM
                 zf0 += lane.get("fan_lift_mm", 0.0)       # stagger (fan_slots)
                 items += path([(xr, zs[0]), (xr, zf0), (xm, zf1)], w, n)
                 if len(xts) > 1:                  # tooth to tooth (path wraps the seam)

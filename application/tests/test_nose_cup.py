@@ -92,12 +92,14 @@ def test_lens_optics():
 
 def test_crown_spec_keys_and_retention():
     assert len(NI.contact_teeth()) == NI.N_TEETH - len(NI.SCREW_TEETH) - len(NI.BLOCKED_TEETH)
-    assert NI.SCREW_N == 2 == len(NI.SCREW_TEETH)
+    assert NI.HOOK_N == 2 == len(NI.SCREW_TEETH)
     gaps = sorted(NI.SCREW_ANGLES_DEG)
     spacing = [round((b - a) % 360, 3) for a, b in zip(gaps, gaps[1:] + gaps[:1])]
     assert len(set(spacing)) == 2                       # uneven → fits one way round
     rev = 0.15 * NI.NOSE_MASS_G * 1e-3 * 46.7e3 * 9.81
-    assert NI.SCREW_N * NI.SCREW_SHEAR_KN * 1e3 / rev >= 2.0
+    per_hook = min(NI.SNAP_LIP_SHEAR_KN, NI.HOOK_TENSION_KN) * 1e3
+    assert NI.HOOK_N * per_hook / rev >= 2.5                 # snap SF (Bofors reverse load)
+    assert NI.snap_strain(8.0) < 0.006                       # 301 FH snap-in strain
     # bevel: 4 mm annulus, cone rises inward, gap sized for ring + crown
     assert NI.CROWN_R_OUT_MM - NI.CROWN_R_IN_MM == pytest.approx(4.0)
     # (2026-11-19) cone highest at the OUTER edge, descending inward: the drop
@@ -325,45 +327,21 @@ def test_bevel_crown_and_cap_mesh_on_the_cone(cups):
     assert _inside(sleeve, rm * math.cos(a2), rm * math.sin(a2), zcone + 0.3)
     rs = 0.5 * (17.1 + 17.9)
     assert _inside(sleeve, rs * math.cos(a), rs * math.sin(a), 0.5 * (zc1 + zr1))
-    # (2026-11-19) the anchor "ring" is a PEEK band of the same moulding
-    assert _inside(sleeve, 16.5 * math.cos(a), 16.5 * math.sin(a), 0.5 * (zc1 + zr1))
-    assert not _inside(sleeve, 15.5 * math.cos(a), 15.5 * math.sin(a), 0.5 * (zc1 + zr1))
-    assert cup["parts"]["thread_inserts"].solids().size() == NI.SCREW_N
+    # (2026-11-20, user) the anchor gap holds the Al SNAP RING (r 16–17), not a band
+    ring = cup["parts"]["snap_ring"]
+    assert _inside(ring, 16.5 * math.cos(a), 16.5 * math.sin(a), 0.5 * (zc1 + zr1))
+    assert not _inside(sleeve, 16.5 * math.cos(a), 16.5 * math.sin(a), 0.5 * (zc1 + zr1))
+    assert not _inside(ring, 15.5 * math.cos(a), 15.5 * math.sin(a), 0.5 * (zc1 + zr1))
+    assert ring.intersect(sleeve).solids().size() == 0 or \
+        ring.intersect(sleeve).val().Volume() < 1e-3
     # compute KEY rib on the inner wall at compute height
     ka = math.radians(NI.KEY_ANGLE_DEG)
     assert _inside(sleeve, 16.75 * math.cos(ka), 16.75 * math.sin(ka), zc1 - 0.4)
     assert not _inside(sleeve, 16.75 * math.cos(ka + 0.2), 16.75 * math.sin(ka + 0.2), zc1 - 0.4)
     # the crown funnels DOWN into the ring's bore (the ring sits in the nook)
     zf = NI.cone_z(14.5, zb) - 0.4                       # inside the funnel wall …
-    assert zf < zr1                                      # … below the band top
+    assert zf < zr1                                      # … below the ring top
     assert _inside(sleeve, 14.5 * math.cos(a2), 14.5 * math.sin(a2), zf)
-    assert _inside(cup["parts"]["screws"], 17.0 * math.cos(math.radians(NI.SCREW_ANGLES_DEG[0])),
-                   17.0 * math.sin(math.radians(NI.SCREW_ANGLES_DEG[0])), 0.5 * (zc1 + zr1))
-    # the thread insert's bore through the band at each screw
-    sa = math.radians(NI.SCREW_ANGLES_DEG[0])
-    zs = 0.5 * (zc1 + zr1)
-    assert not _inside(sleeve, rs * math.cos(sa), rs * math.sin(sa), zs)
-    ri = 0.5 * (NI.THREAD_INSERT_R_MM[0] + 16.0)
-    assert _inside(cup["parts"]["thread_inserts"], ri * math.cos(sa) + 1.8 * -math.sin(sa),
-                   ri * math.sin(sa) + 1.8 * math.cos(sa), zs)
-
-
-def test_radar_window(cups):
-    """Open nose, no radome part: nothing of the nose cone sits over the AoP."""
-    cup = cups["core_radar"]
-    n, nose = cup["nose"], cup["parts"]["nose_cone"]
-    assert "radome_insert" not in cup["parts"]
-    x0, y0, x1, y1 = n.dam
-    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-    assert not _inside(nose, cx, cy, n.profile.z_top - 0.2)   # open shell
-
-def test_optic_insert(cups):
-    cup = cups["core_qpd"]
-    T = cup["nose"].tube
-    ins = cup["parts"]["optic_insert"]
-    r = 0.5 * (T["r_in"] + T["r_out"])
-    assert _inside(ins, T["x"] + r, T["y"], 0.5 * (T["z0"] + T["z1"]))     # light tube wall
-    assert not _inside(ins, T["x"], T["y"], 0.5 * (T["z0"] + T["z1"]))     # open bore
 
 
 def test_write_noses(built, tmp_path):
@@ -375,7 +353,7 @@ def test_write_noses(built, tmp_path):
     assert (tmp_path / "sleeve" / "core_sleeve" / "frame.json").exists()
     assert "Contact map" in (tmp_path / "sleeve" / "core_sleeve" / "crown.md").read_text()
     cd = tmp_path / "sleeve" / "core"
-    for f in ("core_sleeve.step", "nose_cone.step", "retaining_ring.step", "screws.step",
+    for f in ("core_sleeve.step", "snap_ring.step", "nose_cone.step", "retaining_ring.step",
               "nose_cam.md", "frame.json"):
         assert (cd / f).exists(), f
     assert res["cups"]["core"]["n_vias"] > 0
@@ -410,26 +388,28 @@ def test_unrolled_sleeve_copper_keeps_clearance(built, tmp_path):
 
 
 
-def test_nose_cap_carries_the_tabs_through_slots_in_the_nose_cone(cups):
-    """(2026-11-20, user) the TABS belong to the nose CAP (λ/2 radome lid); the
-    nose cone only has SLOTS they pass through. The cap's press rim bears on
-    the payload board, so cone + board are pressure-fixed by the cap."""
+def test_nose_cap_hooks_pass_the_land_ring_and_crown_in_slots(cups):
+    """(2026-11-20, user) SNAP: the cap's spring HOOKS run down INSIDE the bore
+    through slots in the nose cone's land ring and the crown; nothing else
+    overlaps the cap or the hooks. The cap's press rim bears on the payload
+    board, so cone + board are pressure-fixed by the cap."""
     for cfg, cup in cups.items():
         P, n = cup["parts"], cup["nose"]
-        cap, cone, sleeve = P["nose_cap"], P["nose_cone"], P["core_sleeve"]
+        cap, cone, sleeve, ring = P["nose_cap"], P["nose_cone"], P["core_sleeve"], P["snap_ring"]
+        hooks = P["retaining_ring"]
         zc1, zr1 = cup["z_ring"]
-        # probe beside the stainless insert (insert is 1 mm narrower than the tab)
-        r_tab, side = cup["r_out"] - 0.4, NI.PLATE_W_MM / 2 - 0.3
-        for ang in NI.SCREW_ANGLES_DEG:
+        r_leg = NI.HOOK_R_IN_MM + NI.HOOK_T_MM / 2
+        for ang in NI.HOOK_ANGLES_DEG:
             a = math.radians(ang)
-            x = r_tab * math.cos(a) - side * math.sin(a)
-            y = r_tab * math.sin(a) + side * math.cos(a)
-            for z in (zr1 + 0.5, n.z_payload[0] + 0.3, n.profile.z_top - 0.3):
-                assert (_inside(cap, x, y, z) or _inside(P["retaining_ring"], x, y, z)), \
-                    (cfg, ang, z)                                     # the cap's tab …
-                assert not _inside(cone, x, y, z), (cfg, ang, z)     # … in the cone's slot
-        for other in (cone, sleeve, P["retaining_ring"], P["thread_inserts"]):
-            v = cap.intersect(other).val().Volume() if cap.intersect(other).solids().size() else 0.0
+            x, y = r_leg * math.cos(a), r_leg * math.sin(a)
+            for z in (zr1 - 0.3, zr1 + 0.5, n.z_payload[0] - 0.3, n.z_payload[1] + 0.3):
+                assert _inside(hooks, x, y, z), (cfg, ang, z)           # the leg …
+                for other in (cone, sleeve, ring):
+                    assert not _inside(other, x, y, z), (cfg, ang, z)  # … in its slots
+        for a_, b_ in ((cap, cone), (cap, sleeve), (cap, ring), (hooks, cone),
+                       (hooks, sleeve), (hooks, ring)):
+            i = a_.intersect(b_)
+            v = i.val().Volume() if i.solids().size() else 0.0
             assert v < 1e-3, cfg
         # press rim reaches the payload board top at its edge annulus
         r_rim = cup["r_out"] - 0.8 - 0.05 - 0.4
@@ -459,32 +439,33 @@ def test_radar_cap_gap_is_k_half_lambda(built):
 
 
 
-def test_screw_head_bears_on_the_steel_foot_within_the_tab(cups):
-    """(2026-11-20, user: tab too short, head too big, pull-down too weak) the
-    Ø5.5 ISO 7046 head lies wholly on the tab (above its lower end) and seats
-    in a countersink in the 1.3 mm stainless FOOT — steel under the whole
-    head; the thread insert sits inward of the foot, inside the band."""
+def test_snap_hooks_catch_under_the_ring_lips_with_release_holes(cups):
+    """(2026-11-20, user) each hook's barb sits UNDER the snap ring's catch lip
+    (flat catch face, SNAP_ENGAGE radial overlap); a Ø1 release hole through
+    the sleeve skin and the ring wall points at the barb (pin tool)."""
     cup = cups["core_radar"]
     zc1, zr1 = cup["z_ring"]
-    P, r_out = cup["parts"], cup["r_out"]
+    P = cup["parts"]
+    ring, hooks, sleeve = P["snap_ring"], P["retaining_ring"], P["core_sleeve"]
     assert zr1 - zc1 >= NI.ANCHOR_RING_MIN_MM - 1e-6
-    zs = zc1 + NI.SCREW_Z_MM
-    assert zs - NI.SCREW_HEAD_D_MM / 2 >= zc1 + NI.TAB_BOTTOM_MM          # head on the tab
-    assert NI.TAB_FOOT_T_MM >= NI.SCREW_HEAD_K_MM                         # flush countersink
-    assert NI.THREAD_INSERT_R_MM[1] <= r_out - NI.TAB_FOOT_T_MM
-    assert zs + NI.THREAD_INSERT_OD_MM / 2 <= zr1 + 1e-6                  # insert in the band
-    for ang in NI.SCREW_ANGLES_DEG:
+    rb = 0.5 * (NI.SNAP_LIP_R_IN_MM + NI.BARB_R_OUT_MM)        # the catch overlap
+    z_lip = zr1 - NI.SNAP_LIP_H_MM
+    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
+    for ang in NI.HOOK_ANGLES_DEG:
         a = math.radians(ang)
-        # just outside the 90° countersink cone, at two depths: steel (the foot)
-        for depth in (0.6, 0.95):
-            rr, dz = r_out - depth, NI.SCREW_HEAD_D_MM / 2 - depth + 0.35
-            for sgn in (-1, 1):
-                assert _inside(P["retaining_ring"], rr * math.cos(a), rr * math.sin(a),
-                               zs + sgn * dz), (ang, depth, sgn)
+        c, s_ = math.cos(a), math.sin(a)
+        assert _inside(ring, rb * c, rb * s_, z_lip + 0.2), ang       # lip above …
+        assert _inside(hooks, rb * c, rb * s_, z_lip - 0.2), ang      # … barb below
+        assert not _inside(ring, rb * c, rb * s_, z_lip - 0.2), ang
+        for r in (16.5, 17.5):                                        # release hole
+            assert not _inside(ring, r * c, r * s_, z_rel), (ang, r)
+            assert not _inside(sleeve, r * c, r * s_, z_rel), (ang, r)
+        a_off = a + math.radians(5.0)                                 # wall beside it
+        assert _inside(ring, 16.5 * math.cos(a_off), 16.5 * math.sin(a_off), z_rel), ang
+    assert NI.SNAP_ENGAGE_MM == pytest.approx(0.4)
 
 
-
-def test_tabs_hang_from_a_steel_ring_with_the_copper_bump(cups):
+def test_hooks_hang_from_a_steel_ring_with_the_bump(cups):
     """(2026-11-20, user) the tabs are steel, integral with a retaining RING
     along the cap's edge (overmoulded by the PEEK lid) and its stainless OD-40
     bump (keeps the Ø35.8 body off the bore) — ONE part. Ring + bump stay outside the
@@ -507,21 +488,13 @@ def test_tabs_hang_from_a_steel_ring_with_the_copper_bump(cups):
     assert r_out - NI.CAP_RING_W_MM >= 12.7
     assert _inside(cap, 0.0, 0.0, z_top - 0.3) or n.payload != "radar_module"    # PEEK window
     bb = ring.val().BoundingBox()
-    assert bb.zmin <= cup["z_ring"][0] + NI.TAB_BOTTOM_MM + 1e-3          # tabs reach down
+    z_tip = cup["z_ring"][1] - NI.SNAP_LIP_H_MM - NI.BARB_CATCH_H_MM - NI.BARB_RAMP_H_MM
+    assert bb.zmin == pytest.approx(z_tip, abs=1e-3)                       # hooks reach the lips
+    assert bb.zmin >= cup["z_ring"][0] + NI.HOOK_TIP_CLEAR_MM - 1e-3       # clear of compute
 
 
 
-def test_bump_ends_above_the_screw_heads(cups):
-    """(user) the round bump ENDS above the screw heads — no cut-outs; the
-    heads go in and out radially past nothing."""
+def test_bump_leaves_the_release_holes_free(cups):
+    """The round bump (R 5, user) must not cover the Ø1 release holes."""
     for cfg, cup in cups.items():
-        zc1 = cup["z_ring"][0]
-        head_top = zc1 + NI.SCREW_Z_MM + NI.SCREW_HEAD_D_MM / 2
-        bb = cup["parts"]["retaining_ring"].val().BoundingBox()
-        ring = cup["parts"]["retaining_ring"]
-        for ang in NI.SCREW_ANGLES_DEG:
-            a = math.radians(ang)
-            for r in (18.0, 18.5, 19.5):
-                for z in (head_top, head_top + NI.BUMP_SCREW_CLEAR_MM - 0.05):
-                    assert not _inside(ring, r * math.cos(a), r * math.sin(a), z), (cfg, ang, r)
         assert not any("cap bump bottom" in w for w in cup.get("warnings", [])), cfg

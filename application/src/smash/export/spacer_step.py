@@ -841,7 +841,7 @@ def _ring_body(cq, r_in, r_out, h, open_sector=None):
     return body
 
 
-ANCHOR_GAP = "spacer_companion_compute_radar_module"   # (no hardware: PEEK band of the sleeve)
+ANCHOR_GAP = "spacer_companion_compute_radar_module"   # snap ring: built in sleeve_step (nose set)
 
 
 def is_anchor_gap(name: str) -> bool:
@@ -881,7 +881,7 @@ def gap_hardware_body(name: str, boards: dict, chain: list):
         return None
     if kind == "ring":
         if is_anchor_gap(name):
-            return None          # (2026-11-19) PEEK anchor band = part of the sleeve moulding
+            return None          # (2026-11-20) the SNAP RING is built with the nose set (sleeve_step)
         rs = ring_spec(name)
         return _ring_body(cq, rs.r_in, rs.r_out, h, ring_open_sector(name)), h, name, kind
     return _standoffs_body(cq, h), h, name, kind
@@ -922,7 +922,7 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{CELL_PIN_HOLE_D_MM:g} floor holes into aft_end PTHs, + pins → AWG 28 wires "
                     "down the potting channel + a floor-underside fan-out pocket → aft_end PTHs")
         elif kind == "ring" and is_anchor_gap(name):
-            continue             # (2026-11-19) PEEK anchor band = part of the sleeve moulding
+            continue             # (2026-11-20) the SNAP RING is built with the nose set (sleeve_step)
         elif kind == "ring":
             h = b.thickness_mm
             osec = ring_open_sector(name)

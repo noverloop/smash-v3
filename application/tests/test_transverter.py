@@ -137,8 +137,8 @@ def test_tx_chain_pad_pa_and_switched_5v(design):
     assert vg in _two_ended(design, _chip(design, "R_XV_PA_VG1"))
     # XV_5V: MCP1640D (true output disconnect) enabled by WBA PB7, off by default
     bst = _chip(design, "U_XV_BOOST")
-    assert bst.manf_pn == "MCP1640DT-I/CHY"
-    assert _net(design, bst, "VOUT") == "XV_5V"
+    assert bst.manf_pn == "MCP1640DT-I/MC"      # DFN-8 (2026-11-20)
+    assert _net(design, bst, "VOUTP") == _net(design, bst, "VOUTS") == "XV_5V"
     assert _net(design, bst, "VIN") in _names(design, "3V3")
     en = _net(design, bst, "EN")
     assert en == "XV_PA_EN" == _net(design, _chip(design, "U_WBA"), "PB7")

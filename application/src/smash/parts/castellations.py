@@ -417,7 +417,9 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         taken = [float(a) for ln in list(lanes.values()) + list(feeds.values())
                  if crown_host in ln.get("boards", []) and ln.get("kind") not in
                  ("crown_top", "crown_payload") for a in ln["angles"]]
-        plate_half = math.degrees((0.5 * NI.PLATE_W_MM + 0.4) / r)
+        # (2026-11-20) snap hooks run INSIDE the bore: only the Ø1 release-pin
+        # holes at the hook angles exclude lanes (was the 7 mm screw plate)
+        plate_half = math.degrees((0.5 * NI.RELEASE_EXCL_W_MM + 0.4) / r)
         scr = sorted(NI.SCREW_ANGLES_DEG)
         free_slots = [a for a in _ring_angles(r)
                       # a FULL pitch from every other compute castellation: the

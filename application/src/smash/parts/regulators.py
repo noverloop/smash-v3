@@ -7,6 +7,7 @@ artifacts in `parts/sources/<PN>/`.
 from __future__ import annotations
 
 from smash.state import Chip, Pin, Pad, Footprint
+from smash.parts._slug import canonical_id
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -538,6 +539,63 @@ def add_tps61175pwpr(design, ref: str, **overrides) -> Chip:
         ],
         footprint=_tps61175_htssop14_footprint(),
         note=_TPS61175_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def _mcp1640_dfn8_mc_footprint() -> Footprint:
+    """MCP1640 8-lead 2×3×0.9 mm DFN (MC), Microchip drawing C04-2123B
+    recommended land pattern (DS20002234E p26): pitch 0.50, pads 0.30 × 0.75
+    on C1 = 2.90 rows, EP 1.45 × 1.75. Top view: pins 1–4 along the +y row
+    left→right, 5–8 along the −y row right→left."""
+    pads = []
+    for i, x in enumerate((-0.75, -0.25, 0.25, 0.75)):
+        pads.append(Pad(num=str(1 + i), position_mm=(x, 1.45), size_mm=(0.30, 0.75), shape="rect"))
+        pads.append(Pad(num=str(8 - i), position_mm=(x, -1.45), size_mm=(0.30, 0.75), shape="rect"))
+    pads.append(Pad(num="9", position_mm=(0.0, 0.0), size_mm=(1.45, 1.75), shape="rect"))
+    return Footprint(
+        name="MCHP_MC_DFN-8_2x3", package_class="DFN-8",
+        pads=sorted(pads, key=lambda p: int(p.num)),
+        body_outline=[(-1.0, -1.5), (1.0, -1.5), (1.0, 1.5), (-1.0, 1.5)],
+        courtyard=[(-1.25, -2.05), (1.25, -2.05), (1.25, 2.05), (-1.25, 2.05)],
+        pitch_mm=0.50, size_mm=(2.0, 3.0), height_mm=1.0,
+        model_3d_path=None, source="datasheet",
+    )
+
+
+def add_mcp1640_dfn(design, ref: str, *, variant: str = "C", **overrides) -> Chip:
+    """Microchip MCP1640{variant}T-I/MC — the MCP1640 synchronous boost in the
+    2 × 3 × 0.9 mm (1.0 max) DFN-8. (2026-11-20, user) replaces the 1.45 mm
+    SOT-23-6 (U_BOOST = C variant, U_XV_BOOST = D variant).
+
+    DFN pins (DS Table 3-1): 1 VFB, 2 SGND, 3 PGND, 4 EN, 5 SW, 6 VOUTP,
+    7 VOUTS, 8 VIN, 9 EP. SGND/PGND/EP join GND and VOUTS/VOUTP join VOUT
+    EXTERNALLY (DS §3.2/3.6/3.7) — the callers wire both."""
+    pn = f"MCP1640{variant}T-I/MC"
+    fields = dict(
+        manf="Microchip", manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn, value=pn,
+        description=("Synchronous boost regulator, 0.65 V start-up, V_OUT 2.0..5.5 V, "
+                     f"auto PFM/PWM ({variant} variant), 2×3 mm DFN-8"),
+        datasheet="application/src/smash/parts/sources/MCP1640CT-I_MC/MCP1640-family_DS20002234E.pdf",
+        standards=["ESD HBM 3 kV", "ESD MM 300 V"],
+        package="DFN-8 2×3 mm (MC)", size_mm=(2.0, 3.0), height_mm=1.0,
+        temp_range_c=(-40, 85), voltage_rating_v=6.5,
+        p_active_w=0.01, p_max_w=0.05, rth_jc_cw=None, tj_max_c=125.0,
+        pins=[
+            Pin(num="1", name="VFB", type="input"),
+            Pin(num="2", name="SGND", type="ground"),
+            Pin(num="3", name="PGND", type="ground"),
+            Pin(num="4", name="EN", type="input"),
+            Pin(num="5", name="SW", type="io"),
+            Pin(num="6", name="VOUTP", type="power"),
+            Pin(num="7", name="VOUTS", type="power"),
+            Pin(num="8", name="VIN", type="power"),
+            Pin(num="9", name="EP", type="ground", note="exposed pad → GND"),
+        ],
+        footprint=_mcp1640_dfn8_mc_footprint(),
+        note="DFN-8 variant of MCP1640 (θJA 75 °C/W, DS p4).",
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

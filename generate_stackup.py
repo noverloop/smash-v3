@@ -63,7 +63,7 @@ from smash.parts.radar import (                                        # noqa: E
     add_awr2944abgaltrq1, add_awr2e44pbgamxrq1, add_awr1843aop,
 )
 from smash.parts.regulators import (                                    # noqa: E402
-    add_lmr10510xmfe_nopb, add_mcp1640ct_i_chy, add_tps61175pwpr,
+    add_lmr10510xmfe_nopb, add_mcp1640ct_i_chy, add_tps61175pwpr, add_mcp1640_dfn,
 )
 from smash.parts.motor_drivers import add_drv8428epwpr                  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
@@ -71,7 +71,7 @@ from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
                                 add_bas40_02l, add_stps1l60zf)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
-    add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr,
+    add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr, add_tps7a0233pdqnr,
 )
 from smash.parts.pmics import add_stpmic25apqr                          # noqa: E402
 from smash.parts.sensors import add_h3lis331dltr, add_tmp117maidrvr     # noqa: E402
@@ -91,7 +91,7 @@ from smash.parts.mosfets import (                                        # noqa:
 )
 from smash.parts.logic import add_cd74hc4514pw                           # noqa: E402
 from smash.parts.oscillators import (                                    # noqa: E402
-    add_sit1630ae_s6_dcc_32_768e, add_dsc1001ci5_008_0000,
+    add_sit1630ae_s6_dcc_32_768e, add_sit1533ai_h4_dcc_32_768e, add_dsc1001ci5_008_0000,
     add_dsc1001ci5_032_0000, add_dsc1001ci5_040_0000,
 )
 from smash.parts.passives import (                                       # noqa: E402
@@ -498,16 +498,15 @@ def build_companion_compute(d: Design) -> None:
     # (not internal LSI) so the Linux/flight RTC keeps accurate wall-clock
     # time for logs + cert validity. SiT1630 pins: 1=GND, 2/3=NC(→GND),
     # 4=VDD, 5=OUT.
-    lse_osc = add_sit1630ae_s6_dcc_32_768e(d, ref="Y_MPU_LSE", board_tag=BTAG,
+    # (2026-11-20, user) SiT1533 2.0×1.2×0.55 mm instead of the 1.45 mm SiT1630
+    lse_osc = add_sit1533ai_h4_dcc_32_768e(d, ref="Y_MPU_LSE", board_tag=BTAG,
                                            feature="clock")
-    _net(d, "GND")        .connect(lse_osc.pin("1"))
-    _net(d, "GND")        .connect(lse_osc.pin("2"))  # NC — datasheet: GND or float
-    _net(d, "GND")        .connect(lse_osc.pin("3"))  # NC — datasheet: GND or float
-    _net(d, "COMP_3V3")   .connect(lse_osc.pin("4"))  # VDD
-    _net(d, "COMP_LSE_IN").connect(lse_osc.pin("5"))  # OUT
+    _net(d, "GND")        .connect(lse_osc.pin("GND"))
+    _net(d, "COMP_3V3")   .connect(lse_osc.pin("VDD"))
+    _net(d, "COMP_LSE_IN").connect(lse_osc.pin("CLK_OUT"))
     _net(d, "COMP_LSE_IN").connect(mpu.pin("OSC32_IN"))  # M2
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_LSE_VDD",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=lse_osc.pin("4"))
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=lse_osc.pin("VDD"))
 
     # FC↔companion links (UART4 console + SWD to the H562) REMOVED — the M33
     # IS the flight controller now, so M33↔A35 comms are on-chip (RPMsg / shared
@@ -1927,25 +1926,21 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     cap_to_gnd(d, "XV_5V", "100nF", ref="C_XV_PA_CHOKE", board_tag=BTAG)
 
     # ── XV_5V: MCP1640D boost (output disconnect when EN low) ─────────
-    bst = add_mcp1640ct_i_chy(
-        d, ref="U_XV_BOOST", board_tag=BTAG,
-        manf_pn="MCP1640DT-I/CHY", name="MCP1640DT-I/CHY", value="MCP1640DT-I/CHY",
-        canonical_id="mcp1640dt_i_chy",
-        description=("Synchronous boost regulator, 0.65 V start-up, V_OUT adjustable "
-                     "2.0..5.5 V, auto PFM/PWM, TRUE OUTPUT DISCONNECT in shutdown "
-                     "(D variant), 6L SOT-23"))
+    # (2026-11-20, user) DFN-8 (1.0 mm) instead of SOT-23-6; D = true output disconnect
+    bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, variant="D")
     _net(d, "3V3").connect(bst.pin("VIN"))
-    gnd(bst, "GND")
+    gnd(bst, "SGND", "PGND", "EP")
     _net(d, "XV_PA_EN").connect(bst.pin("EN"))
     R("XV_PA_EN", "GND", "100k", "R_XV_PA_EN_PD")
     _net(d, "XV_BST_SW").connect(bst.pin("SW"))
     L("3V3", "XV_BST_SW", "2.2uH", "L_XV_BOOST")
-    _net(d, "XV_5V").connect(bst.pin("VOUT"))
+    _net(d, "XV_5V").connect(bst.pin("VOUTP"))
+    _net(d, "XV_5V").connect(bst.pin("VOUTS"))
     _net(d, "XV_BST_FB").connect(bst.pin("VFB"))
     R("XV_5V", "XV_BST_FB", "309k", "R_XV_BST_FB1")                  # 1.21 V × (1 + 309/100) = 4.95 V
     R("XV_BST_FB", "GND", "100k", "R_XV_BST_FB2")
     cap_to_gnd(d, "3V3", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, pin=bst.pin("VIN"))
-    cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, pin=bst.pin("VOUT"))
+    cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, pin=bst.pin("VOUTP"))
 
     # ── RX: GRF2073W LNA on 3V3 (⚠ match = DS 3.4-3.8 GHz BOM, PLACEHOLDER) ─
     lna = add_grf2073w(d, ref="U_XV_LNA", board_tag=BTAG, feature=F)
@@ -2374,8 +2369,11 @@ def build_activation_interface(d: Design) -> None:
                 board_tag="activation_interface")
     res_between(d, "HEALTH_COIL_G", "GND", "100k", ref="R_COIL_PD",
                 board_tag="activation_interface")
+    # decouples the coil's FEED (pin 1, on BAT_PROT) — not the FET drain,
+    # which sits on HEALTH_COIL_D. The coil is added post-place
+    # (_place_health_coil), so it is referenced by (ref, pin).
     cap_to_gnd(d, "BAT_PROT", "10uF", ref="C_HEALTH_COIL",
-               board_tag="activation_interface", pin=q_coil.pin("3"))
+               board_tag="activation_interface", pin=("L_HEALTH_COIL", "1"))
 
     _build_activation_array(d)
 
@@ -3766,7 +3764,8 @@ def build_wakeup_board(d: Design) -> None:
     # sequence is SLOW: bits ≥ ~3 s, full wake ~10-15 s — a depot
     # bulk-wake, not a tap. The WBA (once booted) IDs the wake source by
     # elimination and demands the pattern continue before holding.
-    tmr_ldo = add_tps7a0233pdbvr(d, ref="U_TMR_LDO", board_tag=BTAG)
+    tmr_ldo = add_tps7a0233pdqnr(d, ref="U_TMR_LDO", board_tag=BTAG)   # (2026-11-20) X2SON 0.4 mm
+    _net(d, "GND").connect(tmr_ldo.pin("EP"))
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("IN"))
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("EN"))     # always on
     _net(d, "GND")    .connect(tmr_ldo.pin("GND"))
@@ -3819,44 +3818,53 @@ def build_wakeup_board(d: Design) -> None:
                 ref="R_JUMP_WAKE", board_tag=BTAG)
     _net(d, "MAG_SHELF_K").connect(d_jump.pin("K_2"))   # TMR shelf-wake leg
 
+    # (2026-11-20, user) the whole 3V3 chain (MCP1640 boost + LDL112 LDO +
+    # their caps, ~86 mm²) moved wakeup → power_board BOTTOM: wakeup's top
+    # was over the ~500 mm²-per-face packing ceiling (544 mm²), power's
+    # bottom had ~158 mm² spare (its top only ~73). Power next to power;
+    # REG_IN_MAIN + 3V3 now cross the wakeup↔power gap (one gap).
+    _PWR_TAG, _PWR_FACE = "power_board", "bottom"
     # ── MCP1640 boost regulator (REG_IN_MAIN → BOOST_OUT ≈ 3.87 V) ──
-    boost = add_mcp1640ct_i_chy(d, ref="U_BOOST", board_tag=BTAG)
-    _net(d, "REG_IN_MAIN") .connect(boost.pin("3"))    # VIN
-    _net(d, "GND")         .connect(boost.pin("2"))    # GND
-    _net(d, "BOOST_SW")    .connect(boost.pin("1"))    # SW
-    _net(d, "BOOST_OUT")   .connect(boost.pin("5"))    # VOUT
-    _net(d, "REG_IN_MAIN") .connect(boost.pin("6"))    # EN tied VIN
-    _net(d, "BOOST_FB")    .connect(boost.pin("4"))    # FB
+    # (2026-11-20, user) DFN-8 (1.0 mm) instead of SOT-23-6
+    boost = add_mcp1640_dfn(d, ref="U_BOOST", board_tag=_PWR_TAG, feature=_PWR_FACE, variant="C")
+    _net(d, "REG_IN_MAIN") .connect(boost.pin("VIN"))
+    _net(d, "REG_IN_MAIN") .connect(boost.pin("EN"))      # EN tied VIN
+    for _g in ("SGND", "PGND", "EP"):
+        _net(d, "GND")     .connect(boost.pin(_g))
+    _net(d, "BOOST_SW")    .connect(boost.pin("SW"))
+    _net(d, "BOOST_OUT")   .connect(boost.pin("VOUTP"))
+    _net(d, "BOOST_OUT")   .connect(boost.pin("VOUTS"))
+    _net(d, "BOOST_FB")    .connect(boost.pin("VFB"))
 
     # 2.2 µH TMS (real 0806 power part, Isat 1.2 A » the ~0.2 A boost
     # peaks; MCP1640 DS inductor range 2.2–10 µH). The old binding was a
     # nonexistent "WE-KI 0402 4.7 µH" RF part (family capped ~120 nH) —
     # same bogus binding fixed on L_BOOST_COMP + both AWR bucks.
     ind_between(d, "REG_IN_MAIN", "BOOST_SW", "2.2uH",
-                ref="L_PWR", board_tag=BTAG)
+                ref="L_PWR", board_tag=_PWR_TAG, feature=_PWR_FACE)
     res_between(d, "BOOST_OUT", "BOOST_FB", "220k",
-                ref="R_BOOST_FB1", board_tag=BTAG)
+                ref="R_BOOST_FB1", board_tag=_PWR_TAG, feature=_PWR_FACE)
     res_between(d, "BOOST_FB",  "GND",      "100k",
-                ref="R_BOOST_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "REG_IN_MAIN", "10uF",  ref="CBOOST_IN1",  board_tag=BTAG, pin=boost.pin("3"))
-    cap_to_gnd(d, "REG_IN_MAIN", "100nF", ref="CBOOST_IN2",  board_tag=BTAG, pin=boost.pin("3"))
-    cap_to_gnd(d, "BOOST_OUT",   "22uF",  ref="CBOOST_OUT1", board_tag=BTAG, pin=boost.pin("5"))
+                ref="R_BOOST_FB2", board_tag=_PWR_TAG, feature=_PWR_FACE)
+    cap_to_gnd(d, "REG_IN_MAIN", "10uF",  ref="CBOOST_IN1",  board_tag=_PWR_TAG, feature=_PWR_FACE, pin=boost.pin("VIN"))
+    cap_to_gnd(d, "REG_IN_MAIN", "100nF", ref="CBOOST_IN2",  board_tag=_PWR_TAG, feature=_PWR_FACE, pin=boost.pin("VIN"))
+    cap_to_gnd(d, "BOOST_OUT",   "22uF",  ref="CBOOST_OUT1", board_tag=_PWR_TAG, feature=_PWR_FACE, pin=boost.pin("VOUTP"))
     cap_to_gnd(d, "BOOST_OUT",   "100nF", ref="CBOOST_OUT2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=boost.pin("5"))
+               embedded_cap_absorbs=True, board_tag=_PWR_TAG, feature=_PWR_FACE, pin=boost.pin("VOUTP"))
 
     # ── LDL112PV33R: BOOST_OUT (3.87 V) → 3V3 ──
     # ST DS10321 Table 1: pin 1=EN, pin 2=GND, pin 3=ADJ (NC on fixed),
     # pin 4=VOUT, pin 5=NC, pin 6=VIN, pin 7=EP-to-GND.
-    ldo_pwr = add_ldl112pv33r(d, ref="U_PWR", board_tag=BTAG)
+    ldo_pwr = add_ldl112pv33r(d, ref="U_PWR", board_tag=_PWR_TAG, feature=_PWR_FACE)
     _net(d, "BOOST_OUT") .connect(ldo_pwr.pin("VIN"))
     _net(d, "GND")       .connect(ldo_pwr.pin("GND"))
     _net(d, "BOOST_OUT") .connect(ldo_pwr.pin("EN"))   # tied VIN → always-on
     _net(d, "3V3")       .connect(ldo_pwr.pin("VOUT"))
     _net(d, "GND")       .connect(ldo_pwr.pin("EP"))   # thermal pad → GND
-    cap_to_gnd(d, "3V3", "22uF",  ref="COUT1", board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
-    cap_to_gnd(d, "3V3", "22uF",  ref="COUT2", board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
+    cap_to_gnd(d, "3V3", "22uF",  ref="COUT1", board_tag=_PWR_TAG, feature=_PWR_FACE, pin=ldo_pwr.pin("VOUT"))
+    cap_to_gnd(d, "3V3", "22uF",  ref="COUT2", board_tag=_PWR_TAG, feature=_PWR_FACE, pin=ldo_pwr.pin("VOUT"))
     cap_to_gnd(d, "3V3", "100nF", ref="COUT3",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo_pwr.pin("VOUT"))
+               embedded_cap_absorbs=True, board_tag=_PWR_TAG, feature=_PWR_FACE, pin=ldo_pwr.pin("VOUT"))
 
     # ── add_st25dv_tssop8_rf_wake — NFC dual-port tag ──
     # AON latch host tile. Was activation_interface ("beside the ST25DV/H3LIS")
@@ -3887,7 +3895,8 @@ def build_wakeup_board(d: Design) -> None:
     # µA-class domain (it bypasses the eFuse by design). Sited on
     # wakeup_board beside the WBA + Hall (two of its loads) and the rest
     # of the wake-latch pattern; BAT_RAW reaches it over the backbone.
-    aon = add_tps7a0233pdbvr(d, ref="U_AON_LDO", board_tag=_ACT_TAG)
+    aon = add_tps7a0233pdqnr(d, ref="U_AON_LDO", board_tag=_ACT_TAG)   # (2026-11-20) X2SON 0.4 mm
+    _net(d, "GND").connect(aon.pin("EP"))
     _net(d, "BAT_RAW").connect(aon.pin("IN"))
     _net(d, "GND")    .connect(aon.pin("GND"))
     _net(d, "AON_EN") .connect(aon.pin("EN"))    # smart internal pull-down: floats = OFF
@@ -5567,7 +5576,7 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
                     note=f"{rs.label} of {sp} (r {rs.r_in:g}-{rs.r_out:g}) bears here"))
             n += 1
     # (2026-11-18) The compute↔payload gap's ring is the nose ANCHOR ring:
-    # radial screw TIPS in the bore (no bosses; nose_interface.SCREW_ANGLES_DEG)
+    # snap HOOKS hang in the bore at nose_interface.HOOK_ANGLES_DEG
     # → keep compute's TOP and every nose payload's BOTTOM clear there; the
     # payload leaves (qpd / camera / usb_nose) also get the ring band.
     from smash.export import nose_interface as NI
@@ -5576,7 +5585,9 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
                    if b0 == NI.HOST and b1 in NI.PAYLOAD_BOARDS), None)
     if anchor is not None and NI.HOST in fold_M:
         M = fold_M[NI.HOST]
-        r0, r1 = NI.SCREW_BOSS_R_MM[0] - 0.3, RING_R_BAND_MM
+        # (2026-11-20) snap: the hook legs + barbs hang inside the bore at the
+        # hook angles (r ≥ HOOK_NOTCH_R) down to HOOK_TIP_CLEAR over compute
+        r0, r1 = NI.HOOK_NOTCH_R_MM - 0.3, RING_R_BAND_MM
         faces = [(NI.HOST, "F.Cu")] + [(pb, "B.Cu") for pb in NI.PAYLOAD_BOARDS if pb in boards]
         rs = ring_spec(anchor)
         for bname, cu in faces:
@@ -5593,20 +5604,36 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
                         note=f"nose land ring (r {NI.CROWN_R_IN_MM:g}+) bears here"))
                 n += 1
                 continue                       # the band screws are below it
-            import math
-            da_b = math.degrees((0.5 * NI.SCREW_BOSS_W_MM + 0.3) / r0)
-            for ang in NI.SCREW_ANGLES_DEG:
-                pts = [_local_xy(M, ang + da, rr) for da in (-da_b, da_b) for rr in (r0, r1)]
-                xs, ys = [q[0] for q in pts], [q[1] for q in pts]
-                b.geometry.keepouts.append(Keepout(
-                    polygon=[(min(xs), min(ys)), (max(xs), min(ys)), (max(xs), max(ys)), (min(xs), max(ys))],
-                    layers=(cu,), scope="component", tag="nose_screw_boss",
-                    note=f"anchor-ring screw tip at {ang:g}° (radial {NI.SCREW.split(' ')[0]})"))
-            n += 1
+            n += _hook_keepouts(b, M, cu, r0, r1)
+        # (2026-11-20, user) the hook LEGS pass each payload board's EDGE NOTCH
+        # (kicad_pcb cuts it): keep its top face clear there too
+        for pb in NI.PAYLOAD_BOARDS:
+            if pb in boards and getattr(boards[pb], "geometry", None) is not None \
+                    and fold_M.get(pb) is not None:
+                n += _hook_keepouts(boards[pb], fold_M[pb], "F.Cu",
+                                    NI.HOOK_NOTCH_R_MM - 0.3, 17.0)
     return n
 
 
 RING_R_BAND_MM = 16.2
+
+
+def _hook_keepouts(b, M, cu: str, r0: float, r1: float) -> int:
+    """(2026-11-20) plain keepout round each snap HOOK (r0–r1, ±notch half
+    width + 0.3) on face `cu` of board `b` (fold transform M)."""
+    import math
+    from smash.export import nose_interface as NI
+    from smash.parts.castellations import _local_xy
+    from smash.state.board_geometry import Keepout
+    da_b = math.degrees((0.5 * NI.HOOK_NOTCH_W_MM + 0.3) / r0)
+    for ang in NI.HOOK_ANGLES_DEG:
+        pts = [_local_xy(M, ang + da, rr) for da in (-da_b, da_b) for rr in (r0, r1)]
+        xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+        b.geometry.keepouts.append(Keepout(
+            polygon=[(min(xs), min(ys)), (max(xs), min(ys)), (max(xs), max(ys)), (min(xs), max(ys))],
+            layers=(cu,), scope="component", tag="nose_hook",
+            note=f"snap hook at {ang:g}° (leg r {NI.HOOK_R_IN_MM}–{NI.HOOK_R_IN_MM + NI.HOOK_T_MM})"))
+    return 1
 
 
 def _mark_battery_pockets(boards: dict) -> None:
@@ -6022,6 +6049,13 @@ def _check_gap_hardware_clearance(panel, boards: dict) -> list:
                 c = p.item
                 if p.face != face or getattr(c, "manf_pn", None) in (
                         "CASTELLATIONS", "LGA_lands"):
+                    continue
+                # copper-only parts (explicit 0 mm height, e.g. the embedded
+                # health coil) occupy no volume in the gap — nothing to collide.
+                # Pads (P_/TP_/J_) keep the check: cell-lead stubs stand proud.
+                if (not str(getattr(c, "ref", "")).startswith(("P_", "TP_", "J_"))
+                        and (getattr(c, "height_mm", None) == 0.0
+                             or getattr(getattr(c, "footprint", None), "height_mm", None) == 0.0)):
                     continue
                 sz = getattr(c, "size_mm", None) or getattr(
                     getattr(c, "footprint", None), "size_mm", None) or (0, 0)

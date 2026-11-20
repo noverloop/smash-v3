@@ -519,12 +519,11 @@ _NOSE_PART_COLORS = {
     "nose_cone":        (0.85, 0.80, 0.60, 0.6),
     "nose_cap":         (0.95, 0.90, 0.75, 0.7),    # λ/2 radome lid + retaining tabs
     "retaining_ring":   (0.75, 0.75, 0.80, 1.0),    # stainless ring + OD-40 bump + tabs + feet
-    "thread_inserts":   (0.80, 0.70, 0.40, 1.0),    # M3 inserts moulded in the sleeve band
+    "snap_ring":        (0.75, 0.76, 0.80, 1.0),    # 7075 Al snap ring (anchor gap)
     "radome_insert":    (0.95, 0.90, 0.75, 0.7),    # λ/2 PEEK disc + dam rib (open nose)
     "optic_insert":     (0.30, 0.30, 0.32, 1.0),    # light-tube dam (open nose)
     "aop_dam":          (0.30, 0.30, 0.32, 1.0),    # radar AoP dam collar (open nose)
     "aft_end_cap":      (0.85, 0.80, 0.60, 1.0),    # PEEK-LDS aft public-interface cap
-    "screws":           (0.35, 0.35, 0.38, 1.0),    # M3 countersunk, black oxide
     "lens":             (0.60, 0.80, 1.00, 0.5),
 }
 
@@ -580,7 +579,7 @@ def _add_sleeve_and_nose(cq, asm, sleeve_dir: pathlib.Path, nose_key, compute_to
     paths = [("core_sleeve", own if own is not None and own.exists()
               else sleeve_dir / "core_sleeve" / "core_sleeve.step")]
     if vd is not None:
-        paths += [(n, vd / f"{n}.step") for n in ("thread_inserts", "nose_cone", "nose_cap", "retaining_ring", "screws",
+        paths += [(n, vd / f"{n}.step") for n in ("snap_ring", "nose_cone", "nose_cap", "retaining_ring",
                                                   "radome_insert", "optic_insert", "aop_dam", "lens")]
     cap = sleeve_dir / "aft_end_cap" / "aft_end_cap.step"   # aft public interface (z ≤ 0)
     if cap.exists():

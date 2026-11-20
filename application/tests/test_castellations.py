@@ -236,10 +236,10 @@ def test_nose_payloads_use_the_crown(built):
     cs_ = sorted(comp)
     gaps = [(b - a) % 360 for a, b in zip(cs_, cs_[1:] + cs_[:1])]
     assert min(gaps) >= step - 1e-3                         # no two vias merge
-    # never under a retaining plate; fan order-preserving per screw sector
+    # never across a release-pin hole; fan order-preserving per hook sector
     from smash.export import nose_interface as NI
     scr = sorted(NI.SCREW_ANGLES_DEG)
-    half = math.degrees((0.5 * NI.PLATE_W_MM) / contract["radius_mm"])
+    half = math.degrees((0.5 * NI.RELEASE_EXCL_W_MM) / contract["radius_mm"])   # release-pin holes
     sec = NI.screw_sector
     for v in crown.values():
         a = v["angles"][0]

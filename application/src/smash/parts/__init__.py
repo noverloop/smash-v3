@@ -96,6 +96,7 @@ from smash.parts.passives import (
     add_resistor_0402_vishay,
     add_capacitor_x7r_0402_kemet,
     add_capacitor_x7r_0603_kemet_mil,
+    add_capacitor_x7r_0603_kemet_c0603c105k3ractu,
     add_capacitor_x7r_0805_kemet_mil,
     add_capacitor_c0g_0603_avx_sqcs,
     add_capacitor_tantalum_3528_kemet_t491,

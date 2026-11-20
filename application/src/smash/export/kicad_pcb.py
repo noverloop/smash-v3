@@ -1771,6 +1771,18 @@ def _cutouts_for_tile(
             _lx, _ly = _local_xy(_M, _NI.KEY_ANGLE_DEG, 17.0)
             cuts.append(make_cutout(math.degrees(math.atan2(_ly, _lx)) % 360.0,
                                     _NI.KEY_W_MM, depth_mm=_NI.KEY_DEPTH_MM, kind="notch"))
+    # (2026-11-20, user) SNAP hooks: every nose payload board gets an EDGE NOTCH
+    # at each hook angle (the cap's spring legs pass it on their way to the
+    # anchor gap's snap ring).
+    if name in _NI.PAYLOAD_BOARDS:
+        from smash.parts.castellations import board_fold_transforms, _local_xy
+        _M = board_fold_transforms(panel, list(panel.snake_chain or [])).get(name)
+        if _M is not None:
+            for _a in _NI.HOOK_ANGLES_DEG:
+                _lx, _ly = _local_xy(_M, _a, 17.0)
+                cuts.append(make_cutout(math.degrees(math.atan2(_ly, _lx)) % 360.0,
+                                        _NI.HOOK_NOTCH_W_MM,
+                                        depth_mm=17.0 - _NI.HOOK_NOTCH_R_MM, kind="notch"))
     if False:   # (2026-11-18) USB-C is VERTICAL at the nose tip now — no chord / notch
         # The connector MOUNTS on the USB nose (moved off the radar 2026-11-18). Its notch is 10.2 mm (+/-5.1) ->
         # wide enough to clear the ~8.3 mm mouth while the flat segments beside

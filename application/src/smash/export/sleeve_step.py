@@ -158,27 +158,34 @@ def _cached(key, build):
     return _GEOM_CACHE[key]
 
 
-def _screw_cutters(cq, ang, zc1, zr1, r_out, z_plate_top):
-    """(plate recess, crown-funnel clearance notch round the screw tip) at `ang`."""
+def _radial_prism(cq, ang: float, pts_rz: list, w: float):
+    """A prism of tangential width `w` whose (r, z) section is `pts_rz`,
+    centred on the radial direction `ang`."""
+    body = (cq.Workplane("XZ").polyline(pts_rz).close().extrude(w / 2.0, both=True))
+    return body.rotate((0, 0, 0), (0, 0, 1), ang)
+
+
+def _hook_slot(cq, ang, z0, z1):
+    """(2026-11-20) clearance slot for a snap hook (leg + barb) through the
+    land ring / crown: r HOOK_NOTCH_R … just past the ring bore."""
     from smash.export import nose_interface as NI
-    recess = _radial_box(cq, ang, r_out - NI.PLATE_T_MM, r_out + 0.5, NI.PLATE_W_MM + 0.2,
-                         zc1 + 0.3, z_plate_top + 0.1)
-    # deeper pocket for the tab's steel FOOT round the screw head
-    zs = zc1 + NI.SCREW_Z_MM
-    recess = recess.union(_radial_box(cq, ang, r_out - NI.TAB_FOOT_T_MM - 0.05, r_out + 0.5,
-                                      NI.TAB_INSERT_W_MM + 0.2,
-                                      zs - NI.TAB_FOOT_H_MM / 2 - 0.1,
-                                      zs + NI.TAB_FOOT_H_MM / 2 + 0.1))
-    notch = _radial_box(cq, ang, NI.SCREW_BOSS_R_MM[0] - 0.3, NI.CROWN_NOOK_R_MM + 0.05,
-                        NI.SCREW_BOSS_W_MM + 0.6, zc1 - 1.0, zr1 + 0.3)
-    return recess, notch
+    return _radial_box(cq, ang, NI.HOOK_NOTCH_R_MM, NI.SNAP_RING_R_MM[0] + 0.05,
+                       NI.HOOK_NOTCH_W_MM, z0, z1)
+
+
+def _release_hole(cq, ang, z, r0, r1):
+    """Ø RELEASE_PIN_D radial hole (pin tool → barb) from r0 out to r1."""
+    from smash.export import nose_interface as NI
+    return (cq.Workplane("YZ").circle(NI.RELEASE_PIN_D_MM / 2.0).extrude(r1 - r0)
+            .translate((r0, 0, z)).rotate((0, 0, 0), (0, 0, 1), ang))
 
 
 def _core_body(cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw):
-    """Undrilled one-piece sleeve body: the skin over the core, the PEEK ANCHOR
-    BAND over compute (r ANCHOR_BAND_R_IN → skin, compute's top bears on it),
-    inner feed / vent grooves, the compute KEY rib, tab recesses, inward insert
-    bosses and the thread-insert bores. Returns (body, thread_inserts)."""
+    """Undrilled one-piece sleeve body: the skin over the core AND over the
+    anchor gap's Al SNAP RING up into the crown's rim, inner feed / vent
+    grooves, the compute KEY rib and the two Ø1 RELEASE holes (pin tool →
+    hook barbs). (2026-11-20, user) snap retention: no band / bosses / inserts.
+    Returns (body, None)."""
     from smash.export import nose_interface as NI
     core = None
     for za, zb_, r in segs:
@@ -187,9 +194,9 @@ def _core_body(cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw):
             continue
         t = _tube(cq, r, r + SLEEVE_WALL_MM, za, zb_)
         core = t if core is None else core.union(t)
-    # PEEK anchor band (user 2026-11-19: no Al ring), 0.5 mm INTO the crown's
-    # outer rim (a 0.01 mm overlap made the sleeve ∪ crown union drop the tube)
-    core = core.union(_tube(cq, NI.ANCHOR_BAND_R_IN_MM, r_out, zc1 - 0.01, zr1 + 0.5))
+    # skin over the snap ring, 0.5 mm INTO the crown's outer rim (a 0.01 mm
+    # overlap made the sleeve ∪ crown union drop the tube)
+    core = core.union(_tube(cq, r_in, r_out, zc1 - 0.01, zr1 + 0.5))
     for ang in GROOVE_ANGLES_DEG:
         a = math.radians(ang)
         rc = r_in + GROOVE_D_MM / 2.0
@@ -198,51 +205,56 @@ def _core_body(cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw):
                         .rect(GROOVE_D_MM, GROOVE_W_MM).extrude(zc1))
     # KEY rib on the inner wall at compute height (compute's edge notch)
     core = core.union(_radial_box(cq, NI.KEY_ANGLE_DEG, NI.KEY_RIB_R_MM, r_in + 0.05,
-                                  NI.KEY_RIB_W_MM, zc0 - 0.3, zc1 + 0.01))
-    inserts = None
-    r0, r1 = NI.THREAD_INSERT_R_MM
-    for ang in NI.SCREW_ANGLES_DEG:
-        recess, _notch = _screw_cutters(cq, ang, zc1, zr1, r_out, z_plate_top)
-        boss = _radial_box(cq, ang, NI.SCREW_BOSS_R_MM[0], NI.ANCHOR_BAND_R_IN_MM + 0.05,
-                           NI.SCREW_BOSS_W_MM, zc1 + 0.01, zr1 + 0.3)
-        core = core.union(boss).cut(recess)
-        bore = (cq.Workplane("YZ").circle(NI.THREAD_INSERT_OD_MM / 2.0)
-                .extrude(r1 - r0).translate((r0, 0, z_screw))
-                .rotate((0, 0, 0), (0, 0, 1), ang))
-        clear = (cq.Workplane("YZ").circle(NI_SCREW_CLEAR_D / 2.0)
-                 .extrude(r_out - r1 + 0.5).translate((r1 - 0.01, 0, z_screw))
-                 .rotate((0, 0, 0), (0, 0, 1), ang))
-        core = core.cut(bore).cut(clear)
-        ins = (cq.Workplane("YZ").circle(NI.THREAD_INSERT_OD_MM / 2.0)
-               .circle(NI.HELICOIL_TAP_D_MM / 2.0).extrude(r1 - r0)
-               .translate((r0, 0, z_screw)).rotate((0, 0, 0), (0, 0, 1), ang))
-        inserts = ins if inserts is None else inserts.union(ins)
-    return core, inserts
+                                  NI.KEY_RIB_W_MM, zc0 - 0.3, zc1))
+    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
+    for ang in NI.HOOK_ANGLES_DEG:
+        core = core.cut(_release_hole(cq, ang, z_rel, r_in - 0.5, r_out + 0.5))
+    return core, None
+
+
+def snap_ring_body(cq, zc1: float, zr1: float):
+    """(2026-11-20, user) the anchor gap's 7075 SNAP RING: Ø34 / bore Ø32 from
+    compute's top (zc1) to the crown rim (zr1), two inward CATCH LIPS (top flush)
+    at the hook angles, a Ø1 release hole under each lip (pin tool → barb)."""
+    from smash.export import nose_interface as NI
+    r0, r1 = NI.SNAP_RING_R_MM
+    ring = _tube(cq, r0, r1, zc1, zr1)
+    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
+    for ang in NI.HOOK_ANGLES_DEG:
+        ring = ring.union(_radial_box(cq, ang, NI.SNAP_LIP_R_IN_MM, r0 + 0.05, NI.SNAP_LIP_W_MM,
+                                      zr1 - NI.SNAP_LIP_H_MM, zr1))
+        ring = ring.cut(_release_hole(cq, ang, z_rel, r0 - 0.01, r1 + 0.5))
+    return ring
+
+
+def hook_solid(cq, ang: float, zr1: float, z_top: float, r_ring_in: float, t_ring: float):
+    """One spring HOOK (stainless): a bridge in the lid from the retaining ring
+    (r ≥ r_ring_in) in to the leg, the leg (r HOOK_R_IN … +T) down the bore to
+    the barb: flat CATCH face under the lip (zr1 − LIP_H), lead-in RAMP below."""
+    from smash.export import nose_interface as NI
+    w, ri, t = NI.HOOK_W_MM, NI.HOOK_R_IN_MM, NI.HOOK_T_MM
+    zc = zr1 - NI.SNAP_LIP_H_MM                       # catch face (barb top)
+    zk = zc - NI.BARB_CATCH_H_MM                      # catch band bottom
+    ztip = zk - NI.BARB_RAMP_H_MM
+    bridge = _radial_box(cq, ang, ri, r_ring_in + 0.05, w, z_top - t_ring, z_top)
+    leg = _radial_box(cq, ang, ri, ri + t, w, ztip, z_top)
+    barb = _radial_prism(cq, ang, [(ri + t - 0.01, ztip), (NI.BARB_R_OUT_MM, zk),
+                                   (NI.BARB_R_OUT_MM, zc), (ri + t - 0.01, zc)], w)
+    # a flat barb's corners would reach hypot(15.95, w/2) ≈ 16.14 — into the
+    # ring wall: clip the crest to the r BARB_R_OUT cylinder (engagement 0.4
+    # at the centre, ≈ 0.2 at the barb's edges against the flat lip)
+    barb = barb.intersect(cq.Workplane("XY").circle(NI.BARB_R_OUT_MM)
+                          .extrude(zc - ztip + 2.0).translate((0, 0, ztip - 1.0)))
+    return bridge.union(leg).union(barb)
 
 
 def _crown_body(cq, zc1, zr1, r_out, z_plate_top):
-    """The crown with the screw-tip notches and tab recesses cut."""
+    """The crown with the two hook SLOTS cut (legs + barbs pass through)."""
     from smash.export import nose_interface as NI
     crown = bevel_crown(cq, zr1)
-    for ang in NI.SCREW_ANGLES_DEG:
-        recess, notch = _screw_cutters(cq, ang, zc1, zr1, r_out, z_plate_top)
-        crown = crown.cut(notch).cut(recess)
+    for ang in NI.HOOK_ANGLES_DEG:
+        crown = crown.cut(_hook_slot(cq, ang, zc1 - 1.0, z_plate_top + 5.0))
     return crown
-
-
-def _screw_solid(cq, ang: float, r_head: float, z: float, r_tip: float):
-    """Radial countersunk screw (ISO 10642-ish, M3): 90° head flush at r_head,
-    shank to r_tip. Illustration body for the assembly STEPs."""
-    from smash.export import nose_interface as NI
-    d = 3.0 if NI.SCREW.startswith("M3") else 2.5
-    dk = NI.SCREW_HEAD_D_MM                        # head Ø (ISO 7046-1)
-    k = (dk - d) / 2.0                             # 90° countersink depth
-    head = cq.Solid.makeCone(dk / 2.0, d / 2.0, k, cq.Vector(r_head, 0, z), cq.Vector(-1, 0, 0))
-    shank = cq.Solid.makeCylinder(d / 2.0, max(r_head - k - r_tip, 0.1),
-                                  cq.Vector(r_head - k, 0, z), cq.Vector(-1, 0, 0))
-    body = (cq.Workplane("XY").add(head.fuse(shank))
-            .rotate((0, 0, 0), (0, 0, 1), ang))
-    return _trim_to_skin(cq, body, z - dk, z + dk)     # head face follows the Ø35.8 skin
 
 
 def _arc_shell(cq, ang: float, r0: float, r1: float, w: float, z0: float, z1: float):
@@ -298,7 +310,7 @@ def cap_ring(cq, zr1: float, z_top: float):
     """Cap-side ring: a body from just above the crown walls (TOOTH_TOP_GAP
     clearance) up to `z_top`, with a BLOCK LAND hanging into every crown
     groove. Land tops (bottoms, facing aft) sit on the groove floors — the
-    plated contact pair, preloaded by the retention screws."""
+    plated contact pair, preloaded by the cap's press rim (snap hooks)."""
     from smash.export import nose_interface as NI
     zb = zr1 + NI.CROWN_BASE_MM
     T, G = NI.TOOTH_H_MM, NI.TOOTH_TOP_GAP_MM
@@ -313,7 +325,7 @@ def cap_ring(cq, zr1: float, z_top: float):
     for k in range(NI.N_TEETH):
         body = body.cut(_sector(cq, NI.tooth_angle(k) + pitch / 2.0, gap_half + 1e-3,
                                 zb, -1.0, T + G))
-        if k in NI.SCREW_TEETH:                        # no land at a screw position
+        if k in NI.SCREW_TEETH:                        # no land at a hook position
             body = body.cut(_sector(cq, NI.tooth_angle(k), NI.LAND_HALF_DEG + 1e-3,
                                     zb, -1.0, T + G))
     return body
@@ -366,14 +378,14 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     zb_c = zr1 + NI.CROWN_BASE_MM
     T, G = NI.TOOTH_H_MM, NI.TOOTH_TOP_GAP_MM
     z_plate_top = NI.cone_z(NI.CROWN_R_OUT_MM, zb_c) + T + G + 2.0
-    z_screw = zc1 + NI.SCREW_Z_MM                 # (2026-11-20) high in the band
+    z_screw = zr1 - NI.SNAP_Z_BELOW_TOP_MM        # (2026-11-20) release-hole z (snap)
     # (2026-11-19) the sleeve moulding (tube, ring band, grooves, plate recesses,
     # screw holes) and the crown are identical for every config / band: built
     # once per geometry and reused (only vias + nose differ) — see _GEOM_CACHE.
     base_key = (tuple((round(a, 4), round(b, 4), round(r, 4)) for a, b, r in segs),
                 round(zc1, 4), round(zr1, 4), round(r_in, 4), round(r_out, 4))
     zc0 = zmap[CORE_TOP_NAME][0] if CORE_TOP_NAME in zmap else zc1 - 1.6
-    core, thread_inserts = _cached(("core", round(zc0, 4)) + base_key, lambda: _core_body(
+    core, _none = _cached(("core", round(zc0, 4)) + base_key, lambda: _core_body(
         cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw))
     crown = _cached(("crown",) + base_key, lambda: _crown_body(
         cq, zc1, zr1, r_out, z_plate_top))
@@ -533,47 +545,18 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
             Tb = nose.tube
             cap = cap.cut(cq.Workplane("XY").center(Tb["x"], Tb["y"]).circle(Tb["r_in"])
                           .extrude(cap_t + 2.0).translate((0, 0, z_lid0 - 1.0)))
-    screws = None
-    slot_w = NI.PLATE_W_MM + 2 * CN.TAB_SLOT_CLEAR_MM
     # the RING: flush in the lid's outer edge (top face), r ≥ r_out − RING_W —
     # outside the radar FoV keep-out; PEEK lid + press rim continue under it
-    steel = (cq.Workplane("XY").circle(r_out).circle(r_out - NI.CAP_RING_W_MM)
+    r_ring_in = r_out - NI.CAP_RING_W_MM
+    steel = (cq.Workplane("XY").circle(r_out).circle(r_ring_in)
              .extrude(NI.CAP_RING_T_MM).translate((0, 0, z_lid1 - NI.CAP_RING_T_MM)))
-    for ang in NI.SCREW_ANGLES_DEG:
-        recess, notch = _screw_cutters(cq, ang, zc1, zr1, r_out, z_plate_top)
-        nose_body = nose_body.cut(notch).cut(recess)
-        # the SLOT in the nose cone the cap's tab passes through: a recess in
-        # the land ring, through the shell wall above it
-        nose_body = nose_body.cut(_radial_box(
-            cq, ang, r_out - NI.PLATE_T_MM - CN.TAB_SLOT_CLEAR_MM, r_out + 0.5, slot_w,
-            zr1 - 0.5, z0 + 0.01))
-        nose_body = nose_body.cut(_radial_box(cq, ang, r_in - 0.5, r_out + 0.5, slot_w,
-                                              z0, prof.z_top + 1.0))
-        # (2026-11-20, user) STEEL TAB, integral with the RETAINING RING along
-        # the cap's edge (one stainless part: ring + 2 tabs + countersunk feet,
-        # overmoulded by the PEEK lid / press rim). Axial OBLONG slot (shifts
-        # aft as the head seats — PRELOAD_OFFSET); the head bears on the foot.
-        slot_len = NI_SCREW_CLEAR_D + NI.TAB_SLOT_EXTRA_MM
-        zs = z_screw + NI.PRELOAD_OFFSET_MM
-
-        def _slot(r0, depth):
-            return (cq.Workplane("YZ").slot2D(slot_len, NI_SCREW_CLEAR_D, 90)
-                    .extrude(depth).translate((r0, 0, zs))
-                    .rotate((0, 0, 0), (0, 0, 1), ang))
-        zf0 = zs - NI.TAB_FOOT_H_MM / 2
-        tab = _radial_box(cq, ang, r_out - NI.PLATE_T_MM, r_out + 0.3, NI.PLATE_W_MM,
-                          zc1 + NI.TAB_BOTTOM_MM, z_lid1)
-        foot = _radial_box(cq, ang, r_out - NI.TAB_FOOT_T_MM, r_out + 0.3, NI.PLATE_W_MM,
-                           zf0, zf0 + NI.TAB_FOOT_H_MM)
-        csk = (cq.Workplane("XY").add(cq.Solid.makeCone(
-                   NI.SCREW_HEAD_D_MM / 2.0 + 0.05, 0.0, NI.SCREW_HEAD_D_MM / 2.0 + 0.05,
-                   cq.Vector(r_out + 0.05, 0, zs), cq.Vector(-1, 0, 0)))
-               .rotate((0, 0, 0), (0, 0, 1), ang))
-        st = (tab.union(foot).cut(_slot(r_out - NI.TAB_FOOT_T_MM - 0.5, NI.TAB_FOOT_T_MM + 1.0))
-              .cut(csk))
-        steel = st if steel is None else steel.union(st)
-        scr = _screw_solid(cq, ang, r_out, z_screw, NI.SCREW_TIP_R_MM)
-        screws = scr if screws is None else screws.union(scr)
+    for ang in NI.HOOK_ANGLES_DEG:
+        # (2026-11-20, user) SNAP: the hook's slot through the land ring of the
+        # nose cone (the legs pass the payload board's edge notch above it)
+        nose_body = nose_body.cut(_hook_slot(cq, ang, zr1 - 0.5, z0 + 0.01))
+        steel = steel.union(hook_solid(cq, ang, zr1, z_lid1, r_ring_in, NI.CAP_RING_T_MM))
+        cap = cap.cut(_radial_box(cq, ang, NI.HOOK_NOTCH_R_MM, NI.SNAP_RING_R_MM[0] + 0.05,
+                                  NI.HOOK_NOTCH_W_MM, z1 - 0.1, z_lid0 + 0.01))
 
     steel = _trim_to_skin(cq, steel, zc1, z_lid1 + 0.5)
     # OD-40 standoff bump, integral with the stainless ring, outside the skin:
@@ -582,10 +565,9 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     bump = (cq.Workplane("XZ").moveTo(r_out, zb0)
             .threePointArc((NI.CAP_BUMP_R_MM, 0.5 * (zb0 + zb1)), (r_out, zb1))
             .close().revolve(360.0, (0, 0, 0), (0, 1, 0)))
-    head_top = z_screw + NI.SCREW_HEAD_D_MM / 2.0
-    if zb0 < head_top + NI.BUMP_SCREW_CLEAR_MM - 1e-6:   # must end above the heads
-        warnings.append(f"cap bump bottom z {zb0:.2f} only {zb0 - head_top:.2f} mm above the "
-                        f"screw heads (< {NI.BUMP_SCREW_CLEAR_MM}) — reduce CAP_BUMP_ARC_R_MM")
+    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
+    if zb0 < z_rel + NI.RELEASE_PIN_D_MM:
+        warnings.append(f"cap bump bottom z {zb0:.2f} covers the release holes (z {z_rel:.2f})")
     inserts = steel.union(bump)
     cap = cap.cut(inserts)                         # PEEK lid / rim overmould the ring
 
@@ -659,20 +641,17 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
         warnings.append(f"{len(bad_sites)} sleeve via(s) not cut (OCC boolean failed): "
                         + ", ".join(f"{a:g}°@z{z:.2f}" for a, z in bad_sites[:8]))
     sleeve = core.union(crown)                     # ONE moulding: sleeve + crown
-    parts = {"core_sleeve": sleeve, "thread_inserts": thread_inserts,
+    snap_ring = _cached(("snap",) + base_key, lambda: snap_ring_body(cq, zc1, zr1))
+    parts = {"core_sleeve": sleeve, "snap_ring": snap_ring,
              "nose_cone": nose_body, "nose_cap": cap, "retaining_ring": inserts,
              **({"radome_insert": radome_insert} if radome_insert is not None else {}),
              **({"aop_dam": aop_dam} if aop_dam is not None else {}),
-             **({"optic_insert": optic_insert} if optic_insert is not None else {}),
-             "screws": screws}
+             **({"optic_insert": optic_insert} if optic_insert is not None else {})}
     return {"n_vias": len(sites), "segs": segs, "nose": nose, "active": active,
             "z_end_out": z_lid1, "r_out": r_out, "cchain": cchain, "z_crown": z0,
             "z_ring": (zc1, zr1), "via_sites": sites, "warnings": warnings, "lens": lens,
             "contract_lanes": (contract or {}).get("lanes", {}),
             "crown": crown, "parts": parts, "body": sleeve.union(nose_body)}
-
-
-NI_SCREW_CLEAR_D = 3.4           # M3 clearance through the plate + sleeve wall
 
 
 CORE_TOP_NAME = "companion_compute"
@@ -740,17 +719,15 @@ def _cup_cam_md(config: str, cup: dict, contract: dict | None) -> str:
         "crown's bottom edge — potting carries the sleeve's setback inertia, so the via "
         "rows are only safe once potted (handle the soldered, unpotted tower gently). NOSE — the payload board is placed on the nose cone's "
         "land ring (3 locating pins; its castellations join the land LDS) and the cone drops "
-        "onto the crown (block lands into the grooves, screw positions = key); the NOSE CAP "
-        f"(λ/2 radome lid, {CN.cap_t_mm():.2f} mm) goes on last: its {NI.SCREW_N} tabs pass "
-        "through the slots in the nose cone into the sleeve band's recesses and "
-        f"{NI.SCREW_N} radial {NI.SCREW} through the tabs' stainless inserts into the band's "
-        "threaded inserts clamp cap → press rim → payload board → land ring → crown. Nose "
-        "cone and board are PRESSURE-FIXED by the cap (no screws of their own); the tabs' "
-        f"DIMPLED countersinks sit {NI.PRELOAD_OFFSET_MM} mm forward of the threads, so seating "
-        "the heads pulls the cap aft (contact preload). The crown contact is SEPARABLE — no "
-        "solder; no compliance layer if the screws preload it enough. Swap noses (e.g. the "
-        "USB nose for programming) by "
-        f"removing the {NI.SCREW_N} screws.\n\n"
+        "onto the crown (block lands into the grooves, hook positions = key); the NOSE CAP "
+        f"(λ/2 radome lid, {CN.cap_t_mm():.2f} mm) goes on last: its {NI.HOOK_N} spring HOOKS "
+        "pass the payload board's edge notches and the slots in the land ring + crown and "
+        "SNAP under the catch lips of the anchor gap's Al snap ring — cap → press rim (crush "
+        f"rib {NI.CRUSH_RIB_H_MM} mm) → payload board → land ring → crown → ring top. Nose "
+        "cone and board are PRESSURE-FIXED by the cap (no fasteners of their own). The crown "
+        "contact is SEPARABLE — no solder. Swap noses (e.g. the USB nose for programming) by "
+        f"pushing a Ø{NI.RELEASE_PIN_D_MM:g} pin tool into each release hole (at "
+        f"{', '.join(f'{a:g}°' for a in NI.HOOK_ANGLES_DEG)}) and lifting the cap.\n\n"
         "| z (mm) | ID | OD |\n|---|---|---|\n" + prof + "\n\n"
         f"- Wall {SLEEVE_WALL_MM} mm; nose wall {nose.end_t:.3f} mm; shoulder starts at z "
         f"{nose.profile.z_s:.3f}, flat face inner z {nose.z_end_in:.3f}, outer z "
@@ -817,10 +794,9 @@ def write_sleeve_and_mould(boards: dict, chain: list, contract: dict | None,
         # config (only the lanes this payload uses) → one sleeve STEP per config
         cq.exporters.export(parts["core_sleeve"], str(cd / "core_sleeve.step"))
         cq.exporters.export(parts["core_sleeve"], str(cd / "core_sleeve.stl"))
-        cq.exporters.export(parts["thread_inserts"], str(cd / "thread_inserts.step"))
-        for old in ("tab_inserts.step", "cap_bump.step"):   # (2026-11-20) → retaining_ring
+        for old in ("tab_inserts.step", "cap_bump.step", "thread_inserts.step", "screws.step"):
             (cd / old).unlink(missing_ok=True)
-        for name in ("nose_cone", "nose_cap", "retaining_ring", "screws", "radome_insert", "optic_insert",
+        for name in ("snap_ring", "nose_cone", "nose_cap", "retaining_ring", "radome_insert", "optic_insert",
                      "aop_dam"):
             if name not in parts:
                 continue

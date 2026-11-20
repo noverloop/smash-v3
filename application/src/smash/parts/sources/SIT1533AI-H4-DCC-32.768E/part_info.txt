@@ -1,0 +1,9 @@
+Manufacturer=SiTime
+PartNumber=SIT1533AI-H4-DCC-32.768E
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=4
+Version=1.2
+Released=2019-01-14 10:46:40
+Downloaded=2026-11-20 21:00:45
+3D=Y
