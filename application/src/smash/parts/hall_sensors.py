@@ -164,3 +164,43 @@ def add_rr123_1h02_612(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_drv5032ajdmrr(design, ref: str, **overrides) -> Chip:
+    """TI DRV5032AJ — nanopower Hall switch, OMNIPOLAR, OPEN-DRAIN, 20 Hz,
+    X2SON-4 (DMR, 1.1 × 1.4 × 0.4 mm). B_OP = 9.5 mT MAX (typ 5 mT) —
+    TWICE the DRV5032FC's 4.8 mT max.
+
+    (2026-11-21, user) Low-profile swap for U_MAG_WAKE (was DRV5032FCDBZT,
+    SOT-23, 1.12 mm; the FC threshold has no X2SON variant). ⚠ The coded
+    wake field must now guarantee ≥ 9.5 mT at the sensor (was ≥ 4.8 mT):
+    stronger wand magnet / coil or a shorter distance. Same omnipolar,
+    open-drain, 20 Hz behaviour. Pins (SamacSys / DS DMR): 1 VCC, 2 GND,
+    3 NC, 4 OUT, 5 EP (thermal pad → GND)."""
+    pn = "DRV5032AJDMRR"
+    fp_mod = src(pn, f"{pn}.kicad_mod")
+    fields = dict(
+        manf="Texas Instruments", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description=("Nanopower Hall-effect switch, omnipolar, open-drain, "
+                     "B_OP=9.5 mT max, 20 Hz sampling, X2SON-4 (0.4 mm)"),
+        datasheet=datasheet_ref("DRV5032FCDBZT", "drv5032.pdf"),
+        package="X2SON-4 (DMR)",
+        size_mm=(1.1, 1.4), height_mm=0.40,
+        temp_range_c=(-40, 85),
+        voltage_rating_v=5.5,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym"),
+                        types={"VCC": "power", "GND": "ground", "OUT": "output", "EP": "ground"}),
+        footprint=Footprint(
+            name=pn, package_class="X2SON-4",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=[],
+            pitch_mm=0.5, size_mm=(1.1, 1.4), height_mm=0.40,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ).ensure_courtyard_clearance(),
+        note=("SamacSys LIB_DRV5032AJDMRR v1.1 (2019-06-28); oversized F.CrtYd "
+              "(2.5 × 3.2 mm) replaced by the pad ring. EP → GND."),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

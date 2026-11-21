@@ -883,3 +883,96 @@ def add_dmp6110svt_7(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Nexperia BSS138AKM-QYL — 60 V N-channel, DFN1006-3 (SOT883), 0.5 mm
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_bss138akm_qyl(design, ref: str, **overrides) -> Chip:
+    """Nexperia BSS138AKM-Q (order code BSS138AKM-QYL) — 60 V / 350 mA
+    logic-level N-channel trench MOSFET, AEC-Q101, leadless DFN1006-3
+    (1.0 × 0.6 × 0.5 mm max).
+
+    (2026-11-21, user) Low-profile drop-in for BSS138LT1G (SOT-23, 1.11 mm):
+    same pin numbering (1 = G, 2 = S, 3 = D), +10 V V_DS, +150 mA. Pads and
+    symbol are the SamacSys library verbatim; its F.CrtYd (3.1 × 2.7 mm,
+    ~14× the body) is replaced by the pad envelope + the project clearance
+    ring, as for the hand-built SOT-23. ⚠ Nexperia: wafer fab EU, but check
+    the assembly site per reel (no-Chinese-sites rule)."""
+    pn = "BSS138AKM-QYL"
+    fp_mod = src(pn, "BSS138AKMQYL.kicad_mod")
+    fields = dict(
+        manf="Nexperia", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description="MOSFET N-Channel 60 V, 350 mA, logic level, AEC-Q101, DFN1006-3 (0.5 mm)",
+        datasheet=None,
+        standards=["RoHS", "AEC-Q101"],
+        package="DFN1006-3 (SOT883)",
+        size_mm=(1.0, 0.6), height_mm=0.50,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=60.0, i_rms_a=0.35, tj_max_c=150.0,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym"),
+                        types={"G": "input", "S": "io", "D": "io"},
+                        aliases={"G": ["Gate"], "S": ["Source"], "D": ["Drain"]}),
+        footprint=Footprint(
+            name="BSS138AKMQYL", package_class="DFN1006-3",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=[],
+            pitch_mm=0.45, size_mm=(1.0, 0.6), height_mm=0.50,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ).ensure_courtyard_clearance(),
+        note="SamacSys LIB_BSS138AKM-QYL v2.4 (2024-04-04). Drop-in for BSS138LT1G (1=G, 2=S, 3=D).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Nexperia BUK6D120-60PX — −60 V P-channel, DFN2020MD-6 (SOT1220), 0.65 mm
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_buk6d120_60px(design, ref: str, **overrides) -> Chip:
+    """Nexperia BUK6D120-60P (order code BUK6D120-60PX) — −60 V, 120 mΩ
+    (V_GS = −10 V), 3 A (T_a) P-channel trench MOSFET, AEC-Q101, leadless
+    DFN2020MD-6 (2 × 2 × 0.65 mm max). (SamacSys files it under "N-Channel";
+    the part is P-channel — Nexperia / Farnell / DigiKey.)
+
+    (2026-11-21, user) Low-profile replacement for DMP6110SVT-7 (TSOT-26,
+    1.0 mm) on the 33 V activation PFETs, driven at V_GS ≈ −16.5 V. NOT for
+    Q_ISO / Q_USB_OR: those carry the pack / USB current at V_GS ≈ −3.6…−4.5 V
+    where the 3 A, 10 V-rated part is marginal. Pins (SamacSys): D_1..D_5
+    (5 = the large drain pad), G, S_1 + S_2 (both source — tie both).
+    ⚠ Avoid the -60PZ suffix (discontinued). Nexperia assembly-site check."""
+    pn = "BUK6D120-60PX"
+    fp_mod = src(pn, "BUK6D12060PX.kicad_mod")
+    fields = dict(
+        manf="Nexperia", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description="MOSFET P-Channel -60 V, 120 mOhm, 3 A, AEC-Q101, DFN2020MD-6 (0.65 mm)",
+        datasheet=None,
+        standards=["RoHS", "AEC-Q101"],
+        package="DFN2020MD-6 (SOT1220)",
+        size_mm=(2.0, 2.0), height_mm=0.65,
+        temp_range_c=(-55, 175),
+        voltage_rating_v=60.0, i_rms_a=3.0, tj_max_c=175.0,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym"),
+                        types={"G": "input", "S_1": "io", "S_2": "io",
+                               "D_1": "io", "D_2": "io", "D_3": "io", "D_4": "io", "D_5": "io"},
+                        aliases={"G": ["Gate"], "S_1": ["S", "Source"], "D_1": ["D", "Drain"]}),
+        footprint=Footprint(
+            name="BUK6D12060PX", package_class="DFN2020MD-6",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=[],
+            pitch_mm=0.65, size_mm=(2.0, 2.0), height_mm=0.65,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            # the SamacSys kicad_mod's own model transform (at is in inches)
+            model_rotate_deg=(90.0, 0.0, 90.0),
+            model_offset_mm=(-1.52, 0.86, 1.28),
+            source="samacsys",
+        ).ensure_courtyard_clearance(),
+        note="SamacSys LIB_BUK6D120-60PX v3.2 (2020-08-25); oversized F.CrtYd replaced by the pad ring.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

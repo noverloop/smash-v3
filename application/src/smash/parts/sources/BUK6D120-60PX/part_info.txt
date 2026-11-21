@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=BUK6D120-60PX
+PartCategory=MOSFET (N-Channel)
+PackageCategory=Other
+PinCount=8
+Version=3.2
+Released=2020-08-25 11:17:50
+Downloaded=2026-11-21 09:36:12
+3D=Y

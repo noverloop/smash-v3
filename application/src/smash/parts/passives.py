@@ -83,6 +83,113 @@ def add_we_744043100(design, ref: str, **overrides) -> Chip:
 
 
 # ═════════════════════════════════════════════════════════════════════════
+# Coilcraft LPS4018-103MRB — 10 µH shielded power inductor, 3.9 × 3.9 × 1.8
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_lps4018_103mrb(design, ref: str, **overrides) -> Chip:
+    """Coilcraft LPS4018-103MRB — 10 µH shielded SMD power inductor,
+    3.9 × 3.9 × 1.8 mm max (IPC INDPM3939X180N). I_sat ≈ 1.1-1.2 A,
+    DCR ≈ 200 mΩ typ (Coilcraft).
+
+    (2026-11-21, user) Low-profile swap for Würth 744043100 (WE-PD 4848,
+    2.8 mm, I_sat ≈ 1.0 A, DCR ≈ 110 mΩ) on L_ACTIVATE / L_BOOST_COMP:
+    1.0 mm lower, about the same saturation current, ~2× the DCR (more
+    copper loss). ⚠ L_BOOST_COMP's peak current (fin pulses, TPS61175
+    3.8 A switch limit) is well above ~1.2 A for BOTH parts — re-check."""
+    pn = "LPS4018-103MRB"
+    fp_mod = src(pn, "INDPM3939X180N.kicad_mod")
+    fields = dict(
+        manf="Coilcraft",
+        manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn,
+        value="10uH",
+        description="Shielded power inductor, 10 µH, LPS4018 (3.9×3.9×1.8 mm)",
+        datasheet=None,
+        package="LPS4018",
+        size_mm=(3.9, 3.9),
+        height_mm=1.8,
+        inductance_h=10e-6,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym")),
+        footprint=Footprint(
+            name="INDPM3939X180N",
+            package_class="SMD-Inductor",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            size_mm=(3.9, 3.9), height_mm=1.8,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note="SamacSys LIB_LPS4018-103MRB v3.1 (2019-02-04).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Coilcraft XGL5020-472MEC — 4.7 µH shielded molded inductor, 5.3 A Isat(30 %)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_xgl5020_472mec(design, ref: str, **overrides) -> Chip:
+    """Coilcraft XGL5020-472MEC — 4.7 µH ±20 % composite molded shielded
+    power inductor, AEC-Q200, 5.28 × 5.48 × 2.1 mm max (Doc 1620, rev
+    02/19/26, vendored as XGL5020_Doc1620.pdf).
+
+    DCR 36.0 typ / 41.5 max mΩ; Isat 2.2 / 3.6 / 5.3 A at 10 / 20 / 30 %
+    inductance drop (soft saturation); Irms 5.7 A (20 °C rise) / 7.9 A
+    (40 °C rise); SRF 20 MHz; 0.30-0.33 g.
+
+    (2026-11-21, user) L_BOOST_COMP: the TPS61175 limits the switch at
+    3.0 / 3.8 / 5.0 A (min / typ / max), and the fin pulses run the boost
+    into that limit — the 30 % point (5.3 A) covers the 5 A max; the earlier
+    744043100 / LPS4018 saturated at ~1-1.2 A. 4.7 µH is the bottom of the
+    DS 4.7-47 µH window: ripple ≈ 0.43 A at V_IN 3.0 V / 600 kHz.
+
+    Footprint from the datasheet "Recommended Land Pattern" (no SamacSys
+    model exists for it): two 1.18 × 4.7 mm pads, 3.31 mm between their
+    inner edges (≈ the 3.28 mm between the part's own 1.0 mm terminals),
+    so pad centres at ±2.245 mm. Body 5.28 (terminal axis) × 5.48 mm.
+    No 3D model (none supplied); height from the datasheet."""
+    pn = "XGL5020-472MEC"
+    cx = 3.31 / 2 + 1.18 / 2
+    pads = [
+        Pad(num="1", position_mm=(-cx, 0.0), size_mm=(1.18, 4.7), shape="rect"),
+        Pad(num="2", position_mm=(cx, 0.0), size_mm=(1.18, 4.7), shape="rect"),
+    ]
+    bx, by = 5.28 / 2, 5.48 / 2
+    body = [(-bx, -by), (bx, -by), (bx, by), (-bx, by)]
+    fields = dict(
+        manf="Coilcraft",
+        manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn,
+        value="4.7uH",
+        description="Shielded molded power inductor, 4.7 µH, Isat 5.3 A (30 %), DCR 41.5 mΩ max, 5.3×5.5×2.1 mm",
+        datasheet=datasheet_ref(pn, "XGL5020_Doc1620.pdf"),
+        package="XGL5020",
+        size_mm=(5.28, 5.48),
+        height_mm=2.1,
+        inductance_h=4.7e-6,
+        weight_g=0.33,
+        temp_range_c=(-40, 125),
+        voltage_rating_v=80.0,
+        i_rms_a=5.7,
+        standards=["RoHS", "Halogen-Free", "AEC-Q200"],
+        pins=[Pin(num="1", name="1", type="passive"), Pin(num="2", name="2", type="passive")],
+        footprint=Footprint(
+            name="Coilcraft_XGL5020", package_class="SMD-Inductor",
+            pads=pads, body_outline=body, courtyard=[],
+            pitch_mm=2 * cx, size_mm=(5.28, 5.48), height_mm=2.1,
+            source="datasheet",
+            note="Coilcraft Doc 1620 recommended land pattern; no vendor 3D model.",
+        ).ensure_courtyard_clearance(),
+        note=("Pin 1 = the terminal marked by the top-side bar (start lead) — the "
+              "datasheet asks to connect the high-dV/dt node (SW) there for lowest EMI."),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # Murata BLM18PG221SN1D — chip ferrite bead, 220 Ω @ 100 MHz, 0603
 # ═════════════════════════════════════════════════════════════════════════
 

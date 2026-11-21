@@ -31,9 +31,9 @@ def test_options_fit_the_tower_and_sector(opt, n):
         assert g.slot_angles_clear_of_gnd(m.slots)
     for s in m.slots:
         for sec in s.sectors(g.SLEEVE_R_OUT_MM - 0.4, g.SLEEVE_R_OUT_MM, "lds_lcp", 12):
-            # (2026-11-21) A's 45 mm straight 2.2 GHz slot no longer fits the
-            # gap-sized tower (~5 mm shorter) — A was rejected 2026-11-16.
-            if opt != "A":
+            # (2026-11-21) A's 45 mm straight 2.2 GHz slot and B's S3 no longer
+            # fit the gap-sized tower — both were rejected 2026-11-16.
+            if opt not in ("A", "B"):
                 assert z0 - 1e-6 <= sec.z0 and sec.z1 <= z1 + 1e-6, f"{s.name} leaves the tower"
             assert a0 - 2.0 <= sec.a0 and sec.a1 <= a1 + 2.0, f"{s.name} leaves the sector"
         # every slot is (close to) half a wavelength at its design frequency
@@ -265,3 +265,34 @@ def test_drawn_copper_stays_clear_of_the_seam_and_signal_sector():
 def test_slot_can_be_switched_off():
     m = cases.option_model("C2", S3_off=1)
     assert [s.name for s in m.slots] == ["S1"] and [p.name for p in m.ports] == ["P_S1"]
+
+
+def test_slot_dz_offsets_the_arc_from_the_gap_mid():
+    """(2026-11-21) S<n>_dz moves a slot axially (negative = down)."""
+    base = dict(S1_scale=0.95, S3_off=1)
+    z0 = {s.name: s.z_start for s in cases.option_model("C2", **base).slots}["S1"]
+    z1 = {s.name: s.z_start for s in cases.option_model("C2", **base, S1_dz=-0.7).slots}["S1"]
+    assert z1 == pytest.approx(z0 - 0.7)
+
+
+def test_sleeve_lanes_parsed_onto_the_cylinder(tmp_path):
+    """Unrolled-sleeve lanes land at θ = 105° + x/R, z = H − y; slot feeds are
+    skipped; power lanes get a via tie to the board, signal lanes float."""
+    import math
+    from smash.sim.antenna import geometry as g
+    r = g.SLEEVE_R_OUT_MM
+    x0 = 20.0 + r * math.radians(255.0)              # θ = 360° = 0°
+    pcb = tmp_path / "s.kicad_pcb"
+    pcb.write_text(
+        '(net 1 "GND")\n(net 2 "3V3")\n(net 3 "SIG")\n(net 4 "ANT_HF_S1")\n'
+        '(gr_rect (start 20.0 30.0) (end 132.0 80.0) (stroke (width 0.1)) (layer "Edge.Cuts"))\n'
+        f'(segment (start {x0} 40.0) (end {x0} 60.0) (width 0.6) (layer "F.Cu") (net 2))\n'
+        f'(segment (start {x0 + 1} 40.0) (end {x0 + 1} 60.0) (width 0.2) (layer "F.Cu") (net 3))\n'
+        f'(segment (start {x0 + 2} 40.0) (end {x0 + 2} 60.0) (width 1.0) (layer "F.Cu") (net 4))\n'
+        f'(via (at {x0} {80.0 - g.BOARD_MID_Z_MM["wakeup_board"]}) (size 0.75) (drill 0.45) (layers "F.Cu" "B.Cu") (net 2))\n'
+        f'(via (at {x0 + 1} {80.0 - g.BOARD_MID_Z_MM["wakeup_board"]}) (size 0.75) (drill 0.45) (layers "F.Cu" "B.Cu") (net 3))\n')
+    secs, ties = g.sleeve_lane_sectors(str(pcb), 0.0, 60.0, g.CORE_BOARDS, r - 0.4)
+    lanes = [s for s in secs if not s.name.startswith("lane_tie")]
+    assert len(lanes) == 2 and ties == 1
+    assert abs((lanes[0].a0 + lanes[0].a1) / 2) < 1e-6
+    assert (lanes[0].z0, lanes[0].z1) == (20.0, 40.0)

@@ -64,7 +64,9 @@ def _arc(name, f_ghz, angle, z, arc_dir, *, eps=EPS_EFF, width=1.5, scale=1.0,
 #   S<n>_width  slot width [mm] (wider = more bandwidth)
 #   S<n>_angle  start angle [deg] instead of the sector edge
 #   S<n>_off    1 removes the slot (2026-11-17: S3 merged into S1)
-SLOT_OVERRIDE_KEYS = ("scale", "feed", "dir", "gap", "f", "width", "angle", "off")
+#   S<n>_dz     axial offset [mm] from the gap mid-height, negative = down
+#               (2026-11-21, user: move the slots down within / past the gap)
+SLOT_OVERRIDE_KEYS = ("scale", "feed", "dir", "gap", "f", "width", "angle", "off", "dz")
 EXTRA_SLOTS = ("S4", "S5")
 
 
@@ -88,6 +90,7 @@ def _c_arc(name, f_ghz, z, ov):
     o = ov.get(name, {})
     if "gap" in o:
         z = _gap_mid(o["gap"], _next_board(o["gap"]))
+    z += float(o.get("dz", 0.0))
     f_ghz = float(o.get("f", f_ghz))
     d = int(o.get("dir", +1))
     angle = ANTENNA_SECTOR_FREE[0] + 2.0 if d > 0 else ANTENNA_SECTOR_FREE[1] - 2.0

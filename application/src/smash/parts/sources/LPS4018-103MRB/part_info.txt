@@ -1,0 +1,9 @@
+Manufacturer=COILCRAFT
+PartNumber=LPS4018-103MRB
+PartCategory=Inductor
+PackageCategory=Inductors Precision Moulded
+PinCount=2
+Version=3.1
+Released=2019-02-04 15:22:29
+Downloaded=2026-11-21 09:34:25
+3D=Y

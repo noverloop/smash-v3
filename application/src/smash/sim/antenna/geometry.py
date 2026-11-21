@@ -33,17 +33,18 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 
 # Board mid-planes [mm above aft_end's bottom face] of the maximalist stack
 # (sleeve_step.stack_z_map). (2026-11-21) re-measured after the backbone
-# spacers were sized to their gaps (2.4 / 2.7 / 3.0 / 3.1 / 6.0 mm — the
-# 2026-11-16 values had 4.4 / 3.0 / 4.4 / 3.2 / 4.1) and the 6 × 3.867 mm
-# battery column; test_antenna_sim_stack.py fails if these drift again.
+# spacers were sized to their gaps and again after the low-profile part swaps
+# (2.2 / 2.3 / 3.0 / 2.5 / 6.0 mm; earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0 and, on
+# 2026-11-16, 4.4 / 3.0 / 4.4 / 3.2 / 4.1) and the 6 × 3.867 mm battery
+# column; test_antenna_sim_stack.py fails if these drift again.
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.657,
     "activation_interface": 25.172,
-    "fin_ble_board": 28.888,
-    "wakeup_board": 32.903,
-    "power_board": 37.218,
-    "companion_compute": 41.633,
-    "radar_module": 48.944,
+    "fin_ble_board": 28.688,
+    "wakeup_board": 32.303,
+    "power_board": 36.617,
+    "companion_compute": 40.432,
+    "radar_module": 47.744,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface", "fin_ble_board",
                "wakeup_board", "power_board", "companion_compute")
@@ -178,7 +179,8 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 skin_clip_deg: tuple | None = None,
                 coating_mm: float = 0.0, housing=None, feed: str = "ideal",
                 feed_board: str = "wakeup_board", cpw_w_mm: float = 1.0,
-                cpw_gap_mm: float = 0.5, cpw_gnd_mm: float = 2.0) -> TowerModel:
+                cpw_gap_mm: float = 0.5, cpw_gnd_mm: float = 2.0,
+                lanes: str | None = None) -> TowerModel:
     """Assemble the tower.
 
     holder: "al" (PEC skin) | "composite".   rings: "al" | "peek" | "none".
@@ -201,6 +203,8 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     `cpw_gap_mm`, ground bands `cpw_gnd_mm` joined to the slot's copper patch)
     → the strip crosses the slot and lands on the far-side copper. The port
     sits at the board end, across one CPW gap, so Zin includes the line.
+    lanes: path to the exported `sleeve_unrolled.kicad_pcb` → its outer-face
+    lanes as PEC (sleeve_lane_sectors); None = no lanes.
     """
     S, notes = [], []
     zb = [BOARD_MID_Z_MM[b] for b in boards]
@@ -345,7 +349,76 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         S.append(Sector("housing", "pec", r0, r0 + 2.5, z_lo - 2.0, z_hi, priority=3))
         wz0, wz1, wa0, wa1 = housing["window"]
         S.append(Sector("housing_window", "air", r0, r0 + 2.5, wz0, wz1, wa0, wa1, priority=11))
+    if lanes:
+        L, n_tie = sleeve_lane_sectors(lanes, z_lo, z_end, boards, skin_r_in)
+        S.extend(L)
+        notes.append(f"LDS lanes from {lanes}: {len(L) - n_tie} copper pieces, "
+                     f"{n_tie} power/GND via ties to the boards")
     return TowerModel(S, ports, list(slots), (z_lo, z_hi), notes)
+
+
+# (2026-11-21) Outer-face LDS lanes, read from the exported unrolled sleeve
+# (smash.export.sleeve_layout: x = R_OUT·(θ − 105°) + OX, KiCad y = OY + H − z).
+LANE_SKIP_NETS = ("ANT_HF_S1", "ANT_HF_S4")     # the slot feeds: modelled by _cpw_feed
+LANE_MIN_W_MM = 0.4                             # one FDTD cell so a lane survives meshing
+LANE_STEP_MM = 0.4                              # diagonal (fan) segments → staircase
+
+
+def sleeve_lane_sectors(pcb_path, z_min: float, z_max: float, boards, r_in: float):
+    """PEC sectors for every F.Cu segment of `sleeve_unrolled.kicad_pcb`, plus
+    radial ties lane → board at the vias of POWER / GND lanes (decoupled = RF
+    ground). Signal lanes float (their castellation is a signal pad, not the
+    board ground the PEC disc stands for). Returns (sectors, n_ties)."""
+    import re
+    txt = open(pcb_path).read()
+    ox, oy, x1, y1 = map(float, re.search(
+        r'\(gr_rect \(start ([\d.]+) ([\d.]+)\) \(end ([\d.]+) ([\d.]+)\)[^\n]*Edge\.Cuts', txt).groups())
+    H = y1 - oy
+    nets = {int(a): b for a, b in re.findall(r'\(net (\d+) "([^"]*)"\)', txt)}
+    r = SLEEVE_R_OUT_MM
+    ang = lambda x: ((105.0 + math.degrees((x - ox) / r)) + 180.0) % 360.0 - 180.0
+    zf = lambda y: oy + H - y
+    out, wide = [], set()
+    segs = re.findall(r'\(segment \(start ([\d.]+) ([\d.]+)\) \(end ([\d.]+) ([\d.]+)\) '
+                      r'\(width ([\d.]+)\) \(layer "F\.Cu"\) \(net (\d+)\)', txt)
+    for i, (xa, ya, xb, yb, w, n) in enumerate(segs):
+        net = nets.get(int(n), "")
+        if net in LANE_SKIP_NETS:
+            continue
+        w = float(w)
+        if w >= 0.6:
+            wide.add(net)
+        xa, xb, za, zb = float(xa), float(xb), zf(float(ya)), zf(float(yb))
+        n_st = max(1, math.ceil(math.hypot(xb - xa, zb - za) / LANE_STEP_MM)) if xa != xb else 1
+        hw = max(w, LANE_MIN_W_MM) / 2
+        for k in range(n_st):
+            t0, t1 = k / n_st, (k + 1) / n_st
+            xm = xa + (xb - xa) * (t0 + t1) / 2
+            z0, z1 = sorted((za + (zb - za) * t0, za + (zb - za) * t1))
+            if xa != xb:                       # staircase step: at least one cell tall
+                zc = (z0 + z1) / 2
+                z0, z1 = min(z0, zc - LANE_STEP_MM / 2), max(z1, zc + LANE_STEP_MM / 2)
+            z0, z1 = max(z0, z_min), min(z1, z_max)
+            if z1 <= z0:
+                continue
+            a = ang(xm)
+            out.append(Sector(f"lane_{i}_{k}", "pec", r_in, r, z0, z1,
+                              a - math.degrees(hw / r), a + math.degrees(hw / r), priority=9))
+    ties = 0
+    for x, y, n in re.findall(r'\(via \(at ([\d.]+) ([\d.]+)\)[^\n]*\(net (\d+)\)', txt):
+        net = nets.get(int(n), "")
+        if net not in wide and net != "GND":
+            continue
+        z, a = zf(float(y)), ang(float(x))
+        for b in boards:
+            zm = BOARD_MID_Z_MM[b]
+            if abs(z - zm) <= BOARD_T_MM / 2 + 0.5:
+                d = math.degrees(LANE_MIN_W_MM / 2 / r)
+                out.append(Sector(f"lane_tie_{ties}", "pec", BOARD_R_MM - 0.4, r,
+                                  zm - BOARD_T_MM / 2, zm + BOARD_T_MM / 2, a - d, a + d, priority=9))
+                ties += 1
+                break
+    return out, ties
 
 
 def _cpw_feed(sl: "Slot", z_board: float, r_in: float, r_port: float,

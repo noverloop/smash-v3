@@ -126,3 +126,37 @@ def add_drv8711dcpr(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_drv8428erter(design, ref: str, **overrides) -> Chip:
+    """TI DRV8428ERTER — the DRV8428E (PH/EN dual H-bridge, 4.5-33 V) in the
+    3 × 3 × 0.8 mm WQFN-16 + EP (RTE). (2026-11-21, user) Low-profile swap
+    for DRV8428EPWPR (HTSSOP-16, 1.2 mm): same pin NAMES, different
+    numbering (handled by name at the call site). DigiKey lists it active;
+    TI's page has shown the RTE as "not available" — confirm orderability."""
+    pn = "DRV8428ERTER"
+    fp_mod = src(pn, "QFN50P300X300X80-17N-D.kicad_mod")
+    fields = dict(
+        manf="Texas Instruments", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description=("Integrated dual H-bridge stepper/brushed driver, V_M=4.5..33 V, "
+                     "~2.1 A RMS per bridge, PH/EN control, WQFN-16 3x3 with EP"),
+        datasheet=datasheet_ref("DRV8428EPWPR", "DRV8428EPWPR.pdf"),
+        package="WQFN-16 (RTE)",
+        size_mm=(3.0, 3.0), height_mm=0.80,
+        temp_range_c=(-40, 125),
+        voltage_rating_v=33.0,
+        i_rms_a=2.1,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym")),
+        footprint=Footprint(
+            name="QFN50P300X300X80-17N-D", package_class="WQFN-16",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            pitch_mm=0.5, size_mm=(3.0, 3.0), height_mm=0.80,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ).ensure_courtyard_clearance(),
+        note="SamacSys LIB_DRV8428ERTER v1.1 (2021-06-12). EP = GND thermal pad.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

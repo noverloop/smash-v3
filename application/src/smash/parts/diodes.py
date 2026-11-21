@@ -451,3 +451,42 @@ def add_stps1l60zf(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# Nexperia PMEG6010CEJ — 60 V / 1 A Schottky, SOD323F (0.8 mm)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_pmeg6010cej(design, ref: str, **overrides) -> Chip:
+    """Nexperia PMEG6010CEJ — 60 V / 1 A low-V_F Schottky rectifier, SOD323F
+    (SC-90, 1.7 × 1.25 × 0.8 mm max — IPC SODFL2512X80N). Pin 1 = K, 2 = A.
+
+    (2026-11-21, user) Drop-in for STPS1L60ZF (SOD-123Flat 3.5 × 1.6 × 1.1)
+    at the same 60 V / 1 A rating: D_ACTIVATE (33 V boost, ≤ 0.28 A out) and
+    the AWR buck catch diodes (0.35 A avg). ⚠ Nexperia assembly-site check."""
+    pn = "PMEG6010CEJ"
+    fp_mod = src(pn, "SODFL2512X80N.kicad_mod")
+    fields = dict(
+        manf="Nexperia", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description="Schottky rectifier, V_R=60 V, I_F=1 A, low V_F, SOD323F (0.8 mm)",
+        datasheet=None,
+        standards=["RoHS"],
+        package="SOD323F (SC-90)", size_mm=(1.7, 1.25), height_mm=0.80,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=60.0, i_rms_a=1.0,
+        pins=build_pins(src(pn, f"{pn}.kicad_sym"),
+                        types={"K": "io", "A": "io"},
+                        aliases={"K": ["Cathode"], "A": ["Anode"]}),
+        footprint=Footprint(
+            name="SODFL2512X80N", package_class="SOD323F",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            pitch_mm=2.3, size_mm=(1.7, 1.25), height_mm=0.80,
+            model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+            source="samacsys",
+        ),
+        note="SamacSys LIB_PMEG6010CEJ v2.1 (2016-07-13).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
