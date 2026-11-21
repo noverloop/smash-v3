@@ -940,6 +940,10 @@ def write_panel_variant(pcb, lay) -> dict:
         "tower programmer.\\n"
         "- Traces that cross a slot (castellation escapes, the programmer→channel bus) are "
         "milled through: they only matter on the uncut dev board (dev_board.kicad_pcb).\\n"
+        "- ROUTING RULE (both files): a trace may cross a tile's ring ONLY as a straight "
+        "radial stub from its own castellation pad (the cut then lands on the pad = the "
+        "intended half-hole); never route along or through the ring, and never through a "
+        "tab (tabs sit in castellation-free gaps and carry no signals).\\n"
         "- Copper outside the tiles (inter-tile joins, socket, debug) is scrap after depaneling; "
         "nothing inside a tile depends on it. The camera's 0.5 mm Al spreader is bonded after.\\n"
         "- 3 fiducials per side (FID1-3 top, FID4-6 bottom), asymmetric.\\n")

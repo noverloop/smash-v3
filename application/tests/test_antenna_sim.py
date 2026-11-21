@@ -110,14 +110,15 @@ def test_model_json_round_trip():
 
 def test_feed_castellations_cover_the_drawn_slots():
     """C2 (S1 + S3) won the slot study; S4 = the 4.6-5.0 GHz transverter slot
-    retuned 2026-11-18 (sim C2_P_S4_p17_sc90_f20_w2); feed angles = the CPW
+    retuned 2026-11-18 (sim C2_P_S4_p17_sc90_f20_w2), feed 3.0 mm 2026-11-21
+    (C2_P_S4_p27_fd30, 0.868 mm boards); feed angles = the CPW
     strip centres the sim used."""
     from smash.parts.antenna_slots import SLOTS
     assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S4"}
     m = cases.option_model("C2", feed="castellation", skin="local", S1_scale=0.95,
                            S1_angle=110, S3_dir=-1, S3_gap="wakeup_board", S3_feed=5,
                            S3_scale=0.905, S4_f=4.4, S4_gap="activation_interface", S4_angle=143,
-                           S4_scale=0.9, S4_width=2.0, S4_feed=2.0,
+                           S4_scale=0.9, S4_width=2.0, S4_feed=3.0,
                            skin_clip_deg=(109.0, 255.0))
     sim = {s.name: s for s in m.slots}
     strips = {s.name: s for s in m.sectors if s.name.endswith("_cpw_strip")}

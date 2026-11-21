@@ -106,7 +106,7 @@ SLOTS = (
                 label="S1 2.4 GHz ISM: LoRa (LR2021, DTC-tuned) + BLE, shared"),
     SlotAntenna("S4", "ANT_HF_S4", "activation_interface", "wakeup_board",
                 start_deg=143.0, direction=+1, f_design_ghz=4.4, scale=0.9,
-                width_mm=2.0, feed_mm=2.0, dz_mm=0.0,   # (2026-11-21) centred: −1 mm overlapped activation's top on the 0.868 mm stack (p25)
+                width_mm=2.0, feed_mm=3.0, dz_mm=0.0,   # (2026-11-21) centred (−1 overlapped activation on the 0.868 mm stack); feed 3.0: total 54-67 % @4.4-4.8, 35-40 % @4.9-5.0 (p27_fd30, 0.3 mm mesh)
                 label="S4 transverter 4.6-5.0 GHz (LR2021 IF + ADF4351/LTC5549)"),
 )
 
