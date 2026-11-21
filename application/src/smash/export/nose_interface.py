@@ -112,6 +112,7 @@ HOOK_TENSION_KN = round(HOOK_W_MM * HOOK_T_MM * 1.0, 2)
 # inner wall at compute height, at the first screw angle (no castellations
 # there; under the ring band). Only compute reaches the rib (tower enters aft).
 KEY_W_MM, KEY_DEPTH_MM = 1.2, 0.8            # compute edge notch
+KEY_NOTCH = False                              # (2026-11-21, user) no notch on compute
 KEY_RIB_W_MM, KEY_RIB_R_MM = 1.0, 16.4       # sleeve rib (0.1 clearance each side / radially)
 CROWN_NOOK_R_MM = 15.9           # crown funnel's outer wall: Al ring bore (r 16) − 0.1
 # (2026-11-19, user) BLOCK teeth (square wave |_|-|_), not triangles. The

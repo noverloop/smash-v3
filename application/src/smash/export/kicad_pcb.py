@@ -1771,7 +1771,9 @@ def _cutouts_for_tile(
     # (2026-11-19, user) Compute is KEYED to the one-piece sleeve: an edge notch
     # at nose_interface.KEY_ANGLE_DEG (physical) takes the sleeve's inner rib.
     from smash.export import nose_interface as _NI
-    if name == _NI.HOST and name in (panel.snake_chain or []):
+    # (2026-11-21, user) the key notch is GONE: the castellation vias index the
+    # sleeve and nothing in the sleeve engages a notch (KEY_NOTCH = False).
+    if _NI.KEY_NOTCH and name == _NI.HOST and name in (panel.snake_chain or []):
         from smash.parts.castellations import board_fold_transforms, _local_xy
         _M = board_fold_transforms(panel, list(panel.snake_chain)).get(name)
         if _M is not None:
@@ -2338,11 +2340,18 @@ def write_kicad_panel(
     parts.append('\t(version 20260206)')
     parts.append('\t(generator "smash")')
     parts.append('\t(generator_version "10.0")')
-    parts.append('\t(general (thickness 1.6) (legacy_teardrops no))')
+    # (2026-11-21) the panel shares ONE fab stackup: the boards' own fitted
+    # buildup (all standardised, e.g. the 8L 0.868 mm Speedstack) — was the
+    # generic default fit (14 copper layers, 1.6 mm) whatever the boards were.
+    # Mixed counts: the board with the most copper, so every layer exists.
+    ref = max((b for b in boards.values()
+               if not getattr(b, "is_spacer", False) and getattr(b, "stackup", None)),
+              key=lambda b: len(b.stackup), default=None)
+    thick = ref.thickness_mm if ref is not None else 1.6
+    parts.append(f'\t(general (thickness {_fmt(thick)}) (legacy_teardrops no))')
     parts.append('\t(paper "A4")')
-    # Panel shares one fab stackup; emit the default fitted buildup.
-    parts.append(_render_layers_block(None))
-    parts.append(_setup_block(None))
+    parts.append(_render_layers_block(ref))
+    parts.append(_setup_block(ref))
 
     # 1. Per-board geometry (outline + holes + cavities + footprints)
     n_footprints = 0

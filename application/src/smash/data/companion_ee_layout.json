@@ -51,8 +51,9 @@
    "face": "top"
   },
   "U_NAND_A": {
+   "_moved": "2026-11-21: x -3.2745 -> -2.6745 (0.6 mm east): its courtyard reached 0.2 mm into the potting drill at (-9.19, 9.19) once the nose-ward 180-degree turn went (one potting coordinate on every board).",
    "pos": [
-    -3.2745,
+    -2.6745,
     8.5995
    ],
    "rot": 0.0,

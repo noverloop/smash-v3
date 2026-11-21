@@ -345,7 +345,11 @@ def fold_project(rx: float, ry: float, same_row: bool) -> tuple[float, float]:
 # keeps every hole aligned. Inside a group nothing changes; only a fold that
 # crosses the seam (spacer_wakeup_board_power_board ↔ power_board) composes
 # the turn, which swaps its mirror axis (x-mirror ∘ 180° = y-mirror).
-ROTATED_180_FROM_TILE = "power_board"
+# (2026-11-21, user) NO turn any more: with one potting hole stacked up the
+# tower (no 180°-symmetric pair) and no LGA seam fields, the turn only made the
+# nose-ward boards' fab frames differ. Every board shares the aft_end frame;
+# the locks of the old nose-ward group were rotated 180° so nothing moved.
+ROTATED_180_FROM_TILE = None
 
 
 def is_rotated_180(chain, name) -> bool:

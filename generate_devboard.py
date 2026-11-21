@@ -551,6 +551,12 @@ def tower_placements(d) -> dict:
     from smash.parts.castellations import board_fold_transforms, _local_xy
     from smash.export import nose_interface as NI
     fold = board_fold_transforms(panel, list(panel.snake_chain))
+    # (2026-11-21, user) the tower's own silk marks: Al / PEEK ring outlines
+    # and the slot-antenna "NO COPPER" keep-out sectors
+    # the EE reference placements, exactly as the tower export applies them
+    G._apply_companion_reference_layout(d, boards)
+    G._apply_activation_reference_layout(d, boards)
+    G._mark_gap_hardware_silk(panel, boards, fold)
     out, mech = {}, {}
     for name, b in boards.items():
         if getattr(b, "is_spacer", False):
@@ -566,9 +572,12 @@ def tower_placements(d) -> dict:
         if name in fold:                                         # the sleeve key = the lane gap
             lx, ly = _local_xy(fold[name], NI.KEY_ANGLE_DEG, 17.0)
             key_local = math.degrees(math.atan2(ly, lx)) % 360
-        if name == NI.HOST:                                      # compute's sleeve-key notch
+        if name == NI.HOST and NI.KEY_NOTCH:                     # compute's sleeve-key notch
             key = (key_local, NI.KEY_W_MM, NI.KEY_DEPTH_MM)
-        mech[name] = {"holes": holes, "cast_deg": cast_deg, "key": key, "key_local": key_local}
+        silk = [(o[0], list(o[1]), o[2] if len(o) > 2 else None)
+                for o in (getattr(b, "silk_overlays", None) or [])]
+        mech[name] = {"holes": holes, "cast_deg": cast_deg, "key": key, "key_local": key_local,
+                      "silk": silk}
     return out, mech
 
 
@@ -659,6 +668,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                           "face": face}
         if m:
             m["holes"] = [(rot(*pos), hd, pl, tg) for pos, hd, pl, tg in m["holes"]]
+            m["silk"] = [(ly, [rot(*p) for p in pts], lb) for ly, pts, lb in m.get("silk", [])]
             m["cast_deg"] = sorted((a + phi) % 360 for a in m["cast_deg"])
             if m.get("key"):
                 m["key"] = ((m["key"][0] + phi) % 360,) + tuple(m["key"][1:])
@@ -742,6 +752,8 @@ def build_panel(layout=None):
                 boards[DEV].silk_overlays.append((layer, box, name))
                 boards[DEV].silk_overlays.append((layer, circ, None))
             m = layout.get("mech", {}).get(name, {})
+            for ly, pts, lb in m.get("silk", []):                 # ring outlines, ANT keep-outs
+                boards[DEV].silk_overlays.append((ly, [(cx + x, cy + y) for x, y in pts], lb))
             for (hx, hy), hd, plated, tag in m.get("holes", []):  # the tower board's holes
                 g0.holes.append(_H(position_mm=(cx + hx, cy + hy), diameter_mm=hd,
                                    plated=plated, tag=f"{name}_{tag}"))

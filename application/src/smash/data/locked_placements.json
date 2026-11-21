@@ -1,7 +1,8 @@
 {
  "_meta": {
   "description": "Chip placements that cannot be moved by the packer. Positions are board-local mm coords (relative to the tile's centre). Mating-pad refs (those starting with 'P_') anchor at (0,0) automatically and are listed here only when they need explicit rotation or face. Future scope: locked trace segments (smash doesn't model traces yet).",
-  "schema_version": 1
+  "schema_version": 1,
+  "frame_note": "2026-11-21 (user): no 180-degree nose-ward turn any more — every board shares the aft_end frame (one potting-hole coordinate everywhere). Locks on power_board, companion_compute and the nose payloads were rotated 180 degrees about the centre so the physical tower is unchanged."
  },
  "U_HACC": {
   "position_mm": [
@@ -14,18 +15,18 @@
  },
  "U_MPU": {
   "position_mm": [
-   7.7,
-   2.7
+   -7.7,
+   -2.7
   ],
-  "rotation_deg": 180,
+  "rotation_deg": 0,
   "reason": "VFBGA-361 (10x10 mm body, 12x12 courtyard). Hand-placed + locked at (-7.7, 2.7) KiCad-frame, SW of the disc; Y negated for the math-Y-up placement frame. Rotation 0 deg per the ST AN5724 STM32MP25xxAK reference. Diagonal with U_DDR4 (NE) so the pair clears the NW/SE potting holes and leaves the centre/south of the top face for the SPI-NAND + DDR decoupling. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "U_DDR4": {
   "position_mm": [
-   -6.9,
-   -2.3
+   6.9,
+   2.3
   ],
-  "rotation_deg": 180,
+  "rotation_deg": 0,
   "reason": "SMARTsemi KTDM4G4B626BGIEAT DDR4 (FBGA-96 7.5x13, courtyard 9.6x15.1). Hand-placed + locked at (6.9, -2.3) KiCad-frame, NE of the 34 mm disc; un-rotated (0 deg) per the STM32MP2 DDR4 reference (was 270 deg DDR3L). Diagonal with U_MPU (SW): the un-rotated 15.1 mm-tall courtyard sits between the NW/SE potting holes (radius 14, 135/315 deg), clearing both, and leaves the centre/south of the top face for the two SPI-NAND dies. Refdes renamed U_DDR3 -> U_DDR4 in the DDR3->DDR4 swap. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "ANT_NFC": {
@@ -200,37 +201,37 @@
  },
  "U_TIA_A": {
   "position_mm": [
-   3.5,
-   3.5
+   -3.5,
+   -3.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "bottom",
   "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
  },
  "U_TIA_B": {
   "position_mm": [
-   -3.5,
-   3.5
+   3.5,
+   -3.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "bottom",
   "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
  },
  "U_TIA_C": {
   "position_mm": [
-   -3.5,
-   -3.5
+   3.5,
+   3.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "bottom",
   "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
  },
  "U_TIA_D": {
   "position_mm": [
-   3.5,
-   -3.5
+   -3.5,
+   3.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "bottom",
   "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
  },
@@ -239,25 +240,25 @@
    0.0,
    0.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-18 (user): USB nose = VERTICAL USB-C at the nose tip, plugged axially through the flat face. ⚠ Footprint/pinout = UJ20 placeholder until a vertical USB-C receptacle PN is chosen (check country of origin)."
  },
  "D_NOSE_G": {
   "position_mm": [
-   13.0,
-   -4.5
+   -13.0,
+   4.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "Green status LED on the RADAR top face (visible through the nose_cap cutout once stacked). User-placed at the east side, R~13.7."
  },
  "D_NOSE_R": {
   "position_mm": [
-   13.0,
-   5.5
+   -13.0,
+   -5.5
   ],
-  "rotation_deg": 180,
+  "rotation_deg": 0,
   "face": "top",
   "reason": "Red status LED on the RADAR top face (visible through the nose_cap cutout). User-placed at the east side, R~14.1."
  },
@@ -344,46 +345,46 @@
  },
  "U_NAND_B": {
   "position_mm": [
-   -3.273,
-   8.599
+   3.273,
+   -8.599
   ],
-  "rotation_deg": 180,
+  "rotation_deg": 0,
   "face": "top",
   "reason": "SPI-NAND die B, locked 2026-11-14 at the spot the packer used to find next to the (now removed) SE potting hole: with ONE potting hole per board the packer lost that anchor and could not seat it. Point-mirror of U_NAND_A. Placeholder until the layout EE re-places companion_compute. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
  "D_IR_WAKE_Q": {
   "position_mm": [
    0.0,
-   11.0
+   -11.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_TX_Q": {
   "position_mm": [
-   -10.6,
-   4.0
+   10.6,
+   -4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_WAKE_C": {
   "position_mm": [
    0.0,
-   9.0
+   -9.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_TX_C": {
   "position_mm": [
-   -9.0,
-   4.0
+   9.0,
+   -4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
@@ -407,73 +408,73 @@
  },
  "Q_IR_TX_Q": {
   "position_mm": [
-   -10.6,
-   -4.0
+   10.6,
+   4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "Q_IR_TX_C": {
   "position_mm": [
-   -9.0,
-   -4.0
+   9.0,
+   4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_WAKE_U": {
   "position_mm": [
    0.0,
-   9.5
+   -9.5
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_TX_U": {
   "position_mm": [
-   -9.0,
-   4.0
+   9.0,
+   -4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "Q_IR_TX_U": {
   "position_mm": [
-   -9.0,
-   -4.0
+   9.0,
+   4.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
  "D_IR_WAKE": {
   "position_mm": [
    0.0,
-   10.6
+   -10.6
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
  },
  "D_IR_TX": {
   "position_mm": [
-   -10.6,
-   3.0
+   10.6,
+   -3.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
  },
  "Q_IR_TX": {
   "position_mm": [
-   -10.6,
-   -3.0
+   10.6,
+   3.0
   ],
-  "rotation_deg": 90,
+  "rotation_deg": 270,
   "face": "top",
   "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
  },
@@ -713,19 +714,19 @@
  },
  "L_ACTIVATE": {
   "position_mm": [
-   0.5,
-   -6.0
+   -0.5,
+   6.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-20 (user): TALL GROUP — the 2.8 mm boost inductors stack on power_board's TOP in the one pocket where companion_compute's BOTTOM is free (south, between the DDR4 and MPU decoupling fields); compute's bottom carries a matching plain keepout (_TALL_ZONE_REFS) so nothing stands over them and the power↔compute gap is sized by the 2.8 mm parts alone."
  },
  "L_BOOST_COMP": {
   "position_mm": [
-   0.5,
-   -12.0
+   -0.5,
+   12.0
   ],
-  "rotation_deg": 0,
+  "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-20 (user): TALL GROUP — the 2.8 mm boost inductors stack on power_board's TOP in the one pocket where companion_compute's BOTTOM is free (south, between the DDR4 and MPU decoupling fields); compute's bottom carries a matching plain keepout (_TALL_ZONE_REFS) so nothing stands over them and the power↔compute gap is sized by the 2.8 mm parts alone."
  }
