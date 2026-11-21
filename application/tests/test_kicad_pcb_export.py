@@ -168,15 +168,15 @@ def test_potting_holes_emitted(tmp_pcb):
 
 
 def test_camera_module_no_potting_holes(tmp_pcb):
-    """camera_module has potting_holes=false: its only NPTH are the 3 nose-stop
-    screw holes (board screwed into the nose cone, 2026-11-19)."""
+    """camera_module has potting_holes=false and (2026-11-21, user: fixed nose)
+    no nose-stop holes any more: no NPTH at all."""
     d = Design(); board = Board("camera_module")
     write_kicad_pcb(d, board, tmp_pcb)
     sexp = _parse_sexp(tmp_pcb.read_text())
     assert len(list(_find_all(sexp, "gr_circle"))) == 1   # just the outline
     pads = list(_find_all(sexp, "pad"))
     npth = [p for p in pads if len(p) > 2 and p[2] == "np_thru_hole"]
-    assert len(npth) == 3                                  # nose stops only
+    assert npth == []
 
 
 # ── footprints ────────────────────────────────────────────────────────

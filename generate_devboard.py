@@ -64,9 +64,25 @@ def build_design():
     G._prime_power_rails(d)
     for fn in _BUILDERS:
         fn(d)
-    removed = [r for r in tower_only_refs(d) if remove_component(d, r)]
+    # (2026-11-21) the aft-cap contacts stay until the lanes are assigned: their
+    # nets (SWD, consoles, ...) then get their sleeve lanes + castellations as in
+    # the tower — on the dev board the PROGRAMMER is the aft cap (bus → strip)
+    global _AFT_CAP_REFS
+    _AFT_CAP_REFS = [c.ref for c in d.chips if getattr(c, "board_tag", None) == G.AFT_CAP]
+    removed = [b.ref for b in list(d.batteries) if remove_component(d, b.ref)]
     locks = build_diag(d)
     return d, removed, locks
+
+
+_AFT_CAP_REFS: list = []
+
+
+def drop_aft_cap(d) -> list:
+    """After the lane assignment: the virtual aft-cap contacts go, and the
+    tower's mechanical spacer scaffolds (SP_*, "no signals") that the tower
+    placement adds — they have no tile on the dev board."""
+    sp = [c.ref for c in d.chips if c.ref.startswith("SP_")]
+    return [r for r in _AFT_CAP_REFS + sp if remove_component(d, r)]
 
 
 def retag(d) -> None:
@@ -494,9 +510,12 @@ _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
 # the programming board (socket + debug) is a strip at the channel's aft end
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
               "companion_compute", "radar_module", "qpd_module", "camera_module", "usb_nose")
+TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
 PROG_W_MM = 56.0               # programming-board strip (left edge = board edge: USB-C)
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
-PROG_SLOT_TABS_Y = (-30.0, 0.0, 30.0)
+# (2026-11-21, user) 4 tabs, none where the bus crosses: the bus passes a
+# fully cut stretch of the slot (|y| ≤ channel/2 + margin stays open)
+PROG_SLOT_TABS_Y = (-38.0, -16.0, 16.0, 38.0)
 TILE_PITCH_MM = 42.0           # Ø34 tile + castellation fan-out room
 TILE_BOX_MM = 38.0             # silkscreen box round each tile
 SOCKET_COL_MM = 56.0           # socket column (Ø50 collar + margin)
@@ -507,6 +526,9 @@ TILE_RING_MM = (17.3, 19.0)    # part keep-out ring outside each tile (the rout 
 ROUT_MM = (17.0, 19.0)         # panel rout slot (inner edge on the castellation centres)
 TAB_W_MM = 2.5                 # break-tab width (arc at r 17)
 MOUSE_BITE_D_MM, MOUSE_BITES = 0.5, 3
+
+
+_LANE_CONTRACT: dict = {}
 
 
 def tower_placements(d) -> dict:
@@ -522,7 +544,8 @@ def tower_placements(d) -> dict:
     G._mark_ring_band_keepouts(panel, boards)
     place_design(d, panel, boards)
     size_backbone_spacers(panel, boards)
-    place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
+    global _LANE_CONTRACT
+    _LANE_CONTRACT, *_ = place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
                         cone_exits=G._CONE_EXITS)
     import math
     from smash.parts.castellations import board_fold_transforms, _local_xy
@@ -621,7 +644,10 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
         cx, cy = xs + k * P / 2, (row_y if above else -row_y)
         centres[name] = (cx, cy)
         m = mech.get(name, {})
-        phi = (90.0 if above else 270.0) - m.get("key_local", 135.0)
+        # (2026-11-21, user) every tile the SAME way round (potting hole, key and
+        # lane gap at one angle) and only quarter turns, so parts stay 0/90/180/270:
+        # the boards come in two mirror orientations 180° apart → phi 0 or 180
+        phi = 90.0 * round(((TILE_KEY_DEG - m.get("key_local", TILE_KEY_DEG)) % 360) / 90.0) % 360
         c, s_ = math.cos(math.radians(phi)), math.sin(math.radians(phi))
         rot = lambda x, y: (x * c - y * s_, x * s_ + y * c)
         for ref, x, y, r, face in tiles.get(name, []):
@@ -849,6 +875,118 @@ def _tabs(cast_deg, key, n=3):
     return out
 
 
+LDS_STUB_R_MM = ROUT_MM[1] + 0.6      # stubs end just outside the cut line
+LDS_STUB_W_MM = 0.10                  # = the HDI min track (Default netclass)
+
+
+def add_lds_stubs(pcb) -> int:
+    """(2026-11-21, user) Pre-routed LDS escapes on copper, in BOTH files:
+    a straight radial F.Cu stub from every castellation pad out across the
+    tile ring to r 19.6 (past the cut line). The layout EE continues them into
+    the channel bus on the dev board; on the production panel the slot cuts
+    each stub at its own pad (= the castellated half-hole)."""
+    import math, re, uuid
+    txt = pcb.read_text()
+    segs = []
+    for m in re.finditer(r'"Reference" "(J_CAST_\w+)"', txt):
+        head = txt.rfind("\n\t(footprint", 0, m.start())
+        end = txt.find("\n\t(footprint", m.start())
+        end = len(txt) if end < 0 else end
+        blk = txt[head:end]
+        fx, fy, *fr = map(float, re.search(r'\(at ([-\d.]+) ([-\d.]+)(?: ([-\d.]+))?\)', blk)
+                          .groups(default="0"))
+        th = math.radians(fr[0] if fr else 0.0)
+        for pm in re.finditer(r'\(pad "([^"]*)" thru_hole.*?\(at ([-\d.]+) ([-\d.]+)[^)]*\).*?'
+                              r'\(net "([^"]+)"\)', blk, re.S):
+            net = pm[4]
+            if net.startswith("unconnected"):
+                continue
+            px, py = float(pm[2]), float(pm[3])
+            x = fx + px * math.cos(th) + py * math.sin(th)        # KiCad: y down, CCW angles
+            y = fy - px * math.sin(th) + py * math.cos(th)
+            r = math.hypot(x - fx, y - fy)
+            if not 16.0 < r < 18.0:
+                continue
+            ux, uy = (x - fx) / r, (y - fy) / r
+            ex, ey = fx + ux * LDS_STUB_R_MM, fy + uy * LDS_STUB_R_MM
+            u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/lds/{m[1]}/{pm[1]}")
+            segs.append(f'\t(segment\n\t\t(start {x:.4f} {y:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
+                        f'\t\t(width {LDS_STUB_W_MM})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
+                        f'\t\t(uuid "{u}")\n\t)')
+    end = txt.rstrip().rfind(")")
+    pcb.write_text(txt[:end] + "\n".join(segs) + "\n" + txt[end:])
+    return len(segs)
+
+
+# (2026-11-21, user: "too close") lanes round-robin over 4 inner layers:
+# 0.40 mm pitch per layer = 0.30 mm gaps (4x the 0.075 min), and a track on one
+# layer sits over a 0.1 mm-offset neighbour, not stacked on another track
+BUS_LAYERS = ("In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu")
+BUS_SPILL = ("In1.Cu", "In6.Cu")         # a reused angle whose spans would touch
+BUS_STEP_MM, BUS_W_MM = 0.10, 0.10
+
+
+def add_lds_bus(pcb, lay) -> dict:
+    """(2026-11-21, user) The LDS bus on copper: the tower sleeve's lane
+    contract laid into the channel. One track per lane angle, ACROSS the
+    channel in sleeve-angle order, ALONG it from the first to the last tile
+    the net connects (tiles sit in stack order, so this is the sleeve
+    unrolled); nets the programmer strip also uses run on to the channel's aft
+    end. GND lanes are left to the pours. The EE joins each castellation stub
+    to its lane with a via."""
+    import re, uuid
+    txt = pcb.read_text()
+    W, H = lay["W"], lay["H"]
+    m = re.search(r'\(footprint "[^"]*mech[_:]mount".*?\(at ([-\d.]+) ([-\d.]+)\)', txt, re.S)
+    ox, oy = float(m[1]) + (W / 2 - 3.5), float(m[2]) - (H / 2 - 3.5)
+    world = lambda x, y: (ox + x, oy - y)
+    pad_nets = set(re.findall(r'\(pad "[^"]*" [^\n]*(?:\n[^\n]*){0,8}?\(net "([^"]+)"\)', txt))
+    prog_nets = set()
+    for fm in re.finditer(r'"Reference" "([A-Z]+_DEV_\w*)"', txt):
+        e = txt.find("\n\t(footprint", fm.start())
+        prog_nets |= set(re.findall(r'\(net "([^"]+)"\)', txt[fm.start():e if e > 0 else None]))
+    cx = {n: c[0] for n, c in lay["centres"].items()}
+    x_start = lay["prog_x1"] + 2.5
+    lanes = []
+    for key, ln in (_LANE_CONTRACT.get("lanes") or {}).items():
+        if ln.get("kind") in ("gnd_plane", "crown_payload"):
+            continue
+        net = ln.get("net", key)
+        if net not in pad_nets:
+            continue
+        xs = [cx[b] for b in ln.get("boards", []) if b in cx]
+        if not xs:
+            continue
+        x0, x1 = min(xs), max(xs)
+        if net in prog_nets:
+            x0 = x_start
+        if x1 - x0 < 1.0:
+            continue
+        for ang in ln.get("angles", []):
+            lanes.append((round(ang % 360, 3), x0, x1, net))
+    angles = sorted({a for a, *_ in lanes})
+    rank = {a: k for k, a in enumerate(angles)}
+    y0 = -(len(angles) - 1) * BUS_STEP_MM / 2
+    used, segs, spill = {}, [], 0
+    for ang, x0, x1, net in sorted(lanes):
+        k = rank[ang]
+        layer = BUS_LAYERS[k % len(BUS_LAYERS)]
+        if any(not (x1 + 1.0 < a or x0 - 1.0 > b) for a, b in used.get((k, layer), [])):
+            layer = BUS_SPILL[k % 2]; spill += 1
+        used.setdefault((k, layer), []).append((x0, x1))
+        y = y0 + k * BUS_STEP_MM
+        (sx, sy), (ex, ey) = world(x0, y), world(x1, y)
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/bus/{net}/{ang}")
+        segs.append(f'\t(segment\n\t\t(start {sx:.4f} {sy:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
+                    f'\t\t(width {BUS_W_MM})\n\t\t(layer "{layer}")\n\t\t(net "{net}")\n'
+                    f'\t\t(uuid "{u}")\n\t)')
+    end = txt.rstrip().rfind(")")
+    pcb.write_text(txt[:end] + "\n".join(segs) + "\n" + txt[end:])
+    return {"tracks": len(segs), "angles": len(angles), "spill": spill,
+            "width_mm": round((len(angles) - 1) * BUS_STEP_MM + BUS_W_MM, 2),
+            "prog": len({n for *_, n in lanes if n in prog_nets})}
+
+
 def write_panel_variant(pcb, lay) -> dict:
     """Fiducials on the dev board, and dev_board_panel.kicad_pcb: the same
     board + a 2 mm rout slot round every tile (inner edge on the castellation
@@ -866,6 +1004,19 @@ def write_panel_variant(pcb, lay) -> dict:
     fids = [(-W / 2 + 10, H / 2 - 3.0), (W / 2 - 10, H / 2 - 3.0), (-W / 2 + 10, -H / 2 + 3.0)]
     fid_txt = [_fp_fiducial(f"FID{k + 1 + 3 * bot}", *world(x, y), bot, f"fid{k}{bot}")
                for bot in (0, 1) for k, (x, y) in enumerate(fids)]
+    # (2026-11-21, user) LOCAL fiducials: 3 per tile square (box corners, outside
+    # the rout ring, asymmetric) and 3 on the programmer strip, both faces
+    c = TILE_BOX_MM / 2 - 1.5
+    local = {name: [(cx - c, cy + c), (cx + c, cy + c), (cx - c, cy - c)]
+             for name, (cx, cy) in lay["centres"].items()}
+    px = lay["prog_x1"]
+    local["programmer"] = [(-W / 2 + 4.0, -H / 2 + 12.0), (px - 4.0, -H / 2 + 12.0),
+                           (px - 4.0, H / 2 - 10.0)]
+    for name, pts in local.items():
+        for bot in (0, 1):
+            for k, (x, y) in enumerate(pts):
+                fid_txt.append(_fp_fiducial(f"FID_{name}_{'B' if bot else 'T'}{k + 1}",
+                                            *world(x, y), bot, f"lfid/{name}/{k}{bot}"))
     end = txt.rstrip().rfind(")")
     dev_txt = txt[:end] + "\n".join(fid_txt) + "\n" + txt[end:]
     pcb.write_text(dev_txt)
@@ -916,19 +1067,33 @@ def write_panel_variant(pcb, lay) -> dict:
         rout.append(f'\t(gr_poly\n\t\t(pts {pl})\n\t\t(stroke (width 0.05) (type solid))\n'
                     f'\t\t(fill none)\n\t\t(layer "Edge.Cuts")\n\t\t(uuid "{u}")\n\t)')
     bite_txt = [_fp_npth(f"MB{k + 1}", x, y, MOUSE_BITE_D_MM, f"mb{k}") for k, (x, y) in enumerate(bites)]
-    import shutil
-    pdir = pcb.parent                                    # beside the project: same rules + libs
-    out = pdir / f"{DEV}_panel.kicad_pcb"
-    pro = pcb.with_suffix(".kicad_pro")
-    if pro.exists():
-        shutil.copy(pro, out.with_suffix(".kicad_pro"))
+    # (2026-11-21, user) ONE design file: the production cut + drill live on
+    # Eco1.User, renamed "Production.Rout"; the fab export applies them or not
+    pdir = pcb.parent
+    for old in (pdir / f"{DEV}_panel.kicad_pcb", pdir / f"{DEV}_panel.kicad_pro"):
+        old.unlink(missing_ok=True)
+    marks = [r.replace('(layer "Edge.Cuts")', f'(layer "{PROD_LAYER}")') for r in rout]
+    for k, (x, y) in enumerate(bites):
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/mbmark{k}")
+        marks.append(f'\t(gr_circle\n\t\t(center {x:.4f} {y:.4f})\n'
+                     f'\t\t(end {x + MOUSE_BITE_D_MM / 2:.4f} {y:.4f})\n'
+                     f'\t\t(stroke (width 0.02) (type solid))\n\t\t(fill yes)\n'
+                     f'\t\t(layer "{PROD_LAYER}")\n\t\t(uuid "{u}")\n\t)')
+    dev_txt = dev_txt.replace('(21 "Eco1.User" user "User.Eco1")',
+                              f'(21 "{PROD_LAYER}" user "Production.Rout")')
+    e2 = dev_txt.rstrip().rfind(")")
+    pcb.write_text(dev_txt[:e2] + "\n".join(marks) + "\n" + dev_txt[e2:])
     pan_txt = re.sub(r'\t\(gr_line\s*\(start [^)]*\)\s*\(end [^)]*\)\s*\(stroke [^\n]*\)\s*'
                      r'\(layer "Edge\.Cuts"\)\s*\(uuid "[^"]*"\)\s*\)\n', "", dev_txt)
     end = pan_txt.rstrip().rfind(")")
-    out.write_text(pan_txt[:end] + "\n".join(rout + bite_txt) + "\n" + pan_txt[end:])
+    fab = write_fab_sets(pcb, pan_txt[:end] + "\n".join(rout + bite_txt) + "\n" + pan_txt[end:])
     (pdir / "PANEL_NOTES.md").write_text(
-        "# Production panel (generated)\\n\\n"
-        "Same board as dev_board.kicad_pcb + rout slots round each Ø34 tower tile.\\n\\n"
+        "# Dev board / production panel (generated)\\n\\n"
+        "ONE design file, dev_board.kicad_pcb. Layer Eco1.User is named Production.Rout: "
+        "the rout slots round each Ø34 tower tile + beside the programmer strip, and the "
+        "mouse-bite drills. Fab sets: fab/dev = the board as drawn (outline routed); "
+        "fab/production = the same + Production.Rout applied (slots → Edge.Cuts, bites → "
+        "NPTH drill). Nothing else differs.\\n\\n"
         f"- Rout: {ROUT_MM[1] - ROUT_MM[0]:g} mm slot, inner edge at r {ROUT_MM[0]:g} = through the "
         "castellation hole centres → CASTELLATED (plated half) holes: call this out to the fab "
         "(castellation process: plate, then rout).\\n"
@@ -947,7 +1112,36 @@ def write_panel_variant(pcb, lay) -> dict:
         "- Copper outside the tiles (inter-tile joins, socket, debug) is scrap after depaneling; "
         "nothing inside a tile depends on it. The camera's 0.5 mm Al spreader is bonded after.\\n"
         "- 3 fiducials per side (FID1-3 top, FID4-6 bottom), asymmetric.\\n")
-    return {"n_slots": len(polys), "n_tabs": ntab, "n_bites": len(bites), "panel": out}
+    return {"n_slots": len(polys), "n_tabs": ntab, "n_bites": len(bites), "fab": fab}
+
+
+PROD_LAYER = "Eco1.User"
+FAB_LAYERS = ("F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu", "In6.Cu", "B.Cu",
+              "F.Mask", "B.Mask", "F.Paste", "B.Paste", "F.SilkS", "B.SilkS", "Edge.Cuts")
+
+
+def write_fab_sets(pcb, production_txt) -> dict:
+    """fab/dev and fab/production Gerbers + Excellon from the ONE design file;
+    production is derived in a temp file (Production.Rout applied), exported,
+    then deleted — it is never a second design file."""
+    import subprocess, tempfile
+    try:
+        cli = G.find_kicad_cli()
+    except G.KiCadCliNotFound:
+        return {}
+    out = {}
+    with tempfile.TemporaryDirectory() as td:
+        prod = pathlib.Path(td) / f"{DEV}.kicad_pcb"
+        prod.write_text(production_txt)
+        for mode, src in (("dev", pcb), ("production", prod)):
+            d = pcb.parent / "fab" / mode
+            d.mkdir(parents=True, exist_ok=True)
+            subprocess.run([str(cli), "pcb", "export", "gerbers", "--layers", ",".join(FAB_LAYERS),
+                            "-o", str(d) + "/", str(src)], check=True, capture_output=True)
+            subprocess.run([str(cli), "pcb", "export", "drill", "--excellon-separate-th",
+                            "-o", str(d) + "/", str(src)], check=True, capture_output=True)
+            out[mode] = d
+    return out
 
 
 def main() -> int:
@@ -959,6 +1153,7 @@ def main() -> int:
     # the schematic keeps one framed section per tower subsystem (+ dev_diag)
     section = {c.ref: c.board_tag for c in list(d.chips) + list(d.batteries)}
     lay = tile_layout(d, section, set(locks))
+    removed += drop_aft_cap(d)
     section.update({c.ref: c.board_tag for c in d.chips if c.ref.startswith("J_CAST_")})
     dx, dy = lay["fixture"][0] - FIXTURE_CENTRE[0], lay["fixture"][1] - FIXTURE_CENTRE[1]
     for e in locks.values():                              # fixture pins move with the fixture
@@ -997,12 +1192,19 @@ def main() -> int:
     from smash.export.portable_project import write_portable_project
     pp = write_portable_project(pcb)
     write_fixture_collar(OUT)
-    pv = write_panel_variant(pcb, lay)
+    n_stubs = add_lds_stubs(pcb)
+    bus = add_lds_bus(pcb, lay)
+    pv = write_panel_variant(pcb, lay)          # Production.Rout layer + fab/dev, fab/production
     print(f"  → {pcb} ({r.get('n_footprints', '?')} footprints) + {DEV}.kicad_sch "
           f"({sch.get('n_parts', '?')} parts, {sch.get('n_symbols', '?')} symbols) — one project; "
           f"portable: {pp['n_footprints']} footprints, {pp['n_models']} 3D models")
-    print(f"  panel variant: {pv['panel'].relative_to(REPO)} — {pv['n_slots']} rout slots, "
-          f"{pv['n_tabs']} tabs, {pv['n_bites']} mouse bites; 6 fiducials (both files)")
+    print(f"  production cut on layer Production.Rout: {pv['n_slots']} outline rings, "
+          f"{pv['n_tabs']} tabs, {pv['n_bites']} mouse bites; 6 fiducials; fab sets: "
+          + ", ".join(str(v.relative_to(REPO)) for v in pv.get("fab", {}).values()))
+    print(f"  LDS escapes: {n_stubs} radial stubs (castellation → r {LDS_STUB_R_MM:g})")
+    print(f"  LDS bus: {bus['tracks']} tracks on {bus['angles']} lane angles, {bus['width_mm']} mm "
+          f"wide ({'/'.join(BUS_LAYERS)}; {bus['spill']} on {'/'.join(BUS_SPILL)}); "
+          f"{bus['prog']} nets run on to the programmer")
     return 0
 
 

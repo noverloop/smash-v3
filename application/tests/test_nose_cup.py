@@ -212,10 +212,9 @@ def test_radar_nose_is_open_without_radome(built):
     assert n.lens == {"radome": None}
     assert n.radial_windows == [] and n.hoods == [] and n.pipes == []
     assert n.dam is not None
-    # (2026-11-20) the payload is PRESSURE-FIXED by the nose cap and located
-    # by 3 pins in its nose_stop holes (no stop-boss screws any more)
+    # (2026-11-21, user) fixed nose: no locating-pin holes in the payload
     stops = [h for h in boards["radar_module"].geometry.holes if h.tag == "nose_stop"]
-    assert len(stops) == 3
+    assert not stops
 
 def test_usb_nose_vertical_usb_c(built):
     _g, _d, panel, boards, _c = built

@@ -43,33 +43,8 @@
         }
       ],
       "_note_potting": "2026-11-20: moved from (0,\u221211) \u2014 it sat under the LOCKED D_IR_WAKE. One \u00d82.5 potting hole at r 12 / 20\u00b0 in the placement frame (written here pre-rotation: potting holes of the nose-ward tiles turn 180\u00b0), clear of every locked part on both faces and inside the land ring (r < 13.6), so the nose-cone pour reaches the 51 bottom-face parts.",
-      "holes": [
-        {
-          "position_mm": [
-            4.95,
-            14.583
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            -15.104,
-            -3.004
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            12.805,
-            -8.556
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        }
-      ],
-      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "holes": [],
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*). 2026-11-21 (user): locating-pin holes REMOVED \u2014 fixed nose (payload is a stack tile), nothing to locate on."
     },
     "fins_module": {
       "shape": "circle",
@@ -212,97 +187,22 @@
       "shape": "circle",
       "diameter_mm": 34.0,
       "potting_holes": false,
-      "holes": [
-        {
-          "position_mm": [
-            4.95,
-            14.583
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            -15.104,
-            -3.004
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            12.805,
-            -8.556
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        }
-      ],
-      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "holes": [],
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*). 2026-11-21 (user): locating-pin holes REMOVED \u2014 fixed nose (payload is a stack tile), nothing to locate on."
     },
     "qpd_module": {
       "shape": "circle",
       "diameter_mm": 34.0,
       "potting_holes": false,
-      "holes": [
-        {
-          "position_mm": [
-            4.95,
-            14.583
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            -15.104,
-            -3.004
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            12.805,
-            -8.556
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        }
-      ],
-      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "holes": [],
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*). 2026-11-21 (user): locating-pin holes REMOVED \u2014 fixed nose (payload is a stack tile), nothing to locate on."
     },
     "usb_nose": {
       "shape": "circle",
       "diameter_mm": 34.0,
       "potting_holes": false,
-      "holes": [
-        {
-          "position_mm": [
-            4.95,
-            14.583
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            -15.104,
-            -3.004
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        },
-        {
-          "position_mm": [
-            12.805,
-            -8.556
-          ],
-          "diameter_mm": 1.6,
-          "tag": "nose_stop"
-        }
-      ],
-      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "holes": [],
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*). 2026-11-21 (user): locating-pin holes REMOVED \u2014 fixed nose (payload is a stack tile), nothing to locate on."
     },
     "nfc_antenna_flex": {
       "shape": "circle",

@@ -391,6 +391,12 @@ def _emit_footprint(
     parts.append(f'\t\t(layer "{fp_layer}")')
     parts.append(f'\t\t(uuid "{_uid(board_name, chip.ref)}")')
     parts.append(f'\t\t(at {_fmt(x)} {_fmt(y)} {_fmt(rot)})')
+    # (2026-11-21) footprint TYPE: without it KiCad files the part as
+    # "unspecified", which the 3D viewer filters separately (models hidden)
+    # and pos files skip. Any drilled pad → through_hole, else smd.
+    if fp.pads:
+        parts.append("\t\t(attr through_hole)" if any(p.drill_mm is not None for p in fp.pads)
+                     else "\t\t(attr smd)")
     if chip.description:
         # Escape any quote characters; descr is a freeform string
         descr = chip.description.replace('"', r'\"')
@@ -537,6 +543,12 @@ _KICAD_STOCK_3D_LIBS = frozenset({
 })
 
 
+# footprints named off the stock scheme → the stock body of the same size
+_KICAD_STOCK_MODEL_ALIAS = {
+    "Inductor_SMD:L_2012_2.0x1.25mm": "L_0805_2012Metric",
+}
+
+
 def _kicad_stock_model_path(fp_name: str) -> str | None:
     """If `fp_name` is a KiCad-stock footprint (e.g.
     "Capacitor_SMD:C_0402_1005Metric"), return the repo-local path to
@@ -552,6 +564,7 @@ def _kicad_stock_model_path(fp_name: str) -> str | None:
     lib, base = fp_name.split(":", 1)
     if lib not in _KICAD_STOCK_3D_LIBS:
         return None
+    base = _KICAD_STOCK_MODEL_ALIAS.get(f"{lib}:{base}", base)
     candidate = _REPO_ROOT / "library_kicad" / "3dmodels" / f"{lib}.3dshapes" / f"{base}.step"
     if not candidate.exists():
         return None

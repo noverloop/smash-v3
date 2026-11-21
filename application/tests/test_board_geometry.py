@@ -63,14 +63,12 @@ def test_main_rigid_boards_are_d34_with_potting(name):
 @pytest.mark.parametrize("name", ["radar_module", "qpd_module", "camera_module", "usb_nose"])
 def test_payload_boards_sit_on_the_land_ring(name):
     """(2026-11-19, user) Nose payloads are Ø34 again, seated on the nose
-    cone's land ring, held by 3 screws into its top (holes at r 15.4)."""
+    cone's land ring. (2026-11-21, user) fixed nose: the 3 locating-pin holes
+    are gone — nothing to locate on."""
     from smash.export import nose_interface as NI
     g = load_board_geometry(name)
     assert g.shape == "circle" and g.diameter_mm / 2 == NI.PAYLOAD_R_MM == 17.0
-    stops = [h for h in g.holes if h.tag == "nose_stop"]
-    assert len(stops) == 3
-    for h in stops:
-        assert math.hypot(*h.position_mm) == pytest.approx(NI.PAYLOAD_STOP_R_MM, abs=1e-2)
+    assert not [h for h in g.holes if h.tag == "nose_stop"]
     pot = [h for h in g.holes if h.tag == "potting"]
     assert len(pot) == (1 if name == "radar_module" else 0)   # radar: 51 bottom parts
 
