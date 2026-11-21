@@ -361,14 +361,267 @@ def build_diag(d) -> dict:
     return locks
 
 
-def build_panel():
+# ══ (2026-11-21, user) BLOCK layout — no radial packer, nothing on the bottom ══
+# One rectangular block per subsystem (the tower boards + dev_diag), every part
+# on TOP; the nets that cross subsystems (the tower's sleeve LDS lanes) run in
+# a BUS channel through the middle (component keep-out), blocks above / below
+# it; the aft fixture sits at the bus's end.
+BLOCK_ORDER = ("dev_diag", "usb_nose", "companion_compute", "radar_module",
+               "camera_module", "qpd_module", "power_board", "wakeup_board",
+               "activation_interface", "aft_end_board")
+BUS_H_MM = 8.0                 # bus channel height (routing only)
+BLOCK_GAP_MM = 2.0             # between blocks and to the bus
+EDGE_MM = 7.0                  # board edge margin (corner mounting holes)
+PART_GAP_MM = 0.25             # extra gap between courtyards inside a block
+BLOCK_FILL = 0.62              # target courtyard fill inside a block (sets its width)
+FIXTURE_BLOCK_MM = 52.0        # the Ø50 collar keep-out + margin
+
+
+def _crt_box(c):
+    fp = getattr(c, "footprint", None)
+    pts = (getattr(fp, "courtyard", None) or []) if fp else []
+    if not pts:
+        w, h = (getattr(c, "size_mm", None) or (1.0, 1.0))
+        return w, h, 0.0, 0.0
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    return max(xs) - min(xs), max(ys) - min(ys), (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+
+
+def _pack_block(chips):
+    """Shelf-pack one subsystem into a near-square block. Returns
+    (block_w, block_h, [(ref, x, y)]) with (x, y) the PART origin, block
+    lower-left at (0, 0)."""
+    import math
+    items = sorted(((c.ref, *_crt_box(c)) for c in chips), key=lambda t: (-t[2], -t[1]))
+    area = sum((w + PART_GAP_MM) * (h + PART_GAP_MM) for _r, w, h, _x, _y in items)
+    width = max(math.sqrt(area / BLOCK_FILL), max((w for _r, w, *_ in items), default=1) + 0.5)
+    out, x, y, row_h, used_w = [], 0.0, 0.0, 0.0, 0.0
+    for ref, w, h, cx, cy in items:
+        if x > 0 and x + w > width:
+            x, y, row_h = 0.0, y + row_h + PART_GAP_MM, 0.0
+        out.append((ref, x + w / 2 - cx, y + h / 2 - cy))
+        x += w + PART_GAP_MM
+        row_h = max(row_h, h)
+        used_w = max(used_w, x)
+    return used_w, y + row_h, out
+
+
+def block_layout(d, section: dict, fixed: set) -> dict:
+    """Positions for every part (board frame, origin = board centre) + the
+    board size, fixture centre and bus rectangle."""
+    groups = {g: [] for g in BLOCK_ORDER}
+    for c in d.chips:
+        if c.ref in fixed:
+            continue
+        groups.setdefault(section.get(c.ref, "dev_diag"), []).append(c)
+    blocks = [(g, *_pack_block(cs)) for g, cs in groups.items() if cs]
+    # two rows, biggest blocks first onto the shorter row
+    rows = {"top": [], "bot": []}
+    width = {"top": 0.0, "bot": 0.0}
+    for b in sorted(blocks, key=lambda b: -b[1] * b[2]):
+        r = min(rows, key=lambda k: width[k])
+        rows[r].append(b); width[r] += b[1] + BLOCK_GAP_MM
+    row_w = max(width.values())
+    top_h = max((b[2] for b in rows["top"]), default=0)
+    bot_h = max((b[2] for b in rows["bot"]), default=0)
+    W = EDGE_MM * 2 + row_w + FIXTURE_BLOCK_MM
+    H = EDGE_MM * 2 + top_h + bot_h + BUS_H_MM + 2 * BLOCK_GAP_MM
+    H = max(H, FIXTURE_BLOCK_MM + 2 * EDGE_MM)
+    x0 = -W / 2 + EDGE_MM
+    pos, rects = {}, {}
+    for r, sign in (("top", 1), ("bot", -1)):
+        x = x0
+        for g, bw, bh, items in rows[r]:
+            yb = (BUS_H_MM / 2 + BLOCK_GAP_MM) if sign > 0 else -(BUS_H_MM / 2 + BLOCK_GAP_MM) - bh
+            for ref, px, py in items:
+                pos[ref] = (round(x + px, 4), round(yb + py, 4))
+            rects[g] = (x, yb, x + bw, yb + bh)
+            x += bw + BLOCK_GAP_MM
+    fixture = (round(x0 + row_w + FIXTURE_BLOCK_MM / 2, 4), 0.0)
+    bus = (x0, -BUS_H_MM / 2, x0 + row_w, BUS_H_MM / 2)
+    return {"pos": pos, "W": round(W, 1), "H": round(H, 1), "fixture": fixture,
+            "bus": bus, "blocks": rects}
+
+
+# ══ (2026-11-21, user) TILE layout: the tower boards laid flat ═══════════════
+# Every tower board appears as a Ø34 TILE at its own placement (the tower's
+# placer, locks + castellations: top AND bottom faces exactly as on the tower),
+# boxed + titled in silkscreen like the schematic's sections; its castellations
+# become plated THROUGH-holes on the tile outline (test points + the joins —
+# same net on two tiles = routed). The debug section packs centre-outward on
+# the BOTTOM under the tower socket (the spring-pin ring excepted); buttons /
+# LEDs on the TOP beside the socket; the USB-C at the board edge.
+TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
+             ("power_board", "companion_compute", "radar_module"),
+             ("camera_module", "qpd_module", "usb_nose"))
+TILE_PITCH_MM = 42.0           # Ø34 tile + castellation fan-out room
+TILE_BOX_MM = 38.0             # silkscreen box round each tile
+SOCKET_COL_MM = 56.0           # socket column (Ø50 collar + margin)
+TILE_EDGE_MM = 6.0
+USB_COL_MM = 12.0
+PIN_RING_MM = (10.7, 17.7)     # bottom face blocked by the locating + spring pins
+
+
+def tower_placements(d) -> dict:
+    """Place the design on the REAL tower panel (tower placer + locks +
+    castellations) and return {board: [(ref, x, y, rot, face)]}."""
+    from smash.layout.placer import place_design
+    from smash.layout.placer.spacer_sizing import size_backbone_spacers
+    from smash.parts.castellations import place_castellations
+    G._empty_aft_end_top(d)
+    panel, boards = G.build_panel(straight=G._STRAIGHT_SNAKE, battery_length_mm=G._compartment_mm())
+    G.build_spacers(d, boards)
+    G._mark_preplace_keepouts(d, boards)
+    G._mark_ring_band_keepouts(panel, boards)
+    place_design(d, panel, boards)
+    size_backbone_spacers(panel, boards)
+    place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
+                        cone_exits=G._CONE_EXITS)
+    out = {}
+    for name, b in boards.items():
+        if getattr(b, "is_spacer", False):
+            continue
+        out[name] = [(pl.item.ref, pl.position_mm[0], pl.position_mm[1], pl.rotation_deg,
+                      pl.face or "top") for pl in b.chip_placements]
+    return out
+
+
+def _open_castellation_mask(d) -> None:
+    """Castellation pads are mask-tented on the tower (the sleeve via lands in
+    the half-barrel); on the dev board they are probe-able through-holes."""
+    import dataclasses
+    for c in d.chips:
+        if c.ref.startswith("J_CAST_") and c.footprint is not None:
+            c.footprint.pads[:] = [dataclasses.replace(p, solder_mask_expansion_mm=0.05)
+                                   for p in c.footprint.pads]
+
+
+def _polar_pack(chips, allowed, ring=PIN_RING_MM, step=0.5, gap=0.25):
+    """Centre-outward pack of `chips` (bottom face) into the rectangle
+    `allowed` (x0, y0, x1, y1, around the socket centre at 0, 0), clear of the
+    pin ring. Returns {ref: (x, y)} (part origin) and the refs that did not fit."""
+    import numpy as np
+    x0, y0, x1, y1 = allowed
+    gx, gy = np.meshgrid(np.arange(x0, x1 + 1e-9, step), np.arange(y0, y1 + 1e-9, step))
+    cand = np.c_[gx.ravel(), gy.ravel()]
+    cand = cand[np.argsort(np.hypot(cand[:, 0], cand[:, 1]))]
+    placed, pos, miss = [], {}, []
+    for c in sorted(chips, key=lambda c: -(_crt_box(c)[0] * _crt_box(c)[1])):
+        w, h, ox, oy = _crt_box(c)
+        hw, hh = w / 2 + gap / 2, h / 2 + gap / 2
+        cx, cy = cand[:, 0], cand[:, 1]
+        ok = (cx - hw >= x0) & (cx + hw <= x1) & (cy - hh >= y0) & (cy + hh <= y1)
+        dmin = np.hypot(np.maximum(np.abs(cx) - hw, 0), np.maximum(np.abs(cy) - hh, 0))
+        dmax = np.hypot(np.abs(cx) + hw, np.abs(cy) + hh)
+        ok &= ~((dmin <= ring[1]) & (dmax >= ring[0]))
+        for px, py, phw, phh in placed:
+            ok &= ~((np.abs(cx - px) < hw + phw) & (np.abs(cy - py) < hh + phh))
+        idx = np.flatnonzero(ok)
+        if not len(idx):
+            miss.append(c.ref)
+            continue
+        x, y = cand[idx[0]]
+        placed.append((x, y, hw, hh))
+        pos[c.ref] = (float(x - ox), float(y - oy))
+    return pos, miss
+
+
+def _shelf(chips, x0, y0, x1, gap=0.6):
+    """Simple left-to-right shelves from (x0, y0) downward, width x1 − x0."""
+    pos, x, y, row = {}, x0, y0, 0.0
+    for c in sorted(chips, key=lambda c: c.ref):
+        w, h, ox, oy = _crt_box(c)
+        if x > x0 and x + w > x1:
+            x, y, row = x0, y - row - gap, 0.0
+        pos[c.ref] = (x + w / 2 - ox, y - h / 2 - oy)
+        x += w + gap
+        row = max(row, h)
+    return pos
+
+
+def tile_layout(d, section: dict, fixture_refs: set) -> dict:
+    tiles = tower_placements(d)
+    _open_castellation_mask(d)
+    cols, rows = len(TILE_GRID[0]), len(TILE_GRID)
+    W = 2 * TILE_EDGE_MM + cols * TILE_PITCH_MM + SOCKET_COL_MM + USB_COL_MM
+    H = 2 * TILE_EDGE_MM + rows * TILE_PITCH_MM
+    x0, y1 = -W / 2 + TILE_EDGE_MM, H / 2 - TILE_EDGE_MM
+    locks, centres = {}, {}
+    for r, row in enumerate(TILE_GRID):
+        for c, name in enumerate(row):
+            cx = x0 + (c + 0.5) * TILE_PITCH_MM
+            cy = y1 - (r + 0.5) * TILE_PITCH_MM
+            centres[name] = (cx, cy)
+            for ref, x, y, rot, face in tiles.get(name, []):
+                locks[ref] = {"position_mm": [round(cx + x, 4), round(cy + y, 4)],
+                              "rotation_deg": rot, "face": face}
+    # (2026-11-21, user) socket over rows 1-2 of its column, debug chips in row 3
+    sx = x0 + cols * TILE_PITCH_MM + SOCKET_COL_MM / 2
+    sy = y1 - TILE_PITCH_MM                                     # between rows 1 and 2
+    fixture = (round(sx, 4), round(sy, 4))
+    debug = [c for c in d.chips if section.get(c.ref) == DIAG and c.ref not in fixture_refs
+             and c.ref not in locks]
+    ui = [c for c in debug if c.ref.startswith(("S_DEV_", "D_DEV_"))]
+    usb = [c for c in debug if c.ref == "J_DEV_USB"]
+    rest = [c for c in debug if c not in ui and c not in usb]
+    cx0, cx1 = sx - SOCKET_COL_MM / 2 + 1.0, sx + SOCKET_COL_MM / 2 - 1.0
+    ry1 = y1 - 2 * TILE_PITCH_MM - 1.0                           # row-3 cell (top edge)
+    ry0 = y1 - 3 * TILE_PITCH_MM + 1.0
+    # top: buttons + LEDs first (visible / pressable), then debug chips; the rest bottom
+    top_pos = _shelf(ui, cx0, ry1, cx1)
+    used_y = min((y for _x, y in top_pos.values()), default=ry1) - 4.0
+    # greedy: fill the top face below the UI (to ~55 %), the rest on the bottom
+    rest_sorted = sorted(rest, key=lambda c: -(_crt_box(c)[0] * _crt_box(c)[1]))
+    a_top = (cx1 - cx0) * (used_y - ry0)
+    acc, top_set = 0.0, []
+    for c in rest_sorted:
+        w, h, _ox, _oy = _crt_box(c)
+        if acc + (w + 0.6) * (h + 0.6) < 0.55 * a_top:
+            top_set.append(c); acc += (w + 0.6) * (h + 0.6)
+    bot_set = [c for c in rest_sorted if c not in top_set]
+    pos_top = _shelf(top_set, cx0, used_y, cx1)
+    pos_bot = _shelf(bot_set, cx0, ry1, cx1)
+    for ref, (x, y) in {**top_pos, **pos_top}.items():
+        locks[ref] = {"position_mm": [round(x, 4), round(y, 4)], "rotation_deg": 0, "face": "top"}
+    for ref, (x, y) in pos_bot.items():
+        locks[ref] = {"position_mm": [round(x, 4), round(y, 4)], "rotation_deg": 0, "face": "bottom"}
+    low = [r for r, (x, y) in {**pos_top, **pos_bot}.items()
+           if y - _crt_box(next(c for c in rest if c.ref == r))[1] / 2 < ry0 - 0.5]
+    miss = low
+    for c in usb:                                              # right edge, row 3
+        w, h, ox, oy = _crt_box(c)
+        locks[c.ref] = {"position_mm": [round(W / 2 - 2.0 - h / 2, 4),
+                                        round((ry0 + ry1) / 2, 4)],
+                        "rotation_deg": 90, "face": "top"}
+    return {"locks": locks, "W": round(W, 1), "H": round(H, 1), "fixture": fixture,
+            "centres": centres, "miss": miss}
+
+
+def build_panel(layout=None):
     from smash.layout.boards.smash_evb_v1 import build_config_panel, _standardize_board_stackups
     panel, boards = build_config_panel([DEV], straight=True)
     _standardize_board_stackups(boards)                      # 8L Speedstack, 0.868 mm
     # the tower stands on the aft fixture: keep the top face clear under it
     # (Ø35.8 sleeve + 0.6 mm), the locked spring pins excepted
     import math
-    fx, fy = FIXTURE_CENTRE
+    fx, fy = layout["fixture"] if layout else FIXTURE_CENTRE
+    if layout:                                           # board sized to the blocks
+        g0 = boards[DEV].geometry
+        g0.rect_dimensions = (layout["W"], layout["H"])
+        g0.holes[:] = [h for h in g0.holes if h.tag != "mount"]
+        from smash.state.board_geometry import Hole as _H, Keepout as _K
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                x, y = sx * (layout["W"] / 2 - 3.5), sy * (layout["H"] / 2 - 3.5)
+                g0.holes.append(_H(position_mm=(x, y), diameter_mm=3.2, plated=False, tag="mount"))
+        for name, (cx, cy) in layout.get("centres", {}).items():   # schematic-like boxes
+            h = TILE_BOX_MM / 2
+            box = [(cx - h, cy - h), (cx + h, cy - h), (cx + h, cy + h), (cx - h, cy + h)]
+            circ = [(cx + 17.0 * math.cos(math.radians(k * 5)), cy + 17.0 * math.sin(math.radians(k * 5)))
+                    for k in range(72)]                         # the Ø34 tower-board outline
+            for layer in ("F.SilkS", "B.SilkS"):
+                boards[DEV].silk_overlays.append((layer, box, name))
+                boards[DEV].silk_overlays.append((layer, circ, None))
     R = FIXTURE_KEEPOUT_R_MM
     circ = [(fx + R * math.cos(math.radians(k * 10)), fy + R * math.sin(math.radians(k * 10)))
             for k in range(36)]
@@ -454,8 +707,17 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     # the schematic keeps one framed section per tower subsystem (+ dev_diag)
     section = {c.ref: c.board_tag for c in list(d.chips) + list(d.batteries)}
+    lay = tile_layout(d, section, set(locks))
+    section.update({c.ref: c.board_tag for c in d.chips if c.ref.startswith("J_CAST_")})
+    dx, dy = lay["fixture"][0] - FIXTURE_CENTRE[0], lay["fixture"][1] - FIXTURE_CENTRE[1]
+    for e in locks.values():                              # fixture pins move with the fixture
+        e["position_mm"] = [round(e["position_mm"][0] + dx, 4), round(e["position_mm"][1] + dy, 4)]
+    locks.update(lay["locks"])
+    print(f"  tile layout: {lay['W']} × {lay['H']} mm, {len(lay['centres'])} tower tiles + socket"
+          + (f"; WARNING {len(lay['miss'])} debug part(s) did not fit under the socket: "
+             f"{', '.join(lay['miss'][:8])}" if lay["miss"] else ""))
     retag(d)
-    panel, boards = build_panel()
+    panel, boards = build_panel(lay)
     print(f"  board thickness {boards[DEV].thickness_mm:.3f} mm "
           f"({boards[DEV].copper_layers} layers)")
     rep = place(d, panel, boards, locks)

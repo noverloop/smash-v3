@@ -98,7 +98,7 @@ SLOTS = (
     # (2026-11-21, user) fin_ble merged into activation; the p21 layout: S1
     # moves to wakeup↔power (above its radio board, clear of S4's structure
     # that put an anti-resonance in S1's band), S4 sits in activation↔wakeup
-    # 1 mm below the gap's mid-height. ⚠ S1 resonates ~2.5 GHz there and the
+    # (centred since the 0.868 mm boards, 2026-11-21). ⚠ S1 resonates ~2.5 GHz there and the
     # sector is full at scale 0.95 — needs end-loading to come down to LoRa.
     SlotAntenna("S1", "ANT_HF_S1", "wakeup_board", "power_board",
                 start_deg=110.0, direction=+1, f_design_ghz=2.15, scale=0.95,
@@ -106,7 +106,7 @@ SLOTS = (
                 label="S1 2.4 GHz ISM: LoRa (LR2021, DTC-tuned) + BLE, shared"),
     SlotAntenna("S4", "ANT_HF_S4", "activation_interface", "wakeup_board",
                 start_deg=143.0, direction=+1, f_design_ghz=4.4, scale=0.9,
-                width_mm=2.0, feed_mm=2.0, dz_mm=-1.0,
+                width_mm=2.0, feed_mm=2.0, dz_mm=0.0,   # (2026-11-21) centred: −1 mm overlapped activation's top on the 0.868 mm stack (p25)
                 label="S4 transverter 4.6-5.0 GHz (LR2021 IF + ADF4351/LTC5549)"),
 )
 
