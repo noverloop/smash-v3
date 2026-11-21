@@ -543,7 +543,12 @@ def tower_placements(d) -> dict:
     G._mark_preplace_keepouts(d, boards)
     G._mark_ring_band_keepouts(panel, boards)
     place_design(d, panel, boards)
+    G._place_health_coil(d, boards)            # (2026-11-21) embedded beacon coil, as in the tower
     size_backbone_spacers(panel, boards)
+    from smash.validators import assert_no_locked_overlaps   # (2026-11-21) as the tower does
+    _ov = assert_no_locked_overlaps(boards, accepted=G._ACCEPTED_LOCKED_OVERLAPS)
+    if _ov:
+        print(f"  WARN: {len(_ov)} packed chip-overlap(s) on the tower boards: {_ov[:5]}")
     global _LANE_CONTRACT
     _LANE_CONTRACT, *_ = place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
                         cone_exits=G._CONE_EXITS)
@@ -557,6 +562,7 @@ def tower_placements(d) -> dict:
     G._apply_companion_reference_layout(d, boards)
     G._apply_activation_reference_layout(d, boards)
     G._mark_gap_hardware_silk(panel, boards, fold)
+    G._mark_aft_bench_silk(boards)             # (2026-11-21) bench-pad group boxes, as the tower
     out, mech = {}, {}
     for name, b in boards.items():
         if getattr(b, "is_spacer", False):
@@ -1214,6 +1220,10 @@ def main() -> int:
           f"{pv['n_tabs']} tabs, {pv['n_bites']} mouse bites; 6 fiducials; fab sets: "
           + ", ".join(str(v.relative_to(REPO)) for v in pv.get("fab", {}).values()))
     print(f"  LDS escapes: {n_stubs} radial stubs (castellation → r {LDS_STUB_R_MM:g})")
+    import os
+    if os.environ.get("SMASH_SKIP_CHECKS") != "1":                 # warnings only
+        from smash.export.checks import report as _check_report
+        _check_report(pcbs=[pcb], schematics=[OUT / f"{DEV}.kicad_sch"], root=REPO)
     print(f"  LDS bus: {bus['tracks']} tracks on {bus['angles']} lane angles, {bus['width_mm']} mm "
           f"wide ({'/'.join(BUS_LAYERS)}; {bus['spill']} on {'/'.join(BUS_SPILL)}); "
           f"{bus['prog']} nets run on to the programmer")

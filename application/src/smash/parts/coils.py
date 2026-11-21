@@ -48,17 +48,24 @@ def coil_estimates(r_out: float, r_in: float, turns: int, trace_mm: float,
 
 
 def add_health_coil(design, ref: str = "L_HEALTH_COIL", *, board_tag: str,
-                    r_out_mm: float = 15.5, r_in_mm: float = 12.0, turns: int = 8,
-                    trace_mm: float = 0.25, feed_deg: float = 31.25, **overrides):
+                    r_out_mm: float = 15.5, r_in_mm: float = 13.0, turns: int = 8,
+                    trace_mm: float = 0.20, feed_deg: float = 31.25, **overrides):
     """Embedded 8-turn rim spiral (In2.Cu) + In3.Cu return. Pin 1 = outer feed
     (to the supply), pin 2 = return (to the low-side driver). Place at the
     board centre, rotation 0 (feed angle is board-local)."""
+    # (2026-11-21) feed vias OFF the spiral: the Ø0.6 vias sat on the 0.44 mm
+    # turn pitch and hit the next turn (DRC). Outer feed + return just OUTSIDE
+    # the outer turn (r_out + 0.5), the inner end's via just INSIDE the inner
+    # turn (r_in − 0.5); r_in 12 → 13 clears the cell-wire hole (r 11.98, Ø1.3)
+    # and the aft-cap screws (r 10.6). Moment/A +7 %, R 2.7 → 3.5 Ω: net ≈ +2 %.
     pts = spiral_points(r_out_mm, r_in_mm, turns, feed_deg)
     a1 = math.radians(feed_deg)
     a2 = math.radians(feed_deg + 5.0)
-    p1 = (round(r_out_mm * math.cos(a1), 4), round(r_out_mm * math.sin(a1), 4))
-    p_in = pts[-1]
-    p2 = (round(r_out_mm * math.cos(a2), 4), round(r_out_mm * math.sin(a2), 4))
+    a_end = math.radians(feed_deg + 360.0 * turns)
+    r_via_out, r_via_in = r_out_mm + 0.5, r_in_mm - 0.5
+    p1 = (round(r_via_out * math.cos(a1), 4), round(r_via_out * math.sin(a1), 4))
+    p_in = (round(r_via_in * math.cos(a_end), 4), round(r_via_in * math.sin(a_end), 4))
+    p2 = (round(r_via_out * math.cos(a2), 4), round(r_via_out * math.sin(a2), 4))
     est = coil_estimates(r_out_mm, r_in_mm, turns, trace_mm)
     tent = -VIA_D_MM / 2.0
     pads = [Pad(num="1", position_mm=p1, size_mm=(VIA_D_MM, VIA_D_MM), shape="round",
@@ -82,7 +89,7 @@ def add_health_coil(design, ref: str = "L_HEALTH_COIL", *, board_tag: str,
                          f"{r_out_mm:g} mm, {trace_mm:g} mm trace; inner end returns on "
                          f"{RETURN_LAYER}. ≈ {est['R_ohm']:.1f} Ω (½ oz), "
                          f"{est['moment_Am2_per_A'] * 1e4:.1f} cm²·turns."))
-    fp.copper_lines.append({"layer": COIL_LAYER, "width_mm": trace_mm, "points": [p1] + pts})
+    fp.copper_lines.append({"layer": COIL_LAYER, "width_mm": trace_mm, "points": [p1] + pts + [p_in]})
     fp.copper_lines.append({"layer": RETURN_LAYER, "width_mm": trace_mm, "points": [p_in, p2]})
     fields = dict(
         manf="project", manf_pn="EMBEDDED_HEALTH_COIL", name="EMBEDDED_HEALTH_COIL",

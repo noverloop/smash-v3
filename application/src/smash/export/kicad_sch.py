@@ -379,6 +379,39 @@ class _PwrSymbol:
         return "\n".join(out)
 
 
+class _PwrFlag:
+    """KiCad's PWR_FLAG: one hidden power-OUTPUT pin. (2026-11-21) No pin in
+    the design is typed power-out (regulator outputs, load switches and
+    resistor feeds are io / passive), so every rail's power symbols (hidden
+    power-IN pins) failed ERC "not driven"; one flag per rail declares it
+    driven. Emitted once per power net, on its first power symbol's pin."""
+    name = "PWR_FLAG"
+
+    def sexpr(self, lib_prefix: str | None) -> str:
+        full = f"{lib_prefix}:{self.name}" if lib_prefix else self.name
+        return "\n".join([
+            f'\t(symbol {_q(full)} (power) (pin_numbers hide) (pin_names (offset 0) hide)',
+            '\t\t(exclude_from_sim no) (in_bom yes) (on_board yes)',
+            f'\t\t(property "Reference" "#FLG" (at 0 1.905 0) {_font(hide=True)})',
+            f'\t\t(property "Value" "PWR_FLAG" (at 0 3.81 0) {_font(hide=True)})',
+            f'\t\t(property "Footprint" "" (at 0 0 0) {_font(hide=True)})',
+            f'\t\t(property "Datasheet" "" (at 0 0 0) {_font(hide=True)})',
+            f'\t\t(property "Description" "Marks a net as driven (ERC)" (at 0 0 0) {_font(hide=True)})',
+            '\t\t(symbol "PWR_FLAG_0_0"',
+            '\t\t\t(pin power_out line (at 0 0 90) (length 0) hide '
+            f'(name "pwr" {_font()}) (number "1" {_font()}))',
+            '\t\t)',
+            '\t\t(symbol "PWR_FLAG_0_1"',
+            '\t\t\t(polyline (pts (xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) '
+            '(xy 1.016 1.905) (xy 0 1.27)) (stroke (width 0) (type default)) (fill (type none)))',
+            '\t\t)',
+            '\t)',
+        ])
+
+
+_PWR_FLAG = _PwrFlag()
+
+
 def _power_symbol(lib: "_SymbolLibrary", net: str, ground: bool, d: str) -> _PwrSymbol:
     base = re.sub(r"[^A-Za-z0-9_.+-]", "_", net)
     if base != net:
@@ -392,7 +425,7 @@ def _power_symbol(lib: "_SymbolLibrary", net: str, ground: bool, d: str) -> _Pwr
 # ── lib symbol s-expressions ─────────────────────────────────────────────
 
 def _lib_symbol_sexpr(sym, lib_prefix: str | None) -> str:
-    if isinstance(sym, _PwrSymbol):
+    if isinstance(sym, (_PwrSymbol, _PwrFlag)):
         return sym.sexpr(lib_prefix)
     full = f"{lib_prefix}:{sym.name}" if lib_prefix else sym.name
     out = [f'\t(symbol {_q(full)}']
@@ -1381,6 +1414,7 @@ def _write_flat(out, project, lib, regions, rail_labels=False, titles=None) -> N
     pins: list = []                     # symbol + power-symbol pin ends
     wires: list = []
     pwr_no = 1
+    flagged: set = set()
 
     for rg in regions:
         board = rg.board
@@ -1427,6 +1461,24 @@ def _write_flat(out, project, lib, regions, rail_labels=False, titles=None) -> N
                         '\t)',
                     ]
                     pins.append((X, Y))
+                    if psym.net not in flagged:          # one PWR_FLAG per rail
+                        flagged.add(psym.net)
+                        used[_PWR_FLAG.name] = _PWR_FLAG
+                        fref = f"#FLG{len(flagged):04d}"
+                        items += [
+                            f'\t(symbol (lib_id {_q(f"{lib}:{_PWR_FLAG.name}")}) (at {_f(X)} {_f(Y)} 0) (unit 1)',
+                            '\t\t(exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
+                            f'\t\t(uuid {_q(_uid(*seed, "flag"))})',
+                            f'\t\t(property "Reference" {_q(fref)} (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
+                            f'\t\t(property "Value" "PWR_FLAG" (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
+                            f'\t\t(property "Footprint" "" (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
+                            f'\t\t(property "Datasheet" "" (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
+                            f'\t\t(property "Description" "" (at {_f(X)} {_f(Y)} 0) {_font(hide=True)})',
+                            f'\t\t(pin "1" (uuid {_q(_uid(*seed, "flag", "pin"))}))',
+                            f'\t\t(instances (project {_q(project)} (path {_q(inst_path)} '
+                            f'(reference {_q(fref)}) (unit 1))))',
+                            '\t)',
+                        ]
                 elif kind == "wire":
                     _, x1, y1, x2, y2 = prim
                     X1, Y1, X2, Y2 = BX + x1, BY + y1, BX + x2, BY + y2

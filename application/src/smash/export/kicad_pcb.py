@@ -397,6 +397,12 @@ def _emit_footprint(
     if fp.pads:
         parts.append("\t\t(attr through_hole)" if any(p.drill_mm is not None for p in fp.pads)
                      else "\t\t(attr smd)")
+    # (2026-11-21) a footprint that carries its OWN copper between its pads
+    # (embedded coil: spiral pin 1 → pin 2) is a net tie — without this DRC
+    # flags the net-less copper as shorting the two pins.
+    _tie = sorted({p.num for p in fp.pads if p.num})
+    if getattr(fp, "copper_lines", None) and len(_tie) > 1:
+        parts.append(f'\t\t(net_tie_pad_groups "{", ".join(_tie)}")')
     if chip.description:
         # Escape any quote characters; descr is a freeform string
         descr = chip.description.replace('"', r'\"')

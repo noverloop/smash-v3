@@ -552,6 +552,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "CSI_REXT").connect(mpu.pin("CSI_REXT"))
     res_between(d, "CSI_REXT", "GND", "12k", ref="R_MPU_CSI_REXT", board_tag=BTAG)
     _net(d, "CAM_EXTCLK").connect(mpu.pin("PA8"))
+    _net(d, "CAM_NRST").connect(mpu.pin("PA9"))        # (2026-11-21) open-drain → AR0234 RESET_BAR
 
     # ═══════════════════════════════════════════════════════════════════════
     # FLIGHT CONTROL — Cortex-M33. Consolidation: the M33 is the autonomous
@@ -645,7 +646,9 @@ def build_companion_compute(d: Design) -> None:
 
     # Control + status GPIO
     _net(d, "PWR_HOLD")  .connect(mpu.pin("PD0"))
-    _net(d, "RF_SW_CTRL").connect(mpu.pin("PD4"))
+    # (2026-11-21) RF_SW_CTRL (PD4) removed: it drove the long-gone BGS12 LoRa
+    # diversity switch (WLE5 era); today's BGS12s are steered by the WBA55 /
+    # LR2021. PD4 is a spare GPIO.
     _net(d, "GPIO_EXT_0").connect(mpu.pin("PB7"))
     _net(d, "GPIO_EXT_1").connect(mpu.pin("PD3"))
     _net(d, "GPIO_EXT_2").connect(mpu.pin("PB1"))
@@ -2382,7 +2385,7 @@ def build_activation_interface(d: Design) -> None:
     cap_to_gnd(d, "PIEZO_TX_C", "10nF", gnd_net="PIEZO_P", ref="C_PZ_TX",
                board_tag="aft_end_board")
     # MAGNETIC: an 8-turn rim spiral embedded in aft_end_board (In2.Cu,
-    # r 12–15.5 mm, In3.Cu return — away from the antennas), pulsed at
+    # r 13–15.5 mm, 0.2 mm trace (2026-11-21), In3.Cu return — away from the antennas), pulsed at
     # 3–30 Hz from BAT_PROT through a 4 × 47 Ω bank (≈ 0.19 A ≈ 1.5 A·turns)
     # by a low-side BSS138 (top face — the battery ceiling's bottom stays empty,
     # 2026-11-20) + passives on activation_interface
@@ -2682,6 +2685,24 @@ def build_camera_module(d: Design) -> None:
     _net(d, "CAM_SDA")   .connect(cam.pin("E6"))     # SDATA
     _net(d, "CAM_NRST")  .connect(cam.pin("F7"))     # RESET_BAR
     _net(d, "CAM_EXTCLK").connect(cam.pin("G11"))    # 27 MHz from MP25
+
+    # (2026-11-21) CONTROL WAS UNCONNECTED (CAM_SCL / CAM_SDA / CAM_NRST were
+    # one-pin nets — ERC). The sensor's I/O is 1.8 V (COMP_1V8); SYS_I2C (I2C1,
+    # nothing else on it, AR0234 at 0x10) is 3.3 V → a two-MOSFET bidirectional
+    # shifter per line (NXP AN10441: gate on the low rail, source low side,
+    # drain bus side; pull-ups both sides — the bus side's are RPU_*_EXT on
+    # wakeup). BSS138AKM: already in the library, 0.37 mm tall.
+    for line in ("SCL", "SDA"):
+        q = add_bss138akm_qyl(d, ref=f"Q_CAM_{line}", board_tag="camera_module")
+        _net(d, "COMP_1V8")         .connect(q.pin("1"))   # gate
+        _net(d, f"CAM_{line}")      .connect(q.pin("2"))   # source (1.8 V side)
+        _net(d, f"SYS_I2C_{line}")  .connect(q.pin("3"))   # drain (3.3 V bus)
+        res_between(d, "COMP_1V8", f"CAM_{line}", "4.7k", ref=f"R_CAM_{line}_PU",
+                    board_tag="camera_module")
+    # RESET_BAR: MP25 PA9 as OPEN-DRAIN (only ever pulls low) + pull-up to the
+    # sensor's own 1.8 V, so no 3.3 V reaches it
+    res_between(d, "COMP_1V8", "CAM_NRST", "10k", ref="R_CAM_NRST_PU",
+                board_tag="camera_module")
 
     # ── Strap pins to GND (defaults per datasheet) ──────────────────
     _net(d, "GND").connect(cam.pin("A5"))   # SADDR — I²C addr 0x20/0x21
@@ -6989,6 +7010,12 @@ def main() -> int:
         for cfg_name, cfg_boards in chosen.items():
             _generate_config(cfg_name, cfg_boards)
 
+    # (2026-11-21) DRC / ERC summary — warnings, never a blocker
+    if os.environ.get("SMASH_SKIP_CHECKS") != "1":
+        from smash.export.checks import report as _check_report
+        _cfg_pcbs = [pcb_out / c / f"{c}.kicad_pcb" for c in CONFIGS]
+        _check_report(pcbs=[panel_path, *_cfg_pcbs],
+                      schematics=[sch_dir / "smash.kicad_sch"], root=REPO)
     return 0
 
 

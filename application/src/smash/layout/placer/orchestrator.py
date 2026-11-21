@@ -127,6 +127,23 @@ def _flex_dirs_for_board(panel, name: str) -> list[tuple[float, float]]:
     return dirs
 
 
+def normalize_courtyards(design) -> int:
+    """(2026-11-21) Every footprint's courtyard clears its pads by the global
+    ring (Footprint.ensure_courtyard_clearance) BEFORE packing — it used to be
+    per factory, and parts that skipped it (ADF4351, LTC5549, …) were packed
+    with their pads 0.05 mm from a neighbour's (DRC clearance 0.075). Project
+    pseudo-parts (castellations, embedded coil) keep their drawn courtyards."""
+    n = 0
+    for c in list(design.chips):
+        fp = getattr(c, "footprint", None)
+        if fp is None or getattr(c, "manf", None) == "project":
+            continue
+        before = list(fp.courtyard or [])
+        fp.ensure_courtyard_clearance()
+        n += list(fp.courtyard or []) != before
+    return n
+
+
 def place_design(
     design,
     panel,
@@ -138,6 +155,7 @@ def place_design(
 ) -> DesignPlacementReport:
     """Cached front of `_place_design` (smash.layout.placer.cache): the same
     inputs + the same placer code → the stored result, restored in place."""
+    normalize_courtyards(design)
     from smash.layout.placer import cache
     kw = {"n_random_orderings": n_random_orderings, "seed": seed,
           "extra_locks": extra_locks}
