@@ -774,20 +774,34 @@ def _poly_extrude(cq, poly, h, z0=0.0):
 BATT_DIODE_RING_MM = (7.2, 9.0)
 
 
+# (2026-11-21, user: "all potted") a POTTING GROOVE joins the floor-underside
+# pocket (piezo disc + comparator slot + diode ring = one cavity) to the Ø3
+# channel's + wire fan-out pocket, so the potting rising in the channel floods
+# it — no trapped air round the piezo, comparator or diodes. Along the
+# channel's own angle (135°: between the 90° cell pin and the 153° cap screw).
+BATT_POT_GROOVE_W_MM = 1.0
+
+
 def piezo_pocket():
     """Shapely outline of the floor-underside pocket (physical frame):
-    piezo disc + comparator slot + the steering-diode annulus."""
-    from shapely.geometry import Point, box
+    piezo disc + comparator slot + the steering-diode annulus + the potting
+    groove out to the channel / wire fan-out pocket."""
+    from shapely.geometry import LineString, Point, box
     ring = Point(0, 0).buffer(BATT_DIODE_RING_MM[1], 96).difference(
         Point(0, 0).buffer(BATT_DIODE_RING_MM[0], 96))
+    cx, cy = _batt_channel_xy()
+    a = math.atan2(cy, cx)
+    r0 = BATT_DIODE_RING_MM[1] - 0.3
+    groove = LineString([(r0 * math.cos(a), r0 * math.sin(a)), (cx, cy)]).buffer(
+        BATT_POT_GROOVE_W_MM / 2.0, cap_style=2)
     return (Point(0, 0).buffer(BATT_PZ_DISC_POCKET_R_MM, 96).union(box(*BATT_PZ_SLOT_MM))
-            .union(ring))
+            .union(ring).union(groove))
 
 
 def _battery_holder_body(cq, h):
     """Closed FLOOR (with the piezo pocket in its underside) + cell-locating
-    block above it + a 1 mm EDGE RING up to h. Potting: edge notches at the
-    bottom (feed) and the ring's top edge (vent), + the axial channel."""
+    block above it + a 1 mm EDGE RING up to h. Potting: the axial channel +
+    its link slot into the cell cavity (no edge notches since 2026-11-21)."""
     import math
     f = BATT_FLOOR_MM
     hc = min(BATT_CELL_LENGTH_MM, h - f)
@@ -815,17 +829,9 @@ def _battery_holder_body(cq, h):
                 .circle(BATT_TOP_RING_R_IN_MM).extrude(h - f - hc)
                 .translate((0, 0, f + hc)))
         body = body.union(ring)
-    for ang in BATT_FEED_ANGLES_DEG:
-        a = math.radians(ang)
-        for z0, r0 in ((0.0, BATT_NOTCH_R_IN_MM),
-                       (h - NOTCH_DEPTH_MM, BATT_TOP_RING_R_IN_MM - 0.5)):
-            r1 = BATT_HOLDER_R_OUT_MM + 0.5
-            cut = (cq.Workplane("XY")
-                   .center((r0 + r1) / 2 * math.cos(a), (r0 + r1) / 2 * math.sin(a))
-                   .transformed(rotate=(0, 0, ang))
-                   .rect(r1 - r0, SLOT_W_MM).extrude(NOTCH_DEPTH_MM)
-                   .translate((0, 0, z0)))
-            body = body.cut(cut)
+    # (2026-11-21, user) NO edge feed / vent notches any more: the potting
+    # enters through the axial channel and its link slot into the cell cavity
+    # and vents up through the headroom into activation's potting hole.
     # (2026-11-19, user) TAPPED M2 holes for the aft_end_cap screws, from the
     # holder's bottom face, in the solid webs BETWEEN the cells (never into a
     # cell bore): aft_cap.CAP_SCREW_ANGLES_DEG at CAP_SCREW_R_MM.
@@ -935,8 +941,7 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"Ø{2*BATT_BORE_R_MM:.2f} (location fit on the cell flanks), tip "
                     f"reliefs ±{BATT_TIP_RELIEF_HALF_DEG:g}° to r {BATT_TIP_RELIEF_R_MM} → "
                     f"{BATT_HOLDER_R_OUT_MM - BATT_CLUSTER_R_MM - BATT_TIP_RELIEF_R_MM:.1f} mm "
-                    "skin in hoop TENSION only; potting: top + bottom edge notches "
-                    f"{SLOT_W_MM} × {NOTCH_DEPTH_MM} mm at {BATT_FEED_ANGLES_DEG} + axial Ø"
+                    "skin in hoop TENSION only; potting: axial Ø"
                     f"{BATT_CHANNEL_D_MM} channel at {BATT_CHANNEL_ANGLE_DEG:g}°, linked to the cell cavity by a "
                     f"{BATT_CHANNEL_LINK_W_MM:g} mm full-height slot (the compartment is potted round "
                     "the cells); above the "

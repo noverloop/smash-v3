@@ -225,8 +225,12 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # reserves compute pads under its teeth. GND / feed castellations stay clear.
     _half = 0.5 * math.degrees(CAST_PITCH_MM / r)
     _fixed = list(GND_CAST_ANGLES_DEG) + list(ANTENNA_FEED_ANGLES_DEG.values())
+    # (2026-11-21) keep the compute KEY notch (sleeve index rib) clear: its
+    # half-width + a castellation pad + 0.2 mm (it sat on RADAR_EN's pad).
+    _key_half = math.degrees((NI.KEY_W_MM / 2 + CAST_PAD_MM / 2 + 0.2) / r)
     upper_angles = ([a for a in _ring_angles(r) if not _in_signal_sector(a)
-                     and all(min(abs(a - f), 360 - abs(a - f)) > 2 * _half for f in _fixed)]
+                     and all(min(abs(a - f), 360 - abs(a - f)) > 2 * _half for f in _fixed)
+                     and min(abs(a - NI.KEY_ANGLE_DEG), 360 - abs(a - NI.KEY_ANGLE_DEG)) > _key_half]
                     if UPPER_ANTENNA_LANES else [])
     occupied = {a: [] for a in angles + upper_angles}     # angle → [(lo, hi)]
     lanes: dict = {}

@@ -129,11 +129,12 @@ def test_cap_solid_and_drawings(built, tmp_path):
     assert "Contact map" in (tmp_path / "aft_end_cap.md").read_text()
 
 
-def test_cap_crown_is_slanted_low_outside_high_inside(built):
-    """(2026-11-20, user) the aft crown is a cone like the nose's, mirrored:
-    LOW (aft-most) at the outer diameter, HIGH at the inner — compliant,
-    self-centring contacts under acceleration. Probed on a screw position
-    (solid land) and in a contact groove (floor on the cone, T deep)."""
+def test_cap_crown_is_slanted_tallest_inside(built):
+    """(2026-11-20, user) the aft crown is a cone — compliant, self-centring
+    contacts under acceleration. (2026-11-21, user) TALLEST (aft-most) at the
+    inner diameter, shortest at the outer one (less height at the OD). Probed
+    on a screw position (solid land) and in a contact groove (floor on the
+    cone, T deep)."""
     cq = pytest.importorskip("cadquery")
     from smash.export import aft_cap as AC
     from smash.export import nose_interface as NI
@@ -143,11 +144,14 @@ def test_cap_crown_is_slanted_low_outside_high_inside(built):
     z_plate = -AC.CAP_PLATE_T_MM
     inside = lambda r, a, z: body.val().isInside(
         cq.Vector(r * math.cos(math.radians(a)), r * math.sin(math.radians(a)), z))
-    assert AC.tip_z(17.5, z_plate) < AC.tip_z(14.3, z_plate)          # low outside
+    if AC.cone_deg() > 0:                                               # (flat since 2026-11-21)
+        assert AC.tip_z(14.3, z_plate, 17.9) < AC.tip_z(17.5, z_plate, 17.9)  # aft-most inside
+    else:
+        assert AC.tip_z(14.3, z_plate, 17.9) == pytest.approx(AC.tip_z(17.5, z_plate, 17.9))
     a_scr = AC.CAP_SCREW_ANGLES_DEG[0]
     groove = next(c["angle_deg"] for c in cap["contacts"] if c["role"] == "signal")
     for r in (14.3, 16.0, 17.5):
-        zt = AC.tip_z(r, z_plate)
+        zt = AC.tip_z(r, z_plate, 17.9)
         assert inside(r, a_scr, zt + 0.05) and not inside(r, a_scr, zt - 0.05)
         assert not inside(r, groove, zt + 0.05)                         # groove …
         assert inside(r, groove, zt + NI.TOOTH_H_MM + 0.05)             # … floor on the cone

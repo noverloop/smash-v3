@@ -555,12 +555,15 @@ def _nose_variant_dir(sleeve_dir: pathlib.Path, nose_key: str | None):
     the first band found)."""
     if not nose_key:
         return None
+    # (2026-11-21) fixed nose: no nose cone any more — a variant dir is one
+    # holding the config's own sleeve / cap (modular: its nose cone)
+    marks = ("nose_cone.step", "nose_cap.step", "core_sleeve.step")
     d = sleeve_dir / nose_key
-    if (d / "nose_cone.step").exists():
+    if any((d / m).exists() for m in marks):
         return d
     if d.is_dir():
         for sub in sorted(d.iterdir()):
-            if (sub / "nose_cone.step").exists():
+            if sub.is_dir() and any((sub / m).exists() for m in marks):
                 return sub
     return None
 

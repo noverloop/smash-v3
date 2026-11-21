@@ -113,6 +113,13 @@ def size_backbone_spacers(
         from smash.export import nose_interface as NI   # (2026-11-18) nose anchor gap
         if NI.MODULAR and lower.name == NI.HOST and upper.name in NI.PAYLOAD_BOARDS:
             t = max(t, NI.ANCHOR_GAP_MIN_MM)            # Al ring (M2.5 helicoils) + crown
+        elif lower.name == NI.HOST and upper.name in NI.PAYLOAD_BOARDS:
+            if t > NI.NOSE_SLOT_GAP_MM + 1e-9:
+                import sys as _sys
+                print(f"  WARNING: nose slot: {upper.name} needs {t:.1f} mm > "
+                      f"NOSE_SLOT_GAP_MM {NI.NOSE_SLOT_GAP_MM} — sleeves would not align",
+                      file=_sys.stderr)
+            t = max(t, NI.NOSE_SLOT_GAP_MM)             # (2026-11-21) one frame for every sleeve
         b.thickness_override_mm = t
         sized[name] = t
     return sized

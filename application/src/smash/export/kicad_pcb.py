@@ -1116,13 +1116,7 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
         poly(list(cav.exterior.coords)[:-1])
         cx, cy = S._batt_channel_xy()
         circle(cx, cy, S.BATT_CHANNEL_D_MM / 2.0)
-        for ang in S.BATT_FEED_ANGLES_DEG:
-            a = math.radians(ang)
-            r0, r1 = S.BATT_NOTCH_R_IN_MM, S.BATT_HOLDER_R_OUT_MM
-            ux, uy = math.cos(a), math.sin(a)
-            vx, vy = -uy * S.SLOT_W_MM / 2, ux * S.SLOT_W_MM / 2
-            poly([(r0 * ux + vx, r0 * uy + vy), (r1 * ux + vx, r1 * uy + vy),
-                  (r1 * ux - vx, r1 * uy - vy), (r0 * ux - vx, r0 * uy - vy)])
+        # (2026-11-21) no edge feed / vent notches: potting via the channel
         pk = S.piezo_pocket().simplify(0.02)
         poly(list(pk.exterior.coords)[:-1], 0.2)
         text("ALUMINIUM BATTERY HOLDER (not a PCB)", -S.BATT_HOLDER_R_OUT_MM - 2.0)

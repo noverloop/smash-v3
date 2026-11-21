@@ -45,11 +45,16 @@ CAP_LEAD_POCKET_D_MM = 2.2
 CAP_LEAD_POCKET_DEPTH_MM = 1.0
 LABEL_R_MM = 13.6              # radial gate labels: from here INWARD (≥ r 10.8, on material)
 LABEL_H_MM = 0.6               # laser text height (LDS-legible ≥ 0.5 mm)
-# (2026-11-20, user) SLANTED crown like the nose's, mirrored for an aft-facing
-# interface: LOW (aft-most) at the outer diameter, HIGH (forward) at the inner —
+# (2026-11-20, user) SLANTED crown like the nose's, for an aft-facing
+# interface. (2026-11-21, user) FLIPPED: the band is TALLEST (aft-most) at the
+# inner diameter and shortest at the outer one — less height at the OD —
 # under acceleration the mating plug wedges into the cone, so the contacts get
 # a normal-force component + wipe and self-centre (more compliant than flat).
-CAP_CONE_DEG = None            # None → the nose crown's cone (NI.BEVEL_CONE_DEG)
+# (2026-11-21, user: "flat and screwed; height is precious") FLAT contact face:
+# no cone — the mating part is centred / keyed by the 3 uneven screw positions
+# and uses SPRING contacts (no wipe needed); saves the 2.3 mm slope of the 30°
+# cone. None → the nose crown's cone (NI.BEVEL_CONE_DEG).
+CAP_CONE_DEG = 0.0
 
 
 def cone_deg() -> float:
@@ -57,12 +62,19 @@ def cone_deg() -> float:
     return NI.BEVEL_CONE_DEG if CAP_CONE_DEG is None else CAP_CONE_DEG
 
 
-def tip_z(r: float, z_plate: float) -> float:
+# (2026-11-21, user) cone FLIPPED: the band is TALLEST (aft-most) at the
+# inner diameter and shortest at the OD — less height at the OD.
+CAP_HIGH_AT = "inner"            # "inner" (2026-11-21) | "outer" (the 2026-11-20 cone)
+
+
+def tip_z(r: float, z_plate: float, r_out: float = 17.9) -> float:
     """Aft face of the crown band (wall tips) at radius r: T below the plate
-    at the inner edge, dropping aft toward the outer edge."""
+    at its short edge, dropping aft toward the tall edge (the inner edge
+    since 2026-11-21; the outer edge before)."""
     from smash.export import nose_interface as NI
-    return (z_plate - NI.TOOTH_H_MM
-            - (r - NI.CROWN_R_IN_MM) * math.tan(math.radians(cone_deg())))
+    t = math.tan(math.radians(cone_deg()))
+    d = (r_out - r) if CAP_HIGH_AT == "inner" else (r - NI.CROWN_R_IN_MM)
+    return z_plate - NI.TOOTH_H_MM - d * t
 
 
 def _sector(cq, a_center: float, half_w_deg: float, r0: float, r1: float, z0: float, z1: float,
@@ -76,8 +88,8 @@ def _sector(cq, a_center: float, half_w_deg: float, r0: float, r1: float, z0: fl
 
 def build_aft_cap(cq, cap: dict, r_out: float, z_top: float = 0.0):
     """Cap body (aft view = −Z): plate r CAP_R_OPEN → r_out under z_top, crown
-    band r CROWN_R_IN → r_out below it — its aft face a CONE, high at the inner
-    edge, low at r_out — with a groove (floor on the cone) at every contact /
+    band r CROWN_R_IN → r_out below it — its aft face a CONE, tallest (aft-most)
+    at the inner edge, shortest at r_out (2026-11-21) — with a groove (floor on the cone) at every contact /
     GND position (screw positions stay solid), 3 counterbored screw holes."""
     from smash.export import nose_interface as NI
     T = NI.TOOTH_H_MM
@@ -88,13 +100,13 @@ def build_aft_cap(cq, cap: dict, r_out: float, z_top: float = 0.0):
     # conical band: flat on the plate (overlapping it 0.2 for a clean union),
     # aft face = the cone (tip_z), low at r_out
     band = (cq.Workplane("XZ").polyline([(r_in, z_plate + 0.2), (r_out, z_plate + 0.2),
-                                         (r_out, tip_z(r_out, z_plate)),
-                                         (r_in, tip_z(r_in, z_plate))]).close()
+                                         (r_out, tip_z(r_out, z_plate, r_out)),
+                                         (r_in, tip_z(r_in, z_plate, r_out))]).close()
             .revolve(360.0, (0, 0, 0), (0, 1, 0)))
     body = body.union(band)
     ri, ro = r_in - 0.01, r_out + 0.01
-    groove = [(ri, tip_z(ri, z_plate) - 0.01), (ro, tip_z(ro, z_plate) - 0.01),
-              (ro, tip_z(ro, z_plate) + T), (ri, tip_z(ri, z_plate) + T)]
+    groove = [(ri, tip_z(ri, z_plate, r_out) - 0.01), (ro, tip_z(ro, z_plate, r_out) - 0.01),
+              (ro, tip_z(ro, z_plate, r_out) + T), (ri, tip_z(ri, z_plate, r_out) + T)]
     for c in cap["contacts"]:
         if c["role"] in ("key", "screw"):
             continue
@@ -184,8 +196,8 @@ def contact_md(cap: dict) -> str:
         f"PEEK-LDS cap, crown facing AFT: {cap['n_teeth']}-position block crown ({360 / cap['n_teeth']:g}° "
         "pitch, own grid; groove "
         f"{2 * CAP_GROOVE_HALF_DEG:.2f}°, r {NI.CROWN_R_IN_MM}–17.9 mm) on a {cone_deg():g}° CONE, "
-        "LOW (aft-most) at the outer diameter and HIGH at the inner one — the nose crown's "
-        "cone mirrored; under acceleration the mating plug wedges into it, giving the "
+        "(2026-11-21: FLAT, 0°, screwed — height is precious; spring contacts on the mating "
+        "side, the 3 uneven screw positions centre + key it); a non-zero cone wedges the mating plug, giving the "
         "contacts a normal-force component, wipe and self-centring (compliant contacts). "
         f"{n_sig} signal contacts, "
         f"teeth {', '.join(map(str, cap['screw_teeth']))} = SCREW positions (no groove; their "

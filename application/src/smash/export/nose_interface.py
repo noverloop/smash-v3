@@ -155,6 +155,11 @@ HOST = "companion_compute"
 # end (annular snap joint). The crown geometry below stays for reference and
 # for the aft cap (which reuses its cone constants).
 MODULAR = False
+# (2026-11-21) ONE nose-slot gap (compute → payload) in every config: the
+# sleeves share one frame (payload castellations ↔ sleeve vias) and the
+# compute↔payload ring is one part. = the largest payload need (radar /
+# camera 3.0 mm; QPD 2.5, USB 2.3); spacer sizing warns if one exceeds it.
+NOSE_SLOT_GAP_MM = 3.0
 # (2026-11-20) screws / inserts / tab feet retired for the SNAP hooks (above).
 # The two hook angles keep the old screw teeth (no contact there): their uneven
 # spacing is still the orientation key.

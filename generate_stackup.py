@@ -4831,6 +4831,24 @@ def _battery_column_conforms(panel, ref) -> bool:
     return _ends(max_chain, mb) == _ends(cfg_chain, cb)
 
 
+def _nose_slot_alias(max_chain):
+    """(2026-11-21) Fixed noses: whichever payload a config carries sits in the
+    NOSE SLOT above compute — the maximalist chain's payload tile (radar). Map
+    every payload name (and spacer names containing one) onto that tile so
+    conformance / cavity inheritance treat the slot as the same position."""
+    from smash.export import nose_interface as NI
+    nose = next((n for n in max_chain if n in NI.PAYLOAD_BOARDS), None)
+    if NI.MODULAR or nose is None:
+        return lambda n: n
+
+    def alias(n):
+        for pb in NI.PAYLOAD_BOARDS:
+            if pb != nose and (n == pb or n.endswith("_" + pb)):
+                return n[: len(n) - len(pb)] + nose
+        return n
+    return alias
+
+
 def _reference_conforming(panel, boards, ref) -> tuple[set, list]:
     """Boards whose chain adjacency matches the maximalist reference —
     the ones that may inherit its cavities/outline verbatim. A rigid tile
@@ -4839,15 +4857,20 @@ def _reference_conforming(panel, boards, ref) -> tuple[set, list]:
     spacers additionally require the whole column to conform (see
     _battery_column_conforms). Returns (conforming, non_conforming_names)."""
     max_chain = ref.get("chain") or []
-    cfg_chain = list(getattr(panel, "snake_chain", []) or [])
+    alias = _nose_slot_alias(max_chain)
+    cfg_chain = [alias(n) for n in (getattr(panel, "snake_chain", []) or [])]
     batt_ok = _battery_column_conforms(panel, ref)
     ok, bad = set(), []
     for bname, b in boards.items():
-        if bname not in (ref.get("cavities") or {}):
+        rname = alias(bname) if getattr(b, "is_spacer", False) else bname
+        if rname not in (ref.get("cavities") or {}):
             bad.append(bname)          # board unknown to maximalist
             continue
-        mp, mn = _chain_neighbors(max_chain, bname)
-        cp, cn = _chain_neighbors(cfg_chain, bname)
+        if bname != alias(bname) and not getattr(b, "is_spacer", False):
+            ok.add(bname)              # fixed-nose payload in the nose slot: its own part
+            continue
+        mp, mn = _chain_neighbors(max_chain, rname)
+        cp, cn = _chain_neighbors(cfg_chain, alias(bname))
         if getattr(b, "is_spacer", False):
             conforms = (cp == mp and cn == mn)
             if bname.startswith("spacer_battery"):
@@ -6439,13 +6462,19 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     for bn in ordered:
         _BOARD_BUILDERS[bn](d)
     snake = [b for b in _MASTER_SNAKE if b in board_set]
+    # (2026-11-21) fixed nose: the config's payload (QPD / camera / USB) is an
+    # ordinary STACK tile above compute — sized gap + ring, like the radar —
+    # not a branch leaf (that was the modular crown's model).
+    from smash.export import nose_interface as _NI
+    if not _NI.MODULAR:
+        snake += [pb for pb in _NI.PAYLOAD_BOARDS if pb in board_set and pb not in snake]
     branches = [
         (_BRANCH_PARENT[leaf][0], leaf,
          Flex(length_mm=_BRANCH_PARENT[leaf][1],
               branch_side=_BRANCH_PARENT[leaf][2],
               s_fold=_BRANCH_PARENT[leaf][3]))
         for leaf in _BRANCH_PARENT
-        if leaf in board_set and _BRANCH_PARENT[leaf][0] in board_set
+        if leaf in board_set and _BRANCH_PARENT[leaf][0] in board_set and leaf not in snake
     ]
     _empty_aft_end_top(d)
     panel, boards = build_config_panel(snake, branches=branches,
@@ -6492,8 +6521,10 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     # their own and are reported.
     _conform, _nonconform = _reference_conforming(panel, boards, ref)
     _cav_n = 0
+    _alias = _nose_slot_alias(ref.get("chain") or [])
     for bn in _conform:
-        rc = (ref.get("cavities") or {}).get(bn)
+        rc = (ref.get("cavities") or {}).get(
+            _alias(bn) if getattr(boards[bn], "is_spacer", False) else bn)
         if rc is not None:
             boards[bn].cavity_placements[:] = list(rc)
             _cav_n += 1

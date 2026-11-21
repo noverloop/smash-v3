@@ -323,3 +323,13 @@ def test_piezo_cluster_sits_in_the_holder_floor_pocket():
     for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_THR1", "R_THR2", "U_COMP_PZ", "C_COMP_PZ"):
         x, y = L[ref]["position_mm"]
         assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref
+
+
+def test_floor_pocket_is_potted_through_the_channel():
+    """(2026-11-21, user: all potted) the floor-underside pocket (piezo disc +
+    comparator slot + diode ring) is ONE cavity joined by a groove to the Ø3
+    channel's fan-out pocket, so potting floods it — no trapped air."""
+    from smash.export import spacer_step as SS
+    pk = SS.piezo_pocket()
+    assert pk.geom_type == "Polygon"                     # one connected cavity
+    assert pk.intersects(SS.wire_fan_pocket())           # reaches the channel exit
