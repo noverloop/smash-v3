@@ -18,6 +18,12 @@ from smash.export import cup_noses as CN
 from smash.export import nose_interface as NI
 
 
+# (2026-11-21, user) the modular crown nose is retired (NI.MODULAR False): its
+# tests stay for reference and run again if the flag is switched back.
+crown_only = pytest.mark.skipif(not NI.MODULAR, reason="modular crown nose retired 2026-11-21")
+fixed_only = pytest.mark.skipif(NI.MODULAR, reason="fixed-nose (press / snap cap) tests")
+
+
 @pytest.fixture(scope="module")
 def built():
     repo = pathlib.Path(__file__).resolve().parents[2]
@@ -140,6 +146,7 @@ def test_crown_sequence_keeps_pairs_together():
 
 # ── crown contract in the built design ────────────────────────────────
 
+@crown_only
 def test_nose_payloads_reach_compute_only_through_the_crown(built):
     gen, d, panel, boards, contract = built
     assert "usb_nose" in boards
@@ -164,6 +171,7 @@ def test_nose_payloads_reach_compute_only_through_the_crown(built):
             assert boards[pb].geometry.diameter_mm == pytest.approx(2 * NI.PAYLOAD_R_MM)
 
 
+@crown_only
 def test_each_nose_lasers_its_crown_lanes(built):
     _g, _d, panel, boards, contract = built
     chain = list(panel.snake_chain)
@@ -275,6 +283,7 @@ def _inside(body, x, y, z) -> bool:
     return body.val().isInside(cq.Vector(x, y, z))
 
 
+@crown_only
 def test_parts_are_valid_solids_within_the_envelope(cups):
     for cfg, cup in cups.items():
         P = cup["parts"]
@@ -302,6 +311,7 @@ def test_sleeve_vias_are_drilled_per_config(cups):
             assert uses is None or pl in uses
 
 
+@crown_only
 def test_bevel_crown_and_cap_mesh_on_the_cone(cups):
     cup = cups["core_radar"]
     crown, nose = cup["crown"], cup["parts"]["nose_cone"]
@@ -344,6 +354,7 @@ def test_bevel_crown_and_cap_mesh_on_the_cone(cups):
     assert _inside(sleeve, 14.5 * math.cos(a2), 14.5 * math.sin(a2), zf)
 
 
+@crown_only
 def test_write_noses(built, tmp_path):
     pytest.importorskip("cadquery")
     from smash.export.sleeve_step import write_sleeve_and_mould
@@ -368,9 +379,10 @@ def test_unrolled_sleeve_copper_keeps_clearance(built, tmp_path):
     import re
     from smash.export.sleeve_layout import write_unrolled_sleeve
     _g, _d, panel, boards, contract = built
-    assert contract["crown_gnd_ring"]
-    assert all(v == "ring" or isinstance(v, float)
-               for v in contract["crown_compute_angles"].values())
+    if NI.MODULAR:
+        assert contract["crown_gnd_ring"]
+        assert all(v == "ring" or isinstance(v, float)
+                   for v in contract["crown_compute_angles"].values())
     out = tmp_path / "unroll.kicad_pcb"
     write_unrolled_sleeve(boards, list(panel.snake_chain), contract, out)
     segs = [tuple(map(float, m[:5])) + (int(m[5]),) for m in re.findall(
@@ -388,6 +400,7 @@ def test_unrolled_sleeve_copper_keeps_clearance(built, tmp_path):
 
 
 
+@crown_only
 def test_nose_cap_hooks_pass_the_land_ring_and_crown_in_slots(cups):
     """(2026-11-20, user) SNAP: the cap's spring HOOKS run down INSIDE the bore
     through slots in the nose cone's land ring and the crown; nothing else
@@ -439,6 +452,7 @@ def test_radar_cap_gap_is_k_half_lambda(built):
 
 
 
+@crown_only
 def test_snap_hooks_catch_under_the_ring_lips_with_release_holes(cups):
     """(2026-11-20, user) each hook's barb sits UNDER the snap ring's catch lip
     (flat catch face, SNAP_ENGAGE radial overlap); a Ø1 release hole through
@@ -465,6 +479,7 @@ def test_snap_hooks_catch_under_the_ring_lips_with_release_holes(cups):
     assert NI.SNAP_ENGAGE_MM == pytest.approx(0.4)
 
 
+@crown_only
 def test_hooks_hang_from_a_steel_ring_with_the_bump(cups):
     """(2026-11-20, user) the tabs are steel, integral with a retaining RING
     along the cap's edge (overmoulded by the PEEK lid) and its stainless OD-40
@@ -494,7 +509,65 @@ def test_hooks_hang_from_a_steel_ring_with_the_bump(cups):
 
 
 
+@crown_only
 def test_bump_leaves_the_release_holes_free(cups):
     """The round bump (R 5, user) must not cover the Ø1 release holes."""
     for cfg, cup in cups.items():
         assert not any("cap bump bottom" in w for w in cup.get("warnings", [])), cfg
+
+
+# ── (2026-11-21, user) FIXED nose: sleeve over the payload + Ø40 cap ──────────
+
+@fixed_only
+def test_fixed_nose_payload_nets_ride_sleeve_lanes(built):
+    """No crown: every payload net runs on an ordinary sleeve lane from compute
+    up to the nose tile (the superset's radar slot carries every payload's)."""
+    _g, _d, _panel, _boards, contract = built
+    lanes = contract["lanes"]
+    assert not any(v.get("kind", "").startswith("crown") for v in lanes.values())
+    assert not contract.get("crown")
+    for net in ("AWR_SPI_CLK", "QPD_TIA_A", "CAM_CSI_CLK_P", "USB_D_P"):
+        ln = lanes[net]
+        assert "companion_compute" in ln["boards"] and "radar_module" in ln["boards"], net
+    assert not contract.get("overflow")
+
+
+@fixed_only
+def test_fixed_nose_parts_valid_and_within_40(cups):
+    from smash.export import sleeve_step as SS
+    for cfg, cup in cups.items():
+        P = cup["parts"]
+        assert set(P) >= {"core_sleeve", "nose_cap"} and "nose_cone" not in P
+        for name in ("core_sleeve", "nose_cap"):
+            assert P[name].solids().size() == 1, (cfg, name)
+            assert P[name].val().isValid(), (cfg, name)
+        for name, b in P.items():
+            bb = b.val().BoundingBox()
+            r = max(abs(bb.xmin), abs(bb.xmax), abs(bb.ymin), abs(bb.ymax))
+            assert r <= SS.SNAP_OD_MM / 2 + 1e-3, (cfg, name)
+        # signals stay on the Ø35.8 skin below the neck (≤ Ø36.5)
+        sn, sl = cup["snap"], P["core_sleeve"]
+        z = sn["z_shoulder"] - 0.5
+        assert not _inside(sl, 18.0, 0.0, z) and not _inside(sl, 0.0, 18.2, z)
+        # neck above the payload board, cap flush at Ø40 over it
+        zn = 0.5 * (sn["z_shoulder"] + sn["z_neck_top"])
+        assert _inside(sl, 0.0, sn["neck_r"] - 0.2, zn)
+        assert _inside(P["nose_cap"], 0.0, 19.8, zn)
+        if SS.NOSE_JOINT == "press":                 # bore = neck − interference
+            assert _inside(P["nose_cap"], 0.0, sn["neck_r"] - SS.PRESS_INTERFERENCE_MM / 2, zn)
+
+
+@fixed_only
+def test_fixed_write_noses(built, tmp_path):
+    pytest.importorskip("cadquery")
+    from smash.export.sleeve_step import write_sleeve_and_mould
+    _g, _d, panel, boards, contract = built
+    res = write_sleeve_and_mould(boards, list(panel.snake_chain), contract, tmp_path,
+                                 configs=["core"])
+    cd = tmp_path / "sleeve" / "core"
+    for f in ("core_sleeve.step", "nose_cap.step", "nose_cap.stl", "nose_cam.md", "frame.json"):
+        assert (cd / f).exists(), f
+    for f in ("snap_ring.step", "nose_cone.step", "retaining_ring.step"):
+        assert not (cd / f).exists(), f
+    assert "FIXED nose" in (cd / "nose_cam.md").read_text()
+    assert res["cups"]["core"]["n_vias"] > 0

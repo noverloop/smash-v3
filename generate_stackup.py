@@ -2482,9 +2482,16 @@ def _build_activation_array(d: Design) -> None:
     # D_ACTIVATE keeps the MBRS540T3G: the 33 V output leaves only 7 V of V_RRM
     # margin, so this rectifier is NOT a candidate for the 40 V flat part
     # until that headroom is revisited (it is now the only MBRS540 user).
-    l_activate = add_lps4018_103mrb(d, ref="L_ACTIVATE", board_tag=BT_BOOST)   # (2026-11-21) 1.8 mm (was WE-PD 4848 2.8)
-    _net(d, "COMP_5V").connect(l_activate.pin("1"))
-    _net(d, "ACTIVATE_SW") .connect(l_activate.pin("2"))
+    # (2026-11-21) Coilcraft XGL5020-472MEC 4.7 µH (as L_BOOST_COMP). Load from
+    # the battery-mission sim (smash-electronics tools/simulate_battery_mission.py,
+    # P_SECTOR): ONE burn-wire sector, 5 W × 5 ms → 0.15 A at 33 V ≈ 1.2 A in
+    # from COMP_5V; D ≈ 0.85, ripple ≈ 1.5 A p-p at 600 kHz → ~1.9 A peak
+    # (Isat 3.6 A at 20 % drop). Switching a wire onto the 4.7 µF rail drives the
+    # boost into its 5 A max limit — covered by the 5.3 A 30 %-drop rating. The
+    # LPS4018 / 744043100 saturated at ~1-1.2 A. ⚠ COMP network was set for 10 µH.
+    l_activate = add_xgl5020_472mec(d, ref="L_ACTIVATE", board_tag=BT_BOOST)
+    _net(d, "ACTIVATE_SW") .connect(l_activate.pin("1"))   # marked start lead on SW (Coilcraft: lowest EMI)
+    _net(d, "COMP_5V").connect(l_activate.pin("2"))
     # (2026-11-20, user) flat 60 V / 1 A SOD-123Flat (1.1 mm) instead of the
     # 2.56 mm MBRS540T3G SMC — out of the tall-part group, more V_RRM margin
     d_activate = add_pmeg6010cej(d, ref="D_ACTIVATE", board_tag=BT_BOOST)   # (2026-11-21) SOD323F 0.8 mm, same 60 V / 1 A
@@ -5604,7 +5611,7 @@ def _mark_ring_band_keepouts(panel, boards: dict) -> int:
     from smash.export import nose_interface as NI
     from smash.parts.castellations import _local_xy
     anchor = next((sp for sp, b0, b1 in _gap_neighbours(chain, boards)
-                   if b0 == NI.HOST and b1 in NI.PAYLOAD_BOARDS), None)
+                   if b0 == NI.HOST and b1 in NI.PAYLOAD_BOARDS), None) if NI.MODULAR else None
     if anchor is not None and NI.HOST in fold_M:
         M = fold_M[NI.HOST]
         # (2026-11-20) snap: the hook legs + barbs hang inside the bore at the
@@ -6818,7 +6825,7 @@ def main() -> int:
               f"placeholders → sleeve/sleeve_unrolled.kicad_pcb (+ sleeve_copper.step, "
               f"{_cu['n_bodies']} bodies)")
         for _cfg, _c in _sl["cups"].items():
-            print(f"  PEEK-LDS nose cone {_cfg} on the core sleeve crown: {_c['n_vias']} vias on "
+            print(f"  PEEK-LDS sleeve + nose cap {_cfg}: {_c['n_vias']} vias on "
                   f"{_c['n_active_lanes']} active lanes, nose {_c['nose_mm']:.2f} mm "
                   f"above the payload, {_c['height_mm']:.1f} mm → "
                   f"{_c['dir'].relative_to(REPO)}/ (+ pot-in-cup fixture)")

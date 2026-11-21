@@ -34,7 +34,8 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 # Board mid-planes [mm above aft_end's bottom face] of the maximalist stack
 # (sleeve_step.stack_z_map). (2026-11-21) re-measured after the backbone
 # spacers were sized to their gaps, the low-profile part swaps and the
-# fin_ble → activation_interface merge (gaps 2.4 / 3.0 / 2.5 / 6.0 mm; before
+# fin_ble → activation_interface merge and the fixed nose (gaps 2.4 / 3.0 /
+# 2.5 / 3.0 mm; modular nose 6.0; before
 # the merge 2.2 / 2.3 / 3.0 / 2.5 / 6.0, earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0)
 # and the 6 × 3.867 mm battery column; test_antenna_sim_stack.py fails if
 # these drift again.
@@ -44,7 +45,7 @@ BOARD_MID_Z_MM = {
     "wakeup_board": 28.888,
     "power_board": 33.203,
     "companion_compute": 37.017,
-    "radar_module": 44.329,
+    "radar_module": 41.332,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

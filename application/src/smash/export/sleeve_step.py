@@ -180,6 +180,78 @@ def _release_hole(cq, ang, z, r0, r1):
             .translate((r0, 0, z)).rotate((0, 0, 0), (0, 0, 1), ang))
 
 
+# ── (2026-11-21, user) FIXED NOSE: annular snap joint ─────────────────────
+# The sleeve runs over the payload board (Ø35.8, lanes ≤ Ø36.5); above the
+# board it thickens OUTWARD into a NECK carrying an annular BEAD; the nose
+# CAP's 1 mm skirt slides down over it flush at Ø40 and its inward LIP snaps
+# under the bead — PERMANENT (90° catch face, lead-in ramp on the bead's top
+# only). Setback presses the lid onto the neck rim (compression); reverse
+# load is the catch's.
+# (2026-11-21, user) default joint = PRESS-FIT: a Ø40 cap pressed over a
+# plain cylindrical neck (permanent; interference + optional adhesive). "snap"
+# keeps the annular bead / lip variant.
+NOSE_JOINT = "press"             # "press" | "snap"
+PRESS_INTERFERENCE_MM = 0.06     # radial (≈0.3 % on Ø38 — PEEK on PEEK; confirm on samples)
+SNAP_OD_MM = 40.0                # cap / skirt OD (the PEEK may go to Ø40)
+SNAP_SKIRT_T_MM = 1.0            # skirt wall over the bead
+SNAP_BEAD_MM = 0.35              # radial bead height (= lip undercut)
+SNAP_LIP_H_MM = 0.8              # lip (and catch face) height above the shoulder
+SNAP_RAMP_H_MM = 0.7             # bead lead-in ramp (top side)
+SNAP_CLEAR_MM = 0.03             # skirt / lip running clearance
+SNAP_NECK_ABOVE_BEAD_MM = 0.4    # neck above the bead top (lid seat)
+
+
+def snap_neck_r() -> float:
+    return SNAP_OD_MM / 2.0 - SNAP_SKIRT_T_MM
+
+
+def _snap_neck(cq, r_in: float, z1: float, z_top: float):
+    """Sleeve neck above the payload board: r_in → neck OD with the bead."""
+    rn, b = snap_neck_r(), SNAP_BEAD_MM
+    if NOSE_JOINT == "press":
+        return _revolve(cq, [(r_in, z1), (rn, z1), (rn, z_top), (r_in, z_top)])
+    zb0 = z1 + SNAP_LIP_H_MM
+    zb1 = zb0 + SNAP_RAMP_H_MM
+    pts = [(r_in, z1), (rn, z1), (rn, zb0), (rn + b, zb0), (rn, zb1), (rn, z_top), (r_in, z_top)]
+    return _revolve(cq, pts)
+
+
+def _snap_cap(cq, z1: float, z_lid0: float, cap_t: float):
+    """Nose cap: lid (Ø40) + skirt over the neck + inward lip under the bead."""
+    R, rn, b, c = SNAP_OD_MM / 2.0, snap_neck_r(), SNAP_BEAD_MM, SNAP_CLEAR_MM
+    zb0 = z1 + SNAP_LIP_H_MM
+    if NOSE_JOINT == "press":                     # bore = neck − interference
+        ri = rn - PRESS_INTERFERENCE_MM
+        skirt = _revolve(cq, [(R, z1), (R, z_lid0 + 0.01), (ri, z_lid0 + 0.01), (ri, z1)])
+        lid = cq.Workplane("XY").circle(R).extrude(cap_t).translate((0, 0, z_lid0))
+        return lid.union(skirt)
+    skirt = _revolve(cq, [(R, z1), (R, z_lid0 + 0.01), (rn + b + c, z_lid0 + 0.01),
+                          (rn + b + c, zb0 - c), (rn + c, zb0 - c), (rn + c, z1)])
+    lid = cq.Workplane("XY").circle(R).extrude(cap_t).translate((0, 0, z_lid0))
+    return lid.union(skirt)
+
+
+def _core_body_fixed(cq, segs, zc0, zc1, r_out):
+    """(2026-11-21) Fixed-nose sleeve tube over the WHOLE tower incl. the
+    payload board (no crown / anchor ring / release holes): feed / vent
+    grooves and the compute KEY rib. Returns (body, None)."""
+    from smash.export import nose_interface as NI
+    core = None
+    for za, zb_, r in segs:
+        t = _tube(cq, r, r + SLEEVE_WALL_MM, za, zb_)
+        core = t if core is None else core.union(t)
+    r_in = segs[-1][2]
+    for ang in GROOVE_ANGLES_DEG:
+        a = math.radians(ang)
+        rc = r_in + GROOVE_D_MM / 2.0
+        core = core.cut(cq.Workplane("XY").center(rc * math.cos(a), rc * math.sin(a))
+                        .transformed(rotate=(0, 0, ang))
+                        .rect(GROOVE_D_MM, GROOVE_W_MM).extrude(segs[-1][1]))
+    core = core.union(_radial_box(cq, NI.KEY_ANGLE_DEG, NI.KEY_RIB_R_MM, r_in + 0.05,
+                                  NI.KEY_RIB_W_MM, zc0 - 0.3, zc1))
+    return core, None
+
+
 def _core_body(cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw):
     """Undrilled one-piece sleeve body: the skin over the core AND over the
     anchor gap's Al SNAP RING up into the crown's rim, inner feed / vent
@@ -331,6 +403,35 @@ def cap_ring(cq, zr1: float, z_top: float):
     return body
 
 
+def _modular_cap_ring(cq, cap, nose_body, r_out, zr1, z0, z1, z_lid0, z_lid1, zc1, warnings):
+    """(MODULAR crown noses) stainless retaining ring + hooks + OD-40 bump."""
+    from smash.export import nose_interface as NI
+    r_ring_in = r_out - NI.CAP_RING_W_MM
+    steel = (cq.Workplane("XY").circle(r_out).circle(r_ring_in)
+             .extrude(NI.CAP_RING_T_MM).translate((0, 0, z_lid1 - NI.CAP_RING_T_MM)))
+    for ang in NI.HOOK_ANGLES_DEG:
+        # (2026-11-20, user) SNAP: the hook's slot through the land ring of the
+        # nose cone (the legs pass the payload board's edge notch above it)
+        nose_body = nose_body.cut(_hook_slot(cq, ang, zr1 - 0.5, z0 + 0.01))
+        steel = steel.union(hook_solid(cq, ang, zr1, z_lid1, r_ring_in, NI.CAP_RING_T_MM))
+        cap = cap.cut(_radial_box(cq, ang, NI.HOOK_NOTCH_R_MM, NI.SNAP_RING_R_MM[0] + 0.05,
+                                  NI.HOOK_NOTCH_W_MM, z1 - 0.1, z_lid0 + 0.01))
+
+    steel = _trim_to_skin(cq, steel, zc1, z_lid1 + 0.5)
+    # OD-40 standoff bump, integral with the stainless ring, outside the skin:
+    # ROUND OD (circular arc R CAP_BUMP_ARC_R skin → crest → skin), revolved
+    zb0, zb1 = z_lid1 - NI.CAP_BUMP_H_MM, z_lid1
+    bump = (cq.Workplane("XZ").moveTo(r_out, zb0)
+            .threePointArc((NI.CAP_BUMP_R_MM, 0.5 * (zb0 + zb1)), (r_out, zb1))
+            .close().revolve(360.0, (0, 0, 0), (0, 1, 0)))
+    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
+    if zb0 < z_rel + NI.RELEASE_PIN_D_MM:
+        warnings.append(f"cap bump bottom z {zb0:.2f} covers the release holes (z {z_rel:.2f})")
+    inserts = steel.union(bump)
+    cap = cap.cut(inserts)                         # PEEK lid / rim overmould the ring
+    return cap, inserts, nose_body
+
+
 def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
               band: str | None = None):
     """(2026-11-18) Core sleeve + nose (cap) for one config (optical: per band).
@@ -361,13 +462,14 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     z0 = nose.z_payload[0] if nose.z_payload else segs[-1][1]     # payload bottom = gap top
     z1 = nose.z_payload[1] if nose.z_payload else z0
     zc1 = zmap[CORE_TOP_NAME][1] if CORE_TOP_NAME in zmap else z0
-    zr1 = z0 - NI.CROWN_STACK_MM                                  # Al ring top / crown rim
-    if zr1 <= zc1 + 0.5:
+    fixed = not NI.MODULAR                                        # (2026-11-21) snap-on cap
+    zr1 = z0 if fixed else z0 - NI.CROWN_STACK_MM                 # Al ring top / crown rim
+    if not fixed and zr1 <= zc1 + 0.5:
         # degenerate (e.g. no compute in the chain): an inverted anchor band
         # sends OCC's UnifySameDomain into an endless loop — refuse instead
         raise ValueError(f"build_cup: crown rim z {zr1:.2f} not above compute top "
                          f"{zc1:.2f} ({CORE_TOP_NAME} missing or gap too short)")
-    if zr1 - zc1 < NI.ANCHOR_RING_MIN_MM - 1e-6:
+    if not fixed and zr1 - zc1 < NI.ANCHOR_RING_MIN_MM - 1e-6:
         warnings.append(f"anchor ring only {zr1 - zc1:.2f} mm tall (< {NI.ANCHOR_RING_MIN_MM}) — "
                         "gap not sized with ANCHOR_GAP_MIN_MM")
     clip = cq.Workplane("XY").circle(r_out).extrude(1000.0).translate((0, 0, -1.0))
@@ -385,14 +487,19 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     base_key = (tuple((round(a, 4), round(b, 4), round(r, 4)) for a, b, r in segs),
                 round(zc1, 4), round(zr1, 4), round(r_in, 4), round(r_out, 4))
     zc0 = zmap[CORE_TOP_NAME][0] if CORE_TOP_NAME in zmap else zc1 - 1.6
-    core, _none = _cached(("core", round(zc0, 4)) + base_key, lambda: _core_body(
-        cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw))
-    crown = _cached(("crown",) + base_key, lambda: _crown_body(
-        cq, zc1, zr1, r_out, z_plate_top))
+    if fixed:
+        core, _none = _cached(("core_fixed", round(zc0, 4)) + base_key,
+                              lambda: _core_body_fixed(cq, segs, zc0, zc1, r_out))
+        crown = None
+    else:
+        core, _none = _cached(("core", round(zc0, 4)) + base_key, lambda: _core_body(
+            cq, segs, zc0, zc1, zr1, r_in, r_out, z_plate_top, z_screw))
+        crown = _cached(("crown",) + base_key, lambda: _crown_body(
+            cq, zc1, zr1, r_out, z_plate_top))
     # the funnel must clear compute's top-face parts inside the ring bore
     tan_c = math.tan(math.radians(NI.BEVEL_CONE_DEG))
     for pt in CN._top_parts(boards[CORE_TOP_NAME], CN._fold_M(chain, CORE_TOP_NAME)) \
-            if CORE_TOP_NAME in boards else []:
+            if (CORE_TOP_NAME in boards and not fixed) else []:
         r_far = CN._part_r(pt)
         if r_far < NI.CROWN_R_IN_MM - 0.2:
             continue
@@ -404,9 +511,16 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
 
     # ── cap: land ring (its flat top = the Ø34 payload board's SEAT), cone wall ──
     z_ring_top = z0 if (prof.open and nose.payload) else max(z1 + 0.3, z_plate_top + 0.4)
-    nose_body = _cached(("cap", round(zr1, 4), round(z_ring_top, 4)),
-                        lambda: cap_ring(cq, zr1, z_ring_top))
-    if prof.z_s > z_ring_top:
+    if fixed:
+        z_neck_top = max(prof.z_top, z1 + SNAP_LIP_H_MM + SNAP_RAMP_H_MM + SNAP_NECK_ABOVE_BEAD_MM)
+        if not prof.open:
+            warnings.append("fixed nose: only the OPEN nose profile is modelled")
+        nose_body = _cached(("neck", round(z1, 4), round(z_neck_top, 4), round(r_in, 4)),
+                            lambda: _snap_neck(cq, r_in, z1, z_neck_top))
+    else:
+        nose_body = _cached(("cap", round(zr1, 4), round(z_ring_top, 4)),
+                            lambda: cap_ring(cq, zr1, z_ring_top))
+    if not fixed and prof.z_s > z_ring_top:
         nose_body = nose_body.union(_tube(cq, r_in, r_out, z_ring_top, prof.z_s))
     zb = z1
     h_all = prof.z_top - zb + 1.0
@@ -422,7 +536,7 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
         nose_body = nose_body.union(outer.cut(cavity))
         inside = cavity.union(cq.Workplane("XY").circle(r_in).extrude(max(prof.z_s - zb, 0.01))
                               .translate((0, 0, zb)))
-    if prof.open and nose.payload:
+    if prof.open and nose.payload and not fixed:
         # (2026-11-19) Ø34 payload seated on the land ring. (2026-11-20, user)
         # pressure-fixed by the nose CAP's rim: the 3 holes take LOCATING pins
         # (rotation to the land contacts), no screws
@@ -443,7 +557,7 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
                     cq.Workplane("YZ").circle(SLEEVE_VIA_D_MM / 2.0)
                     .extrude(SLEEVE_WALL_MM + 1.0).translate((r_in - 0.5, 0, zp))
                     .rotate((0, 0, 0), (0, 0, 1), float(ang)))
-    else:
+    elif not fixed:
         for ang in nose.stops:                     # payload board screwed into the cap
             a = math.radians(ang)
             x, y = CN.STOP_R_MM * math.cos(a), CN.STOP_R_MM * math.sin(a)
@@ -518,10 +632,24 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     # countersunk screws into the band's inserts clamp cap → (press rim) →
     # payload board → land ring → crown. Nose cone + board are pressure-fixed. ──
     cap_t = CN.cap_t_mm()
-    z_lid0 = prof.z_top + CN.CAP_RIDGE_GAP_MM
+    z_lid0 = (z_neck_top if fixed else prof.z_top + CN.CAP_RIDGE_GAP_MM)
     z_lid1 = z_lid0 + cap_t
-    cap = cq.Workplane("XY").circle(r_out).extrude(cap_t).translate((0, 0, z_lid0))
-    if prof.open and nose.payload:
+    if fixed:
+        # (2026-11-21) the lid bears on the neck rim; skirt + lip snap on
+        cap = _cached(("snapcap", round(z1, 4), round(z_lid0, 4), round(cap_t, 4)),
+                      lambda: _snap_cap(cq, z1, z_lid0, cap_t))
+        for pt in (CN._top_parts(boards[nose.payload], CN._fold_M(chain, nose.payload))
+                   if nose.payload else []):
+            if z1 + pt.height > z_lid0:            # parts rising through the lid (USB-C)
+                m = CN.CAP_MOUTH_MARGIN_MM
+                cap = cap.cut(_box(cq, pt.x, pt.y, pt.w + 2 * m, pt.h + 2 * m,
+                                   z1, z_lid1 + 1.0))
+        if nose.tube is not None:                  # optical: aperture over the light tube
+            Tb = nose.tube
+            cap = cap.cut(cq.Workplane("XY").center(Tb["x"], Tb["y"]).circle(Tb["r_in"])
+                          .extrude(cap_t + 2.0).translate((0, 0, z_lid0 - 1.0)))
+        inserts = None
+    if prof.open and nose.payload and not fixed:
         rim_r0 = r_in - 0.05 - CN.CAP_RIM_W_MM
         tparts = CN._top_parts(boards[nose.payload], CN._fold_M(chain, nose.payload))
         # parts rising through the lid (vertical USB-C): a mouth in lid + rim
@@ -547,29 +675,10 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
                           .extrude(cap_t + 2.0).translate((0, 0, z_lid0 - 1.0)))
     # the RING: flush in the lid's outer edge (top face), r ≥ r_out − RING_W —
     # outside the radar FoV keep-out; PEEK lid + press rim continue under it
-    r_ring_in = r_out - NI.CAP_RING_W_MM
-    steel = (cq.Workplane("XY").circle(r_out).circle(r_ring_in)
-             .extrude(NI.CAP_RING_T_MM).translate((0, 0, z_lid1 - NI.CAP_RING_T_MM)))
-    for ang in NI.HOOK_ANGLES_DEG:
-        # (2026-11-20, user) SNAP: the hook's slot through the land ring of the
-        # nose cone (the legs pass the payload board's edge notch above it)
-        nose_body = nose_body.cut(_hook_slot(cq, ang, zr1 - 0.5, z0 + 0.01))
-        steel = steel.union(hook_solid(cq, ang, zr1, z_lid1, r_ring_in, NI.CAP_RING_T_MM))
-        cap = cap.cut(_radial_box(cq, ang, NI.HOOK_NOTCH_R_MM, NI.SNAP_RING_R_MM[0] + 0.05,
-                                  NI.HOOK_NOTCH_W_MM, z1 - 0.1, z_lid0 + 0.01))
+    if not fixed:
+        cap, inserts, nose_body = _modular_cap_ring(cq, cap, nose_body, r_out, zr1, z0, z1,
+                                                    z_lid0, z_lid1, zc1, warnings)
 
-    steel = _trim_to_skin(cq, steel, zc1, z_lid1 + 0.5)
-    # OD-40 standoff bump, integral with the stainless ring, outside the skin:
-    # ROUND OD (circular arc R CAP_BUMP_ARC_R skin → crest → skin), revolved
-    zb0, zb1 = z_lid1 - NI.CAP_BUMP_H_MM, z_lid1
-    bump = (cq.Workplane("XZ").moveTo(r_out, zb0)
-            .threePointArc((NI.CAP_BUMP_R_MM, 0.5 * (zb0 + zb1)), (r_out, zb1))
-            .close().revolve(360.0, (0, 0, 0), (0, 1, 0)))
-    z_rel = zr1 - NI.SNAP_Z_BELOW_TOP_MM
-    if zb0 < z_rel + NI.RELEASE_PIN_D_MM:
-        warnings.append(f"cap bump bottom z {zb0:.2f} covers the release holes (z {z_rel:.2f})")
-    inserts = steel.union(bump)
-    cap = cap.cut(inserts)                         # PEEK lid / rim overmould the ring
 
     # ── vias: core lanes on the core sleeve (the crown / cap carry LDS only) ──
     present = {n for n in cchain if n in boards and not boards[n].is_spacer}
@@ -579,7 +688,7 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
         if contract["lanes"][key].get("kind") == "crown_payload":
             continue                               # nose-cone LDS, no sleeve via
         for bn in on:
-            if bn not in zmap or bn == payload:
+            if bn not in zmap or (bn == payload and not fixed):
                 continue
             zc = (zmap[bn][0] + zmap[bn][1]) / 2.0
             ln_ = contract["lanes"][key]
@@ -640,6 +749,21 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
     if bad_sites:
         warnings.append(f"{len(bad_sites)} sleeve via(s) not cut (OCC boolean failed): "
                         + ", ".join(f"{a:g}°@z{z:.2f}" for a, z in bad_sites[:8]))
+    if fixed:
+        # (2026-11-21) ONE moulding: sleeve over the tower + snap neck; the
+        # nose cap snaps on (no crown / nose cone / snap ring / steel ring)
+        sleeve = core.union(nose_body)
+        parts = {"core_sleeve": sleeve, "nose_cap": cap,
+                 **({"radome_insert": radome_insert} if radome_insert is not None else {}),
+                 **({"aop_dam": aop_dam} if aop_dam is not None else {}),
+                 **({"optic_insert": optic_insert} if optic_insert is not None else {})}
+        return {"n_vias": len(sites), "segs": segs, "nose": nose, "active": active,
+                "z_end_out": z_lid1, "r_out": r_out, "cchain": cchain, "z_crown": z0,
+                "z_ring": (zc1, z0), "via_sites": sites, "warnings": warnings, "lens": lens,
+                "contract_lanes": (contract or {}).get("lanes", {}),
+                "crown": None, "parts": parts, "body": sleeve, "fixed": True,
+                "snap": {"od": SNAP_OD_MM, "neck_r": snap_neck_r(), "z_shoulder": z1,
+                         "z_neck_top": z_lid0}}
     sleeve = core.union(crown)                     # ONE moulding: sleeve + crown
     snap_ring = _cached(("snap",) + base_key, lambda: snap_ring_body(cq, zc1, zr1))
     parts = {"core_sleeve": sleeve, "snap_ring": snap_ring,
@@ -687,7 +811,33 @@ def build_cup_potting_fixture(cup: dict):
     return {"fixture_cradle_nose_down": cradle, "fixture_cap_aft_fill_vent": cap}
 
 
+def _fixed_cam_md(config: str, cup: dict) -> str:
+    """(2026-11-21) Fixed-nose sleeve + pressed / snapped Ø40 nose cap."""
+    nose, sn = cup["nose"], cup["snap"]
+    w = "\n".join(f"- ⚠ {x}" for x in cup["warnings"]) or "- none"
+    joint = (f"PRESS-FIT: cap bore Ø{2 * (sn['neck_r'] - PRESS_INTERFERENCE_MM):.2f} over the "
+             f"Ø{2 * sn['neck_r']:.2f} neck ({PRESS_INTERFERENCE_MM:g} mm radial interference; "
+             "confirm on PEEK samples, optional structural adhesive)"
+             if NOSE_JOINT == "press" else
+             f"ANNULAR SNAP: {SNAP_BEAD_MM:g} mm bead on the neck (lead-in ramp on top, 90° catch "
+             f"face under it), the skirt's inward lip snaps under it — PERMANENT")
+    return (
+        f"# PEEK-LDS sleeve + nose cap — {config}{' / ' + nose.band if nose.band else ''} (generated)\n\n"
+        f"Material: {SLEEVE_MATERIAL}. FIXED nose (2026-11-21, user): one sleeve per config "
+        f"over the whole tower INCLUDING the payload board ({nose.payload or 'none'}); lanes and "
+        f"vias stay on the Ø{2 * cup['r_out']:.1f} skin (signals ≤ Ø36.5). Above the payload "
+        f"board (z {sn['z_shoulder']:.2f}) the sleeve thickens outward into a Ø{2 * sn['neck_r']:.2f} "
+        f"NECK up to z {sn['z_neck_top']:.2f}; the Ø{sn['od']:g} NOSE CAP goes over it — {joint}. "
+        "Setback presses the lid onto the neck rim (compression).\n\n"
+        f"- Vias Ø{SLEEVE_VIA_D_MM} × {cup['n_vias']} (incl. the payload board's).\n"
+        f"- Cap top z {cup['z_end_out']:.2f}.\n"
+        + "".join(nose.notes) +
+        f"\n## Warnings\n{w}\n")
+
+
 def _cup_cam_md(config: str, cup: dict, contract: dict | None) -> str:
+    if cup.get("fixed"):
+        return _fixed_cam_md(config, cup)
     from smash.export import cup_noses as CN
     from smash.export import nose_interface as NI
     nose = cup["nose"]
@@ -811,7 +961,13 @@ def write_sleeve_and_mould(boards: dict, chain: list, contract: dict | None,
         (cd / "frame.json").write_text(json.dumps({
             "payload": cup["nose"].payload, "z_payload": list(cup["nose"].z_payload or []),
             "compute_top_z": cup["z_ring"][0], "ring_top_z": cup["z_ring"][1]}))
-        cq.exporters.export(parts["nose_cone"], str(cd / "nose_cone.stl"))
+        for old in ("snap_ring.step", "nose_cone.step", "nose_cone.stl", "retaining_ring.step"):
+            if old.split(".")[0] not in parts:
+                (cd / old).unlink(missing_ok=True)
+        if "nose_cone" in parts:
+            cq.exporters.export(parts["nose_cone"], str(cd / "nose_cone.stl"))
+        else:
+            cq.exporters.export(parts["nose_cap"], str(cd / "nose_cap.stl"))
         (cd / "nose_cam.md").write_text(_cup_cam_md(config, cup, contract))
         fd = md / config / (band or "")
         fd.mkdir(parents=True, exist_ok=True)

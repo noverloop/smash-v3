@@ -1774,7 +1774,7 @@ def _cutouts_for_tile(
     # (2026-11-20, user) SNAP hooks: every nose payload board gets an EDGE NOTCH
     # at each hook angle (the cap's spring legs pass it on their way to the
     # anchor gap's snap ring).
-    if name in _NI.PAYLOAD_BOARDS:
+    if _NI.MODULAR and name in _NI.PAYLOAD_BOARDS:
         from smash.parts.castellations import board_fold_transforms, _local_xy
         _M = board_fold_transforms(panel, list(panel.snake_chain or [])).get(name)
         if _M is not None:

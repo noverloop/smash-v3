@@ -599,7 +599,12 @@ RING_AL = RingSpec("7075-T6 aluminium, hard anodised (anodise = insulation)", Tr
 # into activation and S1 moved up: the slot gaps are now activation↔wakeup
 # (S4) and wakeup↔power (S1), so wakeup↔power is PEEK.
 AL_RING_GAPS = ("spacer_power_board_companion_compute",
-                "spacer_companion_compute_radar_module")
+                # (2026-11-21) fixed noses: compute ↔ payload is an ordinary
+                # sized gap with a 1 mm Al ring in every config
+                "spacer_companion_compute_radar_module",
+                "spacer_companion_compute_qpd_module",
+                "spacer_companion_compute_camera_module",
+                "spacer_companion_compute_usb_nose")
 
 
 def ring_spec(spacer_name: str) -> RingSpec:
@@ -866,7 +871,7 @@ def is_anchor_gap(name: str) -> bool:
     """compute ↔ any nose payload (radar / QPD / camera / USB nose): the Al
     anchor ring under the crown, in every config."""
     from smash.export import nose_interface as NI
-    return any(name == f"spacer_{NI.HOST}_{p}" for p in NI.PAYLOAD_BOARDS)
+    return NI.MODULAR and any(name == f"spacer_{NI.HOST}_{p}" for p in NI.PAYLOAD_BOARDS)
 
 
 def _standoffs_body(cq, h):

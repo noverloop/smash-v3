@@ -85,7 +85,9 @@ LANE_POLICY = "reuse"
 # Lanes from wakeup upward may use the antenna sector (both slot antennas sit
 # below wakeup). Off since the crown moved onto compute's top-face pads
 # (2026-11-18): the signal sector has room again.
-UPPER_ANTENNA_LANES = False
+# (2026-11-21) ON again: fixed noses put ~45 payload nets on lanes from compute
+# up; the antenna sector is free above the slots' copper (see lo_upper).
+UPPER_ANTENNA_LANES = True
 POWER_LANE_WIDTH_MM = 0.6      # one WIDE (electroplated) lane per power rail
 SIGNAL_LANE_WIDTH_MM = 0.2
 MANF_PN = "CASTELLATIONS"
@@ -175,7 +177,7 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # (2026-11-18) Nose modules (radar / QPD / camera / USB) are separate
     # cones on the standard CROWN: electrically they hang off compute, their
     # nets leave the core sleeve only through the crown (nose_interface).
-    crown_host = NI.HOST if NI.HOST in chain else None
+    crown_host = NI.HOST if (NI.MODULAR and NI.HOST in chain) else None
     payloads = [b for b in NI.PAYLOAD_BOARDS if b in boards] if crown_host else []
     rigid = [n for n in chain if not getattr(boards[n], "is_spacer", False)
              and getattr(boards[n], "kind", "rigid") != "flex"
@@ -190,6 +192,15 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         parent[leaf] = src
     for pb in payloads:
         parent[pb] = crown_host
+    nose_tile = None
+    if not NI.MODULAR:
+        # (2026-11-21) fixed noses: whichever payload a config carries sits in
+        # the NOSE SLOT above compute — in the superset that is the payload
+        # tile on the chain; the others (branch leaves here) share its lanes.
+        nose_tile = next((n for n in chain if n in NI.PAYLOAD_BOARDS), None)
+        for pb in NI.PAYLOAD_BOARDS:
+            if nose_tile and pb != nose_tile:
+                parent[pb] = nose_tile
     # (2026-11-19) aft_end_cap contacts (virtual board): allocated as if on the
     # aft board, so their lanes run all the way down to the aft rim.
     if rigid:
@@ -319,7 +330,12 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # Longest spans first, then by start — first-fit over the angle ring.
     todo.sort(key=lambda t: (-(t[1] - t[0]), t[0], t[2].name))
     overflow = []
-    lo_upper = pos.get("wakeup_board", len(pos) + 1)
+    # (2026-11-21) antenna-sector lanes may only START on a board above the
+    # highest slot's UPPER board: a slot's copper patch reaches ~4 mm past its
+    # gap, i.e. past the upper board's own castellation level (S1 in
+    # wakeup↔power → patch up to ~2 mm above power) — so from compute up.
+    _slot_up = [pos[s_.upper] for s_ in _ANT_SLOTS if s_.upper in pos]
+    lo_upper = (max(_slot_up) + 1) if _slot_up else pos.get("wakeup_board", len(pos) + 1)
     for lo, hi, net, bset in todo:
         need, got = _mult(net), []
         for a in (angles + upper_angles if lo >= lo_upper else angles):
@@ -337,6 +353,21 @@ def castellation_contract(design, panel, boards, plug_groups=None,
                                "width_mm": (POWER_LANE_WIDTH_MM
                                             if getattr(net, "kind", None) == "power"
                                             else SIGNAL_LANE_WIDTH_MM)}
+    if nose_tile is not None:
+        # (2026-11-21) fixed noses: every other payload board sits in the SAME
+        # nose slot in its own config → it gets castellations at the nose
+        # tile's lane angles for the nets it uses (+ the fixed GND ones).
+        raw = {c.ref: getattr(c, "board_tag", None) for c in design.chips
+               if getattr(c, "manf_pn", None) not in ("LGA_lands", MANF_PN)}
+        others = [pb for pb in NI.PAYLOAD_BOARDS if pb in boards and pb != nose_tile]
+        for name, ln in lanes.items():
+            if nose_tile not in ln["boards"] or (gnd is not None and name == gnd.name):
+                continue
+            net = design.net_by_name(name)
+            used = {raw.get(rf) for rf, _p in net.pins} if net is not None else set()
+            ln["boards"] = list(ln["boards"]) + [pb for pb in others if pb in used]
+        if gnd is not None and gnd.name in lanes:
+            lanes[gnd.name]["boards"] = list(lanes[gnd.name]["boards"]) + others
     aft_cap = _aft_cap_contract(design, lanes, rigid, r, gnd, quiet=quiet)
     # Plug-ring exits on the aft board (rigid[0]).
     plug = []
@@ -385,7 +416,9 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         key=lambda a: abs(a - 180.0))
     cone_used = set()
     cone_over = []
-    for parent, leaf, nets in ([] if payloads else (cone_exits or [])):
+    # (2026-11-21) fixed noses: no cone exits — every payload net rides an
+    # ordinary lane to the nose slot (see the parent map above)
+    for parent, leaf, nets in ([] if (payloads or not NI.MODULAR) else (cone_exits or [])):
         if parent not in pos:
             continue
         for n in nets:

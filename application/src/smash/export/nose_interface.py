@@ -148,6 +148,13 @@ DIFF_PAIRS = (("CAM_CSI_CLK_P", "CAM_CSI_CLK_N"), ("CAM_CSI_D0_P", "CAM_CSI_D0_N
               ("CAM_CSI_D1_P", "CAM_CSI_D1_N"), ("USB_D_P", "USB_D_N"))
 PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
 HOST = "companion_compute"
+# (2026-11-21, user) MODULAR = False: height beats swappable noses. No crown,
+# no anchor/snap ring: the payload board is an ordinary stack tile above
+# compute (normal sized gap + ring, its nets on sleeve LANES), each config
+# gets its own sleeve, and a nose CAP snaps permanently onto the sleeve's top
+# end (annular snap joint). The crown geometry below stays for reference and
+# for the aft cap (which reuses its cone constants).
+MODULAR = False
 # (2026-11-20) screws / inserts / tab feet retired for the SNAP hooks (above).
 # The two hook angles keep the old screw teeth (no contact there): their uneven
 # spacing is still the orientation key.

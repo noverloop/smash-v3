@@ -217,6 +217,8 @@ def test_sleeve_joins_the_schematic_on_a_copy(built, tmp_path):
     assert "J_SLEEVE" in (tmp_path / "smash.kicad_sch").read_text()
 
 
+@pytest.mark.skipif(not __import__("smash.export.nose_interface", fromlist=["x"]).MODULAR,
+                    reason="modular crown nose retired 2026-11-21")
 def test_nose_payloads_use_the_crown(built):
     """(2026-11-18) Every nose payload (radar / QPD / camera / USB) reaches
     compute through the standard crown: compute edge castellations (outer
