@@ -23,6 +23,7 @@ from smash.layout.cavities import (
 # ── registry has every board name we expect ───────────────────────────
 
 EXPECTED_NAMES = {
+    "dev_board",                       # (2026-11-21) flat development board
     "power_board", "wakeup_board", "flight_board", "radar_module",
     "fins_module", "fin_ble_board",
     "companion_compute", "companion_io",
@@ -105,7 +106,10 @@ def test_aft_end_board_is_d34_circle_with_no_potting():
     # (2026-11-19) only the 3 aft_end_cap screw holes (+ their keep-outs)
     assert [h for h in g.holes if h.tag == "potting"] == []
     assert len(g.holes) == 3 and all(h.tag == "aft_cap_screw" for h in g.holes)
-    assert len(g.keepouts) == 3
+    # 3 screw-hole keep-outs + (2026-11-21) 3 bottom-copper keep-outs under the
+    # dev-board fixture's locating-pin tips
+    assert len(g.keepouts) == 6
+    assert sum(k.tag == "fixture_dowel_tip" and k.layers == ("B.Cu",) for k in g.keepouts) == 3
 
 
 def test_camera_module_is_d34_circle():  # 2026-11-19: Ø34, seated on the land ring

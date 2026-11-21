@@ -36,6 +36,14 @@ CAP_SCREW_ANGLES_DEG = tuple(aft_tooth_angle(k) for k in CAP_SCREW_TEETH)   # be
 CAP_GROOVE_HALF_DEG = (360.0 / AFT_CAP_N_TEETH) / 4.0 + math.degrees(0.05 / 13.9)
 CAP_SCREW = "M2 × 6 low-head (ISO 14580 / Ø3.5, A2) into tapped M2 holes in the Al holder floor"
 CAP_SCREW_CLEAR_D_MM = 2.2
+# (2026-11-21, user) LOCATING holes for the dev board's fixture dowels (Mill-Max
+# 5849, Ø1.5, 6.5 mm above its flange) in the flat plate, the screw angles + 30°
+# (uneven = the same key). THROUGH the 1.6 mm plate: the dowels stand 1.2 mm above
+# the spring-pin tips, so at rest the tower sits on the pins (contact) with the
+# dowels 1.2 mm in; pressed by hand, the dowel tips stop on aft_end's bottom face.
+CAP_LOCATE_R_MM = 12.2
+CAP_LOCATE_ANGLES_DEG = (57.0, 183.0, 303.0)
+CAP_LOCATE_D_MM, CAP_LOCATE_DEPTH_MM = 1.6, CAP_PLATE_T_MM
 CAP_SCREW_HEAD_D_MM = 3.5
 LABEL_SCREW_CLEAR_DEG = 10.5   # a label beside a screw head is nudged at least this far from it
 CAP_SCREW_CB_MM = 1.0          # counterbore on the aft face (head below the crown plane)
@@ -125,6 +133,10 @@ def build_aft_cap(cq, cap: dict, r_out: float, z_top: float = 0.0):
         cb = (cq.Workplane("XY").center(x, y).circle(CAP_SCREW_HEAD_D_MM / 2.0)
               .extrude(CAP_SCREW_CB_MM + 0.01).translate((0, 0, z_plate - 0.01)))
         body = body.cut(hole).cut(cb)
+    for ang in CAP_LOCATE_ANGLES_DEG:                  # fixture dowel holes (aft face)
+        x, y = CAP_LOCATE_R_MM * math.cos(math.radians(ang)), CAP_LOCATE_R_MM * math.sin(math.radians(ang))
+        body = body.cut(cq.Workplane("XY").center(x, y).circle(CAP_LOCATE_D_MM / 2.0)
+                        .extrude(CAP_LOCATE_DEPTH_MM).translate((0, 0, z_plate)))
     return body
 
 

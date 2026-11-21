@@ -2,8 +2,8 @@
   "_meta": {
     "description": "Per-board outline + holes + keepouts. Loaded by smash.state.board_geometry.load_board_geometry(name).",
     "schema_version": 1,
-    "potting_holes_note": "When potting_holes=true, the loader synthesizes two NPTH Ø3.0 mm holes at (±9.90, ±9.90) mm (14 mm radial from centre, NW=135°, SE=315°) per cavities.potting_hole_positions_math_yup(), plus 4.0×4.0 mm component-placement keepouts around each.",
-    "spacer_potting_note": "Spacers carry NO fixed potting holes. attach_cavities_to_spacers() drills 2 Ø3.0 mm NPTH through-holes per spacer at the fold-projected positions of the neighbouring tiles' potting holes, so they always align with the PCB through the accordion fold (a fixed pair would land on the wrong diagonal after the mirror)."
+    "potting_holes_note": "When potting_holes=true, the loader synthesizes two NPTH \u00d83.0 mm holes at (\u00b19.90, \u00b19.90) mm (14 mm radial from centre, NW=135\u00b0, SE=315\u00b0) per cavities.potting_hole_positions_math_yup(), plus 4.0\u00d74.0 mm component-placement keepouts around each.",
+    "spacer_potting_note": "Spacers carry NO fixed potting holes. attach_cavities_to_spacers() drills 2 \u00d83.0 mm NPTH through-holes per spacer at the fold-projected positions of the neighbouring tiles' potting holes, so they always align with the PCB through the accordion fold (a fixed pair would land on the wrong diagonal after the mirror)."
   },
   "_spacer_default": {
     "shape": "circle",
@@ -42,7 +42,7 @@
           "diameter_mm": 2.5
         }
       ],
-      "_note_potting": "2026-11-20: moved from (0,−11) — it sat under the LOCKED D_IR_WAKE. One Ø2.5 potting hole at r 12 / 20° in the placement frame (written here pre-rotation: potting holes of the nose-ward tiles turn 180°), clear of every locked part on both faces and inside the land ring (r < 13.6), so the nose-cone pour reaches the 51 bottom-face parts.",
+      "_note_potting": "2026-11-20: moved from (0,\u221211) \u2014 it sat under the LOCKED D_IR_WAKE. One \u00d82.5 potting hole at r 12 / 20\u00b0 in the placement frame (written here pre-rotation: potting holes of the nose-ward tiles turn 180\u00b0), clear of every locked part on both faces and inside the land ring (r < 13.6), so the nose-cone pour reaches the 51 bottom-face parts.",
       "holes": [
         {
           "position_mm": [
@@ -69,7 +69,7 @@
           "tag": "nose_stop"
         }
       ],
-      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
     },
     "fins_module": {
       "shape": "circle",
@@ -121,7 +121,87 @@
           "tag": "aft_cap_screw"
         }
       ],
-      "_note_holes": "2026-11-19: 3× M2 clearance for the aft_end_cap screws at the cap's screw positions (60-position cap grid, teeth 4/25/45 = 27/153/273°), r 10.6 — into TAPPED holes in the Al battery holder's solid webs between the cells (cells at 90/210/330°)."
+      "_note_holes": "2026-11-19: 3\u00d7 M2 clearance for the aft_end_cap screws at the cap's screw positions (60-position cap grid, teeth 4/25/45 = 27/153/273\u00b0), r 10.6 \u2014 into TAPPED holes in the Al battery holder's solid webs between the cells (cells at 90/210/330\u00b0).",
+      "keepouts": [
+        {
+          "polygon": [
+            [
+              5.345,
+              8.932
+            ],
+            [
+              7.945,
+              8.932
+            ],
+            [
+              7.945,
+              11.532
+            ],
+            [
+              5.345,
+              11.532
+            ]
+          ],
+          "layers": [
+            "B.Cu"
+          ],
+          "scope": "both",
+          "tag": "fixture_dowel_tip",
+          "note": "2026-11-21: dev-board fixture dowel tip lands here through the aft cap's locating hole \u2014 no copper / parts"
+        },
+        {
+          "polygon": [
+            [
+              -13.483,
+              -1.938
+            ],
+            [
+              -10.883,
+              -1.938
+            ],
+            [
+              -10.883,
+              0.662
+            ],
+            [
+              -13.483,
+              0.662
+            ]
+          ],
+          "layers": [
+            "B.Cu"
+          ],
+          "scope": "both",
+          "tag": "fixture_dowel_tip",
+          "note": "2026-11-21: dev-board fixture dowel tip lands here through the aft cap's locating hole \u2014 no copper / parts"
+        },
+        {
+          "polygon": [
+            [
+              5.345,
+              -11.532
+            ],
+            [
+              7.945,
+              -11.532
+            ],
+            [
+              7.945,
+              -8.932
+            ],
+            [
+              5.345,
+              -8.932
+            ]
+          ],
+          "layers": [
+            "B.Cu"
+          ],
+          "scope": "both",
+          "tag": "fixture_dowel_tip",
+          "note": "2026-11-21: dev-board fixture dowel tip lands here through the aft cap's locating hole \u2014 no copper / parts"
+        }
+      ]
     },
     "cell_floor_board": {
       "shape": "circle",
@@ -158,7 +238,7 @@
           "tag": "nose_stop"
         }
       ],
-      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
     },
     "qpd_module": {
       "shape": "circle",
@@ -190,7 +270,7 @@
           "tag": "nose_stop"
         }
       ],
-      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
     },
     "usb_nose": {
       "shape": "circle",
@@ -222,7 +302,7 @@
           "tag": "nose_stop"
         }
       ],
-      "_note_d34": "2026-11-19 (user): Ø34 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
+      "_note_d34": "2026-11-19 (user): \u00d834 again, seated on the nose cone's land ring, pressure-fixed by the nose cap's press rim (2026-11-20); 3 locating-pin holes at r 15.4 (nose_interface.PAYLOAD_STOP_*)."
     },
     "nfc_antenna_flex": {
       "shape": "circle",
@@ -244,6 +324,49 @@
         40.0
       ],
       "potting_holes": false
+    },
+    "dev_board": {
+      "shape": "rect",
+      "rect_dimensions": [
+        100.0,
+        90.0
+      ],
+      "potting_holes": false,
+      "holes": [
+        {
+          "position_mm": [
+            -46.0,
+            -41.0
+          ],
+          "diameter_mm": 3.2,
+          "tag": "mount"
+        },
+        {
+          "position_mm": [
+            -46.0,
+            41.0
+          ],
+          "diameter_mm": 3.2,
+          "tag": "mount"
+        },
+        {
+          "position_mm": [
+            46.0,
+            -41.0
+          ],
+          "diameter_mm": 3.2,
+          "tag": "mount"
+        },
+        {
+          "position_mm": [
+            46.0,
+            41.0
+          ],
+          "diameter_mm": 3.2,
+          "tag": "mount"
+        }
+      ],
+      "_note": "2026-11-21: flat development board \u2014 the whole tower schematic on one 8L 2+4+2 HDI board (Speedstack, 0.868 mm) + the single-USB diagnostic section; size refined by placement"
     }
   }
 }

@@ -228,6 +228,13 @@ def _from_entry(entry: dict) -> BoardGeometry:
         geom.keepouts.append(Keepout(
             polygon=[(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)],
             scope="component", tag=spec.get("tag", "mount")))
+    for spec in entry.get("keepouts") or []:
+        # (2026-11-21) explicit keep-outs (e.g. aft_end's bottom copper under the
+        # dev-board fixture dowels): polygon (board-local) + layers + scope
+        geom.keepouts.append(Keepout(
+            polygon=[tuple(p) for p in spec["polygon"]],
+            layers=tuple(spec.get("layers", ["*.Cu"])),
+            scope=spec.get("scope", "both"), tag=spec.get("tag"), note=spec.get("note")))
     ph = entry.get("potting_holes")
     if isinstance(ph, list):
         # (2026-11-19) explicit holes, e.g. the Ø27 nose payloads where the
