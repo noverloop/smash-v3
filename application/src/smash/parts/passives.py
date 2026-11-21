@@ -130,7 +130,27 @@ def add_lps4018_103mrb(design, ref: str, **overrides) -> Chip:
 # Coilcraft XGL5020-472MEC — 4.7 µH shielded molded inductor, 5.3 A Isat(30 %)
 # ═════════════════════════════════════════════════════════════════════════
 
-def add_xgl5020_472mec(design, ref: str, **overrides) -> Chip:
+# Coilcraft Doc 1620 (rev 02/19/26) table rows used here: code → (L µH, DCR typ,
+# DCR max mΩ, Isat 10/20/30 % A, Irms 20 °C-rise A). Same body / land pattern.
+XGL5020_TABLE = {
+    "472": (4.7, 36.0, 41.5, (2.2, 3.6, 5.3), 5.7),
+    "682": (6.8, 55.0, 63.5, (2.0, 3.2, 4.5), 3.6),
+    "822": (8.2, 64.0, 73.6, (1.8, 2.9, 4.1), 3.3),
+}
+
+
+def add_xgl5020_822mec(design, ref: str, **overrides) -> Chip:
+    """Coilcraft XGL5020-822MEC — 8.2 µH member of the XGL5020 family (same
+    body / land pattern as add_xgl5020_472mec). DCR 64 typ / 73.6 max mΩ;
+    Isat 1.8 / 2.9 / 4.1 A at 10 / 20 / 30 % drop; Irms 3.3 A (20 °C rise).
+    (2026-11-21) L_ACTIVATE: the 5 → 33 V boost runs at D ≈ 0.85-0.87, where
+    the TPS61175's slope compensation needs L comfortably ABOVE its 4.7 µH
+    minimum (DS §7.3.1); 8.2 µH keeps the steady-state peak (1.6-1.7 A)
+    under the 10 %-drop point."""
+    return add_xgl5020_472mec(design, ref, _code="822", **overrides)
+
+
+def add_xgl5020_472mec(design, ref: str, _code: str = "472", **overrides) -> Chip:
     """Coilcraft XGL5020-472MEC — 4.7 µH ±20 % composite molded shielded
     power inductor, AEC-Q200, 5.28 × 5.48 × 2.1 mm max (Doc 1620, rev
     02/19/26, vendored as XGL5020_Doc1620.pdf).
@@ -150,7 +170,8 @@ def add_xgl5020_472mec(design, ref: str, **overrides) -> Chip:
     inner edges (≈ the 3.28 mm between the part's own 1.0 mm terminals),
     so pad centres at ±2.245 mm. Body 5.28 (terminal axis) × 5.48 mm.
     No 3D model (none supplied); height from the datasheet."""
-    pn = "XGL5020-472MEC"
+    pn = f"XGL5020-{_code}MEC"
+    L_uh, dcr_typ, dcr_max, isat, irms = XGL5020_TABLE[_code]
     cx = 3.31 / 2 + 1.18 / 2
     pads = [
         Pad(num="1", position_mm=(-cx, 0.0), size_mm=(1.18, 4.7), shape="rect"),
@@ -162,17 +183,18 @@ def add_xgl5020_472mec(design, ref: str, **overrides) -> Chip:
         manf="Coilcraft",
         manf_pn=pn, canonical_id=canonical_id(pn),
         name=pn,
-        value="4.7uH",
-        description="Shielded molded power inductor, 4.7 µH, Isat 5.3 A (30 %), DCR 41.5 mΩ max, 5.3×5.5×2.1 mm",
-        datasheet=datasheet_ref(pn, "XGL5020_Doc1620.pdf"),
+        value=f"{L_uh:g}uH",
+        description=(f"Shielded molded power inductor, {L_uh:g} µH, Isat {isat[2]:g} A (30 %), "
+                     f"DCR {dcr_max:g} mΩ max, 5.3×5.5×2.1 mm"),
+        datasheet=datasheet_ref("XGL5020-472MEC", "XGL5020_Doc1620.pdf"),   # family datasheet
         package="XGL5020",
         size_mm=(5.28, 5.48),
         height_mm=2.1,
-        inductance_h=4.7e-6,
+        inductance_h=L_uh * 1e-6,
         weight_g=0.33,
         temp_range_c=(-40, 125),
         voltage_rating_v=80.0,
-        i_rms_a=5.7,
+        i_rms_a=irms,
         standards=["RoHS", "Halogen-Free", "AEC-Q200"],
         pins=[Pin(num="1", name="1", type="passive"), Pin(num="2", name="2", type="passive")],
         footprint=Footprint(

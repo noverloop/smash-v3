@@ -97,7 +97,8 @@ from smash.parts.oscillators import (                                    # noqa:
 )
 from smash.parts.passives import (                                       # noqa: E402
     add_capacitor_c0g_0603_avx_sqcs, add_capacitor_x7r_0402_kemet,
-    add_we_744043100, add_lps4018_103mrb, add_xgl5020_472mec, add_blm18pg221sn1d,
+    add_we_744043100, add_lps4018_103mrb, add_xgl5020_472mec, add_xgl5020_822mec,
+    add_blm18pg221sn1d,
 )
 from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa: E402
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
@@ -2482,14 +2483,20 @@ def _build_activation_array(d: Design) -> None:
     # D_ACTIVATE keeps the MBRS540T3G: the 33 V output leaves only 7 V of V_RRM
     # margin, so this rectifier is NOT a candidate for the 40 V flat part
     # until that headroom is revisited (it is now the only MBRS540 user).
-    # (2026-11-21) Coilcraft XGL5020-472MEC 4.7 µH (as L_BOOST_COMP). Load from
+    # (2026-11-21) Coilcraft XGL5020-822MEC 8.2 µH (XGL5020 family, same land
+    # pattern as L_BOOST_COMP's 4.7 µH). At D ≈ 0.85-0.87 the TPS61175's slope
+    # compensation wants L well above its 4.7 µH minimum (DS §7.3.1), so 8.2 µH:
+    # ripple ≈ 0.8-0.9 A p-p → steady peak 1.6-1.7 A < the 1.8 A 10 %-drop point.
+    # Loop (DS §8.2.2.10 model, 4.7 µF derated to ~1.5 µF at 33 V): fc ≈ 7-8 kHz,
+    # PM ≈ 87-89°, fRHPZ ≥ 79 kHz — the 1.6 k / 220 nF network stays. Load from
     # the battery-mission sim (smash-electronics tools/simulate_battery_mission.py,
     # P_SECTOR): ONE burn-wire sector, 5 W × 5 ms → 0.15 A at 33 V ≈ 1.2 A in
     # from COMP_5V; D ≈ 0.85, ripple ≈ 1.5 A p-p at 600 kHz → ~1.9 A peak
     # (Isat 3.6 A at 20 % drop). Switching a wire onto the 4.7 µF rail drives the
-    # boost into its 5 A max limit — covered by the 5.3 A 30 %-drop rating. The
-    # LPS4018 / 744043100 saturated at ~1-1.2 A. ⚠ COMP network was set for 10 µH.
-    l_activate = add_xgl5020_472mec(d, ref="L_ACTIVATE", board_tag=BT_BOOST)
+    # boost into its 5 A max limit (transient; the cycle-by-cycle limit holds as
+    # the composite core soft-saturates). The LPS4018 / 744043100 saturated at
+    # ~1-1.2 A.
+    l_activate = add_xgl5020_822mec(d, ref="L_ACTIVATE", board_tag=BT_BOOST)
     _net(d, "ACTIVATE_SW") .connect(l_activate.pin("1"))   # marked start lead on SW (Coilcraft: lowest EMI)
     _net(d, "COMP_5V").connect(l_activate.pin("2"))
     # (2026-11-20, user) flat 60 V / 1 A SOD-123Flat (1.1 mm) instead of the
@@ -3280,7 +3287,7 @@ def build_power_board(d: Design) -> None:
     # fin pulses drive it into; DCR 36 mΩ, 2.1 mm. The earlier WE-PD
     # 744043100 (10 µH, mislabelled "Isat 6 A" here) and LPS4018 saturated at
     # ~1-1.2 A. 4.7 µH = bottom of the DS 4.7–47 µH window; ripple ≈ 0.43 A
-    # at 600 kHz. ⚠ The COMP network was tuned for 10 µH — re-check it.
+    # at 600 kHz. COMP network re-derived for 4.7 µH below.
     # Pin 1 (marked start lead) on the SW node, per Coilcraft (lowest EMI).
     l_boost = add_xgl5020_472mec(d, ref="L_BOOST_COMP", board_tag=BTAG)
     _net(d, "COMP_5V_SW") .connect(l_boost.pin("1"))
@@ -3309,14 +3316,17 @@ def build_power_board(d: Design) -> None:
                 ref="R_BOOST_R1", board_tag=BTAG)
     res_between(d, "COMP_5V_FB", "GND",        "100k",
                 ref="R_BOOST_R2", board_tag=BTAG)
-    # Loop compensation re-derived for THIS point (DS §8.2.2.10; Gea≈330 µS,
-    # Rsense 40 mΩ): fRHPZ = RO/(2πL)·(VIN/VOUT)² ≈ 14–20 kHz at 2 A →
-    # fC ≈ 4 kHz (≤ fRHPZ/3); |Gps(fC)| ≈ 8 with COUT_eff ≈ 70 µF →
-    # R3 = 1/(|Gps|·Gea·R2/(R1+R2)) ≈ 1.6 k; C4 from fZ = fC/10 ≈ 450 Hz
-    # → 220 nF. (The 51 k/1.1 nF pair was the 61085's gm/sense design.)
-    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "1.6k",
+    # Loop compensation (DS §8.2.2.10; Gea 340 µS, Rsense 40 mΩ). (2026-11-21)
+    # re-derived for L = 4.7 µH: fRHPZ = RO/(2πL)·(VIN/VOUT)² rises to ≈ 30 kHz
+    # at VIN 3.0 V / 2 A (was 14 kHz at 10 µH), so fC may go to ≈ 10 kHz
+    # (fRHPZ/3). R3 2.7 k / C4 120 nF (fZ ≈ 490 Hz) → fC 7-10 kHz, PM 93-96°
+    # over VIN 3.0-4.2 V, 0.3-2.2 A (COUT_eff ≈ 70 µF) — ~2× faster recovery
+    # from fin-pulse load steps than the 1.6 k / 220 nF set for 10 µH, and
+    # ≥ 30 % below the limit for the ±30 % Gea spread. (The 51 k/1.1 nF pair
+    # was the 61085's gm/sense design.)
+    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "2.7k",
                 ref="R_BOOST_COMP", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_5V_COMP_C", "220nF",
+    cap_to_gnd(d, "COMP_5V_COMP_C", "120nF",
                ref="C_BOOST_COMP", board_tag=BTAG, pin=(boost.ref, None))
     # LC filter: COMP_5V_RAW (fins, noisy) → COMP_5V (PMIC, clean).
     ind_between(d, "COMP_5V_RAW", "COMP_5V", "1uH",
