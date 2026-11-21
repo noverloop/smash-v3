@@ -205,17 +205,14 @@ def build_diag(d) -> dict:
         "PA0": "DEV_ISENSE",          # INA241 → ADC (fast current)
         "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC)
         "PA2": "DEV_BTN_METER",       # meter-reset button
-        "PA3": "SWO",                 # USART2_RX ← on-board MP25 SWO
-        "PA9": "MP25_CONSOLE_RX",     # USART1_TX → on-board MP25 console
-        "PA10": "MP25_CONSOLE_TX",    # USART1_RX ←
         "PA15": "DEV_I2C_SCL", "PB7": "DEV_I2C_SDA",
         "PB12": "DEV_CAN_RX", "PB13": "DEV_CAN_TX",      # FDCAN2
         "PB10": "DEV_TWR_CONS_RX_G", "PB11": "DEV_TWR_CONS_TX_G",   # USART3 ↔ tower console
         "PC11": "DEV_TWR_SWO_G",      # UART4_RX ← tower SWO
-        # 6 bit-banged SWD ports (SWDIO, SWCLK, NRST)
-        "PA4": "COMP_SWDIO", "PA5": "COMP_SWDCLK", "PA6": "NRST",
-        "PA7": "WBA_SWDIO", "PA8": "WBA_SWCLK", "PB0": "WBA_NRST",
-        "PB1": "G0B1_FIN_SWDIO", "PB2": "G0B1_FIN_SWCLK", "PB3": "G0B1_FIN_NRST",
+        # (2026-11-21) ONE set of tower ports: bank A → socket, bank B → the flat
+        # tower through the sleeve channel; the seat lines pick (firmware)
+        "PA4": "DEV_FLAT_EN",         # bank B (flat tower) request — gated by the seat interlock
+        "PA5": "DEV_FLAT_PWR_EN",     # flat-tower supply switch
         "PB4": "DEV_TWR_MP25_SWDIO_G", "PB5": "DEV_TWR_MP25_SWCLK_G", "PB6": "DEV_TWR_MP25_NRST_G",
         "PB14": "DEV_TWR_WBA_SWDIO_G", "PB15": "DEV_TWR_WBA_SWCLK_G", "PC4": "DEV_TWR_WBA_NRST_G",
         "PC6": "DEV_TWR_FIN_SWDIO_G", "PC10": "DEV_TWR_FIN_SWCLK_G", "PC13": "DEV_TWR_FIN_NRST_G",
@@ -230,6 +227,26 @@ def build_diag(d) -> dict:
     for net in ("DEV_I2C_SCL", "DEV_I2C_SDA", "DEV_INA_ALERT_N"):
         res_between(d, V3, net, "4.7k", ref=f"R_DEV_PU_{net[4:]}", **T)
     res_between(d, V3, "DEV_TWR_OE_N", "10k", ref="R_DEV_TWR_OE", **T)   # isolated by default
+    res_between(d, V3, "DEV_FLAT_OE_N", "10k", ref="R_DEV_FLAT_OE", **T)
+    res_between(d, "DEV_FLAT_EN", "GND", "100k", ref="R_DEV_FLAT_EN_PD", **T)
+
+    def seat_interlock(top_net, tag):
+        """HARDWARE INTERLOCK (2026-11-21, user): top_net → GND only through
+        three series NMOS gated by the seat lines. A seat tooth grounds its
+        line, so ANY tooth touching (tower seated, even partly) opens the
+        chain whatever the firmware does: the flat tower stays isolated."""
+        node = top_net
+        for k in (1, 2, 3):
+            q = add_bss138akm_qyl(d, ref=f"Q_DEV_ILK_{tag}{k}", **T)
+            nxt = "GND" if k == 3 else f"DEV_ILK_{tag}{k}"
+            N(node).connect(q.pin("3")); N(f"TWR_SEAT_{k}").connect(q.pin("1"))
+            N(nxt).connect(q.pin("2"))
+            node = nxt
+
+    q_en = add_bss138akm_qyl(d, ref="Q_DEV_FLAT_OE", **T)     # bank B /OE low = on
+    N("DEV_FLAT_OE_N").connect(q_en.pin("3")); N("DEV_FLAT_EN").connect(q_en.pin("1"))
+    N("DEV_FLAT_OE_SRC").connect(q_en.pin("2"))
+    seat_interlock("DEV_FLAT_OE_SRC", "OE")
 
     # ── CAN-FD to the tower (gs_usb) ───────────────────────────────────────
     can = add_tcan1042gvdq1(d, ref="U_DEV_CAN", **T)
@@ -245,34 +262,36 @@ def build_diag(d) -> dict:
     for ref in ("TP_DEV_BENCH_P", "TP_DEV_BENCH_N"):
         pad = add_pogo_pad(d, ref=ref, manf_pn=None, **T)
         N("DEV_BENCH" if ref.endswith("_P") else "GND").connect(pad.pin("1"))
-    meters = (("BAT", "DEV_BENCH", "BAT_RAW", "0x40"),           # this board's battery rail
-              ("TWR", "DEV_TWR_FEED", "TWR_BAT_RAW", "0x41"))   # the tower under test
-    for tag, hi, lo, _addr in meters:
-        res_between(d, hi, lo, "10m", ref=f"R_DEV_SH_{tag}", **T)
-        ina = DB.add_ina228aidgsr(d, ref=f"U_DEV_INA_{tag}", **T)
-        N(hi).connect(ina.pin("IN+")); N(lo).connect(ina.pin("IN-")); N(lo).connect(ina.pin("VBUS"))
-        N(V3).connect(ina.pin("VS")); N("GND").connect(ina.pin("GND"))
-        N("DEV_I2C_SCL").connect(ina.pin("SCL")); N("DEV_I2C_SDA").connect(ina.pin("SDA"))
-        N("DEV_INA_ALERT_N").connect(ina.pin("ALERT"))
-        N("GND").connect(ina.pin("A1"))
-        N("GND" if tag == "BAT" else V3).connect(ina.pin("A0"))
-        cap_to_gnd(d, V3, "100nF", ref=f"C_DEV_INA_{tag}", **T)
-    fast = DB.add_ina241a2idgkr(d, ref="U_DEV_ISENSE", **T)       # fast path on the BAT shunt
-    N("DEV_BENCH").connect(fast.pin("IN+")); N("BAT_RAW").connect(fast.pin("IN-"))
+    # one metered feed (bench → 10 mΩ shunt → DEV_FEED), switched to the
+    # SOCKET (a real tower) or the FLAT tower (the tiles) — never both
+    res_between(d, "DEV_BENCH", "DEV_FEED", "10m", ref="R_DEV_SH", **T)
+    ina = DB.add_ina228aidgsr(d, ref="U_DEV_INA", **T)
+    N("DEV_BENCH").connect(ina.pin("IN+")); N("DEV_FEED").connect(ina.pin("IN-"))
+    N("DEV_FEED").connect(ina.pin("VBUS"))
+    N(V3).connect(ina.pin("VS")); N("GND").connect(ina.pin("GND"))
+    N("DEV_I2C_SCL").connect(ina.pin("SCL")); N("DEV_I2C_SDA").connect(ina.pin("SDA"))
+    N("DEV_INA_ALERT_N").connect(ina.pin("ALERT"))
+    N("GND").connect(ina.pin("A1")); N("GND").connect(ina.pin("A0"))
+    cap_to_gnd(d, V3, "100nF", ref="C_DEV_INA", **T)
+    fast = DB.add_ina241a2idgkr(d, ref="U_DEV_ISENSE", **T)       # fast path, same shunt
+    N("DEV_BENCH").connect(fast.pin("IN+")); N("DEV_FEED").connect(fast.pin("IN-"))
     N(V3).connect(fast.pin("VS")); N("GND").connect(fast.pin("GND"))
     N("GND").connect(fast.pin("REF1")); N("GND").connect(fast.pin("REF2"))
     N("DEV_ISENSE").connect(fast.pin("OUT"))
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_ISENSE", **T)
-    # tower supply switch (DEV_BENCH → tower), off by default
-    qp = add_dmp6110svt_7(d, ref="Q_DEV_TWR_PWR", **T)
-    for dp in ("D_1", "D_2", "D_3", "D_4"):
-        N("DEV_TWR_FEED").connect(qp.pin(dp))
-    N("DEV_BENCH").connect(qp.pin("S")); N("DEV_TWR_PWR_G").connect(qp.pin("G"))
-    res_between(d, "DEV_BENCH", "DEV_TWR_PWR_G", "100k", ref="R_DEV_TWR_PWR_H", **T)
-    qn = add_bss138akm_qyl(d, ref="Q_DEV_TWR_PWR_LS", **T)
-    N("DEV_TWR_PWR_G").connect(qn.pin("3")); N("GND").connect(qn.pin("2"))
-    N("DEV_TWR_PWR_EN").connect(qn.pin("1"))
-    res_between(d, "DEV_TWR_PWR_EN", "GND", "100k", ref="R_DEV_TWR_PWR_PD", **T)
+    for tag, out_net, en in (("TWR", "TWR_BAT_RAW", "DEV_TWR_PWR_EN"),
+                             ("FLAT", "BAT_RAW", "DEV_FLAT_PWR_EN")):
+        qp = add_dmp6110svt_7(d, ref=f"Q_DEV_{tag}_PWR", **T)
+        for dp in ("D_1", "D_2", "D_3", "D_4"):
+            N(out_net).connect(qp.pin(dp))
+        N("DEV_FEED").connect(qp.pin("S")); N(f"DEV_{tag}_PWR_G").connect(qp.pin("G"))
+        res_between(d, "DEV_FEED", f"DEV_{tag}_PWR_G", "100k", ref=f"R_DEV_{tag}_PWR_H", **T)
+        qn = add_bss138akm_qyl(d, ref=f"Q_DEV_{tag}_PWR_LS", **T)
+        src = "GND" if tag == "TWR" else "DEV_FLAT_PWR_SRC"  # flat supply: seat-interlocked
+        N(f"DEV_{tag}_PWR_G").connect(qn.pin("3")); N(src).connect(qn.pin("2"))
+        N(en).connect(qn.pin("1"))
+        res_between(d, en, "GND", "100k", ref=f"R_DEV_{tag}_PWR_PD", **T)
+    seat_interlock("DEV_FLAT_PWR_SRC", "PWR")              # flat supply off while seated
 
     # ── bus switches → tower debug lines (enabled only once the tower's VDD is seen) ──
     chans = [("MP25_SWDIO", "SWDIO"), ("MP25_SWCLK", "SWCLK"), ("MP25_NRST", "NRST"),
@@ -289,6 +308,22 @@ def build_diag(d) -> dict:
         N(f"DEV_TWR_{gname}_G").connect(bs.pin(f"{c}A"))
         N(f"TWR_{label}").connect(bs.pin(f"{c}B"))
         N("DEV_TWR_OE_N").connect(bs.pin(f"{c}~{{OE}}"))
+    # bank B: the same 12 lines to the FLAT tower (through the sleeve channel)
+    flat = {"MP25_SWDIO": "COMP_SWDIO", "MP25_SWCLK": "COMP_SWDCLK", "MP25_NRST": "NRST",
+            "SWO": "SWO", "WBA_SWDIO": "WBA_SWDIO", "WBA_SWCLK": "WBA_SWCLK",
+            "WBA_NRST": "WBA_NRST", "FIN_SWDIO": "G0B1_FIN_SWDIO",
+            "FIN_SWCLK": "G0B1_FIN_SWCLK", "FIN_NRST": "G0B1_FIN_NRST",
+            "CONS_TX": "MP25_CONSOLE_TX", "CONS_RX": "MP25_CONSOLE_RX"}
+    for k, (gname, _label) in enumerate(chans):
+        sw = k // 4
+        if k % 4 == 0:
+            bb = DB.add_sn74cb3t3125pwr(d, ref=f"U_DEV_FLATSW{sw}", **T)
+            N(V3).connect(bb.pin("VCC")); N("GND").connect(bb.pin("GND"))
+            cap_to_gnd(d, V3, "100nF", ref=f"C_DEV_FLATSW{sw}", **T)
+        c = k % 4 + 1
+        N(f"DEV_TWR_{gname}_G").connect(bb.pin(f"{c}A"))
+        N(flat[gname]).connect(bb.pin(f"{c}B"))
+        N("DEV_FLAT_OE_N").connect(bb.pin(f"{c}~{{OE}}"))
     res_between(d, "TWR_VDD", "DEV_TWR_VDD_SENSE", "10k", ref="R_DEV_TWR_VDD1", **T)
     res_between(d, "DEV_TWR_VDD_SENSE", "GND", "20k", ref="R_DEV_TWR_VDD2", **T)
 
@@ -310,7 +345,6 @@ def build_diag(d) -> dict:
         locks[pin.ref] = {"position_mm": [round(fx + r * math.cos(a), 4),
                                           round(fy + r * math.sin(a), 4)],
                           "rotation_deg": 0, "face": "top"}
-    res_between(d, "DEV_TWR_FEED", "TWR_BAT_RAW", "0", ref="R_DEV_TWR_LINK", **T)  # meter → fixture
 
     # locating pins (the real fit): into the aft cap's 3 through locating holes
     from smash.export.aft_cap import CAP_LOCATE_R_MM, CAP_LOCATE_ANGLES_DEG
@@ -344,7 +378,8 @@ def build_diag(d) -> dict:
     # ── LEDs ───────────────────────────────────────────────────────────────
     leds = (("D_DEV_LED_VBUS", "USB_VBUS", "1.5k", add_ltst_c190gkt),
             ("D_DEV_LED_3V3", V3, "1k", add_ltst_c190gkt),
-            ("D_DEV_LED_TWR", "TWR_BAT_RAW", "1k", add_ltst_c190gkt),
+            ("D_DEV_LED_TWR", "TWR_BAT_RAW", "1k", add_ltst_c190gkt),     # socket powered
+            ("D_DEV_LED_FLAT", "BAT_RAW", "1k", add_ltst_c190gkt),        # flat tower powered
             ("D_DEV_LED_HV", "ACTIVATE_HV", "10k", add_ltst_c190krkt))
     for ref, net, rv, fn in leds:
         led = fn(d, ref=ref, **T)
@@ -451,15 +486,27 @@ def block_layout(d, section: dict, fixed: set) -> dict:
 # same net on two tiles = routed). The debug section packs centre-outward on
 # the BOTTOM under the tower socket (the spring-pin ring excepted); buttons /
 # LEDs on the TOP beside the socket; the USB-C at the board edge.
-TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
+_OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
              ("power_board", "companion_compute", "radar_module"),
              ("camera_module", "qpd_module", "usb_nose"))
+# (2026-11-21, user) tiles in STACK ORDER along a straight channel = the LDS
+# sleeve unrolled (lanes in sleeve-angle order), alternating above / below it;
+# the programming board (socket + debug) is a strip at the channel's aft end
+TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
+              "companion_compute", "radar_module", "qpd_module", "camera_module", "usb_nose")
+PROG_W_MM = 56.0               # programming-board strip (left edge = board edge: USB-C)
+CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
+PROG_SLOT_TABS_Y = (-30.0, 0.0, 30.0)
 TILE_PITCH_MM = 42.0           # Ø34 tile + castellation fan-out room
 TILE_BOX_MM = 38.0             # silkscreen box round each tile
 SOCKET_COL_MM = 56.0           # socket column (Ø50 collar + margin)
 TILE_EDGE_MM = 6.0
 USB_COL_MM = 12.0
 PIN_RING_MM = (10.7, 17.7)     # bottom face blocked by the locating + spring pins
+TILE_RING_MM = (17.3, 19.0)    # part keep-out ring outside each tile (the rout channel)
+ROUT_MM = (17.0, 19.0)         # panel rout slot (inner edge on the castellation centres)
+TAB_W_MM = 2.5                 # break-tab width (arc at r 17)
+MOUSE_BITE_D_MM, MOUSE_BITES = 0.5, 3
 
 
 def tower_placements(d) -> dict:
@@ -477,13 +524,29 @@ def tower_placements(d) -> dict:
     size_backbone_spacers(panel, boards)
     place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
                         cone_exits=G._CONE_EXITS)
-    out = {}
+    import math
+    from smash.parts.castellations import board_fold_transforms, _local_xy
+    from smash.export import nose_interface as NI
+    fold = board_fold_transforms(panel, list(panel.snake_chain))
+    out, mech = {}, {}
     for name, b in boards.items():
         if getattr(b, "is_spacer", False):
             continue
         out[name] = [(pl.item.ref, pl.position_mm[0], pl.position_mm[1], pl.rotation_deg,
                       pl.face or "top") for pl in b.chip_placements]
-    return out
+        holes = [(h.position_mm, h.diameter_mm, h.plated, h.tag)
+                 for h in (getattr(b.geometry, "holes", None) or [])]
+        cast = next((c for c in d.chips if c.ref == f"J_CAST_{name}"), None)
+        cast_deg = sorted(math.degrees(math.atan2(p.position_mm[1], p.position_mm[0])) % 360
+                          for p in (cast.footprint.pads if cast else []))
+        key, key_local = None, NI.KEY_ANGLE_DEG
+        if name in fold:                                         # the sleeve key = the lane gap
+            lx, ly = _local_xy(fold[name], NI.KEY_ANGLE_DEG, 17.0)
+            key_local = math.degrees(math.atan2(ly, lx)) % 360
+        if name == NI.HOST:                                      # compute's sleeve-key notch
+            key = (key_local, NI.KEY_W_MM, NI.KEY_DEPTH_MM)
+        mech[name] = {"holes": holes, "cast_deg": cast_deg, "key": key, "key_local": key_local}
+    return out, mech
 
 
 def _open_castellation_mask(d) -> None:
@@ -540,37 +603,59 @@ def _shelf(chips, x0, y0, x1, gap=0.6):
 
 
 def tile_layout(d, section: dict, fixture_refs: set) -> dict:
-    tiles = tower_placements(d)
+    """Programming strip (left) | channel with the tiles in stack order,
+    alternating above / below it, each turned so its lane gap (the sleeve
+    key angle) points AWAY from the channel: the castellation ring then
+    unrolls onto the channel without crossings."""
+    import math
+    tiles, mech = tower_placements(d)
     _open_castellation_mask(d)
-    cols, rows = len(TILE_GRID[0]), len(TILE_GRID)
-    W = 2 * TILE_EDGE_MM + cols * TILE_PITCH_MM + SOCKET_COL_MM + USB_COL_MM
-    H = 2 * TILE_EDGE_MM + rows * TILE_PITCH_MM
-    x0, y1 = -W / 2 + TILE_EDGE_MM, H / 2 - TILE_EDGE_MM
+    P, n = TILE_PITCH_MM, len(TILE_ORDER)
+    row_y = CHANNEL_MM / 2 + P / 2
+    W = PROG_W_MM + 24.0 + (n - 1) * P / 2 + 23.0
+    H = 2 * (row_y + TILE_BOX_MM / 2 + TILE_EDGE_MM)
+    xs = -W / 2 + PROG_W_MM + 24.0
     locks, centres = {}, {}
-    for r, row in enumerate(TILE_GRID):
-        for c, name in enumerate(row):
-            cx = x0 + (c + 0.5) * TILE_PITCH_MM
-            cy = y1 - (r + 0.5) * TILE_PITCH_MM
-            centres[name] = (cx, cy)
-            for ref, x, y, rot, face in tiles.get(name, []):
-                locks[ref] = {"position_mm": [round(cx + x, 4), round(cy + y, 4)],
-                              "rotation_deg": rot, "face": face}
-    # (2026-11-21, user) socket over rows 1-2 of its column, debug chips in row 3
-    sx = x0 + cols * TILE_PITCH_MM + SOCKET_COL_MM / 2
-    sy = y1 - TILE_PITCH_MM                                     # between rows 1 and 2
+    for k, name in enumerate(TILE_ORDER):
+        above = k % 2 == 0
+        cx, cy = xs + k * P / 2, (row_y if above else -row_y)
+        centres[name] = (cx, cy)
+        m = mech.get(name, {})
+        phi = (90.0 if above else 270.0) - m.get("key_local", 135.0)
+        c, s_ = math.cos(math.radians(phi)), math.sin(math.radians(phi))
+        rot = lambda x, y: (x * c - y * s_, x * s_ + y * c)
+        for ref, x, y, r, face in tiles.get(name, []):
+            X, Y = rot(x, y)
+            locks[ref] = {"position_mm": [round(cx + X, 4), round(cy + Y, 4)],
+                          # bottom parts are stored mirrored (mirror_x∘R(θ)): R(φ)∘mirror_x
+                          # = mirror_x∘R(−φ), so the stored angle turns the other way
+                          "rotation_deg": round((r + (phi if face == "top" else -phi)) % 360, 3),
+                          "face": face}
+        if m:
+            m["holes"] = [(rot(*pos), hd, pl, tg) for pos, hd, pl, tg in m["holes"]]
+            m["cast_deg"] = sorted((a + phi) % 360 for a in m["cast_deg"])
+            if m.get("key"):
+                m["key"] = ((m["key"][0] + phi) % 360,) + tuple(m["key"][1:])
+    # programming strip: socket at the top, debug below, USB-C on the left edge
+    sx, sy = -W / 2 + PROG_W_MM / 2, H / 2 - (FIXTURE_KEEPOUT_R_MM + 1.0)
     fixture = (round(sx, 4), round(sy, 4))
     debug = [c for c in d.chips if section.get(c.ref) == DIAG and c.ref not in fixture_refs
              and c.ref not in locks]
     ui = [c for c in debug if c.ref.startswith(("S_DEV_", "D_DEV_"))]
     usb = [c for c in debug if c.ref == "J_DEV_USB"]
     rest = [c for c in debug if c not in ui and c not in usb]
-    cx0, cx1 = sx - SOCKET_COL_MM / 2 + 1.0, sx + SOCKET_COL_MM / 2 - 1.0
-    ry1 = y1 - 2 * TILE_PITCH_MM - 1.0                           # row-3 cell (top edge)
-    ry0 = y1 - 3 * TILE_PITCH_MM + 1.0
-    # top: buttons + LEDs first (visible / pressable), then debug chips; the rest bottom
+    ry1 = sy - FIXTURE_KEEPOUT_R_MM - 1.0
+    ry0 = -H / 2 + 7.5                                          # above the corner holes
+    for c in usb:
+        w, h, _ox, _oy = _crt_box(c)
+        ux = -W / 2 + 2.0 + h / 2
+        locks[c.ref] = {"position_mm": [round(ux, 4), round((ry0 + ry1) / 2, 4)],
+                        "rotation_deg": 270, "face": "top"}
+        usb_w = h + 3.0
+    cx0 = -W / 2 + 1.0 + (usb_w if usb else 0.0)
+    cx1 = -W / 2 + PROG_W_MM - 1.5
     top_pos = _shelf(ui, cx0, ry1, cx1)
     used_y = min((y for _x, y in top_pos.values()), default=ry1) - 4.0
-    # greedy: fill the top face below the UI (to ~55 %), the rest on the bottom
     rest_sorted = sorted(rest, key=lambda c: -(_crt_box(c)[0] * _crt_box(c)[1]))
     a_top = (cx1 - cx0) * (used_y - ry0)
     acc, top_set = 0.0, []
@@ -585,16 +670,11 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
         locks[ref] = {"position_mm": [round(x, 4), round(y, 4)], "rotation_deg": 0, "face": "top"}
     for ref, (x, y) in pos_bot.items():
         locks[ref] = {"position_mm": [round(x, 4), round(y, 4)], "rotation_deg": 0, "face": "bottom"}
-    low = [r for r, (x, y) in {**pos_top, **pos_bot}.items()
-           if y - _crt_box(next(c for c in rest if c.ref == r))[1] / 2 < ry0 - 0.5]
-    miss = low
-    for c in usb:                                              # right edge, row 3
-        w, h, ox, oy = _crt_box(c)
-        locks[c.ref] = {"position_mm": [round(W / 2 - 2.0 - h / 2, 4),
-                                        round((ry0 + ry1) / 2, 4)],
-                        "rotation_deg": 90, "face": "top"}
+    miss = [r for r, (x, y) in {**pos_top, **pos_bot}.items()
+            if y - _crt_box(next(c for c in rest if c.ref == r))[1] / 2 < ry0 - 0.5]
     return {"locks": locks, "W": round(W, 1), "H": round(H, 1), "fixture": fixture,
-            "centres": centres, "miss": miss}
+            "centres": centres, "miss": miss, "mech": mech,
+            "prog_x1": round(-W / 2 + PROG_W_MM, 4)}
 
 
 def build_panel(layout=None):
@@ -614,6 +694,19 @@ def build_panel(layout=None):
             for sy in (-1, 1):
                 x, y = sx * (layout["W"] / 2 - 3.5), sy * (layout["H"] / 2 - 3.5)
                 g0.holes.append(_H(position_mm=(x, y), diameter_mm=3.2, plated=False, tag="mount"))
+        W, H, px = layout["W"], layout["H"], layout["prog_x1"]
+        for sy_ in (-1, 1):                                  # programming board's own corners
+            g0.holes.append(_H(position_mm=(px - 3.5, sy_ * (H / 2 - 3.5)), diameter_mm=3.2,
+                               plated=False, tag="mount"))
+        prog = [(-W / 2 + 0.6, -H / 2 + 0.6), (px - 0.6, -H / 2 + 0.6),
+                (px - 0.6, H / 2 - 0.6), (-W / 2 + 0.6, H / 2 - 0.6)]
+        ch = [(px + 2.5, -CHANNEL_MM / 2), (W / 2 - 3.0, -CHANNEL_MM / 2),
+              (W / 2 - 3.0, CHANNEL_MM / 2), (px + 2.5, CHANNEL_MM / 2)]
+        for layer in ("F.SilkS", "B.SilkS"):
+            boards[DEV].silk_overlays.append((layer, prog, "PROGRAMMER"))
+            boards[DEV].silk_overlays.append((layer, ch, "LDS SLEEVE (unrolled)"))
+        g0.keepouts.append(_K(polygon=ch, layers=("*.Cu",), scope="component", tag="sleeve_channel",
+                              note="the unrolled LDS sleeve: lane bus only, in sleeve-angle order"))
         for name, (cx, cy) in layout.get("centres", {}).items():   # schematic-like boxes
             h = TILE_BOX_MM / 2
             box = [(cx - h, cy - h), (cx + h, cy - h), (cx + h, cy + h), (cx - h, cy + h)]
@@ -622,6 +715,19 @@ def build_panel(layout=None):
             for layer in ("F.SilkS", "B.SilkS"):
                 boards[DEV].silk_overlays.append((layer, box, name))
                 boards[DEV].silk_overlays.append((layer, circ, None))
+            m = layout.get("mech", {}).get(name, {})
+            for (hx, hy), hd, plated, tag in m.get("holes", []):  # the tower board's holes
+                g0.holes.append(_H(position_mm=(cx + hx, cy + hy), diameter_mm=hd,
+                                   plated=plated, tag=f"{name}_{tag}"))
+            for k in range(36):                                   # ring keep-out (parts)
+                a0, a1 = math.radians(k * 10), math.radians(k * 10 + 10)
+                r0, r1 = TILE_RING_MM
+                g0.keepouts.append(_K(polygon=[(cx + r0 * math.cos(a0), cy + r0 * math.sin(a0)),
+                                               (cx + r1 * math.cos(a0), cy + r1 * math.sin(a0)),
+                                               (cx + r1 * math.cos(a1), cy + r1 * math.sin(a1)),
+                                               (cx + r0 * math.cos(a1), cy + r0 * math.sin(a1))],
+                                      layers=("*.Cu",), scope="component", tag="tile_ring",
+                                      note="rout ring: no parts; only castellation escapes cross it"))
     R = FIXTURE_KEEPOUT_R_MM
     circ = [(fx + R * math.cos(math.radians(k * 10)), fy + R * math.sin(math.radians(k * 10)))
             for k in range(36)]
@@ -699,6 +805,147 @@ def write_fixture_collar(out_dir) -> pathlib.Path:
     return out
 
 
+def _fp_npth(ref, x, y, d, seed):
+    import uuid
+    u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/{seed}")
+    return (f'\t(footprint "smash_mech:mouse_bite"\n\t\t(layer "F.Cu")\n\t\t(uuid "{u}")\n'
+            f'\t\t(at {x:.4f} {y:.4f})\n'
+            f'\t\t(attr board_only exclude_from_pos_files exclude_from_bom allow_missing_courtyard)\n'
+            f'\t\t(property "Reference" "{ref}" (at 0 0 0) (layer "F.SilkS") (hide yes)\n'
+            f'\t\t\t(effects (font (size 0.5 0.5) (thickness 0.1))))\n'
+            f'\t\t(pad "" np_thru_hole circle (at 0 0) (size {d} {d}) (drill {d}) '
+            f'(layers "*.Cu" "*.Mask"))\n\t)')
+
+
+def _fp_fiducial(ref, x, y, bottom, seed):
+    import uuid
+    u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/{seed}")
+    cu, mask = ("B.Cu", "B.Mask") if bottom else ("F.Cu", "F.Mask")
+    return (f'\t(footprint "smash_mech:fiducial"\n\t\t(layer "{cu}")\n\t\t(uuid "{u}")\n'
+            f'\t\t(at {x:.4f} {y:.4f})\n'
+            f'\t\t(attr smd board_only exclude_from_bom allow_missing_courtyard)\n'
+            f'\t\t(property "Reference" "{ref}" (at 0 0 0) (layer "{"B" if bottom else "F"}.SilkS") (hide yes)\n'
+            f'\t\t\t(effects (font (size 0.5 0.5) (thickness 0.1))))\n'
+            f'\t\t(pad "1" smd circle (at 0 0) (size 1 1) (layers "{cu}" "{mask}") '
+            f'(solder_mask_margin 1.0))\n\t)')
+
+
+def _tabs(cast_deg, key, n=3):
+    """Tab centre angles: the widest castellation-free gaps, ≥ 90° apart."""
+    pts = sorted(set(round(a, 3) for a in cast_deg)) or [0.0]
+    gaps = []
+    for i, a in enumerate(pts):
+        b = pts[(i + 1) % len(pts)] + (360 if i + 1 == len(pts) else 0)
+        mid = ((a + b) / 2) % 360
+        if key and min(abs(mid - key[0]), 360 - abs(mid - key[0])) < 15:
+            continue
+        gaps.append((b - a, mid))
+    out = []
+    for w, mid in sorted(gaps, reverse=True):
+        if all(min(abs(mid - o[0]), 360 - abs(mid - o[0])) >= 90 for o in out):
+            out.append((mid, w))
+        if len(out) == n:
+            break
+    return out
+
+
+def write_panel_variant(pcb, lay) -> dict:
+    """Fiducials on the dev board, and dev_board_panel.kicad_pcb: the same
+    board + a 2 mm rout slot round every tile (inner edge on the castellation
+    centres → castellated half-holes), 3 break tabs with mouse bites at the
+    widest castellation-free gaps, compute's key notch in its slot."""
+    import math, re
+    from shapely.geometry import Point, Polygon, box
+    from shapely import affinity
+    txt = pcb.read_text()
+    W, H = lay["W"], lay["H"]
+    m = re.search(r'\(footprint "[^"]*mech[_:]mount".*?\(at ([-\d.]+) ([-\d.]+)\)', txt, re.S)
+    lx, ly = -(W / 2 - 3.5), -(H / 2 - 3.5)              # the first mount hole (sx = sy = −1)
+    ox, oy = float(m[1]) - lx, float(m[2]) + ly
+    world = lambda x, y: (ox + x, oy - y)
+    fids = [(-W / 2 + 10, H / 2 - 3.0), (W / 2 - 10, H / 2 - 3.0), (-W / 2 + 10, -H / 2 + 3.0)]
+    fid_txt = [_fp_fiducial(f"FID{k + 1 + 3 * bot}", *world(x, y), bot, f"fid{k}{bot}")
+               for bot in (0, 1) for k, (x, y) in enumerate(fids)]
+    end = txt.rstrip().rfind(")")
+    dev_txt = txt[:end] + "\n".join(fid_txt) + "\n" + txt[end:]
+    pcb.write_text(dev_txt)
+    from shapely.ops import unary_union
+    polys, bites, ntab, slots = [], [], 0, []
+    px = lay["prog_x1"]
+    pslot = box(px, -H / 2 - 1, px + ROUT_MM[1] - ROUT_MM[0], H / 2 + 1)
+    for ty in PROG_SLOT_TABS_Y:                              # programming board break tabs
+        pslot = pslot.difference(box(px - 1, ty - TAB_W_MM / 2, px + 3, ty + TAB_W_MM / 2))
+        for k in range(MOUSE_BITES):
+            bites.append(world(px + 1.0, ty + (k - (MOUSE_BITES - 1) / 2) * 0.8))
+        ntab += 1
+    slots.append(pslot)
+    for name, (cx, cy) in lay["centres"].items():
+        mm = lay["mech"].get(name, {})
+        key = mm.get("key")
+        ring = Point(0, 0).buffer(ROUT_MM[1], 180).difference(Point(0, 0).buffer(ROUT_MM[0], 180))
+        if key:                                           # compute's key notch joins the slot
+            ka, kw, kd = key
+            notch = affinity.rotate(box(ROUT_MM[0] - kd, -kw / 2, ROUT_MM[0] + 0.1, kw / 2), ka,
+                                    origin=(0, 0))
+            ring = ring.union(notch)
+        tabs = _tabs(mm.get("cast_deg", []), key)
+        for t, gap_deg in tabs:
+            # tab + bites fit the castellation-free gap (pad Ø ~0.6 + 0.3 mask margin each side)
+            free = math.radians(gap_deg) * ROUT_MM[0] - 1.2
+            tab_w = max(0.8, min(TAB_W_MM, free))
+            hw = math.degrees(tab_w / 2 / ROUT_MM[0])
+            wedge = Polygon([(0, 0)] + [(30 * math.cos(math.radians(t + a)),
+                                         30 * math.sin(math.radians(t + a)))
+                                        for a in (-hw, 0, hw)])
+            ring = ring.difference(wedge)
+            nb = max(1, min(MOUSE_BITES, int((tab_w - MOUSE_BITE_D_MM) / 0.8) + 1))
+            for k in range(nb):                           # perforation on the cut line
+                a = math.radians(t + (k - (nb - 1) / 2) * math.degrees(0.8 / ROUT_MM[0]))
+                bites.append(world(cx + ROUT_MM[0] * math.cos(a), cy + ROUT_MM[0] * math.sin(a)))
+            ntab += 1
+        slots.append(affinity.translate(ring, cx, cy))
+    outline = box(-W / 2, -H / 2, W / 2, H / 2).difference(unary_union(slots)).simplify(0.01)
+    for g in getattr(outline, "geoms", [outline]):
+        for ringc in [g.exterior] + list(g.interiors):
+            polys.append([world(x, y) for x, y in list(ringc.coords)[:-1]])
+    import uuid
+    rout = []
+    for i, pts in enumerate(polys):
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/rout{i}")
+        pl = " ".join(f"(xy {x:.4f} {y:.4f})" for x, y in pts)
+        rout.append(f'\t(gr_poly\n\t\t(pts {pl})\n\t\t(stroke (width 0.05) (type solid))\n'
+                    f'\t\t(fill none)\n\t\t(layer "Edge.Cuts")\n\t\t(uuid "{u}")\n\t)')
+    bite_txt = [_fp_npth(f"MB{k + 1}", x, y, MOUSE_BITE_D_MM, f"mb{k}") for k, (x, y) in enumerate(bites)]
+    import shutil
+    pdir = pcb.parent                                    # beside the project: same rules + libs
+    out = pdir / f"{DEV}_panel.kicad_pcb"
+    pro = pcb.with_suffix(".kicad_pro")
+    if pro.exists():
+        shutil.copy(pro, out.with_suffix(".kicad_pro"))
+    pan_txt = re.sub(r'\t\(gr_line\s*\(start [^)]*\)\s*\(end [^)]*\)\s*\(stroke [^\n]*\)\s*'
+                     r'\(layer "Edge\.Cuts"\)\s*\(uuid "[^"]*"\)\s*\)\n', "", dev_txt)
+    end = pan_txt.rstrip().rfind(")")
+    out.write_text(pan_txt[:end] + "\n".join(rout + bite_txt) + "\n" + pan_txt[end:])
+    (pdir / "PANEL_NOTES.md").write_text(
+        "# Production panel (generated)\\n\\n"
+        "Same board as dev_board.kicad_pcb + rout slots round each Ø34 tower tile.\\n\\n"
+        f"- Rout: {ROUT_MM[1] - ROUT_MM[0]:g} mm slot, inner edge at r {ROUT_MM[0]:g} = through the "
+        "castellation hole centres → CASTELLATED (plated half) holes: call this out to the fab "
+        "(castellation process: plate, then rout).\\n"
+        f"- {ntab} break tabs ({TAB_W_MM:g} mm) at the widest castellation-free gaps, "
+        f"{MOUSE_BITES} × Ø{MOUSE_BITE_D_MM:g} mouse bites each, on the cut line.\\n"
+        "- companion_compute: the sleeve-key notch is part of its slot.\\n"
+        "- PROGRAMMER strip (socket + debug, USB-C on the panel edge): 2 mm slot on its "
+        f"channel side, {len(PROG_SLOT_TABS_Y)} tabs; with its corner holes it is a stand-alone "
+        "tower programmer.\\n"
+        "- Traces that cross a slot (castellation escapes, the programmer→channel bus) are "
+        "milled through: they only matter on the uncut dev board (dev_board.kicad_pcb).\\n"
+        "- Copper outside the tiles (inter-tile joins, socket, debug) is scrap after depaneling; "
+        "nothing inside a tile depends on it. The camera's 0.5 mm Al spreader is bonded after.\\n"
+        "- 3 fiducials per side (FID1-3 top, FID4-6 bottom), asymmetric.\\n")
+    return {"n_slots": len(polys), "n_tabs": ntab, "n_bites": len(bites), "panel": out}
+
+
 def main() -> int:
     d, removed, locks = build_design()
     print(f"dev board: {len(d.chips)} parts; removed {len(removed)} tower-only parts")
@@ -746,9 +993,12 @@ def main() -> int:
     from smash.export.portable_project import write_portable_project
     pp = write_portable_project(pcb)
     write_fixture_collar(OUT)
+    pv = write_panel_variant(pcb, lay)
     print(f"  → {pcb} ({r.get('n_footprints', '?')} footprints) + {DEV}.kicad_sch "
           f"({sch.get('n_parts', '?')} parts, {sch.get('n_symbols', '?')} symbols) — one project; "
           f"portable: {pp['n_footprints']} footprints, {pp['n_models']} 3D models")
+    print(f"  panel variant: {pv['panel'].relative_to(REPO)} — {pv['n_slots']} rout slots, "
+          f"{pv['n_tabs']} tabs, {pv['n_bites']} mouse bites; 6 fiducials (both files)")
     return 0
 
 
