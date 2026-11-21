@@ -181,7 +181,15 @@ def _lower_coins_for_top_routing(boards, n_top=N_TOP_ROUTABLE_LAYERS):
 # detail, same 8L stack). (The nose_cap exception went with the nose_cap PCB,
 # retired 2026-11-18 — the nose is the PEEK-LDS cup, smash.export.cup_noses.)
 STANDARD_COPPER_LAYERS = 8
-STANDARD_BOARD_THICKNESS_MM = 1.6     # fitter TARGET → fitted board = 1.315 mm with the current catalogue (accepted 2026-11-14)
+# (2026-11-21, user) boards are HDI 2+N+2 and the tower is fully potted, so
+# board stiffness no longer matters — only height. Thin HDI materials (40/60 µm
+# laser prepregs, 75 µm core, ½ oz inner foil) are in the placeholder fab
+# catalogue (state/fab/default.py — swap in the chosen fab's). Was 1.6 → 1.315 mm.
+STANDARD_BOARD_THICKNESS_MM = 0.87    # (2026-11-21, user) 8L 2+N+2 HDI, every board …
+STANDARD_INNER_FOIL_OZ = 0.5          # ½ oz inner copper (thin HDI build)
+# … built from the Smash Speedstack HDI materials (fit.STACK_PRESETS, option B
+# ≈ 0.87 mm; a 0.81 mm build needs 0.10 mm cores — ask the fab).
+STANDARD_STACKUP_PRESET = "hdi8_speedstack"
 _NONSTANDARD_BOARDS: set = set()
 
 
@@ -218,6 +226,8 @@ def _standardize_board_stackups(boards: dict) -> None:
             continue
         b.copper_layers = STANDARD_COPPER_LAYERS
         b.target_thickness_mm = STANDARD_BOARD_THICKNESS_MM
+        b.inner_foil_oz = STANDARD_INNER_FOIL_OZ
+        b.stackup_preset = STANDARD_STACKUP_PRESET
 
 
 def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):

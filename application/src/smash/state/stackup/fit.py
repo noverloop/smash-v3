@@ -42,6 +42,8 @@ class StackupSpec:
     top_substrate: str = "fr4"
     al_backing_mm: float = 0.0
     target_thickness_mm: float | None = None   # None → catalog-natural
+    inner_foil_oz: float = 1.0                  # (2026-11-21) ½ oz for thin HDI builds
+    preset: str | None = None                   # (2026-11-21) named fab stack (STACK_PRESETS)
 
     @classmethod
     def for_board(cls, board) -> "StackupSpec":
@@ -56,6 +58,12 @@ class StackupSpec:
         tt = getattr(board, "target_thickness_mm", None)
         if tt is not None:
             kwargs["target_thickness_mm"] = tt
+        oz = getattr(board, "inner_foil_oz", None)
+        if oz is not None:
+            kwargs["inner_foil_oz"] = oz
+        ps = getattr(board, "stackup_preset", None)
+        if ps is not None:
+            kwargs["preset"] = ps
         # boards may relocate the embedded-cap pairs (companion_compute
         # buries its top pair below the DDR routing levels) and declare
         # standalone plane layers
@@ -74,12 +82,52 @@ def _layer_names(copper_layers: int) -> list:
     return ["F.Cu"] + [f"In{k}.Cu" for k in range(1, inner + 1)] + ["B.Cu"]
 
 
+# (2026-11-21, user) Named fab stack-ups: (copper µm per layer, top→bottom) +
+# [(kind, pressed µm, glass style)] per gap. "hdi8_speedstack" = the Smash
+# Speedstack HDI materials as an 8L 2+4+2 (option B, ≈ 0.87 mm with masks):
+# L1/L2 + L2/L3 and L6/L7 + L7/L8 microvia build-ups in 1080 RC71 %, two
+# 0.127 mm (2×106) cores, one 1080 RC66 % between them. Outer = 18 µm base +
+# plating = 36 µm.
+STACK_PRESETS = {
+    "hdi8_speedstack": (
+        [36.0, 18.0, 18.0, 18.0, 18.0, 18.0, 18.0, 36.0],
+        [("prepreg", 85.2, "1080 RC71%"), ("prepreg", 85.2, "1080 RC71%"),
+         ("core", 127.0, "2x106"), ("prepreg", 73.2, "1080 RC66%"),
+         ("core", 127.0, "2x106"), ("prepreg", 85.2, "1080 RC71%"),
+         ("prepreg", 85.2, "1080 RC71%")]),
+}
+
+
+def _preset_stackup(spec, fab) -> list:
+    cu, gaps = STACK_PRESETS[spec.preset]
+    names = _layer_names(len(cu))
+    if len(names) != spec.copper_layers:
+        raise ValueError(f"preset {spec.preset!r} is {len(cu)}L, spec wants {spec.copper_layers}L")
+    role_of = dict(spec.plane_layers)
+    out = []
+    for i, name in enumerate(names):
+        di = None
+        if i < len(gaps):
+            kind, um, glass = gaps[i]
+            lam = next((l for l in fab.laminates if l.kind == kind and l.glass_style == glass
+                        and abs(l.thickness_um - um) < 0.05), None)
+            if lam is None:
+                raise ValueError(f"preset {spec.preset!r}: no {kind} {glass} {um} µm in the fab catalog")
+            di = lam.to_dielectric()
+        out.append(Layer(name=name, index=i, role=role_of.get(name, "signal"),
+                         thickness_um=cu[i], thickness_tol_um=3.0,
+                         paired_with=None, dielectric_below=di))
+    return out
+
+
 def fit_stackup(spec: StackupSpec | None = None, *, fab=None) -> list:
     """Build the `list[Layer]` for `spec` from the `FabProfile` catalog
     (default profile if `fab` is None). Layers are ordered top→bottom;
     each carries its `dielectric_below` (None on the bottom layer)."""
     spec = spec or StackupSpec()
     fab = fab or default_fab_profile()
+    if spec.preset:
+        return _preset_stackup(spec, fab)
     names = _layer_names(spec.copper_layers)
     n = len(names)
 
@@ -97,8 +145,9 @@ def fit_stackup(spec: StackupSpec | None = None, *, fab=None) -> list:
     # foil thicknesses from the catalog
     outer = min((f for f in fab.foils if f.placement in ("outer", "any")),
                 key=lambda f: f.weight_oz, default=None)
-    inner = next((f for f in fab.foils if f.weight_oz == 1.0),
-                 outer)
+    inner = next((f for f in fab.foils if f.weight_oz == spec.inner_foil_oz
+                  and f.placement in ("inner", "any")),
+                 next((f for f in fab.foils if f.weight_oz == 1.0), outer))
 
     target_um = (spec.target_thickness_mm * 1000.0
                  if spec.target_thickness_mm is not None else None)
@@ -162,8 +211,13 @@ def _retarget_fill(layers, names, pair_set, spec, target_um, fab) -> None:
             fill_idx.append(i)
     if not fill_idx:
         return
-    per_fill = max(25.0, (target_um - cu - fixed) / len(fill_idx))
-    for i in fill_idx:
+    # (2026-11-21) carry the rounding error forward gap by gap, so stocked
+    # thicknesses MIX (e.g. 60 + 100 µm) to land on the target instead of every
+    # gap snapping to the same nearest value
+    left = target_um - cu - fixed
+    for k, i in enumerate(fill_idx):
+        per_fill = max(25.0, left / (len(fill_idx) - k))
         kind = layers[i].dielectric_below.kind
         lam = fab.nearest_dielectric(per_fill, material="FR4", kind=kind)
         layers[i].dielectric_below = lam.to_dielectric()
+        left -= layers[i].dielectric_below.thickness_um

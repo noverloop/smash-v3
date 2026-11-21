@@ -75,6 +75,10 @@ class Board:
     # buildup for `copper_layers`. Set when a tile must hit a specific Z (e.g.
     # a tile that must sit at a set height in the stack).
     target_thickness_mm: float | None = None
+    # (2026-11-21) inner copper weight for the stackup fitter (½ oz for thin HDI)
+    inner_foil_oz: float | None = None
+    # (2026-11-21) named fab stack (state.stackup.fit.STACK_PRESETS) — overrides the fitter
+    stackup_preset: str | None = None
     # Per-spacer milled thickness override (mm), for `kind="spacer"` tiles. A
     # spacer's milled thickness is SPACER_THICKNESS_MM (4 mm) by default; set this
     # to size a spacer to just what it needs — e.g. the battery-compartment thin discs (a

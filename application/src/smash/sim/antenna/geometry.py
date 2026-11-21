@@ -13,7 +13,7 @@ frame coincide before reading angles off the cell gaps.
 
 Board levels: mid-planes of the generated maximalist stack relative to
 aft_end (BOARD_MID_Z_MM, kept in step by test_antenna_sim_stack.py), board
-thickness 1.315 mm. Every rigid board is modelled as a PEC disc (8 copper layers ≈ a
+thickness 0.868 mm (was 1.315). Every rigid board is modelled as a PEC disc (8 copper layers ≈ a
 solid ground at these wavelengths) with optional copper keep-out wedges.
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ from smash.export.spacer_step import RING_R_IN_MM, RING_R_OUT_MM
 from smash.parts.castellations import GND_CAST_ANGLES_DEG
 
 BOARD_R_MM = 17.0
-BOARD_T_MM = 1.315
+BOARD_T_MM = 0.868            # (2026-11-21) 8L 2+N+2 HDI Speedstack preset (was 1.315)
 SLEEVE_R_IN_MM = BOARD_R_MM + SLEEVE_GAP_MM
 SLEEVE_R_OUT_MM = SLEEVE_R_IN_MM + SLEEVE_WALL_MM
 ANTENNA_SECTOR_DEG = (105.0, 255.0)
@@ -34,18 +34,19 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 # Board mid-planes [mm above aft_end's bottom face] of the maximalist stack
 # (sleeve_step.stack_z_map). (2026-11-21) re-measured after the backbone
 # spacers were sized to their gaps, the low-profile part swaps and the
-# fin_ble → activation_interface merge and the fixed nose (gaps 2.4 / 3.0 /
+# fin_ble → activation_interface merge, the fixed nose and the 0.868 mm HDI
+# boards (gaps 2.4 / 3.0 /
 # 2.5 / 3.0 mm; modular nose 6.0; before
 # the merge 2.2 / 2.3 / 3.0 / 2.5 / 6.0, earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0)
 # and the 6 × 3.867 mm battery column; test_antenna_sim_stack.py fails if
 # these drift again.
 BOARD_MID_Z_MM = {
-    "aft_end_board": 0.657,
-    "activation_interface": 25.172,
-    "wakeup_board": 28.888,
-    "power_board": 33.203,
-    "companion_compute": 37.017,
-    "radar_module": 41.332,
+    "aft_end_board": 0.434,
+    "activation_interface": 24.502,
+    "wakeup_board": 27.77,
+    "power_board": 31.638,
+    "companion_compute": 35.006,
+    "radar_module": 38.874,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

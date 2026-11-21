@@ -39,7 +39,7 @@ MM = 1e-3
 SIGMA_STEEL = 5.0e6
 SIGMA_AL7075 = 1.9e7
 SIGMA_CU = 5.8e7
-CU_FRACTION = 0.10              # ~4 × 35 µm planes in a 1.315 mm 8L board
+CU_FRACTION = 0.09              # ~4 × 17.5 µm planes in a 0.868 mm 8L HDI board (was 0.10 at 1.315)
 CELL_CAN_FRACTION = 0.04        # 3 × Ø14.8 × 0.25 mm Ni-plated steel cans / Ø32 section
 
 
