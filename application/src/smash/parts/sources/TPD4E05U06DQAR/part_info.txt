@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPD4E05U06DQAR
+PartCategory=Diode
+PackageCategory=Other
+PinCount=10
+Version=1.3
+Released=2018-01-17 09:35:08
+Downloaded=2026-11-21 11:53:21
+3D=Y

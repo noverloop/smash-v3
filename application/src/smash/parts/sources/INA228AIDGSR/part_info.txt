@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=INA228AIDGSR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=10
+Version=1.1
+Released=2021-06-12 07:42:49
+Downloaded=2026-11-21 11:52:20
+3D=Y

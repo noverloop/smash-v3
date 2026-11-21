@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=USB2514B-I/M2
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=37
+Version=1.1
+Released=2017-10-31 11:24:30
+Downloaded=2026-11-21 11:51:11
+3D=Y

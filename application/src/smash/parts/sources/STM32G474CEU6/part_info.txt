@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32G474CEU6
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=49
+Version=3.1
+Released=2019-07-07 23:44:42
+Downloaded=2026-11-21 11:52:04
+3D=Y

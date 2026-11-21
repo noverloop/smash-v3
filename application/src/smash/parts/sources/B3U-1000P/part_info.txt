@@ -1,0 +1,9 @@
+Manufacturer=Aratas
+PartNumber=B3U-1000P
+PartCategory=Switch
+PackageCategory=Other
+PinCount=2
+Version=2.3
+Released=2017-07-12 12:14:33
+Downloaded=2026-11-21 13:54:57
+3D=Y

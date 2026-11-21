@@ -1,0 +1,9 @@
+Manufacturer=Mill-Max
+PartNumber=5849-0-00-15-00-00-03-0
+PartCategory=Connector
+PackageCategory=Other
+PinCount=1
+Version=1.6
+Released=2023-07-19 04:39:16
+Downloaded=2026-11-21 14:31:58
+3D=Y

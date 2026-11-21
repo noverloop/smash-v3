@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=INA241A2IDGKR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=1.2
+Released=2024-06-28 07:39:52
+Downloaded=2026-11-21 11:52:55
+3D=Y

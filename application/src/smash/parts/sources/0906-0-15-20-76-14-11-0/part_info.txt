@@ -1,0 +1,9 @@
+Manufacturer=Mill-Max
+PartNumber=0906-0-15-20-76-14-11-0
+PartCategory=Connector
+PackageCategory=Other
+PinCount=1
+Version=1.5
+Released=2021-12-04 14:08:44
+Downloaded=2026-11-21 11:53:49
+3D=Y
