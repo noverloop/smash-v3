@@ -184,7 +184,7 @@ def test_piezo_disc_smd_no_pocket(built):
     milled pocket cavity remains anywhere (the pocket existed to recess
     the old CEB-21018 brass diaphragm and give it flex room)."""
     _gen, _d, _panel, boards = built
-    for bname in ("aft_end_board", "fin_ble_board"):
+    for bname in ("aft_end_board", "activation_interface"):   # fin_ble merged in 2026-11-21
         cavs = boards[bname].cavity_placements or []
         assert "piezo_disk_pocket" not in [c.item.name for c in cavs]
     pl = _placement(boards["aft_end_board"], "P_PIEZO")   # 2026-11-15: holder-floor pocket
@@ -213,7 +213,7 @@ def test_no_lga_lands_on_piezo_disc(built):
     — no land pad inside r < 5.3 mm (disc radius + clearance) of the locked
     centre."""
     _gen, _d, _panel, boards = built
-    sp = boards["spacer_fin_ble_board_wakeup_board"]
+    sp = boards["spacer_activation_interface_wakeup_board"]   # fin_ble merged 2026-11-21
     bad = []
     for p in sp.chip_placements:
         ref = getattr(p.item, "ref", "")

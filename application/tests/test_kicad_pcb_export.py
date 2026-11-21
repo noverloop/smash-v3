@@ -382,7 +382,9 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # → 22 (2026-11-15 aft reorder): cell_floor_board and its spacer gone.
     # → 20 (2026-11-18): nose_cap PCB + the radar↔nose_cap spacer retired.
     # → 21: + the usb_nose module tile.
-    assert r["n_tiles"] == 21
+    # → 19 (2026-11-21): fin_ble_board merged into activation_interface —
+    #   one board + its spacer gone.
+    assert r["n_tiles"] == 19
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
@@ -960,7 +962,9 @@ def test_full_twin_exports_clean(tmp_path):
     #   camera_module (±0) with two FITTED 0 Ω source-select links (+2).
     # → 692 (2026-11-20): stray COMP_1V8 cap C_CAM_VDD on wakeup removed (−1);
     #   the USB ideal-diode OR + VBUS bulk moved power_board → usb_nose (±0).
-    assert total_fps == 692
+    # → 691 (2026-11-21): fin_ble_board merged into activation_interface
+    #   (every part kept; one per-tile footprint fewer).
+    assert total_fps == 691
 
     # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
     # to its symbol in stackup.kicad_sch, written beside the PCB like each

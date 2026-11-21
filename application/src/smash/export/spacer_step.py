@@ -562,7 +562,11 @@ Frame: math y-up, +Z toward the nose; same frame as the battery spacers it repla
 # the aft-most PLAIN gap — activation_interface ↔ fin_ble — carries the Al
 # ring (the old names pointed at gaps that no longer exist, which silently
 # dropped the rings). The ring IS the gap's spacer: no standoffs in it.
-GAP_RING_GAPS = ("spacer_activation_interface_fin_ble_board",)
+# (2026-11-21, user) fin_ble merged into activation: the ring moves to
+# activation ↔ wakeup (slot S4's gap), and wakeup ↔ power (slot S1's gap since
+# the p21 antenna move) gets one too — 2 mm GF30 PEEK behind both slots.
+GAP_RING_GAPS = ("spacer_activation_interface_wakeup_board",
+                 "spacer_wakeup_board_power_board")
 # Gaps with NO hardware. (The radar ↔ nose_cap entry went with the nose_cap
 # PCB, retired 2026-11-18.)
 NO_HARDWARE_GAPS: tuple = ()
@@ -590,12 +594,11 @@ class RingSpec:
 RING_PEEK = RingSpec(RING_MATERIAL, False, RING_LABEL, 15.0)
 RING_AL = RingSpec("7075-T6 aluminium, hard anodised (anodise = insulation)", True,
                    "AL RING", 16.0)
-# (2026-11-17, user) 2 mm GF30 PEEK ONLY in the two slot gaps (S1
-# activation↔fin_ble, S4 fin_ble↔wakeup); every gap above the radio board
-# keeps a 1 mm Al ring to preserve board space (S3 merged into S1, so
-# wakeup↔power holds no slot any more).
-AL_RING_GAPS = ("spacer_wakeup_board_power_board",
-                "spacer_power_board_companion_compute",
+# (2026-11-17, user) 2 mm GF30 PEEK ONLY in the slot gaps; every other gap
+# keeps a 1 mm Al ring to preserve board space. (2026-11-21) fin_ble merged
+# into activation and S1 moved up: the slot gaps are now activation↔wakeup
+# (S4) and wakeup↔power (S1), so wakeup↔power is PEEK.
+AL_RING_GAPS = ("spacer_power_board_companion_compute",
                 "spacer_companion_compute_radar_module")
 
 
@@ -638,6 +641,14 @@ BATT_TIP_RELIEF_HALF_DEG = 30.0
 BATT_FEED_ANGLES_DEG = (105.0, 285.0) # behind the sleeve's feed / vent grooves (= its seams)
 BATT_NOTCH_R_IN_MM = 9.0             # notch reaches into the cell cavity at the seam angles
 BATT_CHANNEL_D_MM, BATT_CHANNEL_R_MM, BATT_CHANNEL_ANGLE_DEG = 3.0, 13.0, 135.0   # = the boards' potting hole (continuous channel)
+# (2026-11-21, user) The compartment IS potted now: a full-height LINK SLOT
+# cuts the 0.26 mm web between the axial potting channel and the 90° cell
+# bore, so potting rising in the channel floods the cell cavity (the three
+# bores join through the centre triangle) and vents up through the headroom
+# into activation_interface's potting hole. Inboard of the 0.8 mm skin
+# (r ≈ 9-13), so the skin stays hoop-continuous.
+BATT_CHANNEL_LINK_CELL_DEG = 90.0
+BATT_CHANNEL_LINK_W_MM = 1.5
 # Headroom (2026-11-14, user): the compartment is the cell length + a
 # headroom above the cells; there the holder is just its EDGE RING
 # (r 16–17), so fin_ble_board's whole bottom face (inside r 15.8) is free
@@ -787,6 +798,13 @@ def _battery_holder_body(cq, h):
     cx, cy = _batt_channel_xy()
     body = body.cut(cq.Workplane("XY").center(cx, cy)
                     .circle(BATT_CHANNEL_D_MM / 2.0).extrude(f + hc))
+    # channel → cell-cavity link slot (above the floor, full block height)
+    la = math.radians(BATT_CHANNEL_LINK_CELL_DEG)
+    bx, by = BATT_CLUSTER_R_MM * math.cos(la), BATT_CLUSTER_R_MM * math.sin(la)
+    ln = math.hypot(bx - cx, by - cy)
+    body = body.cut(cq.Workplane("XY").center((cx + bx) / 2, (cy + by) / 2)
+                    .transformed(rotate=(0, 0, math.degrees(math.atan2(by - cy, bx - cx))))
+                    .rect(ln, BATT_CHANNEL_LINK_W_MM).extrude(hc).translate((0, 0, f)))
     if h > f + hc + 1e-6:
         ring = (cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM)
                 .circle(BATT_TOP_RING_R_IN_MM).extrude(h - f - hc)
@@ -914,7 +932,9 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{BATT_HOLDER_R_OUT_MM - BATT_CLUSTER_R_MM - BATT_TIP_RELIEF_R_MM:.1f} mm "
                     "skin in hoop TENSION only; potting: top + bottom edge notches "
                     f"{SLOT_W_MM} × {NOTCH_DEPTH_MM} mm at {BATT_FEED_ANGLES_DEG} + axial Ø"
-                    f"{BATT_CHANNEL_D_MM} channel at {BATT_CHANNEL_ANGLE_DEG:g}°; above the "
+                    f"{BATT_CHANNEL_D_MM} channel at {BATT_CHANNEL_ANGLE_DEG:g}°, linked to the cell cavity by a "
+                    f"{BATT_CHANNEL_LINK_W_MM:g} mm full-height slot (the compartment is potted round "
+                    "the cells); above the "
                     f"{BATT_CELL_LENGTH_MM:g} mm cell block only a 1 mm EDGE RING (r "
                     f"{BATT_TOP_RING_R_IN_MM:g}–{BATT_HOLDER_R_OUT_MM:g}) over the "
                     f"{BATT_HEADROOM_MM:g} mm headroom under activation_interface (its bottom "

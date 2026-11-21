@@ -114,7 +114,9 @@ def option_slots(option: str, overrides: dict | None = None) -> list:
         return [_folded("S1", 1.75, 130.0, 40.0, +1), _folded("S2", 2.0, 200.0, 35.0, -1),
                 _axial("S3", 2.4, 230.0)]
     if option == "C":      # arcs inside the 105–255° sector, one per board gap
-        return [_c_arc("S1", 2.15, _gap_mid("activation_interface", "fin_ble_board"), ov),
+        # (2026-11-21) fin_ble merged into activation: S1's default gap is
+        # the one above activation (product: S1_gap=wakeup_board).
+        return [_c_arc("S1", 2.15, _gap_mid("activation_interface", "wakeup_board"), ov),
                 _c_arc("S2", 2.3, _gap_mid("wakeup_board", "power_board"), ov),
                 _c_arc("S3", 2.45, _gap_mid("power_board", "companion_compute"), ov)]
     if option == "C2":     # C's S1 + S3 unchanged, no S2 (+ optional S4/S5)

@@ -234,7 +234,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     # EVERY config, core_radar included (that config stays RF-dark and
     # sheds only the two Yagi leaves). Default 14L stackup like its old
     # wakeup host.
-    fin_ble_board     = Board("fin_ble_board")
+    # (2026-11-21, user) fin_ble_board MERGED into activation_interface.
     # The radar tile uses the Rogers RO4350B top substrate for the
     # AWR2944 SIW launches. Structural support (this is one of the
     # bend-sim bottleneck boards: U_AWR's 12 × 12 mm BGA sits at the
@@ -334,7 +334,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     cell_floor_board = None
     chain = [
         aft_end_board, activation_interface,
-        fin_ble_board, wakeup_board,
+        wakeup_board,
         power_board, companion_compute,
         radar_module,
     ]
@@ -406,7 +406,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     boards = {
         "power_board":          power_board,
         "wakeup_board":         wakeup_board,
-        "fin_ble_board":        fin_ble_board,
         "radar_module":         radar_module,
         "companion_compute":    companion_compute,
         "camera_module":        camera_module,

@@ -33,20 +33,20 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 
 # Board mid-planes [mm above aft_end's bottom face] of the maximalist stack
 # (sleeve_step.stack_z_map). (2026-11-21) re-measured after the backbone
-# spacers were sized to their gaps and again after the low-profile part swaps
-# (2.2 / 2.3 / 3.0 / 2.5 / 6.0 mm; earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0 and, on
-# 2026-11-16, 4.4 / 3.0 / 4.4 / 3.2 / 4.1) and the 6 × 3.867 mm battery
-# column; test_antenna_sim_stack.py fails if these drift again.
+# spacers were sized to their gaps, the low-profile part swaps and the
+# fin_ble → activation_interface merge (gaps 2.4 / 3.0 / 2.5 / 6.0 mm; before
+# the merge 2.2 / 2.3 / 3.0 / 2.5 / 6.0, earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0)
+# and the 6 × 3.867 mm battery column; test_antenna_sim_stack.py fails if
+# these drift again.
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.657,
     "activation_interface": 25.172,
-    "fin_ble_board": 28.688,
-    "wakeup_board": 32.303,
-    "power_board": 36.617,
-    "companion_compute": 40.432,
-    "radar_module": 47.744,
+    "wakeup_board": 28.888,
+    "power_board": 33.203,
+    "companion_compute": 37.017,
+    "radar_module": 44.329,
 }
-CORE_BOARDS = ("aft_end_board", "activation_interface", "fin_ble_board",
+CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")
 RADAR_BOARDS = CORE_BOARDS + ("radar_module",)
 # (2026-11-18) The nose_cap PCB is retired: the stack is closed by the cup's
@@ -180,7 +180,7 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 coating_mm: float = 0.0, housing=None, feed: str = "ideal",
                 feed_board: str = "wakeup_board", cpw_w_mm: float = 1.0,
                 cpw_gap_mm: float = 0.5, cpw_gnd_mm: float = 2.0,
-                lanes: str | None = None) -> TowerModel:
+                lanes: str | None = None, lanes_tie: str = "power") -> TowerModel:
     """Assemble the tower.
 
     holder: "al" (PEC skin) | "composite".   rings: "al" | "peek" | "none".
@@ -204,7 +204,11 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
     → the strip crosses the slot and lands on the far-side copper. The port
     sits at the board end, across one CPW gap, so Zin includes the line.
     lanes: path to the exported `sleeve_unrolled.kicad_pcb` → its outer-face
-    lanes as PEC (sleeve_lane_sectors); None = no lanes.
+    lanes as PEC (sleeve_lane_sectors); None = no lanes. lanes_tie: "power"
+    ties only power / GND lanes to the boards at their vias (signal lanes
+    float — pessimistic: a floating 30-45 mm lane is a half-wave resonator in
+    the potting); "all" ties every lane (a signal lane ends on pins / ESD /
+    pull-ups, a few pF to ground ≈ a short at 2.4 GHz — the bounding case).
     """
     S, notes = [], []
     zb = [BOARD_MID_Z_MM[b] for b in boards]
@@ -291,12 +295,13 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         hmat = "pec" if holder == "al" else "composite"
         S.append(Sector("holder_skin", hmat, HOLDER_R_IN_MM, BOARD_R_MM, hz0, hz1, priority=4))
         S.append(Sector("holder_floor", hmat, 0.0, BOARD_R_MM, hz0, hz0 + 1.2, priority=4))
-        # The compartment is NOT potted (user, 2026-11-16): the real holder is
-        # a solid block with three cell bores (spacer_step BATT_*), so holder
-        # material up to the cell tops, air in the headroom above them. Cells
+        # The real holder is a solid block with three cell bores (spacer_step
+        # BATT_*): holder material up to the cell tops. (2026-11-21, user) the
+        # compartment is POTTED through the channel→cell link slot, so the
+        # headroom above the cells is potting (was air, 2026-11-16). Cells
         # (priority 4) still win over the block.
         S.append(Sector("holder_block", hmat, 0.0, HOLDER_R_IN_MM, hz0, CELL_Z_MM[1], priority=3))
-        S.append(Sector("holder_headroom", "air", 0.0, HOLDER_R_IN_MM, CELL_Z_MM[1], hz1, priority=3))
+        S.append(Sector("holder_headroom", potting, 0.0, HOLDER_R_IN_MM, CELL_Z_MM[1], hz1, priority=3))
         for k in range(3):
             a = math.radians(cell_rot_deg + 120.0 * k)
             S.append(_offset_cylinder(f"cell{k + 1}", CELL_CLUSTER_R_MM * math.cos(a),
@@ -350,7 +355,8 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         wz0, wz1, wa0, wa1 = housing["window"]
         S.append(Sector("housing_window", "air", r0, r0 + 2.5, wz0, wz1, wa0, wa1, priority=11))
     if lanes:
-        L, n_tie = sleeve_lane_sectors(lanes, z_lo, z_end, boards, skin_r_in)
+        L, n_tie = sleeve_lane_sectors(lanes, z_lo, z_end, boards, skin_r_in,
+                                       tie_all=(lanes_tie == "all"))
         S.extend(L)
         notes.append(f"LDS lanes from {lanes}: {len(L) - n_tie} copper pieces, "
                      f"{n_tie} power/GND via ties to the boards")
@@ -364,7 +370,8 @@ LANE_MIN_W_MM = 0.4                             # one FDTD cell so a lane surviv
 LANE_STEP_MM = 0.4                              # diagonal (fan) segments → staircase
 
 
-def sleeve_lane_sectors(pcb_path, z_min: float, z_max: float, boards, r_in: float):
+def sleeve_lane_sectors(pcb_path, z_min: float, z_max: float, boards, r_in: float,
+                        tie_all: bool = False):
     """PEC sectors for every F.Cu segment of `sleeve_unrolled.kicad_pcb`, plus
     radial ties lane → board at the vias of POWER / GND lanes (decoupled = RF
     ground). Signal lanes float (their castellation is a signal pad, not the
@@ -407,7 +414,7 @@ def sleeve_lane_sectors(pcb_path, z_min: float, z_max: float, boards, r_in: floa
     ties = 0
     for x, y, n in re.findall(r'\(via \(at ([\d.]+) ([\d.]+)\)[^\n]*\(net (\d+)\)', txt):
         net = nets.get(int(n), "")
-        if net not in wide and net != "GND":
+        if net in LANE_SKIP_NETS or (not tie_all and net not in wide and net != "GND"):
             continue
         z, a = zf(float(y)), ang(float(x))
         for b in boards:

@@ -2006,7 +2006,10 @@ def build_fins_module(d: Design) -> None:
     shunts), no SPI and no external FETs. Only the four motor-coil outputs
     leave the tile edge to each fin's stepper.
     """
-    BTAG = "fin_ble_board"   # fin actuators on their own tile (2026-07-30 split off wakeup; fins-only since 2026-07-31)
+    # (2026-11-21, user) fin_ble_board MERGED into activation_interface: with
+    # the low-profile swaps both tiles' parts fit on activation's top face
+    # (~440 of 644 mm²), which drops one board + one gap (~3.5 mm).
+    BTAG = "activation_interface"
     g = _g0b1_node(d, suffix="FIN", board_tag=BTAG)
     # (2026-11-20) parachute-matrix SELECT lines (rows PA0..3, columns PA5..8)
     # → the BSS138 gates on activation_interface (see _build_activation_array)
@@ -2883,7 +2886,7 @@ def build_spacers(d: Design, boards: dict | None = None) -> None:
 # (2026-11-21, user) all magnetometers (IIS2MDC, TMR shelf-wake + its LDO,
 # DRV5032 activation-unlock Hall) live on fin_ble_board: they only run while
 # the fin motors are idle, so motor noise is moot; frees wakeup's top.
-_MAG_TAG = "fin_ble_board"
+_MAG_TAG = "activation_interface"   # (2026-11-21) was fin_ble_board (merged)
 
 
 def build_flight_board(d: Design, board_tag: str = "flight_board",
@@ -4267,7 +4270,7 @@ def build_wakeup_board(d: Design) -> None:
     # face (its bottom centre is U_G0B1_FIN). Every one of its signals goes
     # UP (I2C3 → fin_ble/wakeup/compute, INT1 → the M33), so the move takes
     # 3 lanes out of the activation↔fin_ble gap.
-    _HACC_TAG = "fin_ble_board"
+    _HACC_TAG = "activation_interface"   # (2026-11-21) was fin_ble_board (merged)
     acc = add_h3lis331dltr(d, ref="U_HACC", board_tag=_HACC_TAG)
     _net(d, "3V3")       .connect(acc.pin("VDD_IO"))   # 1
     # 2, 3 = NC_1, NC_2 → leave floating per datasheet
@@ -4318,7 +4321,7 @@ def _prime_power_rails(d: Design) -> None:
     # tags the sensors board_tag="wakeup_board"; its TCAN (activation_interface)
     # and QPD TIAs (qpd_module) keep their own tags. Sensor INT/I2C nets that used
     # to cross the wakeup↔flight gap are now local to this tile.
-    build_flight_board(d, board_tag="wakeup_board", imu_tag="fin_ble_board")
+    build_flight_board(d, board_tag="wakeup_board", imu_tag="activation_interface")
 
     for name in _AUTO_GROUND_NETS:
         _net(d, name, kind="ground")
@@ -4340,14 +4343,14 @@ def _prime_power_rails(d: Design) -> None:
 _BOARD_BUILDERS = {
     "power_board":          lambda d: build_power_board(d),
     "wakeup_board":         lambda d: build_wakeup_board(d),  # IMU/mag sensors folded in
-    "fin_ble_board":        lambda d: build_fins_module(d),  # fins-only tile (2026-07-30 crowding split off wakeup; the WBA cluster moved back to wakeup_board 2026-07-31)
     "radar_module":         lambda d: (build_radar_module_awr1843aop(d),
                                        build_radar_nose_io(d)),
     "usb_nose":             lambda d: build_usb_nose(d),
     "companion_compute":    lambda d: build_companion_compute(d),
     "aft_end_board":        lambda d: build_aft_end_board(d),
     "cell_floor_board":     lambda d: build_cell_floor_board(d),
-    "activation_interface": lambda d: build_activation_interface(d),
+    "activation_interface": lambda d: (build_activation_interface(d),
+                                       build_fins_module(d)),   # fin_ble merged in (2026-11-21)
     "camera_module":        lambda d: build_camera_module(d),
     "qpd_module":           lambda d: build_qpd_module(d),
 }
@@ -4367,7 +4370,7 @@ _BOARD_BUILDERS = {
 # (the STPMIC25 COMP_* rails) and radar_module (the RGMII bus); the adaptive
 # land densify widens the aft→hub runs across the intervening gaps as needed.
 _MASTER_SNAKE = [
-    "aft_end_board", "activation_interface", "fin_ble_board",
+    "aft_end_board", "activation_interface",
     "wakeup_board", "power_board", "companion_compute",
     "radar_module",
 ]
@@ -4432,7 +4435,7 @@ _CONE_EXITS = _cone_exits()
 # fins_module tile — its FINBOOST 12 V boost came along), so they are carried in
 # EVERY config: there is no unguided/guided split.
 _CORE      = {"aft_end_board", "power_board",
-              "activation_interface", "fin_ble_board", "wakeup_board",
+              "activation_interface", "wakeup_board",
               "companion_compute"}
 # fin_ble_board is in EVERY config, core_radar included (2026-07-31 user
 # decision, reversing the 2026-07-30 drop: since the same-day stack reorder
@@ -4856,7 +4859,6 @@ _BOARD_LABELS = {
     "aft_end_board":        "bottom",
     "activation_interface": "boost",
     "cell_floor_board":     "cell_floor",
-    "fin_ble_board":        "actuator",
     "wakeup_board":         "wakeup",
     "power_board":          "power",
     "companion_compute":    "compute",

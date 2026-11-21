@@ -66,6 +66,7 @@ class SlotAntenna:
     width_mm: float
     feed_mm: float                # feed distance from the START end
     feed_board: str = "wakeup_board"
+    dz_mm: float = 0.0            # axial offset from the gap mid-height (sim S<n>_dz)
     provisional: bool = False
     label: str = ""
 
@@ -94,13 +95,18 @@ class SlotAntenna:
 
 
 SLOTS = (
-    SlotAntenna("S1", "ANT_HF_S1", "activation_interface", "fin_ble_board",
+    # (2026-11-21, user) fin_ble merged into activation; the p21 layout: S1
+    # moves to wakeup↔power (above its radio board, clear of S4's structure
+    # that put an anti-resonance in S1's band), S4 sits in activation↔wakeup
+    # 1 mm below the gap's mid-height. ⚠ S1 resonates ~2.5 GHz there and the
+    # sector is full at scale 0.95 — needs end-loading to come down to LoRa.
+    SlotAntenna("S1", "ANT_HF_S1", "wakeup_board", "power_board",
                 start_deg=110.0, direction=+1, f_design_ghz=2.15, scale=0.95,
                 width_mm=1.5, feed_mm=6.0,
                 label="S1 2.4 GHz ISM: LoRa (LR2021, DTC-tuned) + BLE, shared"),
-    SlotAntenna("S4", "ANT_HF_S4", "fin_ble_board", "wakeup_board",
+    SlotAntenna("S4", "ANT_HF_S4", "activation_interface", "wakeup_board",
                 start_deg=143.0, direction=+1, f_design_ghz=4.4, scale=0.9,
-                width_mm=2.0, feed_mm=2.0,
+                width_mm=2.0, feed_mm=2.0, dz_mm=-1.0,
                 label="S4 transverter 4.6-5.0 GHz (LR2021 IF + ADF4351/LTC5549)"),
 )
 
@@ -116,7 +122,7 @@ def _x(theta_deg: float, theta0_deg: float) -> float:
 def slot_z(s: SlotAntenna, board_mid: dict) -> float:
     """Slot centre height = midway between its two boards' mid-planes (the
     sim's _gap_mid)."""
-    return 0.5 * (board_mid[s.lower] + board_mid[s.upper])
+    return 0.5 * (board_mid[s.lower] + board_mid[s.upper]) + s.dz_mm
 
 
 def unrolled_geometry(board_mid: dict, theta0_deg: float, z_limits: tuple) -> dict:

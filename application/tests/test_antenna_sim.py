@@ -68,12 +68,13 @@ def test_c2_is_c_without_the_middle_slot():
 
 
 @pytest.mark.parametrize("opt,mat", [("A", "composite"), ("C", "pec")])
-def test_battery_compartment_is_holder_material_not_potting(opt, mat):
-    """The compartment is not potted: holder material round the cells up to
-    their tops, air in the headroom; the cells still win over the block."""
+def test_battery_compartment_is_holder_material_potted_headroom(opt, mat):
+    """Holder material round the cells up to their tops; (2026-11-21, user)
+    the compartment is potted through the channel→cell link slot, so the
+    headroom is potting (was air); the cells still win over the block."""
     by = {s.name: s for s in cases.option_model(opt).sectors}
     blk, head = by["holder_block"], by["holder_headroom"]
-    assert blk.material == mat and head.material == "air"
+    assert blk.material == mat and head.material == by["potting"].material
     assert min(blk.priority, head.priority) > by["potting"].priority
     assert by["cell1"].priority > blk.priority
     assert blk.z1 == pytest.approx(g.CELL_Z_MM[1]) == head.z0
@@ -115,7 +116,7 @@ def test_feed_castellations_cover_the_drawn_slots():
     assert set(ANTENNA_FEED_ANGLES_DEG) == {"ANT_HF_S1", "ANT_HF_S4"}
     m = cases.option_model("C2", feed="castellation", skin="local", S1_scale=0.95,
                            S1_angle=110, S3_dir=-1, S3_gap="wakeup_board", S3_feed=5,
-                           S3_scale=0.905, S4_f=4.4, S4_gap="fin_ble_board", S4_angle=143,
+                           S3_scale=0.905, S4_f=4.4, S4_gap="activation_interface", S4_angle=143,
                            S4_scale=0.9, S4_width=2.0, S4_feed=2.0,
                            skin_clip_deg=(109.0, 255.0))
     sim = {s.name: s for s in m.slots}
@@ -211,12 +212,12 @@ def test_extra_high_band_slot_s4():
     base = cases.option_model("C2")
     assert "S4" not in {s.name for s in base.slots}
     m = cases.option_model("C2", feed="castellation", skin="local", S3_dir=-1,
-                           S4_f=4.75, S4_gap="fin_ble_board", S4_angle=140,
+                           S4_f=4.75, S4_gap="activation_interface", S4_angle=140,
                            S4_width=3.0, S4_feed=3)
     s4 = {s.name: s for s in m.slots}["S4"]
     assert s4.width == 3.0 and s4.angle_deg == 140
     assert s4.total_length == pytest.approx(g.half_wave_slot_mm(4.75, cases.EPS_EFF))
-    lo, hi = g.BOARD_MID_Z_MM["fin_ble_board"], g.BOARD_MID_Z_MM["wakeup_board"]
+    lo, hi = g.BOARD_MID_Z_MM["activation_interface"], g.BOARD_MID_Z_MM["wakeup_board"]
     assert s4.z_start == pytest.approx((lo + hi) / 2)
     assert "P_S4" in {p.name for p in m.ports}
     with pytest.raises(ValueError):
@@ -232,15 +233,17 @@ def test_sweep_range_and_extra_far_field_points_reach_the_model():
 
 def test_ring_setback_can_be_limited_to_one_gap():
     """The stepped ring helps S4 (4-7 GHz) but kills S1 — so it is per gap."""
-    m = cases.option_model("C2", ring_setback_mm=4.0, ring_setback_gaps=("fin_ble_board",))
+    # (2026-11-21, fin_ble merged) step only S3's gap (power↔compute); C2's
+    # default S1 gap (activation↔wakeup) keeps the plain cut.
+    m = cases.option_model("C2", ring_setback_mm=4.0, ring_setback_gaps=("power_board",))
     names = {s.name for s in m.sectors}
-    assert "ring_step_fin_ble_board" in names and "ring_cut_fin_ble_board" not in names
+    assert "ring_step_power_board" in names and "ring_cut_power_board" not in names
     assert "ring_cut_activation_interface" in names            # S1's gap untouched
     assert "ring_step_activation_interface" not in names
 
 
 def test_keepout_can_skip_a_slot():
-    kw = dict(S4_f=4.4, S4_gap="fin_ble_board", S4_angle=140, S4_width=3.0)
+    kw = dict(S4_f=4.4, S4_gap="activation_interface", S4_angle=140, S4_width=3.0)
     default = {s.name for s in cases.option_model("C2", **kw).sectors}
     assert any(n.startswith("keepout_S4") for n in default)   # 3 mm S4 fills its gap
     names = {s.name for s in cases.option_model("C2", keepout_slots=("S1", "S3"), **kw).sectors}

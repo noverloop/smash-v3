@@ -185,7 +185,8 @@ def test_twin_link_widths_have_expected_range():
     # carries no crossing nets and drops out of the width count.
     # (2026-11-15 aft reorder: cell_floor + one spacer gone → 2 fewer links)
     # (2026-11-18: nose_cap + radar↔nose_cap spacer retired → 1 fewer link)
-    assert len(widths) in (17, 18)
+    # (2026-11-21: fin_ble merged into activation → one board + spacer gone → 2 fewer links)
+    assert len(widths) in (15, 16)
     # Narrowest is now the battery-compartment gaps: little crosses → just
     # margin + GND.
     assert min(widths.values()) >= 3.0
