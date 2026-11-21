@@ -5498,6 +5498,41 @@ def _apply_companion_reference_layout(d, boards: dict) -> None:
 _TALL_ZONE_REFS = ("L_ACTIVATE", "L_BOOST_COMP")   # power top ↔ compute bottom keepout
 
 
+def _mark_locked_pth_pin_keepouts(d: Design, boards: dict, locks: dict) -> int:
+    """(2026-11-21) A LOCKED part's through-hole pins come out on the other
+    face: each drilled pad becomes a square keep-out (pad + 0.3 mm) on the
+    OPPOSITE face, so the packer never puts a part on a pin (the QPD TO-8's
+    pins under the TIAs / VREF cap were the case)."""
+    import math as _m
+    from smash.state.board_geometry import Keepout
+    n = 0
+    for c in d.chips:
+        e = locks.get(c.ref)
+        b = boards.get(getattr(c, "board_tag", None))
+        fp = getattr(c, "footprint", None)
+        if e is None or b is None or fp is None or getattr(b, "geometry", None) is None:
+            continue
+        face = getattr(e, "face", None) or "top"
+        other = "B.Cu" if face == "top" else "F.Cu"
+        th = _m.radians(getattr(e, "rotation_deg", 0) or 0)
+        cx, cy = e.position_mm
+        for p in fp.pads:
+            if getattr(p, "drill_mm", None) is None:
+                continue
+            px, py = p.position_mm
+            x, y = px * _m.cos(th) - py * _m.sin(th), px * _m.sin(th) + py * _m.cos(th)
+            if face == "bottom":
+                x = -x
+            h = max(p.size_mm) / 2 + 0.3
+            X, Y = cx + x, cy + y
+            b.geometry.keepouts.append(Keepout(
+                polygon=[(X - h, Y - h), (X + h, Y - h), (X + h, Y + h), (X - h, Y + h)],
+                layers=(other,), scope="component", tag="pth_pin",
+                note=f"{c.ref} pin {p.num} comes through here"))
+            n += 1
+    return n
+
+
 def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
     """Keepouts the placer must see BEFORE place_design (chip_placements aren't
     set yet):
@@ -5589,6 +5624,7 @@ def _mark_preplace_keepouts(d: Design, boards: dict) -> None:
                 t = k / n_st
                 _sq(cx + (chx - cx) * t, cy + (chy - cy) * t, 1.0, "cell_wire",
                     "cell + wire to the potting channel")
+    _mark_locked_pth_pin_keepouts(d, boards, _locks)
     for bname, cu in (("cell_floor_board", "F.Cu"),):
         b = boards.get(bname)
         if b is None or getattr(b, "geometry", None) is None:

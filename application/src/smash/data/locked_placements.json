@@ -201,39 +201,39 @@
  },
  "U_TIA_A": {
   "position_mm": [
-   -3.5,
-   -3.5
+   -6.2,
+   -3.0
   ],
   "rotation_deg": 180,
   "face": "bottom",
-  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
+  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.) (2026-11-21) moved from (±3.5, ±3.5) to (±6.2, ±3.0): the old spots straddled the QPD TO-8's pin rows (y ±5.08) — shorts / mask bridges; still one per quadrant right behind the photodiode, ~1 mm clear of the pins."
  },
  "U_TIA_B": {
   "position_mm": [
-   3.5,
-   -3.5
+   6.2,
+   -3.0
   ],
   "rotation_deg": 180,
   "face": "bottom",
-  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
+  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.) (2026-11-21) moved from (±3.5, ±3.5) to (±6.2, ±3.0): the old spots straddled the QPD TO-8's pin rows (y ±5.08) — shorts / mask bridges; still one per quadrant right behind the photodiode, ~1 mm clear of the pins."
  },
  "U_TIA_C": {
   "position_mm": [
-   3.5,
-   3.5
+   6.2,
+   3.0
   ],
   "rotation_deg": 180,
   "face": "bottom",
-  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
+  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.) (2026-11-21) moved from (±3.5, ±3.5) to (±6.2, ±3.0): the old spots straddled the QPD TO-8's pin rows (y ±5.08) — shorts / mask bridges; still one per quadrant right behind the photodiode, ~1 mm clear of the pins."
  },
  "U_TIA_D": {
   "position_mm": [
-   -3.5,
-   3.5
+   -6.2,
+   3.0
   ],
   "rotation_deg": 180,
   "face": "bottom",
-  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.)"
+  "reason": "QPD transimpedance amp on the BACK face of qpd_module, directly behind its photodiode quadrant — keeps the high-impedance anode->TIA node microscopically short. (qpd_module is a deployed branch leaf, not a stack tile exposed to rapid deceleration.) (2026-11-21) moved from (±3.5, ±3.5) to (±6.2, ±3.0): the old spots straddled the QPD TO-8's pin rows (y ±5.08) — shorts / mask bridges; still one per quadrant right behind the photodiode, ~1 mm clear of the pins."
  },
  "J_USB_C": {
   "position_mm": [

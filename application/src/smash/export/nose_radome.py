@@ -169,9 +169,8 @@ def radar_nose(radar_board, M=((1, 0), (0, 1)), *, board_r_mm: float = 17.0) -> 
                    "z0": -0.3,     # just above the radar castellation vias (board mid-plane)
                    "z1": USB_MOUTH_H_MM + USB_WINDOW_MARGIN_MM}
     # Sanity: nothing that opens or carries copper may sit in the FoV keep-out.
-    for ref, x, y, d in ir:
-        if abs(x - aop.x) < fov[0] + d / 2 and abs(y - aop.y) < fov[1] + d / 2:
-            warnings.append(f"{ref} IR hole lies inside the radar FoV keep-out")
+    # (2026-11-21, user) the IR-hole-in-FoV warning is retired: the nose is
+    # open (no radome to cut) and the radar build likely drops the IR parts.
     for hd in hoods:
         if (abs(hd.x - aop.x) < fov[0] + hd.w / 2
                 and abs(hd.y - aop.y) < fov[1] + hd.h / 2):
