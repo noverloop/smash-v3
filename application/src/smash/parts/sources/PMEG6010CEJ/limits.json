@@ -1,0 +1,9 @@
+{
+  "part": "PMEG6010CEJ",
+  "datasheet": "PMEG6010CEJ.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "io": [
+    {"pins": ["K"], "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 60,
+     "ref": "p.3 §8 Table 5 Limiting values: VR reverse voltage 60 V (relative to the anode; checked against ground)"}
+  ]
+}

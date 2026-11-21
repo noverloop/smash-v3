@@ -1,0 +1,25 @@
+{
+  "part": "H3LIS331DLTR",
+  "datasheet": "H3LIS331DLTR.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD"], "min_v": 2.16, "max_v": 3.6, "abs_max_v": 4.8,
+     "ref": "DS9012 Rev 5 p.5 Table 3 (Vdd 2.16-3.6 V); p.8 Table 6 (Vdd -0.3 to +4.8 V)"},
+    {"pins": ["VDD_IO"], "min_v": 1.71, "max_v": null, "abs_max_v": 4.8,
+     "ref": "DS9012 Rev 5 p.5 Table 3 (Vdd_IO 1.71 V to Vdd+0.1 V — max is relative to Vdd, see required); p.8 Table 6 (Vdd_IO -0.3 to +4.8 V)"}
+  ],
+  "io": [
+    {"pins": ["CS", "SCL_SPC", "SDA_SDI_SDO", "SDO_SA0"], "domain": "VDD_IO", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "DS9012 Rev 5 p.8 Table 6 Vin: -0.3 to Vdd_IO+0.3 V (CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0)"}
+  ],
+  "open_drain": [],
+  "i2c": {"bus_pins": {"SCL": "SCL_SPC", "SDA": "SDA_SDI_SDO"},
+          "address": {"default": "0x18", "strap": {"pin": "SDO_SA0", "GND": "0x18", "VDD": "0x19"}},
+          "ref": "DS9012 Rev 5 p.12 §6.1.1: SAD 001100x, SA0=supply -> 0011001b, SA0=GND -> 0011000b; p.13 Table 9"},
+  "required": [
+    {"what": "Vdd_IO must not exceed Vdd + 0.1 V", "ref": "DS9012 Rev 5 p.5 Table 3"},
+    {"what": "CS tied high (to Vdd_IO) for I2C", "ref": "DS9012 Rev 5 p.12 §6; p.11 §5"},
+    {"what": "Pin 10 (Reserved) connect to GND; pin 15 (Reserved) connect to Vdd", "ref": "DS9012 Rev 5 p.3 Table 1"},
+    {"what": "Decoupling 100 nF ceramic + 10 uF near pin 14 (Vdd); all supplies present at the same time", "ref": "DS9012 Rev 5 p.11 §5 Figure 5"}
+  ]
+}

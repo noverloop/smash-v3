@@ -171,8 +171,9 @@ def test_s1_tuner_is_two_dtcs_around_the_series_l(design):
         assert len(rf) == 1 and rf <= ends
         gnd = _net(design, _chip(design, "U_LR"), "GND")
         assert {_net(design, dtc, p) for p in ("RF-_1", "RF-_2", "EP")} == {gnd}
-        assert _net(design, dtc, "SEN") == sen == _net(design, wba, wpin)
-        assert _net(design, dtc, "SCL") == "LR_DTC_SCL" == _net(design, wba, "PA7")
-        assert _net(design, dtc, "SDA") == "LR_DTC_SDA" == _net(design, wba, "PA8")
+        # (2026-11-21) through a 220 Ω / 1 kΩ divider (PE64906 VIH max 3.1 V)
+        assert _net(design, dtc, "SEN") == f"{sen}_LV" and _net(design, wba, wpin) == sen
+        assert _net(design, dtc, "SCL") == "LR_DTC_SCL_LV" and _net(design, wba, "PA7") == "LR_DTC_SCL"
+        assert _net(design, dtc, "SDA") == "LR_DTC_SDA_LV" and _net(design, wba, "PA8") == "LR_DTC_SDA"
     assert _net(design, _chip(design, "U_LR_DTC1"), "RF+_1") != \
         _net(design, _chip(design, "U_LR_DTC2"), "RF+_1")

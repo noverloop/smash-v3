@@ -168,15 +168,15 @@ def test_potting_holes_emitted(tmp_pcb):
 
 
 def test_camera_module_no_potting_holes(tmp_pcb):
-    """camera_module has potting_holes=false and (2026-11-21, user: fixed nose)
-    no nose-stop holes any more: no NPTH at all."""
+    """(2026-11-21, user) camera_module carries the STANDARD potting hole (one
+    stacked channel) and no nose-stop holes: exactly one NPTH."""
     d = Design(); board = Board("camera_module")
     write_kicad_pcb(d, board, tmp_pcb)
     sexp = _parse_sexp(tmp_pcb.read_text())
     assert len(list(_find_all(sexp, "gr_circle"))) == 1   # just the outline
     pads = list(_find_all(sexp, "pad"))
     npth = [p for p in pads if len(p) > 2 and p[2] == "np_thru_hole"]
-    assert npth == []
+    assert len(npth) == 1
 
 
 # ── footprints ────────────────────────────────────────────────────────
@@ -964,7 +964,10 @@ def test_full_twin_exports_clean(tmp_path):
     #   the USB ideal-diode OR + VBUS bulk moved power_board → usb_nose (±0).
     # → 691 (2026-11-21): fin_ble_board merged into activation_interface
     #   (every part kept; one per-tile footprint fewer).
-    assert total_fps == 696      # +5 (2026-11-21): camera I2C shifter Q_CAM_SCL/SDA + 3 pull-ups
+    assert total_fps == 712      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
+    #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
+    #   BUCK3 terminations in)
 
     # Stackup = ONE KiCad project (2026-11-18): every panel footprint links
     # to its symbol in stackup.kicad_sch, written beside the PCB like each

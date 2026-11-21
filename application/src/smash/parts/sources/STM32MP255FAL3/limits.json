@@ -1,0 +1,457 @@
+{
+  "part": "STM32MP255FAL3",
+  "datasheet": "STM32MP255FAL3.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting. NOTE: the PDF is DS14285 which covers STM32MP25xA/D only; the F (secure + 1.5 GHz) variant is the same die/package as D with crypto/secure boot, documented in the C/F datasheet — values for D are used here.",
+  "supplies": [
+    {
+      "pins": [
+        "VDD_1",
+        "VDD_2",
+        "VDD_3"
+      ],
+      "min_v": 3.0,
+      "max_v": 3.6,
+      "abs_max_v": 3.7,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VDD 3.3 V range 3.0-3.6 V (1.8 V range 1.71-1.89 V, abs max 2.0 V); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDX range 3.3 V max 3.7 V. VDD and VDDA18AON must be present first and ramp together within 1 ms (p.105 sect. 6.3.2)"
+    },
+    {
+      "pins": [
+        "VDDIO1",
+        "VDDIO2",
+        "VDDIO3_1",
+        "VDDIO3_2",
+        "VDDIO4_1",
+        "VDDIO4_2"
+      ],
+      "min_v": 2.7,
+      "max_v": 3.6,
+      "abs_max_v": 3.7,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VDDIO1-4 3 V/3.3 V range 2.7-3.6 V with VDDIOxVRSEL=0 (1.8 V range 1.71-1.89 V, abs max 2.0 V); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: 3.3 V range max 3.7 V"
+    },
+    {
+      "pins": [
+        "VBAT"
+      ],
+      "min_v": 2.3,
+      "max_v": 3.6,
+      "abs_max_v": 3.7,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VBAT 2.3-3.6 V (note 13: lower limit 1.71 V when connected to VDD); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VBAT in 3.3 V range max 3.7 V"
+    },
+    {
+      "pins": [
+        "VDD33USB",
+        "VDD33UCPD"
+      ],
+      "min_v": 3.07,
+      "max_v": 3.6,
+      "abs_max_v": 3.7,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VDD33USB, VDD33UCPD 3.07-3.6 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: max 3.7 V"
+    },
+    {
+      "pins": [
+        "VDDCORE_1",
+        "VDDCORE_2",
+        "VDDCORE_3",
+        "VDDCORE_4",
+        "VDDCORE_5",
+        "VDDCORE_6",
+        "VDDCORE_7",
+        "VDDCSI",
+        "VDDDSI",
+        "VDDLVDS",
+        "VDDCOMBOPHY",
+        "VDDCOMBOPHYTX",
+        "VDDPCIECLK"
+      ],
+      "min_v": 0.79,
+      "max_v": 0.842,
+      "abs_max_v": 0.99,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VDDCORE/VDDCSI/VDDDSI/VDDLVDS/VDDCOMBOPHY/VDDCOMBOPHYTX/VDDPCIECLK Run/Stop 0.79-0.842 V (LPLV-Stop 0.64-0.842, Standby 0-0.48); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDCORE group max 0.99 V"
+    },
+    {
+      "pins": [
+        "VDDCPU_1",
+        "VDDCPU_2",
+        "VDDCPU_3",
+        "VDDCPU_4",
+        "VDDCPU_5"
+      ],
+      "min_v": 0.87,
+      "max_v": 0.935,
+      "abs_max_v": 0.99,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDCPU Fcpu1_overdrive range 0.87-0.935 V (STM32MP25xD only — 1.5 GHz); non-overdrive Fcpu1 range is 0.765-0.842 V. Encoded as the overdrive range because the design runs 0.9 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDCPU in VDDCORE group max 0.99 V"
+    },
+    {
+      "pins": [
+        "VDDGPU_1",
+        "VDDGPU_2",
+        "VDDGPU_3",
+        "VDDGPU_4",
+        "VDDGPU_5"
+      ],
+      "min_v": 0.76,
+      "max_v": 0.839,
+      "abs_max_v": 0.99,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDGPU Fgpu1 range 0.76-0.839 V (overdrive 0.86-0.961 V, D only); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDGPU in VDDCORE group max 0.99 V"
+    },
+    {
+      "pins": [
+        "VDDA18AON"
+      ],
+      "min_v": 1.75,
+      "max_v": 1.89,
+      "abs_max_v": 1.98,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions: VDDA18AON 1.75-1.89 V (functional to 1.71 V if UCPD unused; 1.98 V allowed in transients); DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDA18 group max 1.98 V"
+    },
+    {
+      "pins": [
+        "VDDA18PLL1",
+        "VDDA18PLL2",
+        "VDDA18PLL3",
+        "VDDA18DSI",
+        "VDDA18CSI",
+        "VDDA18LVDS",
+        "VDDA18COMBOPHY",
+        "VDDA18DDR"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.89,
+      "abs_max_v": 1.98,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDA18PLLx/DSI/CSI/LVDS/COMBOPHY 1.71-1.89 V, VDDA18DDR 1.71-1.89 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: max 1.98 V"
+    },
+    {
+      "pins": [
+        "VDDA18USB"
+      ],
+      "min_v": 1.75,
+      "max_v": 1.89,
+      "abs_max_v": 1.98,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDA18USB 1.75-1.89 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: max 1.98 V"
+    },
+    {
+      "pins": [
+        "VDDA18ADC"
+      ],
+      "min_v": 1.62,
+      "max_v": 1.89,
+      "abs_max_v": 1.98,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDA18ADC 1.62-1.89 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: max 1.98 V"
+    },
+    {
+      "pins": [
+        "VREF+"
+      ],
+      "min_v": 1.1,
+      "max_v": 1.89,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VREF+ 1.1 V to VDDA18ADC (1.89 V = VDDA18ADC max); no abs max listed in Table 14"
+    },
+    {
+      "pins": [
+        "VDDQDDR_1",
+        "VDDQDDR_2",
+        "VDDQDDR_3",
+        "VDDQDDR_4",
+        "VDDQDDR_5",
+        "VDDQDDR_6"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.26,
+      "abs_max_v": 1.575,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions (p.104): VDDQDDR DDR4 1.14-1.26 V; DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VDDQDDR max 1.575 V"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "NRSTC1MS",
+        "PA0",
+        "PA1",
+        "PA10",
+        "PA11",
+        "PA12",
+        "PA13",
+        "PA14",
+        "PA15",
+        "PA2",
+        "PA3",
+        "PA4",
+        "PA5",
+        "PA6",
+        "PA7",
+        "PA8",
+        "PA9",
+        "PB12",
+        "PB13",
+        "PB14",
+        "PB15",
+        "PC0",
+        "PC1",
+        "PC10",
+        "PC11",
+        "PC12",
+        "PC2",
+        "PC6",
+        "PC7",
+        "PC8",
+        "PC9",
+        "PD12",
+        "PD13",
+        "PD14",
+        "PD15",
+        "PF0",
+        "PF1",
+        "PF10",
+        "PF11",
+        "PF12",
+        "PF13",
+        "PF14",
+        "PF15",
+        "PF2",
+        "PF3",
+        "PF4",
+        "PF5",
+        "PF8",
+        "PF9",
+        "PG0",
+        "PG10",
+        "PG11",
+        "PG12",
+        "PG13",
+        "PG14",
+        "PG15",
+        "PG2",
+        "PG4",
+        "PG5",
+        "PG6",
+        "PG7",
+        "PG8",
+        "PG9",
+        "PH10",
+        "PH11",
+        "PH12",
+        "PH13",
+        "PH2",
+        "PH3",
+        "PH4",
+        "PH5",
+        "PH6",
+        "PH7",
+        "PH8",
+        "PH9",
+        "PI0",
+        "PI1",
+        "PI10",
+        "PI11",
+        "PI2",
+        "PI3",
+        "PI4",
+        "PI5",
+        "PI6",
+        "PI7",
+        "PI9",
+        "PWR_CPU_ON",
+        "PWR_LP",
+        "PWR_ON",
+        "PZ7",
+        "PZ8",
+        "PZ9",
+        "JTCK-SWCLK",
+        "JTDI",
+        "JTDO-TRACESWO",
+        "JTMS-SWDIO",
+        "NJTRST",
+        "BOOT0",
+        "BOOT1",
+        "BOOT2",
+        "BOOT3"
+      ],
+      "domain": "VDD_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDD row) + p.78 Table 11 note 1 (BOOT0-3 'Power supply is VDD') ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PC3",
+        "PC4",
+        "PC5",
+        "PF6",
+        "PF7",
+        "PG1",
+        "PG3"
+      ],
+      "domain": "VDD_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDD/VSW row: VDD for GPIO/AF, VSW only when TAMP_INx enabled) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PC13",
+        "PI8",
+        "PZ0",
+        "PZ1",
+        "PZ2",
+        "PZ3",
+        "PZ4",
+        "PZ5",
+        "PZ6"
+      ],
+      "domain": "VDD_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VSW row; VSW = VDD, or VBAT when VDD is absent, note 6 — clamp follows VBAT when VDD is off; both are COMP_3V3 here) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PE0",
+        "PE1",
+        "PE2",
+        "PE3",
+        "PE4",
+        "PE5"
+      ],
+      "domain": "VDDIO1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDDIO1 row) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PE10",
+        "PE11",
+        "PE12",
+        "PE13",
+        "PE14",
+        "PE15",
+        "PE6",
+        "PE7",
+        "PE8",
+        "PE9"
+      ],
+      "domain": "VDDIO2",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDDIO2 row) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PD0",
+        "PD1",
+        "PD10",
+        "PD11",
+        "PD2",
+        "PD3",
+        "PD4",
+        "PD5",
+        "PD6",
+        "PD7",
+        "PD8",
+        "PD9"
+      ],
+      "domain": "VDDIO3_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDDIO3 row) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "PB0",
+        "PB1",
+        "PB10",
+        "PB11",
+        "PB2",
+        "PB3",
+        "PB4",
+        "PB5",
+        "PB6",
+        "PB7",
+        "PB8",
+        "PB9"
+      ],
+      "domain": "VDDIO4_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.51 Table 9 I/O power domains (VDDIO4 row) ; all GPIOs are TT/TT_a/TT_f/TT_af (p.53+ Table 11); abs max VIN on TT_xx pins = min(VDDIOx+0.3, 3.6) V with VDDIOxVRSEL=0, min(VDDIOx+0.3, 1.98) V with VRSEL=1 (DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14)"
+    },
+    {
+      "pins": [
+        "CSI_CKN",
+        "CSI_CKP",
+        "CSI_D0N",
+        "CSI_D0P",
+        "CSI_D1N",
+        "CSI_D1P"
+      ],
+      "domain": "VDDA18CSI",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 1.35,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VIN on CSI pins max 1.35 V"
+    },
+    {
+      "pins": [
+        "USB3DR_DP",
+        "USB3DR_DM",
+        "USBH_HS_DP",
+        "USBH_HS_DM"
+      ],
+      "domain": "VDD33USB",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VIN on USB3DR or USBH_HS DP/DM = min(VDD3V3_USB+0.3, 3.6) V; note 2: unpowered, tolerate 3.5 V through external resistors"
+    },
+    {
+      "pins": [
+        "UCPD1_CC1",
+        "UCPD1_CC2"
+      ],
+      "domain": "VDD33UCPD",
+      "abs_max_over_domain_v": 1.935,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VIN on UCPD pins max VDD3V3_UCPD + 1.935 V"
+    },
+    {
+      "pins": [
+        "COMBOPHY_RX1N",
+        "COMBOPHY_RX1P",
+        "COMBOPHY_TX1N",
+        "COMBOPHY_TX1P"
+      ],
+      "domain": "VDDCOMBOPHY",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics: VIN on COMBOPHY pins = min(VDDCOMBOPHY+0.3, 0.99) V"
+    }
+  ],
+  "open_drain": [
+    {
+      "pins": [
+        "NRSTC1MS"
+      ],
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.78 Table 11 note 3: 'Power supply is VDD - used in open drain with external pull-up'"
+    }
+  ],
+  "required": [
+    {
+      "what": "PDR_ON must always be connected at board level to VDDA18AON",
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.78 Table 11 note 9 (PDR_ON)"
+    },
+    {
+      "what": "VDDA18AON and VDD present before any other supply (except VBAT), ramp up/down together within 1 ms; VDDA18USB present whenever VDD33USB is; VDDCORE present whenever VDDA18USB/VDD33USB are",
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.105 sect. 6.3.2"
+    },
+    {
+      "what": "VDDA18PLL1/2/3 connected together",
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions note 11"
+    },
+    {
+      "what": "V08CAP: decoupling capacitor only for the internal backup regulator, never used externally",
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.103-104 Table 17 General operating conditions note 14"
+    },
+    {
+      "what": "All power and ground pins connected to a supply in the permitted range; |dVDDx| between pins of one domain <= 50 mV",
+      "ref": "DS14285 Rev 5 (STM32MP251A/D..257A/D) p.101 Table 14 Voltage characteristics"
+    }
+  ]
+}

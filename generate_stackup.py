@@ -93,7 +93,7 @@ from smash.parts.mosfets import (                                        # noqa:
 from smash.parts.logic import add_cd74hc4514pw                           # noqa: E402
 from smash.parts.oscillators import (                                    # noqa: E402
     add_sit1630ae_s6_dcc_32_768e, add_sit1533ai_h4_dcc_32_768e, add_dsc1001ci5_008_0000,
-    add_dsc1001ci5_032_0000, add_dsc1001ci5_040_0000,
+    add_dsc1001ci5_032_0000, add_dsc1001ci5_040_0000, add_dsc1001ci5_027_0000,
 )
 from smash.parts.passives import (                                       # noqa: E402
     add_capacitor_c0g_0603_avx_sqcs, add_capacitor_x7r_0402_kemet,
@@ -430,7 +430,9 @@ def build_companion_compute(d: Design) -> None:
             _net(d, "COMP_1V2").connect(mpu.pin(p.num))   # DDR4 I/O = 1.2 V
         elif p.name in ("VDDA18AON", "VDDA18PLL1", "VDDA18PLL2", "VDDA18PLL3",
                         "VDDA18DDR", "VDDA18ADC", "VDDA18CSI", "VDDA18DSI",
-                        "VDDA18LVDS", "VDDA18COMBOPHY"):
+                        "VDDA18LVDS", "VDDA18COMBOPHY", "PDR_ON"):
+            # (2026-11-21) PDR_ON: "must always be connected at board level
+            # to VDDA18AON" (DS14285 p.78 Table 11 note 9) — it was floating
             _net(d, "COMP_1V8").connect(mpu.pin(p.num))   # 1.8 V analog domains
         elif re.fullmatch(r"VDDIO[1234](_\d+)?", p.name):
             # VDDIO2 = the NAND OSPI bank (PE8..15 — 3.3 V parts);
@@ -551,7 +553,8 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "CAM_CSI_D1_N") .connect(mpu.pin("CSI_D1N"))
     _net(d, "CSI_REXT").connect(mpu.pin("CSI_REXT"))
     res_between(d, "CSI_REXT", "GND", "12k", ref="R_MPU_CSI_REXT", board_tag=BTAG)
-    _net(d, "CAM_EXTCLK").connect(mpu.pin("PA8"))
+    # (2026-11-21) CAM_EXTCLK no longer from PA8 (3.3 V bank into the sensor's
+    # 1.8 V input): the camera board has its own 27 MHz DSC1001 at 1.8 V.
     _net(d, "CAM_NRST").connect(mpu.pin("PA9"))        # (2026-11-21) open-drain → AR0234 RESET_BAR
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -1741,9 +1744,17 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
             _net(d, "GND").connect(dtc.pin(pn))
         _net(d, "3V3").connect(dtc.pin("VDD"))
         cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref[2:]}_VDD", board_tag=BTAG, pin=dtc.pin("VDD"))
-        _net(d, "LR_DTC_SCL").connect(dtc.pin("SCL"))
-        _net(d, "LR_DTC_SDA").connect(dtc.pin("SDA"))
-        _net(d, sen).connect(dtc.pin("SEN"))
+        _net(d, "LR_DTC_SCL_LV").connect(dtc.pin("SCL"))
+        _net(d, "LR_DTC_SDA_LV").connect(dtc.pin("SDA"))
+        _net(d, f"{sen}_LV").connect(dtc.pin("SEN"))
+    # (2026-11-21) PE64906 logic HIGH max 3.1 V (DS p.3 Table 2, no I/O abs
+    # max) but the WBA drives 3.3 V → a 220 Ω / 1 kΩ divider per line
+    # (2.70 V, 2.84 V at +5 %); ~180 Ω source keeps edges ≈ 2 ns (≤ 6.5 ns,
+    # DS Table 5). SCL/SDA dividers sit AFTER the ADF4351 branch (it keeps
+    # 3.3 V). Firmware: idle the lines LOW (≈ 2.7 mA per line while high).
+    for line in ("LR_DTC_SCL", "LR_DTC_SDA", "LR_DTC_SEN1", "LR_DTC_SEN2"):
+        res_between(d, line, f"{line}_LV", "220", ref=f"R_{line[3:]}_TOP", board_tag=BTAG)
+        res_between(d, f"{line}_LV", "GND", "1k", ref=f"R_{line[3:]}_BOT", board_tag=BTAG)
 
     # ── ONE 2.4 GHz slot (S1) shared by the LR2021 and BLE (2026-11-17,
     # user: S3 merged into S1 — with PEEK gap rings S1 peaks at 2.44-2.48 GHz;
@@ -2684,7 +2695,17 @@ def build_camera_module(d: Design) -> None:
     _net(d, "CAM_SCL")   .connect(cam.pin("F6"))     # SCLK
     _net(d, "CAM_SDA")   .connect(cam.pin("E6"))     # SDATA
     _net(d, "CAM_NRST")  .connect(cam.pin("F7"))     # RESET_BAR
-    _net(d, "CAM_EXTCLK").connect(cam.pin("G11"))    # 27 MHz from MP25
+    _net(d, "CAM_EXTCLK").connect(cam.pin("G11"))    # 27 MHz, local oscillator
+    # (2026-11-21) local 27 MHz DSC1001 at the sensor's 1.8 V IO rail: the MP25
+    # PA8 clock was 3.3 V into EXTCLK (abs max VDD_IO + 0.3 = 2.1 V); also
+    # frees a sleeve lane and keeps a 27 MHz clock off the LDS.
+    ycam = add_dsc1001ci5_027_0000(d, ref="Y_CAM_EXTCLK", board_tag="camera_module")
+    _net(d, "COMP_1V8")  .connect(ycam.pin("1"))     # STANDBY# tied high
+    _net(d, "GND")       .connect(ycam.pin("2"))
+    _net(d, "CAM_EXTCLK").connect(ycam.pin("3"))
+    _net(d, "COMP_1V8")  .connect(ycam.pin("4"))
+    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_EXTCLK_VDD", board_tag="camera_module",
+               pin=ycam.pin("4"))
 
     # (2026-11-21) CONTROL WAS UNCONNECTED (CAM_SCL / CAM_SDA / CAM_NRST were
     # one-pin nets — ERC). The sensor's I/O is 1.8 V (COMP_1V8); SYS_I2C (I2C1,
@@ -3416,48 +3437,45 @@ def build_power_board(d: Design) -> None:
     # (USB power-source detect unused; DDR4 VREFCA comes from the
     # discrete R_DDR_VREFCA_TOP/BOT divider, VrefDQ is on-die).
 
-    # Active BUCKs
+    # Active BUCKs — (2026-11-21) RE-MAPPED to the STPMIC25A's FACTORY NVM
+    # (DS14278 Table 1) and to each buck's output RANGE (Table "BUCKx output
+    # voltage", 0.5–1.5 V on BUCK1/2/3/6, 1.5–4.2 V on BUCK4/5/7). The old
+    # map put 3.3 V on BUCK2 and 2.5 V on BUCK3 (0.5–1.5 V bucks; VOUT2 abs
+    # max 3 V), 0.82 V on BUCK5 (≥ 1.5 V) and BUCK4 (default 3.3 V) on the
+    # 1.8 V rail — no NVM retune can fix a range. Now every rail powers up at
+    # its factory default in ST's MP25 order:
+    #   rank 1  BUCK4 3.30 V → COMP_3V3  (MP25 VDD/VDDIO first; ~0.3 A of 0.5)
+    #   rank 2  BUCK2 0.82 V → COMP_0V82 (VDDCORE, 2 A)
+    #   rank 3  BUCK1 0.80 V → COMP_0V9  (VDDCPU; firmware raises to 0.9 V)
+    #   rank 3  BUCK5 1.80 V → COMP_1V8  (VDDA18*, camera IO; 0.5 A)
+    #   off     BUCK6 → COMP_1V2 (DDR4 VDD/VDDQ) and LDO6 → COMP_VPP (2.5 V):
+    #           boot firmware sets + enables them before DDR init.
+    # BUCK3 / BUCK7 unused. ⚠ NVM: BUCK7 (3.3 V rank 4) and LDO1/2/4 default
+    # ON with no load — set their rank to 0 in the provisioning pass.
     _net(d, "PMIC_SW1") .connect(pmic.pin("VLX1"))
     _net(d, "COMP_0V9") .connect(pmic.pin("VOUT1"))
-    _net(d, "PMIC_SW3").connect(pmic.pin("VLX3"))
-    # BUCK3 retuned 1.35 V → 2.5 V for the DDR4 VPP rail (DDR3L 1.35 V dropped)
-    _net(d, "COMP_VPP").connect(pmic.pin("VOUT3"))
+    _net(d, "PMIC_SW2") .connect(pmic.pin("VLX2"))
+    _net(d, "COMP_0V82").connect(pmic.pin("VOUT2"))
     _net(d, "PMIC_SW4") .connect(pmic.pin("VLX4"))
-    _net(d, "COMP_1V8") .connect(pmic.pin("VOUT4"))
+    _net(d, "COMP_3V3") .connect(pmic.pin("VOUT4"))
+    _net(d, "PMIC_SW5") .connect(pmic.pin("VLX5"))
+    _net(d, "COMP_1V8") .connect(pmic.pin("VOUT5"))
     _net(d, "PMIC_SW6") .connect(pmic.pin("VLX6"))
     _net(d, "COMP_1V2") .connect(pmic.pin("VOUT6"))
-    # BUCK2 → COMP_3V3: the MP25 IO rail, now made by the PMIC so the compute
-    # tile boots from COMP_5V alone (depot USB-VBUS) without the wakeup bootstrap
-    # 3V3. (The wakeup 3V3 now powers only the WBA/NFC shelf-wake.)
-    _net(d, "PMIC_SW2") .connect(pmic.pin("VLX2"))
-    _net(d, "COMP_3V3") .connect(pmic.pin("VOUT2"))
-    ind_between(d, "PMIC_SW2", "COMP_3V3", "2.2uH",
-                ref="L_PMIC_BUCK2", board_tag=BTAG)   # ST Table 2: 2.2 µH for the ≥1.8 V rails
-    cap_to_gnd(d, "COMP_3V3", "22uF",  ref="C_PMIC_3V3_1", board_tag=BTAG, pin=pmic.pin("VOUT2"))
-    cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_PMIC_3V3_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT2"))
-
-    # BUCK5 → COMP_0V82: the MP25 VDDCORE domain (DS14284 ROC 0.79–0.842 V
-    # — required to START, and the 0.9 V CPU rail is out of its range, so
-    # the core gets its own buck; ST's own reference map uses a dedicated
-    # 0.82 V buck for VDDCORE). ⚠ NVM: STPMIC25A's BUCK5 default is 1.8 V
-    # rank 3 — the bench-provisioning pass that already retunes BUCK2/3/4/6
-    # MUST also set BUCK5 = 0.82 V with rank ≤ VDDCPU's (VDD before
-    # VDDCORE is enforced by VIN sequencing; see DS14278 Table 1 note).
-    _net(d, "PMIC_SW5")  .connect(pmic.pin("VLX5"))
-    _net(d, "COMP_0V82") .connect(pmic.pin("VOUT5"))
-    # feature="bottom": the 4×4 mm inductor's spacer-clearance cavity on
-    # the top face ate enough of the saturated power↔companion joint that
-    # WBA nets fell off the lands — the wakeup-facing bottom joint has slack.
-    ind_between(d, "PMIC_SW5", "COMP_0V82", "1uH",
-                ref="L_PMIC_BUCK5", board_tag=BTAG, feature="bottom")
+    # feature="bottom" on the VDDCORE inductor: the 4×4 mm part's spacer
+    # cavity on the top face ate the power↔companion joint (kept from BUCK5).
+    ind_between(d, "PMIC_SW2", "COMP_0V82", "1uH",
+                ref="L_PMIC_BUCK2", board_tag=BTAG, feature="bottom")
     cap_to_gnd(d, "COMP_0V82", "22uF",  ref="C_PMIC_0V82_1", board_tag=BTAG,
-               feature="bottom", pin=pmic.pin("VOUT5"))
+               feature="bottom", pin=pmic.pin("VOUT2"))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_PMIC_0V82_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT2"))
+    cap_to_gnd(d, "COMP_3V3", "22uF",  ref="C_PMIC_3V3_1", board_tag=BTAG, pin=pmic.pin("VOUT4"))
+    cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_PMIC_3V3_2",
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT4"))
 
-    # Unused BUCK 7 — VLX + VOUT decoupling caps on auto-named nets
-    for n in (7,):
+    # Unused BUCK 3 / 7 — VLX + VOUT decoupling caps on auto-named nets
+    for n in (3, 7):
         vlx_net  = f"PMIC_VLX{n}_TERM"
         vout_net = f"PMIC_VOUT{n}_TERM"
         _net(d, vlx_net) .connect(pmic.pin(f"VLX{n}"))
@@ -3465,11 +3483,15 @@ def build_power_board(d: Design) -> None:
         cap_to_gnd(d, vlx_net,  "100nF", ref=f"C_PMIC_VLX{n}",  board_tag=BTAG, pin=pmic.pin(f"VLX{n}"))
         cap_to_gnd(d, vout_net, "100nF", ref=f"C_PMIC_VOUT{n}", board_tag=BTAG, pin=pmic.pin(f"VOUT{n}"))
 
+    # LDO6 → COMP_VPP: DDR4 VPP 2.5 V (was BUCK3, which cannot exceed 1.5 V).
+    # LDO56IN = COMP_5V; VPP draws tens of mA. Default OFF (rank 0).
+    _net(d, "COMP_VPP").connect(pmic.pin("LDO6OUT"))
+
     # LDO5 → COMP_2V8 (camera analog rail)
     _net(d, "COMP_2V8").connect(pmic.pin("LDO5OUT"))
 
-    # Remaining LDOs (1-2, 4, 6-8) — decoupling caps on auto-named nets
-    for n in (1, 2, 4, 6, 7, 8):
+    # Remaining LDOs (1-2, 4, 7-8) — decoupling caps on auto-named nets
+    for n in (1, 2, 4, 7, 8):
         ldo_net = f"PMIC_LDO{n}_TERM"
         _net(d, ldo_net).connect(pmic.pin(f"LDO{n}OUT"))
         cap_to_gnd(d, ldo_net, "100nF", ref=f"C_PMIC_LDO{n}",
@@ -3480,10 +3502,11 @@ def build_power_board(d: Design) -> None:
 
     # Control — I²C on the system I2C2 bus (MP25 PB5/PB4; the TMP117 on
     # this tile already rides it, pull-ups RPU_I2C2_* to 3V3 live on
-    # wakeup_board). Without I²C the STPMIC25A NVM defaults are WRONG
-    # for this design (BUCK2 def 0.82 V feeds COMP_3V3, BUCK4 def 3.3 V
-    # feeds COMP_1V8, BUCK3/6 + LDO5 default OFF), so the M33 must be
-    # able to (re)program the rail map.
+    # wakeup_board). (2026-11-21) The buck map now MATCHES the STPMIC25A
+    # factory NVM (see "Active BUCKs"), so the core rails come up right with
+    # no programming; I²C turns on BUCK6 (DDR VDD/VDDQ), LDO6 (VPP 2.5 V) and
+    # LDO5 (camera 2.8 V), raises BUCK1 to 0.9 V, and the provisioning pass
+    # sets the unused BUCK7 / LDO1/2/4 to rank 0.
     _net(d, "I2C2_SCL")    .connect(pmic.pin("SCL"))
     _net(d, "I2C2_SDA")    .connect(pmic.pin("SDA"))
     _net(d, "PMIC_NRST")   .connect(pmic.pin("RSTN"))
@@ -3526,10 +3549,10 @@ def build_power_board(d: Design) -> None:
     # (Isat 2.7 A), benign for the adaptive-COT loop (internal ramp).
     ind_between(d, "PMIC_SW1", "COMP_0V9",  "1uH",
                 ref="L_PMIC_BUCK1", board_tag=BTAG)
-    ind_between(d, "PMIC_SW3", "COMP_VPP",  "2.2uH",
-                ref="L_PMIC_BUCK3", board_tag=BTAG)   # ST Table 2
-    ind_between(d, "PMIC_SW4", "COMP_1V8",  "2.2uH",
-                ref="L_PMIC_BUCK4", board_tag=BTAG)   # ST Table 2
+    ind_between(d, "PMIC_SW4", "COMP_3V3",  "2.2uH",
+                ref="L_PMIC_BUCK4", board_tag=BTAG)   # ST Table 2 (≥ 1.8 V rail)
+    ind_between(d, "PMIC_SW5", "COMP_1V8",  "2.2uH",
+                ref="L_PMIC_BUCK5", board_tag=BTAG)   # ST Table 2 (≥ 1.8 V rail)
     ind_between(d, "PMIC_SW6", "COMP_1V2",  "1uH",
                 ref="L_PMIC_BUCK6", board_tag=BTAG)
 
@@ -3544,12 +3567,12 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_0V9",  "22uF",  ref="C_PMIC_0V9_1", board_tag=BTAG, pin=pmic.pin("VOUT1"))
     cap_to_gnd(d, "COMP_0V9",  "100nF", ref="C_PMIC_0V9_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT1"))
-    cap_to_gnd(d, "COMP_VPP",  "22uF",  ref="C_PMIC_VPP_1", board_tag=BTAG, pin=pmic.pin("VOUT3"))
+    cap_to_gnd(d, "COMP_VPP",  "4.7uF", ref="C_PMIC_VPP_1", board_tag=BTAG, pin=pmic.pin("LDO6OUT"))  # ST BOM: 4.7 µF per LDO
     cap_to_gnd(d, "COMP_VPP",  "100nF", ref="C_PMIC_VPP_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT3"))
-    cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT4"))
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("LDO6OUT"))
+    cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_PMIC_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT4"))
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V2",  "10uF",  ref="C_PMIC_1V2_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_PMIC_1V2_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT6"))
@@ -4078,7 +4101,11 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "3V3_AON").connect(wba.pin("VDD_2"))     # G4
     _net(d, "3V3_AON").connect(wba.pin("VDDRF"))     # A6  — radio digital
     _net(d, "3V3_AON").connect(wba.pin("VDD_RFPA"))  #  — radio PA (needs ≥2.5 V for +9.5 dBm)
-    _net(d, "3V3_AON").connect(wba.pin("VDD_HPA"))   # C4  — high-power PA
+    # (2026-11-21) VDDHPA is NOT a supply input: "provided to connect an
+    # external decoupling capacitor" (typ 470 nF) — DS p.28. Was on 3V3_AON.
+    _net(d, "WBA_VDDHPA").connect(wba.pin("VDD_HPA"))  # B4
+    cap_to_gnd(d, "WBA_VDDHPA", "470nF", ref="C_WBA_VDDHPA", board_tag=BTAG,
+               pin=wba.pin("VDD_HPA"))
     _net(d, "GND").connect(wba.pin("VSS_1"))     # B9
     _net(d, "GND").connect(wba.pin("VSS_2"))     # G6
     _net(d, "GND").connect(wba.pin("VSSA"))      # D13
@@ -4110,7 +4137,7 @@ def build_wakeup_board(d: Design) -> None:
                          ("VDD1", "VDD_1"), ("VDD2", "VDD_2"),
                          ("VDD3", "VDD_3"), ("VDD4", "VDD_4"),
                          ("VDDRF", "VDDRF"), ("VDDRFPA", "VDD_RFPA"),
-                         ("VDDHPA", "VDD_HPA"), ("VDDSMPS", "VDD_SMPS")):
+                         ("VDDSMPS", "VDD_SMPS")):
         cap_to_gnd(d, "3V3_AON", "100nF", ref=f"C_WBA_{tag}",
                    embedded_cap_absorbs=True, board_tag=BTAG,
                    pin=wba.pin(vdd_pin))
@@ -4150,8 +4177,22 @@ def build_wakeup_board(d: Design) -> None:
     hse_osc = add_dsc1001ci5_032_0000(d, ref="Y_WBA_HSE", board_tag=BTAG)
     _net(d, "3V3_AON")    .connect(hse_osc.pin("1"))  # STANDBY# tied VDD
     _net(d, "GND")        .connect(hse_osc.pin("2"))
-    _net(d, "WBA_HSE_IN") .connect(hse_osc.pin("3"))  # OUT
+    _net(d, "WBA_HSE_OSC").connect(hse_osc.pin("3"))  # OUT (3.3 V CMOS)
     _net(d, "3V3_AON")    .connect(hse_osc.pin("4"))  # VDD
+    # (2026-11-21) HSE32 bypass input wants 0–0.9 V, 200–900 mVpp, AC coupling
+    # 470 pF–100 nF (DS Table 61); the DSC1001 wants a load R > 10 kΩ, C ≤ 15 pF.
+    # → COMPENSATED divider (R_top·C_top = R_bot·C_bot: flat attenuation)
+    # 10 k ∥ 3.3 pF over 2.2 k ∥ 10 pF ≈ 0.6 Vpp, load ≈ 12 kΩ / 2.7 pF,
+    # then 470 pF into OSC_IN.
+    def _c0g_between(n1, n2, val, ref):
+        c = add_capacitor_c0g_0603_avx_sqcs(d, ref=ref, value=val, board_tag=BTAG,
+                                            **_as_built_0402(val, "C0G/NP0"))
+        _net(d, n1).connect(c.pin("1")); _net(d, n2).connect(c.pin("2"))
+    res_between(d, "WBA_HSE_OSC", "WBA_HSE_DIV", "10k", ref="R_WBA_HSE_TOP", board_tag=BTAG)
+    _c0g_between("WBA_HSE_OSC", "WBA_HSE_DIV", "3.3pF", "C_WBA_HSE_TOP")
+    res_between(d, "WBA_HSE_DIV", "GND", "2.2k", ref="R_WBA_HSE_BOT", board_tag=BTAG)
+    cap_to_gnd(d, "WBA_HSE_DIV", "10pF", ref="C_WBA_HSE_BOT", board_tag=BTAG, force_c0g=True)
+    _c0g_between("WBA_HSE_DIV", "WBA_HSE_IN", "470pF", "C_WBA_HSE_CPL")
     _net(d, "WBA_HSE_IN") .connect(wba.pin("OSC_IN"))   # A8
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_WBA_HSE_VDD",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=hse_osc.pin("4"))
@@ -7016,6 +7057,11 @@ def main() -> int:
         _cfg_pcbs = [pcb_out / c / f"{c}.kicad_pcb" for c in CONFIGS]
         _check_report(pcbs=[panel_path, *_cfg_pcbs],
                       schematics=[sch_dir / "smash.kicad_sch"], root=REPO)
+        try:                                             # datasheet electrical rules
+            from smash.validators.electrical import report as _erc_report
+            _erc_report(d, "tower (maximalist netlist)")
+        except Exception as _e:
+            print(f"Electrical rules check: SKIPPED ({type(_e).__name__}: {_e})")
     return 0
 
 

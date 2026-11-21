@@ -1,0 +1,18 @@
+{
+  "part": "SST26VF080A-104I/MF",
+  "datasheet": "20006203C.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD"], "min_v": 2.3, "max_v": 3.6, "abs_max_v": null,
+     "ref": "DS20006203C p.40 Table 6-1 Operating Range (Industrial -40..+85 C: VDD 2.3-3.6 V); no absolute max for VDD itself is given in 6.0 Absolute Maximum Ratings. 104 MHz needs VDD 2.7-3.6 V (p.15 Table 5-1 note 4)"}
+  ],
+  "io": [
+    {"pins": ["CE#", "SO/SIO1", "WP#/SIO2", "SI/SIO0", "SCK", "RESET#/HOLD#/SIO3"], "domain": "VDD",
+     "abs_max_over_domain_v": 0.5, "abs_max_v": null,
+     "ref": "DS20006203C p.40 sect. 6.0 Absolute Maximum Ratings: DC voltage on any pin to ground -0.5 V to VDD+0.5 V (transient <20 ns: -2.0 V to VDD+2.0 V)"}
+  ],
+  "required": [
+    {"what": "HOLD# must be tied high when not in use (SPI/single/dual mode)", "ref": "DS20006203C p.4 Table 2-1 Pin Description, HOLD#"},
+    {"what": "VDD ramp faster than 1 V per 100 ms (0 to 3.0 V in <300 ms); VOFF <= 0.3 V for >= 100 ms on power-down", "ref": "DS20006203C p.40 sect. 6.1 and Table 6-3"}
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "part": "KTDM4G4B626BGIEAT",
+  "datasheet": "KTDM4G4B626BGIEAT.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "VDD_1",
+        "VDD_2",
+        "VDD_3",
+        "VDD_4",
+        "VDD_5",
+        "VDD_6",
+        "VDD_7",
+        "VDD_8",
+        "VDD_9",
+        "VDD_10"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.26,
+      "abs_max_v": 1.5,
+      "ref": "SMARTsemi KTDM4G4B626BGxEAT DS Rev1.0 p.14 Recommended DC Operating Conditions (VDD 1.14-1.26 V) and Absolute Maximum DC Ratings (VDD -0.3..1.5 V); note 3: VDD and VDDQ within 300 mV of each other at all times"
+    },
+    {
+      "pins": [
+        "VDDQ_1",
+        "VDDQ_2",
+        "VDDQ_3",
+        "VDDQ_4",
+        "VDDQ_5",
+        "VDDQ_6",
+        "VDDQ_7",
+        "VDDQ_8",
+        "VDDQ_9",
+        "VDDQ_10"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.26,
+      "abs_max_v": 1.5,
+      "ref": "DS p.14 Recommended DC Operating Conditions (VDDQ 1.14-1.26 V, note 1: VDDQ <= VDD under all conditions) and Absolute Maximum DC Ratings (VDDQ -0.3..1.5 V)"
+    },
+    {
+      "pins": [
+        "VPP_1",
+        "VPP_2"
+      ],
+      "min_v": 2.375,
+      "max_v": 2.75,
+      "abs_max_v": 3.0,
+      "ref": "DS p.14 Recommended DC Operating Conditions (VPP 2.375-2.75 V) and Absolute Maximum DC Ratings (VPP -0.3..3.0 V; note 4: VPP >= VDD/VDDQ at all times)"
+    },
+    {
+      "pins": [
+        "VREFCA"
+      ],
+      "min_v": 0.588,
+      "max_v": 0.612,
+      "abs_max_v": null,
+      "ref": "DS p.15 Single-ended AC & DC input levels for Command and Address: VREFCA(DC) 0.49*VDD..0.51*VDD (values here computed at VDD = 1.2 V nominal; scale with VDD). Abs max: p.14 note 3 VREFCA must not exceed 0.6 x VDDQ (no fixed number)"
+    }
+  ],
+  "io": [],
+  "required": [
+    {
+      "what": "VPP must be >= VDD/VDDQ at all times (power sequencing)",
+      "ref": "DS p.14 Absolute Maximum DC Ratings note 4"
+    },
+    {
+      "what": "VDD and VDDQ within 300 mV of each other at all times; VDDQ <= VDD",
+      "ref": "DS p.14 Abs Max note 3; Recommended DC Operating Conditions note 1"
+    }
+  ]
+}

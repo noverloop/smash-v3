@@ -1,0 +1,12 @@
+{
+ "_note": "Reviewed electrical-rules findings (smash.validators.electrical). Key = '<rule> <where>' exactly as reported; value = why it is fine. Acknowledged findings are counted, not printed.",
+ "E1 IMU1_INT2": "2026-11-21: ISM330 INT2 unused (INT1 carries data-ready); output left open by design.",
+ "E1 IMU2_INT2": "2026-11-21: ISM330 INT2 unused (INT1 carries data-ready); output left open by design.",
+ "E1 IMU3_INT2": "2026-11-21: ISM330 INT2 unused (INT1 carries data-ready); output left open by design.",
+ "E2 LR_DTC_SCL": "2026-11-21: PE64906 DTC 3-wire serial (CLK/DATA/SEN), NOT I2C — push-pull, bit-banged by the WBA55, shared with the ADF4351 SPI. No pull-up.",
+ "E2 LR_DTC_SDA": "2026-11-21: PE64906 DTC 3-wire serial (CLK/DATA/SEN), NOT I2C — push-pull, bit-banged by the WBA55, shared with the ADF4351 SPI. No pull-up.",
+ "E2 LR_DTC_SCL_LV": "2026-11-21: divided (3.1 V-max) side of the PE64906 3-wire serial bus — push-pull, not I2C. No pull-up.",
+ "E2 LR_DTC_SDA_LV": "2026-11-21: divided (3.1 V-max) side of the PE64906 3-wire serial bus — push-pull, not I2C. No pull-up.",
+ "E2 DEV_HUB_SDA": "2026-11-21: USB2514B SMBDATA/SMBCLK used as CONFIG STRAPS (10 k to GND = internal default configuration), not an I2C bus.",
+ "E2 DEV_HUB_SCL": "2026-11-21: USB2514B SMBDATA/SMBCLK used as CONFIG STRAPS (10 k to GND = internal default configuration), not an I2C bus."
+}

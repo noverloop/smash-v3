@@ -1,0 +1,30 @@
+{
+  "part": "ADF4351BCPZ",
+  "datasheet": "ADF4351BCPZ.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["AVDD"], "min_v": 3.0, "max_v": 3.6, "abs_max_v": 3.9,
+     "ref": "p.3 Table 1 POWER SUPPLIES AVDD 3.0–3.6 V; p.6 Table 3 AVDD to GND −0.3…+3.9 V"},
+    {"pins": ["VVCO", "VVCO_2"], "min_v": 3.0, "max_v": 3.6, "abs_max_v": 3.9,
+     "ref": "p.7 Table 5 pins 16/17 VVCO 3.0–3.6 V, must equal AVDD; p.6 Table 3 VVCO to GND −0.3…+3.9 V (VVCO to AVDD ±0.3 V)"},
+    {"pins": ["DVDD", "SDVDD", "VP"], "min_v": 3.0, "max_v": 3.6, "abs_max_v": null,
+     "ref": "p.3 Table 1 'DVDD, VVCO, SDVDD, VP must equal AVDD'; p.6 Table 3 gives only AVDD to DVDD −0.3…+0.3 V (no absolute value for DVDD/SDVDD/VP)"}
+  ],
+  "io": [
+    {"pins": ["CLK", "DATA", "LE", "CE", "PDBRF", "MUXOUT", "LD"],
+     "domain": "DVDD", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "p.6 Table 3 Digital I/O Voltage to GND −0.3 V to VDD + 0.3 V"},
+    {"pins": ["CPOUT", "SW", "TEMP", "VTUNE", "RSET", "VCOM", "VREF", "REFIN"],
+     "domain": "AVDD", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "p.6 Table 3 Analog I/O Voltage to GND and REFIN to GND −0.3 V to VDD + 0.3 V"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "DVDD, VVCO, SDVDD and VP must be at the same voltage as AVDD (|AVDD−DVDD|, |VVCO−AVDD| ≤ 0.3 V abs max)", "ref": "p.3 Table 1; p.6 Table 3; p.7–8 Table 5"},
+    {"what": "RSET resistor to ground 3.9–10 kΩ (5.1 kΩ → ICP 5 mA)", "ref": "p.3 Table 1 RSET Range; p.8 Table 5 pin 22"},
+    {"what": "Decoupling capacitors to ground on VCOM, VREF, TEMP and on every supply pin", "ref": "p.7–8 Table 5 pins 6,10,16,17,19,23,24,28,32"},
+    {"what": "Exposed pad must be connected to GND", "ref": "p.7 Figure 3 note; p.8 Table 5 EP"},
+    {"what": "Logic inputs: VINH ≥ 1.5 V, VINL ≤ 0.6 V (1.8–3.3 V logic compatible)", "ref": "p.3 Table 1 LOGIC INPUTS"},
+    {"what": "VTUNE operating range 0.5–2.5 V", "ref": "p.4 Table 1 Min/Max VCO Tuning Voltage"}
+  ]
+}

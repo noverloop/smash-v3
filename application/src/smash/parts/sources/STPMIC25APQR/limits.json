@@ -1,0 +1,207 @@
+{
+  "part": "STPMIC25APQR",
+  "datasheet": "STPMIC25APQR.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "VIN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.10 §3.4.1 Table 7 (VIN input voltage range); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "BUCK1IN",
+        "BUCK6IN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.19 §3.4.9 Table 14 (VBUCKIN); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "BUCK2IN",
+        "BUCK3IN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.22 §3.4.10 Table 15 (VBUCKIN); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "BUCK4IN",
+        "BUCK5IN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.23 §3.4.11 Table 16 (VBUCKIN); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "BUCK7IN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.25 §3.4.12 Table 17 (VBUCKIN); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "LDO12IN",
+        "LDO56IN",
+        "LDO78IN",
+        "LDO3IN"
+      ],
+      "min_v": 2.8,
+      "max_v": 5.5,
+      "abs_max_v": 6.5,
+      "ref": "p.14-17 §3.4.3-3.4.6 Tables 9-12 (VLDOIN main input range; LDO3 normal mode); p.8 §3.1 Table 4 Absolute maximum ratings"
+    },
+    {
+      "pins": [
+        "VIO"
+      ],
+      "min_v": 1.7,
+      "max_v": 3.6,
+      "abs_max_v": 4.2,
+      "ref": "p.12 §3.4.2 Table 8 (VIO); p.8 §3.1 Table 4 Absolute maximum ratings"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "SDA",
+        "SCL",
+        "RSTN",
+        "INTN",
+        "PWRCTRL1",
+        "PWRCTRL2",
+        "PWRCTRL3",
+        "WAKEUPN"
+      ],
+      "domain": "VIO",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 4.2,
+      "ref": "p.8 §3.1 Table 4 Absolute maximum ratings (VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn: -0.5 to +4.2 V)"
+    },
+    {
+      "pins": [
+        "PONKEYN",
+        "VLX1",
+        "VLX2",
+        "VLX3",
+        "VLX4",
+        "VLX5",
+        "VLX6",
+        "VLX7"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 6.5,
+      "ref": "p.8 §3.1 Table 4 Absolute maximum ratings (VLXx, PONKEYn: -0.5 to +6.5 V)"
+    },
+    {
+      "pins": [
+        "INTLDO"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 2.0,
+      "ref": "p.8 §3.1 Table 4 Absolute maximum ratings (INTLDO: -0.5 to +2 V)"
+    },
+    {
+      "pins": [
+        "VOUT1",
+        "VOUT2",
+        "VOUT3",
+        "VOUT6"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 3.0,
+      "ref": "p.8 §3.1 Table 4 Absolute maximum ratings (VOUT1, VOUT2, VOUT3, VOUT6: -0.5 to +3 V)"
+    },
+    {
+      "pins": [
+        "VOUT4",
+        "VOUT5",
+        "VOUT7",
+        "LDO1OUT",
+        "LDO2OUT",
+        "LDO3OUT",
+        "LDO4OUT",
+        "LDO5OUT",
+        "LDO6OUT",
+        "LDO7OUT",
+        "LDO8OUT",
+        "VREFDDR"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 5.0,
+      "ref": "p.8 §3.1 Table 4 Absolute maximum ratings (VOUT4, VOUT5, VOUT7, LDOxOUT, VREFDDR: -0.5 to +5 V)"
+    }
+  ],
+  "open_drain": [
+    {
+      "pins": [
+        "SDA"
+      ],
+      "ref": "p.58 §5.5.1 I2C interface (slave, VOL=0.4 V at 4 mA); RSTn/INTn are open drain too but have internal pull-ups to VIO (p.44 §5.3.3-5.3.4), so not listed"
+    }
+  ],
+  "i2c": {
+    "bus_pins": {
+      "SCL": "SCL",
+      "SDA": "SDA"
+    },
+    "address": {
+      "default": "0x33"
+    },
+    "ref": "p.58 §5.5.1.1 Device ID (NVM default address 0x33; reprogrammable via NVM_I2C_ADDR_SHR)"
+  },
+  "required": [
+    {
+      "what": "4.7 uF (6.3 V, 0402) on VIN, LDO1OUT, LDO2OUT, LDO4OUT, LDO5OUT, LDO6OUT, LDO7OUT, LDO8OUT and INTLDO",
+      "ref": "p.5 §2.1 Table 2 Passive components"
+    },
+    {
+      "what": "10 uF (10 V, 0603) on each BUCKxIN",
+      "ref": "p.5 §2.1 Table 2"
+    },
+    {
+      "what": "Output caps: VOUT1/VOUT6 3x22 uF 6.3 V; VOUT2/VOUT3 4x22 uF 6.3 V; VOUT4/VOUT5 3x22 uF 10 V; VOUT7 4x22 uF 10 V",
+      "ref": "p.5 §2.1 Table 2"
+    },
+    {
+      "what": "1 uF (25 V) on LDO12IN, LDO56IN, LDO78IN and VREF; 10 uF on LDO3IN/LDO3OUT (4.7 uF in normal mode)",
+      "ref": "p.5 §2.1 Table 2"
+    },
+    {
+      "what": "Inductors: 0.68 uH on LX1/LX6/LX7 (DFE201610E) and LX2/LX3 (DFE252012F); 2.2 uH on LX4/LX5",
+      "ref": "p.5 §2.1 Table 2"
+    },
+    {
+      "what": "Buck output ranges: BUCK1/2/3/6 0.5-1.5 V; BUCK4/5/7 1.5-4.2 V (BUCK4/5/7 need VBUCKIN > VOUT + 0.8 V)",
+      "ref": "p.27 §4.1 Table 18; p.36 §4.3.2 Table 20; p.23 Table 16; p.25 Table 17"
+    },
+    {
+      "what": "LDO2/3/5/6/7/8 output 0.9-4.0 V (or bypass); LDO1 fixed 1.8 V; LDO4 fixed 3.3 V",
+      "ref": "p.27 §4.1 Table 18"
+    },
+    {
+      "what": "Except VBUS, no supply pin may be applied before VIN or set higher than VIN",
+      "ref": "p.27 §4.1 Note under Table 18"
+    },
+    {
+      "what": "Unused pins: LDOxOUT/VOUTx/VLXx floating, LDOxIN/BUCKxIN to VIN, LDO3OUT to VIN, INTLDO 4.7 uF cap, PWRCTRLx to VIO or GND",
+      "ref": "p.6-7 §2.2 Table 3 Pin description (Not used pin connection column)"
+    }
+  ]
+}

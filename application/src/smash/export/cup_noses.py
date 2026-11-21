@@ -198,6 +198,7 @@ class NoseSpec:
     notes: list
     warnings: list
     pipes: list = dataclasses.field(default_factory=list)   # IR light pipes (see _ir_pipes)
+    dam_rot_deg: float = 0.0      # (2026-11-21) dam rect turn about its centre (AoP at 45°)
 
     # compatibility helpers
     @property
@@ -535,7 +536,7 @@ def _nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
                             "- Radar: NO radome in the nose cone — the final capsule (OD 40) "
                             "carries it. An AoP DAM collar (insert, board → ridge) keeps the "
                             "black potting off the antennas; the space above the AoP stays air.\n"],
-                            warnings + rn.warnings, [])
+                            warnings + rn.warnings, [], dam_rot_deg=rn.dam_rot_deg)
         reach = (gap + wall) * math.tan(math.radians(NR.RADOME_FOV_HALF_DEG))
         fov_half = (rn.aop.w / 2 + reach, rn.aop.h / 2 + reach)
         fov_r = math.hypot(*fov_half)
@@ -571,7 +572,7 @@ def _nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
         return NoseSpec(config, payload, None, (z0, z1), prof, hoods, holes, rn.dam, None,
                         {"radome_order": k, "gap_mm": round(gap, 4), "fov_r_mm": round(fov_r, 2),
                          "radome_t": radome_t, "z_in": round(z1 + rn.aop.height + gap, 4)},
-                        wins, stops, notes, warnings, pipes)
+                        wins, stops, notes, warnings, pipes, dam_rot_deg=rn.dam_rot_deg)
 
     # optical payloads: plano-convex lens, flat side flush with the meplat
     from smash.export import nose_optics as NO

@@ -1,0 +1,55 @@
+{
+  "part": "LP5907MFX-2.8/NOPB",
+  "datasheet": "lp5907-family.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "IN"
+      ],
+      "min_v": 2.2,
+      "max_v": 5.5,
+      "abs_max_v": 6,
+      "ref": "p.4 §5.3 Recommended Operating Conditions; p.4 §5.1 Absolute Maximum Ratings"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "EN"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 6,
+      "ref": "p.4 §5.1 Absolute Maximum Ratings (VEN -0.3 to 6 V); recommended 0-5.5 V per §5.3"
+    },
+    {
+      "pins": [
+        "OUT"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 6,
+      "ref": "p.4 §5.1 Absolute Maximum Ratings note 2 (VOUT max is the lesser of VIN + 0.3 V or 6 V)"
+    },
+    {
+      "pins": [
+        "OUT"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.4 §5.1 Absolute Maximum Ratings note 2 (VOUT max is the lesser of VIN + 0.3 V or 6 V)"
+    }
+  ],
+  "required": [
+    {
+      "what": "1 uF capacitor on IN (CIN 0.7 uF min effective)",
+      "ref": "p.3 §4 Table 4-2 Pin Functions; p.6 §5.6 Output and Input Capacitors"
+    },
+    {
+      "what": "Low-ESR capacitor on OUT: 0.7-10 uF effective, ESR 5-500 mOhm (1 uF nominal)",
+      "ref": "p.6 §5.6 Output and Input Capacitors"
+    }
+  ]
+}

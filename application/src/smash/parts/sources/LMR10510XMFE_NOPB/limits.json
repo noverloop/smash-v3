@@ -1,0 +1,68 @@
+{
+  "part": "LMR10510XMFE/NOPB",
+  "datasheet": "LMR10510.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "VIN"
+      ],
+      "min_v": 3.0,
+      "max_v": 5.5,
+      "abs_max_v": 7,
+      "ref": "p.4 §7.2 Recommended Operating Ratings; p.4 §7.1 Absolute Maximum Ratings"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "EN"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 7,
+      "ref": "p.4 §7.1 Absolute Maximum Ratings (EN -0.5 to 7 V)"
+    },
+    {
+      "pins": [
+        "EN"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.3 §6 Pin Description 5-Pin SOT-23 (EN: do not allow to float or be greater than VIN + 0.3 V)"
+    },
+    {
+      "pins": [
+        "FB"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 3,
+      "ref": "p.4 §7.1 Absolute Maximum Ratings (FB -0.5 to 3 V)"
+    },
+    {
+      "pins": [
+        "SW"
+      ],
+      "domain": "VIN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 7,
+      "ref": "p.4 §7.1 Absolute Maximum Ratings (SW -0.5 to 7 V)"
+    }
+  ],
+  "required": [
+    {
+      "what": "Input capacitor: 22 uF recommended (X7R/X5R MLCC)",
+      "ref": "p.14 §9.2.1.3 Input Capacitor"
+    },
+    {
+      "what": "Output capacitor: minimum 22 uF for most applications (X7R/X5R)",
+      "ref": "p.14 §9.2.1.4 Output Capacitor"
+    },
+    {
+      "what": "EN must not float",
+      "ref": "p.3 §6 Pin Description"
+    }
+  ]
+}

@@ -43,10 +43,10 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.434,
     "activation_interface": 24.502,
-    "wakeup_board": 27.77,
-    "power_board": 31.638,
-    "companion_compute": 35.006,
-    "radar_module": 38.874,
+    "wakeup_board": 27.67,        # (2026-11-21) activation↔wakeup gap 2.4 → 2.3 mm
+    "power_board": 31.538,
+    "companion_compute": 34.906,
+    "radar_module": 38.774,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

@@ -1,0 +1,38 @@
+{
+  "part": "STM32G0B1REI6N",
+  "datasheet": "../STM32G0B1KCT6N/STM32G0B1KCT6N.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet (DS13560 Rev 6, family datasheet covering the UFBGA64 -N RxI package); spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD/_VDDA"], "min_v": 1.7, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "DS13560 Rev 6 p.67 Table 24 (VDD 1.7-3.6 V; VDDA 1.62 V ADC/COMP, 1.8 V DAC, 2.4 V VREFBUF min, 3.6 V max); p.66 Table 21 (VDD -0.3 to 4.0 V)"},
+    {"pins": ["VDDIO_2"], "min_v": 1.65, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "DS13560 Rev 6 p.67 Table 24 (VDDIO2 1.65-3.6 V); p.66 Table 21 (VDDIO2 -0.3 to 4.0 V)"},
+    {"pins": ["VBAT"], "min_v": 1.55, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "DS13560 Rev 6 p.67 Table 24 (VBAT 1.55-3.6 V); p.66 Table 21 (VBAT -0.3 to 4.0 V)"},
+    {"pins": ["VREF+"], "min_v": null, "max_v": null, "abs_max_v": 4.0,
+     "ref": "DS13560 Rev 6 p.66 Table 21 (VREF+ max = Min(VDD + 0.4, 4.0) V — 4.0 is the absolute cap); operating range is relative to VDDA, see required (p.17 §3.7.1)"}
+  ],
+  "io": [
+    {"pins": ["PC10", "PC11", "PC12", "PC13", "PC14-_OSC32__IN", "PC15-_OSC32__OUT", "PF0-_OSC_I_N", "PF1-_OSC__OUT", "PF2-_NRST",
+              "PC0", "PC1", "PC2", "PC3", "PC4", "PC5", "PA0", "PA1", "PA2", "PA3", "PA6", "PA7",
+              "PB0", "PB1", "PB2", "PB3", "PB4", "PB5", "PB6", "PB7", "PB8", "PB9", "PB10", "PB11", "PB12", "PD5", "PD6"],
+     "domain": "VDD/_VDDA", "abs_max_over_domain_v": 4.0, "abs_max_v": null,
+     "ref": "DS13560 Rev 6 p.66 Table 21 VIN on FT_xx pins except FT_c and FT_s: VDD + 4.0 V (footnote 2: >4 V only with internal pull-up/down disabled; footnote 3: FT_a used by ADC max 4 V); I/O structure per ball from p.47-55 Table 12 (UFBGA64 -N column)"},
+    {"pins": ["PA9", "PA10", "PA11_[PA9]", "PA12_[PA10]", "PA13", "PA14-_BOOT0", "PA15", "PB13", "PB14",
+              "PC6", "PC7", "PC8", "PC9", "PD1", "PD3", "PD4"],
+     "domain": "VDDIO_2", "abs_max_over_domain_v": 4.0, "abs_max_v": null,
+     "ref": "DS13560 Rev 6 p.66 Table 21 VIN on FT_s pins except FT_cs: VDDIO2 + 4.0 V; FT_s/FT_ds/FT_es/FT_fs/FT_fds/FT_fus per p.47-55 Table 12 (UFBGA64 -N); VDDIO2 balls shown grey in p.42 Figure 9"},
+    {"pins": ["PA8", "PB15", "PD0", "PD2"], "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 5.5,
+     "ref": "DS13560 Rev 6 p.66 Table 21 VIN on FT_c pins: 5.5 V; these balls are FT_fcs/FT_cs per p.47-55 Table 12 (UFBGA64 -N)"},
+    {"pins": ["PA4", "PA5"], "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 4.0,
+     "ref": "DS13560 Rev 6 p.66 Table 21 VIN on any other pin: 4.0 V; PA4 TT_a, PA5 TT_ea per p.47-55 Table 12 (operating: VIN <= VDDA + 0.3 V for TT_xx, p.68 Table 24)"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "VREF+: when VDDA < 2 V must equal VDDA; when VDDA >= 2 V must be between 2 V and VDDA (may be grounded if analog peripherals using VREF+ are inactive)", "ref": "DS13560 Rev 6 p.17 §3.7.1"},
+    {"what": "VDDIO2 must not be applied without valid VDD", "ref": "DS13560 Rev 6 p.17 §3.7.1"},
+    {"what": "Decoupling: VDD/VDDA 100 nF + 4.7 uF; VDDIO2 100 nF + 4.7 uF; VREF+ 100 nF + 1 uF (1 uF only when VREFBUF used), placed as close as possible to the pins", "ref": "DS13560 Rev 6 p.65 §5.1.6 Figure 15 + Caution"},
+    {"what": "All main power pins (VDD/VDDA, VDDIO2, VBAT) and grounds must always be connected to supplies in the permitted range", "ref": "DS13560 Rev 6 p.67 Table 22 footnote 1"},
+    {"what": "Inputs above VDD+0.3 V (FT pins, operating) require the internal pull-up/pull-down disabled; operating VIN max Min(VDD+3.6, 5.5) V for FT, VDD+0.3 V for RST, VDDA+0.3 V for TT_xx, 5.0 V for FT_c", "ref": "DS13560 Rev 6 p.68 Table 24 (continued) + footnote 2"}
+  ]
+}

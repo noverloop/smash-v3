@@ -1,0 +1,18 @@
+{
+  "part": "GRF2073W",
+  "datasheet": "GRF2073W.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["RF_OUT"], "min_v": 0, "max_v": 6, "abs_max_v": 6,
+     "ref": "p.3 Pin Assignments: pin 7 RF_OUT/VDD 'Provides device VDD via external bias inductor'; p.5 Recommended Operating Conditions VDD 0 / 5 typ / 6 V; p.4 Absolute Ratings VDD 0–6 V"}
+  ],
+  "io": [],
+  "open_drain": [],
+  "required": [
+    {"what": "VDD is applied to RF_OUT through an external bias inductor", "ref": "p.3 Pin Assignments pin 7"},
+    {"what": "RF_IN external match must provide a DC block", "ref": "p.3 Pin Assignments pin 2"},
+    {"what": "VENABLE with its series resistor sets IDDQ; VENABLE ≤ 0.2 V disables the device (no VENABLE voltage limit stated)", "ref": "p.3 Pin Assignments pin 1"},
+    {"what": "RF input power ≤ 23 dBm CW (abs max, VDD = 5 V)", "ref": "p.4 Absolute Ratings PIN MAX"},
+    {"what": "Pins 3,4,5,6,8 GND/NC: recommended to GND; package base is DC/RF ground and heat sink (multiple vias)", "ref": "p.3 Pin Assignments"}
+  ]
+}

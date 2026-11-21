@@ -576,12 +576,18 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
                        y1 - y0 + 2 * DAM_RIB_W_MM, zb, prof.z_top)
             rib = rib.cut(_box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0,
                                zb - 0.01, prof.z_top + 0.01))
+            if getattr(nose, "dam_rot_deg", 0.0):  # (2026-11-21) AoP turned 45°
+                c_ = ((x0 + x1) / 2, (y0 + y1) / 2, 0)
+                rib = rib.rotate(c_, (c_[0], c_[1], 1), nose.dam_rot_deg)
             aop_dam = rib
         else:
             rib = _box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0 + 2 * DAM_RIB_W_MM,
                        y1 - y0 + 2 * DAM_RIB_W_MM, zb, zb + h_all)
             rib = rib.cut(_box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0,
                                zb - 0.01, zb + h_all + 0.01))
+            if getattr(nose, "dam_rot_deg", 0.0):
+                c_ = ((x0 + x1) / 2, (y0 + y1) / 2, 0)
+                rib = rib.rotate(c_, (c_[0], c_[1], 1), nose.dam_rot_deg)
             nose_body = nose_body.union(rib.intersect(inside))
     lens = None
     if nose.tube is not None:                      # optical: light tube + lens collar + bore

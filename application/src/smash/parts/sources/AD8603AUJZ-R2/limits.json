@@ -1,0 +1,30 @@
+{
+  "part": "AD8603AUJZ-R2",
+  "datasheet": "AD8603-AD8607-AD8609-family.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "V+"
+      ],
+      "min_v": 1.8,
+      "max_v": 5.0,
+      "abs_max_v": 6.0,
+      "ref": "p.1 Features/General description 'single-supply operation 1.8 V to 5 V' (PSRR spec'd 1.8 V < VS < 5 V, p.3 Table 1 / p.4 Table 2); p.6 Table 3 Absolute Maximum Ratings Supply Voltage 6 V. Voltages are V+ relative to V- (V- = GND in our design)"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "+IN",
+        "-IN"
+      ],
+      "domain": "V+",
+      "abs_max_over_domain_v": 0.0,
+      "abs_max_v": null,
+      "ref": "p.6 Table 3 Abs Max 'Input Voltage: GND to VS' (i.e. V-..V+, no margin stated); differential input ±6 V. Note p.13 'No phase reversal' says inputs 'can handle voltages of up to 1 V over the supply' — conflicts with abs max table; table value used"
+    }
+  ],
+  "open_drain": [],
+  "required": []
+}

@@ -19,7 +19,7 @@ def test_no_part_over_a_hole():
     finally:
         sys.path.pop(0)
     from smash.layout.placer import place_design
-    from smash.layout.placer.pack import _chip_extents
+    from smash.layout.placer.grid import placement_rects_mm
     d = gen.Design()
     gen._prime_power_rails(d)
     for fn in gen._BOARD_BUILDERS.values():
@@ -42,9 +42,12 @@ def test_no_part_over_a_hole():
                 c = pl.item
                 if getattr(c, "manf_pn", "") in ("CASTELLATIONS", "LGA_lands"):
                     continue
-                w, hh = _chip_extents(c, pl.rotation_deg or 0.0)
-                x, y = pl.position_mm
-                if box(x - w / 2, y - hh / 2, x + w / 2, y + hh / 2).intersects(hole):
+                if c.footprint is None:
+                    continue
+                # (2026-11-21) the TRUE occupied outline (a 45°-turned part —
+                # the radar AoP — is a staircase, not its 24 mm bounding square)
+                rects = placement_rects_mm(pl, c.footprint)
+                if any(box(*r).intersects(hole) for r in rects):
                     bad.append(f"{name}: {c.ref} ({pl.face}{', locked' if pl.locked else ''}) "
                                f"over {h.tag} hole at {h.position_mm}")
     assert not bad, "\n".join(bad)

@@ -1,0 +1,28 @@
+{
+  "part": "ISM330DHCXTR",
+  "datasheet": "ISM330DHCXTR.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.8,
+     "ref": "DS13012 Rev 7 p.13 Table 3 (Vdd 1.71-3.6 V); p.16 Table 7 (Vdd -0.3 to 4.8 V)"},
+    {"pins": ["VDDIO"], "min_v": 1.62, "max_v": 3.6, "abs_max_v": 4.8,
+     "ref": "DS13012 Rev 7 p.13 Table 3 (Vdd_IO 1.62-3.6 V); p.16 Table 7 Note 'supply voltage on any pin should never exceed 4.8 V' (Vdd_IO has no own abs-max row)"}
+  ],
+  "io": [
+    {"pins": ["CS", "SCL", "SDA", "SDO_SA0"], "domain": "VDDIO", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "DS13012 Rev 7 p.16 Table 7 Vin: -0.3 to Vdd_IO+0.3 V on any control pin (incl. CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0)"},
+    {"pins": ["SDX", "SCX", "OCS_AUX", "SDO_AUX", "INT1", "INT2"], "domain": "VDDIO", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "DS13012 Rev 7 p.16 Table 7 Vin 'any control pin' (these pins are not named explicitly in the row; p.9 Table 1 says they are Vdd_IO-referenced)"}
+  ],
+  "open_drain": [],
+  "i2c": {"bus_pins": {"SCL": "SCL", "SDA": "SDA"},
+          "address": {"default": "0x6A", "strap": {"pin": "SDO_SA0", "GND": "0x6A", "VDD": "0x6B"}},
+          "ref": "DS13012 Rev 7 p.19 §5.1.1.1 / Table 10: SAD 110101x, SA0=GND -> 1101010b, SA0=supply -> 1101011b; p.18: CS tied high (Vdd_IO) selects I2C; external pull-ups to Vdd_IO"},
+  "required": [
+    {"what": "CS tied high (to Vdd_IO) for I2C operation", "ref": "DS13012 Rev 7 p.18 §5.1"},
+    {"what": "SDx and SCx: connect to Vdd_IO or GND in Mode 1 (no sensor hub)", "ref": "DS13012 Rev 7 p.9 Table 1"},
+    {"what": "OCS_Aux: leave unconnected (Mode 1/2); SDO_Aux: connect to Vdd_IO or leave unconnected (Mode 1/2)", "ref": "DS13012 Rev 7 p.9 Table 1 + note 2"},
+    {"what": "100 nF filter capacitor on Vdd and on Vdd_IO (C1, C2 = 100 nF ceramic)", "ref": "DS13012 Rev 7 p.9 Table 1 note 1; p.34 §7 Application hints"},
+    {"what": "SCL/SDA need external pull-up resistors to Vdd_IO", "ref": "DS13012 Rev 7 p.18 §5.1.1"}
+  ]
+}

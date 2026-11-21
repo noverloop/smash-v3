@@ -1,0 +1,22 @@
+{
+  "part": "LTC5549IUDB#TRMPBF",
+  "datasheet": "LTC5549IUDB.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VCC"], "min_v": 3.0, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.2 DC Electrical Characteristics Supply Voltage (VCC) 3.0–3.6 V; p.2 Absolute Maximum Ratings Supply Voltage (VCC) 4 V"}
+  ],
+  "io": [
+    {"pins": ["EN", "X2"], "domain": "VCC", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "p.2 Absolute Maximum Ratings: Enable Input Voltage (EN) and X2 Input Voltage −0.3 V to VCC + 0.3 V"},
+    {"pins": ["LO", "RF", "IF"], "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 0.1,
+     "ref": "p.2 Absolute Maximum Ratings: LO / RF / IF DC Voltage ±0.1 V"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "RF, LO and IF ports tolerate only ±0.1 V DC: DC-block (or DC-ground) each port", "ref": "p.2 Absolute Maximum Ratings"},
+    {"what": "EN/X2 logic: VIH ≥ 1.2 V, VIL ≤ 0.3 V", "ref": "p.2 DC Electrical Characteristics, Enable (EN) and LO Frequency Doubler (X2) Logic Inputs"},
+    {"what": "LO input power −6…+6 dBm (X2 low), −6…+3 dBm (X2 high); abs max +10 dBm", "ref": "p.3 AC characteristics LO Input Power; p.2 Absolute Maximum Ratings"},
+    {"what": "Exposed pad (pin 13) is GND and must be soldered to the PCB", "ref": "p.2 Pin Configuration"}
+  ]
+}

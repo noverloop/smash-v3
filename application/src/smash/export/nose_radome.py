@@ -78,6 +78,8 @@ class Part:
     w: float                    # body extent along physical x / y
     h: float
     height: float               # above the board top face
+    rot_deg: float = 0.0        # (2026-11-21) body turn vs the physical axes when
+                                # not a quarter turn (w/h then stay the BODY size)
 
 
 @dataclasses.dataclass
@@ -95,6 +97,7 @@ class RadarNose:
     usb: Part | None
     usb_window: dict | None     # {"angle_deg", "w", "z0", "z1"} radial cut in the wall
     warnings: list
+    dam_rot_deg: float = 0.0    # (2026-11-21) the dam rect turns with the AoP about its centre
 
 
 def _phys(M, x, y):
@@ -118,6 +121,13 @@ def _part_of(placement, M) -> Part | None:
     if not wh:
         return None
     rot = (getattr(placement, "rotation_deg", 0.0) or 0.0) % 180.0
+    q = round(rot / 90.0) * 90.0
+    if abs(rot - q) > 0.5:                 # (2026-11-21) not a quarter turn: keep the
+        hgt = (getattr(chip, "height_mm", None)   # body size, carry the angle
+               or (getattr(fp, "height_mm", None) if fp is not None else None)
+               or _FALLBACK_HEIGHT.get(ref, 1.0))
+        x, y = _phys(M, *placement.position_mm)
+        return Part(ref, round(x, 4), round(y, 4), wh[0], wh[1], float(hgt), rot_deg=rot)
     w, h = wh if abs(rot - 90.0) > 45.0 else (wh[1], wh[0])
     hgt = (getattr(chip, "height_mm", None)
            or (getattr(fp, "height_mm", None) if fp is not None else None)
@@ -148,7 +158,9 @@ def radar_nose(radar_board, M=((1, 0), (0, 1)), *, board_r_mm: float = 17.0) -> 
     end_in = aop.height + gap
     # FoV cone from the AoP body edges through the window to the OUTER face.
     reach = (gap + t) * math.tan(math.radians(RADOME_FOV_HALF_DEG))
-    fov = (aop.w / 2 + reach, aop.h / 2 + reach)
+    _c, _s = abs(math.cos(math.radians(aop.rot_deg))), abs(math.sin(math.radians(aop.rot_deg)))
+    ext = (aop.w * _c + aop.h * _s, aop.w * _s + aop.h * _c)      # axis-aligned extent
+    fov = (ext[0] / 2 + reach, ext[1] / 2 + reach)
     dam = (aop.x - aop.w / 2 - DAM_MARGIN_MM, aop.y - aop.h / 2 - DAM_MARGIN_MM,
            aop.x + aop.w / 2 + DAM_MARGIN_MM, aop.y + aop.h / 2 + DAM_MARGIN_MM)
     hoods = [pt for ref, pt in parts.items()
@@ -180,7 +192,8 @@ def radar_nose(radar_board, M=((1, 0), (0, 1)), *, board_r_mm: float = 17.0) -> 
                      end_in_z=round(end_in, 4), aop=aop,
                      fov_keepout_half_mm=(round(fov[0], 3), round(fov[1], 3)),
                      dam=tuple(round(v, 3) for v in dam), hoods=hoods,
-                     ir_holes=ir, usb=usb, usb_window=usb_win, warnings=warnings)
+                     ir_holes=ir, usb=usb, usb_window=usb_win, warnings=warnings,
+                     dam_rot_deg=round(aop.rot_deg, 3))
 
 
 def window_spec_md(n: RadarNose) -> str:

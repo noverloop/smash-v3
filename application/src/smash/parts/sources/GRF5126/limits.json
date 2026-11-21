@@ -1,0 +1,23 @@
+{
+  "part": "GRF5126",
+  "datasheet": "GRF5126.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD1", "RF_OUT"], "min_v": 3, "max_v": 5.5, "abs_max_v": 6,
+     "ref": "p.5 Recommended Operating Conditions VDD 3 / 5 typ / 5.5 V; p.4 Absolute Ratings VDD 0–6 V; p.3 Pin Assignments pin 4 VDD1 (via inductor) and pin 10 RF_OUT/VDD (via RF choke)"}
+  ],
+  "io": [
+    {"pins": ["VBIAS1", "VBIAS2"], "domain": "VDD1", "abs_max_over_domain_v": 0.0, "abs_max_v": null,
+     "ref": "p.6 Nominal Operating Parameters: VBIAS1/VBIAS2 Logic Input High max = VDD (operating limit; no abs max stated for these pins)"},
+    {"pins": ["VGAIN"], "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 2.5,
+     "ref": "p.6 Nominal Operating Parameters: VGAIN Logic Input High 1.0 / 1.8 / 2.5 V max (operating limit; no abs max stated); p.3 pin 15 'Set VGAIN ≥ 1.0 to 2.5 volts for High Gain'"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "VBIAS1/VBIAS2 connect via series resistor to common VDD (resistor sets IDDQ1/IDDQ2); < 0.2 V disables the stage. 4.4–5.0 GHz tune shows bias resistors of 2.74 kΩ and 2.32 kΩ with Vbias1 = Vbias2 = 5 V (assignment per schematic — check)", "ref": "p.3 Pin Assignments pins 13/14; GRF5126_tune_4400-5000MHz.pdf p.2 schematic"},
+    {"what": "RF_IN needs an external DC-blocking capacitor", "ref": "p.3 Pin Assignments pin 2"},
+    {"what": "VDD1 via inductor with bypass caps close to the pin (RF present on the pin); RF_OUT VDD via RF choke", "ref": "p.3 Pin Assignments pins 4/10"},
+    {"what": "RF input power ≤ 23 dBm (abs max, load VSWR 2:1)", "ref": "p.4 Absolute Ratings PIN MAX"},
+    {"what": "Characterised at VDD = 5 V; the 4.4–5.0 GHz tune data is at Vdd = 5 V, Idd 110 mA", "ref": "p.6 test conditions; GRF5126_tune_4400-5000MHz.pdf"}
+  ]
+}

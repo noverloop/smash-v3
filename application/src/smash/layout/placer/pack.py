@@ -27,7 +27,7 @@ from shapely.geometry import box as _box
 from shapely.prepared import prep as _prep
 
 from smash.layout.placer.grid import (
-    placement_extents_mm,
+    placement_extents_mm, placement_rects_mm,
     rects_overlap,
 )
 from smash.state.board import Board
@@ -504,13 +504,13 @@ def pack_radial(
             continue
         if not isinstance(p.item, (Chip, Antenna)) or p.item.footprint is None:
             continue
-        lo_x, lo_y, hi_x, hi_y = placement_extents_mm(p, p.item.footprint)
-        obstacles.append((
-            (lo_x + hi_x) / 2.0,
-            (lo_y + hi_y) / 2.0,
-            hi_x - lo_x,
-            hi_y - lo_y,
-        ))
+        for lo_x, lo_y, hi_x, hi_y in placement_rects_mm(p, p.item.footprint):
+            obstacles.append((
+                (lo_x + hi_x) / 2.0,
+                (lo_y + hi_y) / 2.0,
+                hi_x - lo_x,
+                hi_y - lo_y,
+            ))
 
     # Sortable chip metadata (cached so we don't recompute extents in
     # every ordering)

@@ -1,0 +1,240 @@
+{
+  "part": "AWR1843ARBGALPQ1",
+  "datasheet": "awr1843aop.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "VDDIN_1",
+        "VDDIN_2",
+        "VDDIN_3",
+        "VDDIN_4",
+        "VDDIN_5"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.32,
+      "abs_max_v": 1.4,
+      "ref": "p.27 §6.4 Recommended Operating Conditions (VDDIN 1.14/1.2/1.32 V); p.26 §6.1 Absolute Maximum Ratings (VDDIN -0.5..1.4 V)"
+    },
+    {
+      "pins": [
+        "VIN_SRAM_1",
+        "VIN_SRAM_2",
+        "VIN_SRAM_3"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.32,
+      "abs_max_v": 1.4,
+      "ref": "p.27 §6.4 ROC (VIN_SRAM); p.26 §6.1 Abs Max (VIN_SRAM -0.5..1.4 V)"
+    },
+    {
+      "pins": [
+        "VNWA_1",
+        "VNWA_2",
+        "VNWA_3"
+      ],
+      "min_v": 1.14,
+      "max_v": 1.32,
+      "abs_max_v": 1.4,
+      "ref": "p.27 §6.4 ROC (VNWA); p.26 §6.1 Abs Max (VNWA -0.5..1.4 V)"
+    },
+    {
+      "pins": [
+        "VIOIN_1",
+        "VIOIN_2"
+      ],
+      "min_v": 3.15,
+      "max_v": 3.45,
+      "abs_max_v": 3.8,
+      "ref": "p.27 §6.4 ROC VIOIN 3.3 V mode 3.15/3.3/3.45 V (1.8 V mode would be 1.71..1.89 V; our net is 3.3 V so 3.3 V-mode limits used); p.26 §6.1 Abs Max VIOIN -0.5..3.8 V"
+    },
+    {
+      "pins": [
+        "VIOIN_18_1",
+        "VIOIN_18_2",
+        "VIOIN_18_3",
+        "VIOIN_18_4"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.9,
+      "abs_max_v": 2.0,
+      "ref": "p.27 §6.4 ROC VIOIN_18 1.71/1.8/1.9 V; p.26 §6.1 Abs Max VIOIN_18 -0.5..2 V"
+    },
+    {
+      "pins": [
+        "VIN_18CLK_1",
+        "VIN_18CLK_2"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.9,
+      "abs_max_v": 2.0,
+      "ref": "p.27 §6.4 ROC VIN_18CLK; p.26 §6.1 Abs Max VIN_18CLK -0.5..2 V"
+    },
+    {
+      "pins": [
+        "VIOIN_18DIFF"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.9,
+      "abs_max_v": 2.0,
+      "ref": "p.27 §6.4 ROC VIOIN_18DIFF; p.26 §6.1 Abs Max VIOIN_18DIFF -0.5..2 V"
+    },
+    {
+      "pins": [
+        "VIN_18BB_1",
+        "VIN_18BB_2",
+        "VIN_18BB_3"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.9,
+      "abs_max_v": 2.0,
+      "ref": "p.27 §6.4 ROC VIN18BB; p.26 §6.1 Abs Max VIN_18BB -0.5..2 V"
+    },
+    {
+      "pins": [
+        "VIN_18VCO_1",
+        "VIN_18VCO_2"
+      ],
+      "min_v": 1.71,
+      "max_v": 1.9,
+      "abs_max_v": 2.0,
+      "ref": "p.27 §6.4 ROC VIN_18VCO; p.26 §6.1 Abs Max VIN_18VCO -0.5..2 V"
+    },
+    {
+      "pins": [
+        "VIN_13RF1_1",
+        "VIN_13RF1_2",
+        "VIN_13RF1_3",
+        "VIN_13RF2_1",
+        "VIN_13RF2_2",
+        "VIN_13RF2_3"
+      ],
+      "min_v": 1.23,
+      "max_v": 1.36,
+      "abs_max_v": 1.45,
+      "ref": "p.27 §6.4 ROC VIN_13RF1/VIN_13RF2 1.3 V mode 1.23/1.3/1.36 V (1-V LDO-bypass mode would be 0.95..1.05 V, abs max 1.4 V); p.26 §6.1 Abs Max -0.5..1.45 V"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "GPIO_42_(DP11)",
+        "GPIO_44_(DP13)",
+        "SPI_HOST_INTR",
+        "GPIO_40_(DP9)",
+        "GPIO_43_(DP12)",
+        "GPIO_46_(DP15)",
+        "SPIA_CS_N",
+        "GPIO_39_(DP8)",
+        "GPIO_41_(DP10)",
+        "GPIO_45_(DP14)",
+        "SPIA_MISO",
+        "SPIA_CLK",
+        "SPIB_CS_N",
+        "SPIB_CLK",
+        "SPIA_MOSI",
+        "SPIB_MOSI",
+        "QSPI[1]",
+        "SPIB_MISO",
+        "QSPI_CLK",
+        "QSPI[0]",
+        "QSPI_CS_N",
+        "QSPI[2]",
+        "QSPI[3]",
+        "GPIO_2",
+        "GPIO_38_(DP7)",
+        "GPIO_37_(DP6)",
+        "GPIO_1",
+        "GPIO_36_(DP5)",
+        "GPIO_0",
+        "SYNC_OUT",
+        "TCK",
+        "GPIO_47_(DMM_CLK)",
+        "DMM_SYNC",
+        "GPIO_34_(DP3)",
+        "GPIO_32_(DP1)",
+        "GPIO_31_(DP0)",
+        "TMS",
+        "TDI",
+        "TDO",
+        "SYNC_IN",
+        "RS232_TX",
+        "GPIO_35_(DP4)",
+        "GPIO_33_(DP2)",
+        "PMIC_CLKOUT",
+        "MCU_CLKOUT",
+        "RS232_RX"
+      ],
+      "domain": "VIOIN_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.26 §6.1 Abs Max 'Dual-voltage LVCMOS inputs, 3.3 V or 1.8 V (steady state)' -0.3 V..VIOIN+0.3 V (transient: VIOIN+20% for up to 20% of signal period); clamp current ±20 mA. p.25 Table 5-4: VIOIN = 'I/O supply: all CMOS I/Os operate on this supply'"
+    },
+    {
+      "pins": [
+        "NERROR_IN",
+        "NERROR_OUT",
+        "WARM_RESET"
+      ],
+      "domain": "VIOIN_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.26 §6.1 Abs Max LVCMOS row (-0.3..VIOIN+0.3 V). These three are fail-safe (p.21 §5.3 Note), so they may be driven while VIOIN is absent; datasheet gives no separate fixed abs max for them"
+    },
+    {
+      "pins": [
+        "NRESET"
+      ],
+      "domain": "VIOIN_1",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.26 §6.1 Abs Max LVCMOS row -0.3..VIOIN+0.3 V. CAUTION: NRESET is listed under 'ANALOG' in Table 5-4 (p.25) and not explicitly named in the abs-max row; VIOIN-domain inferred from p.27 §6.4 NRESET/SOP thresholds given per 1.8 V/3.3 V IO mode"
+    },
+    {
+      "pins": [
+        "CLKP",
+        "CLKM"
+      ],
+      "domain": null,
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 2.0,
+      "ref": "p.26 §6.1 Abs Max 'CLKP, CLKM input ports for reference crystal' -0.5..2 V"
+    }
+  ],
+  "open_drain": [
+    {
+      "pins": [
+        "NERROR_OUT"
+      ],
+      "ref": "p.23 Table 5-4: 'Open drain fail safe output signal'; p.10 Table: NERROR_OUT 'Hi-Z (Open Drain)'"
+    },
+    {
+      "pins": [
+        "WARM_RESET"
+      ],
+      "ref": "p.25 Table 5-4: 'Open drain fail safe warm reset signal'"
+    }
+  ],
+  "required": [
+    {
+      "what": "All IO pins except NERROR_IN, NERROR_OUT and WARM_RESET are non-failsafe: must not be driven externally while VIOIN is absent",
+      "ref": "p.21 §5.3 Signal Descriptions, Note"
+    },
+    {
+      "what": "In external-clock mode CLKP takes the single-ended reference and CLKM must be connected to ground",
+      "ref": "p.25 Table 5-4 CLKP/CLKM description"
+    },
+    {
+      "what": "Three-TX simultaneous operation only in 1-V LDO-bypass + PA-LDO-disable mode, with 1 V fed on VOUT_PA (VIN_13RF1/2 then 0.95..1.05 V)",
+      "ref": "p.28 Table 6-1 note (1); p.27 §6.4"
+    },
+    {
+      "what": "GPADC1..6 (Analog Test1-4, ANAMUX, VSENSE) input range 0..1.8 V unbuffered (0.4..1.3 V buffered); no abs max stated",
+      "ref": "p.69 §7.4.1.1 GP-ADC Parameter"
+    },
+    {
+      "what": "Supply ripple limits on 1.3 V/1.0 V RF and 1.8 V VCO/IF rails (e.g. 1.8 V: 83 µVrms @137.5 kHz, 6 µVrms @1.1 MHz)",
+      "ref": "p.28 Table 6-2 Ripple Specifications"
+    }
+  ]
+}

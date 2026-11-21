@@ -162,20 +162,68 @@ def placement_extents_mm(
     lo_x, lo_y, hi_x, hi_y = footprint_bbox_mm(
         footprint, inter_chip_margin_mm=inter_chip_margin_mm
     )
-    # Rotate the four corners; cardinal rotations keep the result
-    # axis-aligned but may swap which corner is min vs max.
-    corners = [
-        rotate_point((lo_x, lo_y), placement.rotation_deg),
-        rotate_point((lo_x, hi_y), placement.rotation_deg),
-        rotate_point((hi_x, lo_y), placement.rotation_deg),
-        rotate_point((hi_x, hi_y), placement.rotation_deg),
-    ]
-    if placement.face == "bottom":
-        corners = [(-x, y) for x, y in corners]
+    corners = _rotated_corners(placement, (lo_x, lo_y, hi_x, hi_y))
     xs = [c[0] for c in corners]
     ys = [c[1] for c in corners]
     cx, cy = placement.position_mm
     return (cx + min(xs), cy + min(ys), cx + max(xs), cy + max(ys))
+
+
+def _is_cardinal(deg: float) -> bool:
+    return abs(((deg or 0.0) % 90.0 + 45.0) % 90.0 - 45.0) < 0.5
+
+
+def _rotated_corners(placement: Placement, box) -> list:
+    """The footprint box's 4 corners in board-local offsets. Cardinal
+    rotations use the snapped helper; (2026-11-21) any other angle (a locked
+    part turned e.g. 45°, the radar AoP) is rotated EXACTLY — snapping it
+    would reserve the wrong area."""
+    lo_x, lo_y, hi_x, hi_y = box
+    pts = [(lo_x, lo_y), (lo_x, hi_y), (hi_x, hi_y), (hi_x, lo_y)]
+    deg = placement.rotation_deg or 0.0
+    if _is_cardinal(deg):
+        corners = [rotate_point(p, deg) for p in pts]
+    else:
+        import math
+        c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+        corners = [(x * c - y * s, x * s + y * c) for x, y in pts]
+    if placement.face == "bottom":
+        corners = [(-x, y) for x, y in corners]
+    return corners
+
+
+def placement_rects_mm(
+    placement: Placement,
+    footprint: Footprint,
+    *,
+    inter_chip_margin_mm: float = INTER_CHIP_PAD_MARGIN_MM,
+    strip_mm: float = 0.4,
+) -> list:
+    """The area a placement occupies as axis-aligned rects (min_x, min_y,
+    max_x, max_y). One rect (= placement_extents_mm) for cardinal rotations;
+    for any other angle a STAIRCASE of horizontal strips hugging the true
+    rotated outline, so a 45° part does not block its whole bounding square
+    (2026-11-21: the 15 mm radar AoP turned 45° — its AABB is 24 mm)."""
+    deg = placement.rotation_deg or 0.0
+    if _is_cardinal(deg):
+        return [placement_extents_mm(placement, footprint,
+                                     inter_chip_margin_mm=inter_chip_margin_mm)]
+    from shapely.geometry import Polygon, box as _box
+    corners = _rotated_corners(placement, footprint_bbox_mm(
+        footprint, inter_chip_margin_mm=inter_chip_margin_mm))
+    cx, cy = placement.position_mm
+    poly = Polygon([(cx + x, cy + y) for x, y in corners])
+    x0, y0, x1, y1 = poly.bounds
+    import math
+    strips = max(1, math.ceil((y1 - y0) / strip_mm))   # a 45° edge overshoots ≤ strip_mm
+    out = []
+    for k in range(strips):
+        ya, yb = y0 + (y1 - y0) * k / strips, y0 + (y1 - y0) * (k + 1) / strips
+        piece = poly.intersection(_box(x0 - 1, ya, x1 + 1, yb))
+        if not piece.is_empty:
+            bx0, _by0, bx1, _by1 = piece.bounds
+            out.append((bx0, ya, bx1, yb))
+    return out
 
 
 def placement_pad_extents_mm(

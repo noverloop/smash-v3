@@ -1,0 +1,37 @@
+{
+  "part": "AR0234CSSM00SUKA0-CP",
+  "datasheet": "AR0234CSSM00SUKA0-CP.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD", "VDD_PHY", "VDD_DATA"], "min_v": 1.14, "max_v": 1.26, "abs_max_v": 4.5,
+     "ref": "AR0234CS DS p.17 Table 11 DC Electrical Characteristics (VDD, VDD_PHY, VDD_DATA 1.14-1.26 V); abs max p.17 Table 12 VSUPPLY (all supplies) -0.3..4.5 V"},
+    {"pins": ["VAA", "VAA_PIX", "VAA_PHY"], "min_v": 2.5, "max_v": 3.1, "abs_max_v": 4.5,
+     "ref": "AR0234CS DS p.17 Table 11 (VAA, VAA_PIX, VAA_PHY 2.5-3.1 V); p.17 Table 12 VSUPPLY max 4.5 V"},
+    {"pins": ["VDDIO_PHY"], "min_v": 1.7, "max_v": 1.9, "abs_max_v": 4.5,
+     "ref": "AR0234CS DS p.17 Table 11 VDD_IO_PHY 1.7-1.9 V; p.6 note 10 'VDDIO_PHY should be connected to 1.8 V only'; p.17 Table 12 VSUPPLY max 4.5 V"},
+    {"pins": ["VDD_IO"], "min_v": 1.7, "max_v": 1.9, "abs_max_v": 4.5,
+     "ref": "AR0234CS DS p.17 Table 11 VDD_IO 1.7/2.5 min, 1.8/2.8 typ, 1.9/3.1 max — two allowed modes; this entry encodes the 1.8 V mode (2.5-3.1 V is the other valid range); p.17 Table 12 VSUPPLY max 4.5 V"}
+  ],
+  "io": [
+    {"pins": ["EXTCLK", "RESET_BAR", "SADDR", "SCLK", "SDATA", "TEST", "TRIGGER", "OE_BAR", "RSVD",
+              "LINE_VALID", "FRAME_VALID", "PIXCLK", "SHUTTER", "FLASH",
+              "DOUT0", "DOUT1", "DOUT2", "DOUT3", "DOUT4", "DOUT5", "DOUT6", "DOUT7", "DOUT8", "DOUT9"],
+     "domain": "VDD_IO", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "AR0234CS DS p.17 Table 12 Absolute Maximum Ratings: VIN and VOUT -0.3 V..VDD_IO+0.3 V (MIPI DATAx/CLK pins not covered here)"}
+  ],
+  "open_drain": [
+    {"pins": ["SDATA"], "ref": "AR0234CS DS p.10 Two-Wire Serial Register Interface: SDATA pulled up to VDD_IO off-chip (1.5 kOhm); slave or master drives it LOW"}
+  ],
+  "i2c": {"bus_pins": {"SCL": "SCLK", "SDA": "SDATA"},
+          "address": {"default": "0x10", "strap": {"pin": "SADDR", "GND": "0x10", "VDD": "0x18"}},
+          "ref": "AR0234CS DS p.10: default slave address 0x20/0x21 (8-bit W/R) = 0x10 7-bit; alternate 0x30/0x31 = 0x18 7-bit selected 'by enabling and asserting the SADDR input'; also programmable via R0x31FC"},
+  "required": [
+    {"what": "1.5 kOhm pull-up from SDATA to VDD_IO (and on SCLK unless the controller always drives it)", "ref": "AR0234CS DS p.6 Figure 4 notes 2-3; p.10"},
+    {"what": "RSVD (F10) connected to DGND through a 1.5 kOhm resistor", "ref": "AR0234CS DS p.9 Table 3 (RSVD)"},
+    {"what": "TEST (F5) connected to DGND", "ref": "AR0234CS DS p.9 Table 3 (TEST)"},
+    {"what": "External bypass capacitor on CAP_1UF_PHY (F12) for the MIPI regulator", "ref": "AR0234CS DS p.9 Table 3 (CAP_1UF_PHY)"},
+    {"what": "Reserved balls A11, B9 left unconnected", "ref": "AR0234CS DS p.9 Table 3 (Reserved)"},
+    {"what": "0.1 uF + 10 uF decoupling per supply close to the pads", "ref": "AR0234CS DS p.6 Figure 4 note 6"},
+    {"what": "Power-up order VAA/VAA_PIX/VAA_PHY -> VDD_IO -> VDDIO_PHY -> VDD/VDD_PHY -> VDD_DATA, then EXTCLK, then RESET_BAR low >= 1 ms", "ref": "AR0234CS DS p.20 Power-Up Sequence, Figure 15, Table 20"}
+  ]
+}

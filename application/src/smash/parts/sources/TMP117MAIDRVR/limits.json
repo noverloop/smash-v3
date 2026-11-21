@@ -1,0 +1,66 @@
+{
+  "part": "TMP117MAIDRVR",
+  "datasheet": "TMP117MAIDRVR.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "V+"
+      ],
+      "min_v": 1.8,
+      "max_v": 5.5,
+      "abs_max_v": 6,
+      "ref": "p.5 §6.3 Recommended Operating Conditions (1.8 V min for TA -55..150 C; 1.7 V min for TA -55..70 C); p.5 §6.1 Absolute Maximum Ratings"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "SCL",
+        "SDA",
+        "ALERT",
+        "ADD0"
+      ],
+      "domain": "V+",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 6,
+      "ref": "p.5 §6.1 Absolute Maximum Ratings (SCL, SDA, ALERT, ADD0 -0.3 to 6 V; fixed, not V+-relative); recommended 0-5.5 V per §6.3"
+    }
+  ],
+  "open_drain": [
+    {
+      "pins": [
+        "SDA",
+        "ALERT"
+      ],
+      "ref": "p.4 §5 Table 5-1 Pin Functions (ALERT and SDA open-drain, require pull-up)"
+    }
+  ],
+  "i2c": {
+    "bus_pins": {
+      "SCL": "SCL",
+      "SDA": "SDA"
+    },
+    "address": {
+      "default": "0x48",
+      "strap": {
+        "pin": "ADD0",
+        "GND": "0x48",
+        "VDD": "0x49",
+        "SDA": "0x4A",
+        "SCL": "0x4B"
+      }
+    },
+    "ref": "p.21 §7.5.3.1.2 Table 7-2 Address Pin and Slave Addresses"
+  },
+  "required": [
+    {
+      "what": "0.1 uF bypass capacitor V+ to GND, close to V+",
+      "ref": "p.33 §8.2.1 Design Requirements"
+    },
+    {
+      "what": "Pull-ups on SDA and ALERT (5 kOhm recommended); SCL pull-up if the host SCL is open drain",
+      "ref": "p.33 §8.2.1 Design Requirements"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "part": "STM32WBA55UGI7",
+  "datasheet": "STM32WBA55UGI7.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD_1", "VDD_2", "VDD_3", "VDD_4"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.87 Table 31 VDD 1.71–3.6 V; p.85 Table 27 VDDX−VSS −0.3…4.0 V"},
+    {"pins": ["VDD_SMPS"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.28 power-supply scheme list VDDSMPS = 1.71 to 3.6 V, must be the same supply as VDD (p.87 Table 31 typ = VDD); p.85 Table 27 −0.3…4.0 V"},
+    {"pins": ["VDDA"], "min_v": 1.62, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.87 Table 31 VDDA 1.62–3.6 V with ADC used (1.58 V COMP only; 0 V if ADC/COMP unused); p.85 Table 27 −0.3…4.0 V"},
+    {"pins": ["VDDRF"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.87 Table 31 VDDRF 1.71–3.6 V; p.85 Table 27 −0.3…4.0 V"},
+    {"pins": ["VDD_RFPA"], "min_v": 1.15, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.87 Table 31 VDDRFPA 1.15–3.6 V while the radio is active (note 2: 0 V allowed when inactive), must be ≤ VDDRF; p.85 Table 27 −0.3…4.0 V"},
+    {"pins": ["VDD_ANA"], "min_v": 1.15, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.87 Table 31 VDDANA 1.15–3.6 V, must be ≤ VDDRF (p.28: 0–3.6 V, ≥1.2 V for radio operation); p.85 Table 27 −0.3…4.0 V"},
+    {"pins": ["VDD11"], "min_v": 0.81, "max_v": 1.27, "abs_max_v": null,
+     "ref": "p.87 Table 31 VCORE Range 2 min 0.81 V … Range 1 max 1.27 V. VDD11 is the SMPS output node (p.28), not an external supply input; no abs max stated"}
+  ],
+  "io": [
+    {"pins": ["PA0", "PA1", "PA2", "PA3", "PA4", "PA5", "PA6", "PA7", "PA8", "PA9", "PA10", "PA11", "PA12", "PA13", "PA14", "PA15",
+              "PB0", "PB1", "PB2", "PB3", "PB4", "PB5", "PB6", "PB7", "PB8", "PB9", "PB11", "PB12", "PB13", "PB14",
+              "PC13", "PC14__OSC32__IN", "PC15__OSC32__OUT"],
+     "domain": "VDD_1", "abs_max_over_domain_v": 4.0, "abs_max_v": 6.0,
+     "ref": "p.85 Table 27 VIN on FT_ pins: max = min(min(VDD, VDDA) + 4.0 V, 6.0 V) → 6.0 V for VDD,VDDA ≥ 2.0 V (only 4.0 V when unpowered); pull-ups/downs must be off above 4 V (note 3). FT_ structure per p.70–75 Table 24 (UFBGA59 column)"},
+    {"pins": ["PB15", "PH3__BOOT0", "NRST", "OSC_IN", "OSC__OUT", "RF"],
+     "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 4.0,
+     "ref": "p.85 Table 27 VIN on any other (non-FT) pin max 4.0 V; PB15 and PH3-BOOT0 are TT_ (3.6 V tolerant), NRST is RST, OSC_IN/OSC_OUT/RF are RF type, per p.74–75 Table 24"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "VDDHPA (our pin VDD_HPA, ball B4) is only for an external decoupling capacitor (typ 470 nF) — do not connect it to a supply", "ref": "p.28 power-supply scheme text ('The VDDHPA pin is provided to connect to an external capacitor (typical value 470 nF)'); p.83–84 Figures 15/16"},
+    {"what": "VDDRFPA and VDDANA must each be ≤ VDDRF", "ref": "p.87 Table 31; p.28"},
+    {"what": "VDDSMPS and VDDRF must be the same supply as VDD; VDDA preferably tied to VDD", "ref": "p.28"},
+    {"what": "SMPS mode: 2.2 µH between VLXSMPS and VDD11, 4.7 µF on VDD11, 10 µF on VDDSMPS; LDO-only use: VDDSMPS and VLXSMPS to ground", "ref": "p.29 Caution; p.83 Figure 15"},
+    {"what": "Decoupling: n×100 nF + 10 µF on VDD; 100 nF + 1 µF on VDDA; 100 nF on VDDANA, VDDRFPA, VDDRF", "ref": "p.83 Figure 15"},
+    {"what": "HSE32 driven by an external clock on OSC_IN: 32 MHz, input level 0–0.9 V, amplitude 200–900 mVpp, duty 45–55 %, ±50 ppm (BLE); AC coupling 470 pF–100 nF supported — a full-swing CMOS oscillator needs attenuation", "ref": "p.110 Table 61 HSE32 clock source requirements"},
+    {"what": "Operating I/O input on FT pins ≤ min(min(VDD,VDDA)+3.6 V, 5.5 V); above min(VDD,VDDA)+0.3 V disable internal pull-up/down", "ref": "p.87 Table 31 VIN and notes 3/4"},
+    {"what": "|ΔVDDx| between supply pins of one domain ≤ 50 mV; |VSSx−VSS| ≤ 50 mV", "ref": "p.85 Table 27"}
+  ]
+}

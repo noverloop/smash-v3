@@ -451,33 +451,6 @@
   "face": "top",
   "reason": "2026-11-18: small Ø27 payload board (inside the 4 mm bevel connector ring) — IR pair at the rim beside the sensor, under its own light pipe."
  },
- "D_IR_WAKE": {
-  "position_mm": [
-   0.0,
-   -10.6
-  ],
-  "rotation_deg": 180,
-  "face": "top",
-  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
- },
- "D_IR_TX": {
-  "position_mm": [
-   10.6,
-   -3.0
-  ],
-  "rotation_deg": 270,
-  "face": "top",
-  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
- },
- "Q_IR_TX": {
-  "position_mm": [
-   10.6,
-   3.0
-  ],
-  "rotation_deg": 270,
-  "face": "top",
-  "reason": "2026-11-18: radar IR pair just outside the AoP, under the flat radome face (light pipes need the headroom)."
- },
  "P_CELL_PIN_NEG1": {
   "position_mm": [
    0.0,
@@ -729,5 +702,32 @@
   "rotation_deg": 180,
   "face": "top",
   "reason": "2026-11-20 (user): TALL GROUP — the 2.8 mm boost inductors stack on power_board's TOP in the one pocket where companion_compute's BOTTOM is free (south, between the DDR4 and MPU decoupling fields); compute's bottom carries a matching plain keepout (_TALL_ZONE_REFS) so nothing stands over them and the power↔compute gap is sized by the 2.8 mm parts alone."
+ },
+ "U_AWR": {
+  "position_mm": [
+   0.0,
+   0.0
+  ],
+  "rotation_deg": 45,
+  "face": "top",
+  "reason": "2026-11-21 (user): the AWR1843AOP radar stays DEAD CENTRE on radar_module, turned 45° so the stacked potting hole at (-9.19, 9.19) faces a FLAT side of the 15×15 mm package (a corner reaches r 10.6; the flat side r 7.5 → ~4 mm clear). The radar's az/el axes are therefore 45° to the body frame — firmware applies the fixed rotation. The AoP dam turns with it."
+ },
+ "D_IR_WAKE": {
+  "position_mm": [
+   8.05,
+   -8.05
+  ],
+  "rotation_deg": 45,
+  "face": "top",
+  "reason": "2026-11-21: radar IR-wake photodiode (VBPW34FAS, 5.45 × 4.4 mm — the one radar part the packer cannot fit round the 45°-turned AoP) parked against the AoP's SE flat side, turned 45° so its long edge runs parallel; opposite the NW potting hole. The radar's other IR parts are packer-placed."
+ },
+ "Y_AWR_HSE": {
+  "position_mm": [
+   8.72,
+   8.72
+  ],
+  "rotation_deg": 45,
+  "face": "top",
+  "reason": "2026-11-21: AWR 40 MHz MEMS clock locked on the NE diagonal against the AoP's flat side, turned 45° like the AoP (its 5.45 × 5.2 mm courtyard box would hang off the board elsewhere); the packer's adjacency anchors missed the pockets round the turned AoP and dumped it off-board at x 168."
  }
 }

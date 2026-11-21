@@ -1,0 +1,23 @@
+{
+  "part": "LR2021IMLTRT",
+  "datasheet": "LR2021IMLTRT.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VBAT"], "min_v": 1.8, "max_v": 3.7, "abs_max_v": 3.9,
+     "ref": "p.38 Table 3-2 Operating Range VDDop 1.8–3.7 V; p.38 Table 3-1 Absolute Maximum Ratings VDDmr −0.5…3.9 V (VDD is supplied on VBAT, p.39 §3.4)"}
+  ],
+  "io": [
+    {"pins": ["DIO5", "DIO6", "DIO7", "DIO8", "DIO9", "DIO10", "DIO11", "NRESET", "MISO", "MOSI", "SCK", "NSS", "BUSY"],
+     "domain": "VBAT", "abs_max_over_domain_v": 0.3, "abs_max_v": null,
+     "ref": "p.71 Table 3-26 Digital I/O Specifications: VIH max = VBAT+0.3 V, VIL min −0.3 V (no separate I/O abs-max row in Table 3-1)"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "VDCC1 (SIMO/LDO output) must be connected to VDCC2 (regulated supply input) on the PCB", "ref": "p.35 Table 2-1 pins 12/26; p.32 §1.8.4"},
+    {"what": "VPAX1 must be connected to VPAX2 on the PCB", "ref": "p.35 Table 2-1 pins 2/13; p.32 §1.8.4"},
+    {"what": "SIMO mode needs a 2.2 µH inductor across LXA/LXB (DCR ≤ 0.5 Ω, Isat ≥ 200 mA, SRF ≥ 20 MHz); LDO mode leaves LXA/LXB unconnected (Figure 1-14)", "ref": "p.71 §3.6; p.32 Figures 1-13/1-14"},
+    {"what": "Load capacitance on digital ports ≤ 20 pF", "ref": "p.38 Table 3-2 Clop"},
+    {"what": "RF input level ≤ +10 dBm (abs max); PA stable up to VSWR 10:1", "ref": "p.38 Table 3-1 Pmr; Table 3-2 VSWR"},
+    {"what": "VTCXO regulator output: VDDop must exceed VTCXO + 200 mV; CVTCXO 70–130 nF X5R", "ref": "p.70 Table 3-25 TCXO Regulator Specifications"}
+  ]
+}

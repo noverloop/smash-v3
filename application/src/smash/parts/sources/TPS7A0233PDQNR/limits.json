@@ -1,0 +1,55 @@
+{
+  "part": "TPS7A0233PDQNR",
+  "datasheet": "../TPS7A0233PDBVR/tps7a02.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {
+      "pins": [
+        "IN"
+      ],
+      "min_v": 1.5,
+      "max_v": 6.0,
+      "abs_max_v": 6.5,
+      "ref": "p.5 §6.3 Recommended Operating Conditions; p.4 §6.1 Absolute Maximum Ratings"
+    }
+  ],
+  "io": [
+    {
+      "pins": [
+        "EN"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 6.5,
+      "ref": "p.4 §6.1 Absolute Maximum Ratings (VEN -0.3 to 6.5 V); recommended 0-6.0 V per p.5 §6.3"
+    },
+    {
+      "pins": [
+        "OUT"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 5.5,
+      "ref": "p.4 §6.1 Absolute Maximum Ratings note 2 (VOUT max is VIN + 0.3 V or 5.5 V, whichever is smaller)"
+    },
+    {
+      "pins": [
+        "OUT"
+      ],
+      "domain": "IN",
+      "abs_max_over_domain_v": 0.3,
+      "abs_max_v": null,
+      "ref": "p.4 §6.1 Absolute Maximum Ratings note 2 (VOUT max is VIN + 0.3 V or 5.5 V, whichever is smaller)"
+    }
+  ],
+  "required": [
+    {
+      "what": "CIN 1 uF nominal on IN; COUT 1-22 uF on OUT (0.5 uF effective minimum for stability, 22 uF max derated)",
+      "ref": "p.5 §6.3 Recommended Operating Conditions; p.3 §5 Table 5-1 Pin Functions"
+    },
+    {
+      "what": "DQN thermal pad to a large ground plane (internally connected to ground)",
+      "ref": "p.3 §5 Table 5-1 Pin Functions: DQN, DBV"
+    }
+  ]
+}

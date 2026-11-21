@@ -157,6 +157,7 @@ def build_diag(d) -> dict:
     # ── dev 3.3 V (from USB VBUS: the diag section lives without the DUT) ──
     ldo = add_ldl112pv33r(d, ref="U_DEV_LDO", **T)
     N("USB_VBUS").connect(ldo.pin("VIN")); N(V3).connect(ldo.pin("VOUT"))
+    next(n for n in d.nets if n.name == V3).voltage_v = 3.3   # (2026-11-21) for the electrical rules
     N("USB_VBUS").connect(ldo.pin("EN")); N("GND").connect(ldo.pin("GND"))
     cap_to_gnd(d, "USB_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
     cap_to_gnd(d, V3, "10uF", ref="C_DEV_LDO_OUT", **T)
@@ -1224,6 +1225,11 @@ def main() -> int:
     if os.environ.get("SMASH_SKIP_CHECKS") != "1":                 # warnings only
         from smash.export.checks import report as _check_report
         _check_report(pcbs=[pcb], schematics=[OUT / f"{DEV}.kicad_sch"], root=REPO)
+        try:
+            from smash.validators.electrical import report as _erc_report
+            _erc_report(d, "dev board")
+        except Exception as _e:
+            print(f"Electrical rules check: SKIPPED ({type(_e).__name__}: {_e})")
     print(f"  LDS bus: {bus['tracks']} tracks on {bus['angles']} lane angles, {bus['width_mm']} mm "
           f"wide ({'/'.join(BUS_LAYERS)}; {bus['spill']} on {'/'.join(BUS_SPILL)}); "
           f"{bus['prog']} nets run on to the programmer")

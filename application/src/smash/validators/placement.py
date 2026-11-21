@@ -71,7 +71,8 @@ def _placement_rects(p) -> list:
     COURTYARD_CLEARANCE_MM, same as an authored courtyard)."""
     fp = p.item.footprint
     if getattr(p.item, "manf", None) != "project" or len(fp.pads) < 2:
-        return [placement_extents_mm(p, fp)]
+        from smash.layout.placer.grid import placement_rects_mm   # 45° parts: true outline
+        return placement_rects_mm(p, fp)
     return placement_pad_extents_mm(p, fp, clearance_mm=COURTYARD_CLEARANCE_MM)
 
 

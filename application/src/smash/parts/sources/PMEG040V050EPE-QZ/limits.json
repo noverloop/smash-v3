@@ -1,0 +1,19 @@
+{
+  "part": "PMEG040V050EPE-QZ",
+  "datasheet": "PMEG040V050EPE-QZ.pdf",
+  "extracted": "2026-11-21 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [],
+  "io": [
+    {
+      "pins": [
+        "K"
+      ],
+      "domain": null,
+      "abs_max_over_domain_v": null,
+      "abs_max_v": 40.0,
+      "ref": "p.2 §8 Table 5 Limiting values: VR = 40 V (Tj = 25 °C). Real limit is V(K) - V(A) relative to the anodes A_1/A_2, not ground; IF 7 A, IF(AV) 5 A"
+    }
+  ],
+  "open_drain": [],
+  "required": []
+}

@@ -225,9 +225,14 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
             items += path([(xt, z_hi), (xt, zd), (xb, fan_z[0]), (xb, z_lo)], w, n)
             n_lanes += 1
             continue
+        ba = lane.get("board_angles", {})
         for ang in lane["angles"]:
             x = X(_x_of(ang, r_out))
-            for zc in zs:
+            # (2026-11-21) a per-board override (board_angles) drops this
+            # angle's via at boards whose castellation it removed
+            zs_a = sorted(sum(zmap[b]) / 2.0 for b in lane["boards"]
+                          if b in zmap and ang in ba.get(b, lane["angles"]))
+            for zc in zs_a:
                 items.append(f'\t(via (at {x} {Y(zc)}) (size {VIA_PAD_MM}) '
                              f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1

@@ -69,8 +69,12 @@ def test_payload_boards_sit_on_the_land_ring(name):
     g = load_board_geometry(name)
     assert g.shape == "circle" and g.diameter_mm / 2 == NI.PAYLOAD_R_MM == 17.0
     assert not [h for h in g.holes if h.tag == "nose_stop"]
+    # (2026-11-21, user) every payload carries the STANDARD potting hole, at the
+    # same coordinate as every other board (one stacked channel)
     pot = [h for h in g.holes if h.tag == "potting"]
-    assert len(pot) == (1 if name == "radar_module" else 0)   # radar: 51 bottom parts
+    assert len(pot) == 1
+    x, y = pot[0].position_mm
+    assert (round(x, 2), round(y, 2)) == (-9.19, 9.19)   # radar too: its AoP is turned 45°
 
 
 def test_nose_cap_pcb_is_retired():

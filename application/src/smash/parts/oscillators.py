@@ -249,6 +249,67 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
+    """Microchip DSC1001CI5-027.0000 — 27 MHz MEMS oscillator,
+    ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
+
+    Same package, pinout, and electrical spec as the -008.0000 variant
+    — only the programmed frequency differs. Smash uses this part (2026-11-21) as the AR0234 camera EXTCLK on
+    camera_module at 1.8 V (the MP25 PA8 clock was a 3.3 V bank driving the
+    sensor's 1.8 V input, abs max 2.1 V).
+    """
+    fields = dict(
+        manf="Microchip",
+        manf_pn="DSC1001CI5-027.0000",
+        canonical_id="dsc1001ci5_027_0000",
+        name="DSC1001CI5-027.0000",
+        value="DSC1001CI5-027.0000",
+        description=(
+            "27 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, "
+            "CDFN 2.5×2.0×0.85 mm 4-pad"
+        ),
+        datasheet="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
+        fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
+        standards=[
+            "RoHS", "Pb-Free", "REACH SVHC",
+            "AEC-Q100",
+            "MIL-STD-883 (shock & vibration resistant)",
+            "ESD HBM 4 kV",
+            "ESD MM ±200 V",
+            "ESD CDM 1.5 kV",
+        ],
+        eccn=None, itar=None,
+        package="CDFN/DFN-4 (2.5×2.0×0.85)",
+        size_mm=(2.5, 2.0),
+        height_mm=0.85,
+        temp_range_c=(-40, 85),
+        body_material=None, lead_material=None,
+        voltage_rating_v=None,
+        vcc_nominal_v=None,
+        # Per DSC1001 Table 1-1: 27 MHz typ 6.5 mA / max 7.1 mA; 32 MHz
+        # falls between 27 and 70 MHz lines so use ~6.8 mA worst case.
+        i_rms_a=0.0071,
+        power_rating_w=None,
+        clock_freq_hz=27.0e6,
+        tolerance_pct=0.0025,
+        rth_jc_cw=None, rth_ja_cw=None,
+        tj_max_c=None,
+        pins=[
+            Pin(num="1", name="STANDBY#", aliases=["STANDBY", "STB", "OE#"],
+                type="input",
+                note="active-low standby; output disabled when LOW"),
+            Pin(num="2", name="GND",      type="ground"),
+            Pin(num="3", name="OUT",      type="output",
+                note="CMOS clock output; drive R>10 kΩ, C≤15 pF"),
+            Pin(num="4", name="VDD",      aliases=["V_DD"], type="power"),
+        ],
+        footprint=_dsc1001ci5_footprint(),
+        note=_DSC1001_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI5-040.0000 — 40 MHz MEMS oscillator,
     ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
