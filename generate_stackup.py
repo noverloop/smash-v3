@@ -706,6 +706,11 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "SWO")        .connect(mpu.pin("JTDO-TRACESWO"))
     _net(d, "NRST")       .connect(mpu.pin("NRST"))
     _net(d, "BOOT0")      .connect(mpu.pin("BOOT0"))        # force serial boot
+    # (2026-11-21, user: dev board must flash + diagnose the tower) DEBUG
+    # CONSOLE on USART6 — PF5 TX / PF4 RX, one of the MP25 ROM-bootloader
+    # UARTs (DS boot-interface table), so the aft fixture also serial-boots it.
+    _net(d, "MP25_CONSOLE_TX").connect(mpu.pin("PF5"))  # USART6_TX → aft TP_CONS_TX
+    _net(d, "MP25_CONSOLE_RX").connect(mpu.pin("PF4"))  # USART6_RX ← aft TP_CONS_RX
     _net(d, "GND").connect(mpu.pin("BOOT1"))   # boot-mode straps — defined low;
     _net(d, "GND").connect(mpu.pin("BOOT2"))   # the OTP overrides boot device
     _net(d, "GND").connect(mpu.pin("BOOT3"))   # after provisioning.
@@ -1528,6 +1533,11 @@ def _g0b1_node(d: Design, *, suffix: str, board_tag: str) -> Chip:
                 board_tag=board_tag)
     cap_to_gnd(d, nrst, "100nF", ref=f"C_G0B1_{suffix}_NRST",
                board_tag=board_tag, pin=g.pin("PF2-_NRST"))
+    # (2026-11-21) SWD to the aft interface: the G0B1's only recovery path
+    # (nothing else drives its NRST / BOOT0). PA14 is SWCLK while the option
+    # byte nBOOT_SEL = 1 (factory default) — keep it so.
+    _net(d, f"G0B1_{suffix}_SWDIO").connect(g.pin("PA13"))
+    _net(d, f"G0B1_{suffix}_SWCLK").connect(g.pin("PA14-_BOOT0"))
     # SYS_SPI slave (SPI3) — shared SCLK/MISO/MOSI from the MP25 M33 root + a
     # per-node chip-select. Carries firmware (ISP) + runtime command/telemetry.
     _net(d, "SYS_SPI_SCLK").connect(g.pin("PC10"))            # SPI3_SCK
@@ -2242,6 +2252,20 @@ def build_activation_interface(d: Design) -> None:
         "TP_GPIO_1":      "GPIO_EXT_1",
         "TP_GPIO_2":      "GPIO_EXT_2",
         "TP_GPIO_3":      "GPIO_EXT_3",
+        # ── (2026-11-21, user) dev-board programming + diagnostics ──
+        # MP25 debug console (USART6 = a ROM-bootloader UART)
+        "TP_CONS_TX":     "MP25_CONSOLE_TX",
+        "TP_CONS_RX":     "MP25_CONSOLE_RX",
+        # WBA55 SWD — direct debug / recovery even when the MP25 is down
+        # (normally the MP25 reflashes it: it drives the WBA's BOOT0 / reset /
+        # LPUART into the ROM bootloader)
+        "TP_WBA_SWDIO":   "WBA_SWDIO",
+        "TP_WBA_SWCLK":   "WBA_SWCLK",
+        "TP_WBA_NRST":    "WBA_NRST",
+        # G0B1 (fin MCU) SWD — its only recovery path
+        "TP_FIN_SWDIO":   "G0B1_FIN_SWDIO",
+        "TP_FIN_SWCLK":   "G0B1_FIN_SWCLK",
+        "TP_FIN_NRST":    "G0B1_FIN_NRST",
     }
     # Pin-1 convention: the FIRST pad of each silkscreen group is SQUARE,
     # the rest round. Same 2.0 mm size and pitch either way — the silhouette
@@ -2258,6 +2282,7 @@ def build_activation_interface(d: Design) -> None:
         "TP_JUMP_WAKE",                                    # JUMPSTART
         "TP_VDD",                                          # PROGRAM_MP25
         "TP_GPIO_0",                                       # GPIO
+        "TP_CONS_TX", "TP_WBA_SWDIO", "TP_FIN_SWDIO",     # (2026-11-21) dev board
     }
     for ref, net in POGOS.items():
         # Pogo pads have no MFG PN; system.py treats them as bare PCB
@@ -5841,6 +5866,10 @@ _AFT_SILK_GROUPS_ALL = [
     ("PROGRAM_MP25",  ["TP_VDD", "TP_SWDIO", "TP_NRST", "TP_SWCLK",
                        "TP_MP25_GND1", "TP_SWO", "TP_MP25_GND2", "TP_BOOT0"]),
     ("GPIO",          ["TP_GPIO_0", "TP_GPIO_1", "TP_GPIO_2", "TP_GPIO_3"]),
+    # (2026-11-21, user) dev board: console + SWD for the WBA55 and the G0B1
+    ("CONSOLE",       ["TP_CONS_TX", "TP_CONS_RX"]),
+    ("PROGRAM_WBA",   ["TP_WBA_SWDIO", "TP_WBA_SWCLK", "TP_WBA_NRST"]),
+    ("PROGRAM_FIN",   ["TP_FIN_SWDIO", "TP_FIN_SWCLK", "TP_FIN_NRST"]),
 ]
 AFT_CAP_GROUPS = [(lb, refs) for lb, refs in _AFT_SILK_GROUPS_ALL
                   if lb not in ("PARACHUTE WIRES", "PARACHUTE CUTTER")]

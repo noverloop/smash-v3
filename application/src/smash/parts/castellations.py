@@ -336,9 +336,30 @@ def castellation_contract(design, panel, boards, plug_groups=None,
     # wakeup↔power → patch up to ~2 mm above power) — so from compute up.
     _slot_up = [pos[s_.upper] for s_ in _ANT_SLOTS if s_.upper in pos]
     lo_upper = (max(_slot_up) + 1) if _slot_up else pos.get("wakeup_board", len(pos) + 1)
+    # (2026-11-21) LOW antenna-sector lanes: a lane that stays BELOW a slot's
+    # copper may use the antenna sector too (the battery-holder zone has no
+    # antenna). For a lane topping out at board index hi, every slot whose
+    # LOWER board is at or below hi has its patch reaching down to that
+    # board's castellation level → the lane must stay out of that slot's
+    # angular span (+ the patch margin). S4 sits in activation↔wakeup, so
+    # aft → activation lanes may use 109-130° / 211-255°; S1 (wakeup↔power)
+    # starts above activation and does not constrain them.
+    from smash.parts.antenna_slots import PATCH_MARGIN_MM as _PM
+    _pm_deg = math.degrees(_PM / 17.9) + 0.5 * math.degrees(CAST_PITCH_MM / r)
+
+    def _low_angles(hi):
+        if not upper_angles:
+            return []
+        spans = [s_.span_deg for s_ in _ANT_SLOTS if s_.lower in pos and pos[s_.lower] <= hi]
+        return [a for a in upper_angles
+                if all(not (sp[0] - _pm_deg <= a <= sp[1] + _pm_deg) for sp in spans)]
     for lo, hi, net, bset in todo:
         need, got = _mult(net), []
-        for a in (angles + upper_angles if lo >= lo_upper else angles):
+        # antenna-sector-eligible lanes try those angles FIRST, keeping the
+        # signal sector for the lanes that can only run there
+        cand = (upper_angles + angles if lo >= lo_upper
+                else _low_angles(hi) + angles if hi < lo_upper - 1 else angles)
+        for a in cand:
             if len(got) == need:
                 break
             if free(a, lo, hi):

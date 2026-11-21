@@ -132,8 +132,10 @@ def test_lane_frame_matches_stack_assembly_pose(built):
 def test_signal_lanes_stay_in_the_signal_sector(built):
     """Signal / power lanes only in the 210° signal sector; GND castellations
     and antenna feeds only in the opposite antenna sector (no lanes there)."""
+    import math
     from smash.parts.castellations import (SIGNAL_SECTOR_CENTRE_DEG,
                                            SIGNAL_SECTOR_HALF_DEG)
+    from smash.parts.antenna_slots import SLOTS, PATCH_MARGIN_MM
     _d, _p, _b, contract, _n, _M = built
 
     def in_signal(a):
@@ -147,11 +149,19 @@ def test_signal_lanes_stay_in_the_signal_sector(built):
             if kind in ("cone_exit", "crown_top", "crown_payload"):
                 continue                     # nose crown: all round the rim (nose_interface)
             if kind in ("signal", "power", "plug_exit", "gnd_guard"):
-                # (2026-11-18) lanes from the wakeup board upward may also use
-                # the antenna sector — both slot antennas sit below wakeup
-                upper = all(b not in ("aft_end_board", "activation_interface", "fin_ble_board")
-                            for b in lane["boards"])
-                assert in_signal(a) or upper, (net, a)
+                # (2026-11-21) the antenna sector is open only where a lane can't
+                # touch slot copper: lanes from compute up (above every slot's
+                # patch), or aft-region lanes (aft_end / activation only) that
+                # keep out of S4's arc + patch margin (S1 starts above them)
+                if in_signal(a):
+                    continue
+                upper = all(b not in ("aft_end_board", "activation_interface",
+                                      "wakeup_board", "power_board") for b in lane["boards"])
+                low = set(lane["boards"]) <= {"aft_end_board", "activation_interface"}
+                s4 = next(sl for sl in SLOTS if sl.name == "S4")
+                m = math.degrees(PATCH_MARGIN_MM / 17.9)
+                clear_s4 = not (s4.span_deg[0] - m <= a <= s4.span_deg[1] + m)
+                assert upper or (low and clear_s4), (net, a, lane["boards"])
             else:
                 assert not in_signal(a), (net, a)
     assert {"gnd_plane", "antenna_feed"} <= kinds
