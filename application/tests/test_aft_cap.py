@@ -183,14 +183,13 @@ def test_cells_are_wired_to_aft_end_board(built):
                 assert math.dist((x, y), refs[t].position_mm) > 0.8 + 0.8 + 0.2, (ref, t)
             for h in boards["aft_end_board"].geometry.holes:
                 assert math.dist((x, y), h.position_mm) > h.diameter_mm / 2 + 0.8 + 0.2, ref
-    # (2026-11-20, user) the ceiling's bottom takes only LOW parts (≤ 0.8 mm),
-    # clear of the + pin joints / wires (keepouts)
+    # (2026-11-21, user) the ceiling's bottom carries NO components (only
+    # pads / test points), so the part headroom above the cells can go
     ceiling = boards["activation_interface"]
     for pl in ceiling.chip_placements:
-        if pl.face != "bottom" or pl.item.ref.startswith(("J_", "TP_")):
+        if pl.face != "bottom" or pl.item.ref.startswith(("J_", "TP_", "P_")):
             continue
-        h = pl.item.height_mm or getattr(pl.item.footprint, "height_mm", None) or 0
-        assert h <= 0.8, (pl.item.ref, h)
+        raise AssertionError(f"{pl.item.ref} on the battery ceiling's bottom")
 
 
 

@@ -103,12 +103,12 @@ def goes_to_bottom(chip: Chip) -> bool:
     # faces the fixed 9 mm anchor gap).
     if h > TALL_PART_MM and tag not in _PAYLOAD_TAGS:
         return False
-    # (2026-11-20, user) activation_interface is the battery CEILING: only LOW
-    # passives (≤ 0.8 mm) may use its bottom — the 1 mm headroom carries the
-    # cells' + pin → wire joints (their corridors are plain keepouts).
+    # (2026-11-20, user) activation_interface is the battery CEILING.
+    # (2026-11-21, user) NO components on its bottom any more — only pads and
+    # test points — so the ~1 mm part headroom above the cells can be removed.
+    # (Was: low passives ≤ CEILING_PART_MAX_MM allowed.)
     if tag == "activation_interface":
-        return (is_mating_pad(chip) or is_test_point(chip)
-                or (is_embeddable_passive(chip) and h <= CEILING_PART_MAX_MM))
+        return is_mating_pad(chip) or is_test_point(chip)
     if getattr(chip, "feature", None) in ("clock", "bottom"):
         # "clock": MEMS oscillator beneath the host's OSC balls. "bottom": an
         # explicit per-component opt-in for small / legged support chips that

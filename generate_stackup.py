@@ -1927,20 +1927,23 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
 
     # ── XV_5V: MCP1640D boost (output disconnect when EN low) ─────────
     # (2026-11-20, user) DFN-8 (1.0 mm) instead of SOT-23-6; D = true output disconnect
-    bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, variant="D")
+    # (2026-11-21, user) the PA-supply boost is DC, not RF: it rides wakeup's
+    # BOTTOM (frees ~28 mm² of the radio-crowded top; same board, no lanes).
+    _XVB = "bottom"
+    bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, feature=_XVB, variant="D")
     _net(d, "3V3").connect(bst.pin("VIN"))
     gnd(bst, "SGND", "PGND", "EP")
     _net(d, "XV_PA_EN").connect(bst.pin("EN"))
     R("XV_PA_EN", "GND", "100k", "R_XV_PA_EN_PD")
     _net(d, "XV_BST_SW").connect(bst.pin("SW"))
-    L("3V3", "XV_BST_SW", "2.2uH", "L_XV_BOOST")
+    ind_between(d, "3V3", "XV_BST_SW", "2.2uH", ref="L_XV_BOOST", board_tag=BTAG, feature=_XVB)
     _net(d, "XV_5V").connect(bst.pin("VOUTP"))
     _net(d, "XV_5V").connect(bst.pin("VOUTS"))
     _net(d, "XV_BST_FB").connect(bst.pin("VFB"))
-    R("XV_5V", "XV_BST_FB", "309k", "R_XV_BST_FB1")                  # 1.21 V × (1 + 309/100) = 4.95 V
-    R("XV_BST_FB", "GND", "100k", "R_XV_BST_FB2")
-    cap_to_gnd(d, "3V3", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, pin=bst.pin("VIN"))
-    cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, pin=bst.pin("VOUTP"))
+    res_between(d, "XV_5V", "XV_BST_FB", "309k", ref="R_XV_BST_FB1", board_tag=BTAG, feature=_XVB)                  # 1.21 V × (1 + 309/100) = 4.95 V
+    res_between(d, "XV_BST_FB", "GND", "100k", ref="R_XV_BST_FB2", board_tag=BTAG, feature=_XVB)
+    cap_to_gnd(d, "3V3", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, feature=_XVB, pin=bst.pin("VIN"))
+    cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, feature=_XVB, pin=bst.pin("VOUTP"))
 
     # ── RX: GRF2073W LNA on 3V3 (⚠ match = DS 3.4-3.8 GHz BOM, PLACEHOLDER) ─
     lna = add_grf2073w(d, ref="U_XV_LNA", board_tag=BTAG, feature=F)
@@ -2873,6 +2876,12 @@ def build_spacers(d: Design, boards: dict | None = None) -> None:
         _net(d, "GND").connect(sp.pin("1"))
 
 
+# (2026-11-21, user) all magnetometers (IIS2MDC, TMR shelf-wake + its LDO,
+# DRV5032 activation-unlock Hall) live on fin_ble_board: they only run while
+# the fin motors are idle, so motor noise is moot; frees wakeup's top.
+_MAG_TAG = "fin_ble_board"
+
+
 def build_flight_board(d: Design, board_tag: str = "flight_board",
                        imu_tag: str | None = None) -> None:
     """IMU / magnetometer sensor cluster. As of the wakeup+flight consolidation
@@ -2951,8 +2960,9 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
                 ref="R_EXT_CAN_TERM", board_tag=_CAN_TAG)
 
     # ── IIS2MDC magnetometer on I2C2 (DRDY -> M33 EXTI) ──────────────
-    # bottom face: the LR2021 PA (≈110 mA bursts) is on wakeup's top face.
-    mag = add_iis2mdctr(d, ref="U_MAG", board_tag=BTAG, feature="bottom")
+    # bottom face (kept from wakeup, where the LR2021 PA sat on the top face);
+    # on fin_ble it faces activation_interface, away from the fin drivers.
+    mag = add_iis2mdctr(d, ref="U_MAG", board_tag=_MAG_TAG, feature="bottom")
     _net(d, "3V3")     .connect(mag.pin("VDD"))
     _net(d, "3V3")     .connect(mag.pin("VDD_IO"))
     _net(d, "GND")     .connect(mag.pin("GND_1"))
@@ -2965,10 +2975,10 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # 220 nF per IIS2MDC DS Table (set/reset reservoir, voltage forced by
     # the device): low ESR (≤200 mΩ), tight to pins 5/6 — a REAL discrete,
     # never ECM-absorbed (private node, not a rail).
-    cap_to_gnd(d, "MAG_C1_TERM", "220nF", ref="C_MAG_C1", board_tag=BTAG, pin=mag.pin("C1"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=BTAG, pin=(mag.ref, None))
-    cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=BTAG, pin=(mag.ref, None))
-    tp_drdy = _add_testpoint(d, ref="TP_MAG_DRDY", board_tag=BTAG)
+    cap_to_gnd(d, "MAG_C1_TERM", "220nF", ref="C_MAG_C1", board_tag=_MAG_TAG, pin=mag.pin("C1"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=_MAG_TAG, pin=(mag.ref, None))
+    cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=_MAG_TAG, pin=(mag.ref, None))
+    tp_drdy = _add_testpoint(d, ref="TP_MAG_DRDY", board_tag=_MAG_TAG)
     _net(d, "MAG_DRDY").connect(tp_drdy.pin("1"))
 
     # ── I2C2/3 pull-ups ──────────────────────────────────────────────
@@ -3737,17 +3747,17 @@ def build_wakeup_board(d: Design) -> None:
     # sequence. NO power-OR legs: activation_unlock is WBA-orchestrated, never a
     # hardware power-pull, and fails CLOSED (no pattern → no activation_unlock). Shelf
     # wake is jumpstart/USB only.
-    hall = add_drv5032fcdbzt(d, ref="U_MAG_WAKE", board_tag=BTAG)
+    hall = add_drv5032fcdbzt(d, ref="U_MAG_WAKE", board_tag=_MAG_TAG)
     _net(d, "3V3_AON")   .connect(hall.pin("VCC"))   # activation_unlock listener: alive from Standby, silent+free in Shelf
     _net(d, "GND")       .connect(hall.pin("GND"))
     _net(d, "MAG_WAKE_N").connect(hall.pin("OUT"))
-    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_MAG_WAKE", board_tag=BTAG, pin=hall.pin("VCC"))
+    cap_to_gnd(d, "3V3_AON", "100nF", ref="C_MAG_WAKE", board_tag=_MAG_TAG, pin=hall.pin("VCC"))
     # Open-drain node bias: 1 M to 3V3_AON keeps the WBA pin ≤3.3 V (no
     # BAT_RAW level issue). In TRUE shelf AON is down and the node floats
     # — harmless: the shelf wake path needs only the Hall's active sink
     # through the diode, and the WBA is unpowered anyway.
     res_between(d, "3V3_AON", "MAG_WAKE_N", "1M",
-                ref="RPU_MAG_WAKE", board_tag=BTAG)
+                ref="RPU_MAG_WAKE", board_tag=_MAG_TAG)
 
     # ── MAGNETIC SHELF-WAKE ear (2026-07-30, completing the split roles):
     # U_MAG_SHELF — Coto RR123-1H02-612 TMR (20 nA avg, omnipolar,
@@ -3764,21 +3774,21 @@ def build_wakeup_board(d: Design) -> None:
     # sequence is SLOW: bits ≥ ~3 s, full wake ~10-15 s — a depot
     # bulk-wake, not a tap. The WBA (once booted) IDs the wake source by
     # elimination and demands the pattern continue before holding.
-    tmr_ldo = add_tps7a0233pdqnr(d, ref="U_TMR_LDO", board_tag=BTAG)   # (2026-11-20) X2SON 0.4 mm
+    tmr_ldo = add_tps7a0233pdqnr(d, ref="U_TMR_LDO", board_tag=_MAG_TAG)   # (2026-11-20) X2SON 0.4 mm
     _net(d, "GND").connect(tmr_ldo.pin("EP"))
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("IN"))
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("EN"))     # always on
     _net(d, "GND")    .connect(tmr_ldo.pin("GND"))
     _net(d, "TMR_VDD").connect(tmr_ldo.pin("OUT"))
-    cap_to_gnd(d, "TMR_VDD", "1uF", ref="C_TMR_LDO", board_tag=BTAG, pin=tmr_ldo.pin("OUT"))
-    tmr = add_rr123_1h02_612(d, ref="U_MAG_SHELF", board_tag=BTAG)
+    cap_to_gnd(d, "TMR_VDD", "1uF", ref="C_TMR_LDO", board_tag=_MAG_TAG, pin=tmr_ldo.pin("OUT"))
+    tmr = add_rr123_1h02_612(d, ref="U_MAG_SHELF", board_tag=_MAG_TAG)
     _net(d, "TMR_VDD")    .connect(tmr.pin("VDD"))
     _net(d, "GND")        .connect(tmr.pin("GND"))
     _net(d, "MAG_SHELF_N").connect(tmr.pin("DIGITAL_OUT"))
     _net(d, "GND")        .connect(tmr.pin("LATCH_CONTROL"))   # latch inactive (VERIFY polarity)
-    cap_to_gnd(d, "TMR_VDD", "100nF", ref="C_MAG_SHELF", board_tag=BTAG, pin=tmr.pin("VDD"))
+    cap_to_gnd(d, "TMR_VDD", "100nF", ref="C_MAG_SHELF", board_tag=_MAG_TAG, pin=tmr.pin("VDD"))
     res_between(d, "MAG_SHELF_K", "MAG_SHELF_N", "3.3k",
-                ref="R_MAG_SHELF", board_tag=BTAG)
+                ref="R_MAG_SHELF", board_tag=_MAG_TAG)
 
     # ── JUMPSTART contacts (2026-07-30): two exposed 1.5 mm pads on the
     # AFT face — bridge them with anything metallic and the round boots.

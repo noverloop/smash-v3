@@ -11,9 +11,9 @@ frame as the board-local battery bore (`_battery_bore_polygon`: centres at
 90° + k·120° by default) — confirm that the board frame and the sleeve
 frame coincide before reading angles off the cell gaps.
 
-Board levels: measured on the generated sleeve unroll (dist/stackup.kicad_pcb,
-2026-11-16) — mid-planes relative to aft_end, fitted board thickness
-1.315 mm. Every rigid board is modelled as a PEC disc (8 copper layers ≈ a
+Board levels: mid-planes of the generated maximalist stack relative to
+aft_end (BOARD_MID_Z_MM, kept in step by test_antenna_sim_stack.py), board
+thickness 1.315 mm. Every rigid board is modelled as a PEC disc (8 copper layers ≈ a
 solid ground at these wavelengths) with optional copper keep-out wedges.
 """
 from __future__ import annotations
@@ -31,15 +31,19 @@ SLEEVE_R_IN_MM = BOARD_R_MM + SLEEVE_GAP_MM
 SLEEVE_R_OUT_MM = SLEEVE_R_IN_MM + SLEEVE_WALL_MM
 ANTENNA_SECTOR_DEG = (105.0, 255.0)
 
-# Board mid-planes [mm above aft_end's bottom face] from the sleeve unroll.
+# Board mid-planes [mm above aft_end's bottom face] of the maximalist stack
+# (sleeve_step.stack_z_map). (2026-11-21) re-measured after the backbone
+# spacers were sized to their gaps (2.4 / 2.7 / 3.0 / 3.1 / 6.0 mm — the
+# 2026-11-16 values had 4.4 / 3.0 / 4.4 / 3.2 / 4.1) and the 6 × 3.867 mm
+# battery column; test_antenna_sim_stack.py fails if these drift again.
 BOARD_MID_Z_MM = {
-    "aft_end_board": 0.66,
-    "activation_interface": 26.17,
-    "fin_ble_board": 31.89,
-    "wakeup_board": 36.20,
-    "power_board": 41.92,
-    "companion_compute": 46.43,
-    "radar_module": 51.85,
+    "aft_end_board": 0.657,
+    "activation_interface": 25.172,
+    "fin_ble_board": 28.888,
+    "wakeup_board": 32.903,
+    "power_board": 37.218,
+    "companion_compute": 41.633,
+    "radar_module": 48.944,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface", "fin_ble_board",
                "wakeup_board", "power_board", "companion_compute")
