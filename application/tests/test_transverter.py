@@ -80,7 +80,7 @@ def test_if_switch_rf2_feeds_the_mixer_if(design):
 
 def test_lo_drives_the_mixer_lo_from_the_shared_tcxo(design):
     lo, mix = _chip(design, "U_XV_LO"), _chip(design, "U_XV_MIX")
-    assert lo.manf_pn == "ADF4351BCPZ" and mix.manf_pn == "LTC5549IUDB#TRMPBF"
+    assert lo.manf_pn == "ADF4351BCPZ-RL7" and mix.manf_pn == "LTC5549IUDB#TRMPBF"   # (2026-11-22) reel code
     # reference = the LR2021 TCXO output, AC-coupled
     assert _other_end(design, "C_XV_LO_REF", "LR_TCXO_OUT") == _net(design, lo, "REFIN")
     # RFOUTA+ → 100 pF → π pad → 100 pF → LO
@@ -137,7 +137,7 @@ def test_tx_chain_pad_pa_and_switched_5v(design):
     assert vg in _two_ended(design, _chip(design, "R_XV_PA_VG1"))
     # XV_5V: MCP1640D (true output disconnect) enabled by WBA PB7, off by default
     bst = _chip(design, "U_XV_BOOST")
-    assert bst.manf_pn == "MCP1640DT-I/MC"      # DFN-8 (2026-11-20)
+    assert bst.manf_pn == "MCP1640D-I/MC"       # DFN-8 (2026-11-20); tube code (2026-11-22)
     assert _net(design, bst, "VOUTP") == _net(design, bst, "VOUTS") == "XV_5V"
     assert _net(design, bst, "VIN") in _names(design, "3V3")
     en = _net(design, bst, "EN")

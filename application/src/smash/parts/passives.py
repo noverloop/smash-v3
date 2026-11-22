@@ -968,3 +968,48 @@ def add_inductor_we_mk_744784018a(design, ref: str, *, value: str = "1.8nH", **o
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# (2026-11-22) BOM-sourcing swaps (availability/decisions.csv)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_inductor_murata_lqg15hs1n8s02d(design, ref: str, *, value: str = "1.8nH", **overrides) -> Chip:
+    """Murata LQG15HS1N8S02D — 1.8 nH multilayer 0402 (replaces Würth WE-MK
+    744784018A, China lots). Same LQG15 land as the 1.3 nH part."""
+    pn = "LQG15HS1N8S02D"
+    fp_mod = src("LQG15HS1N3S02D", "LQG15WH0N7B02D.kicad_mod")
+    fp = Footprint(name="LQG15HS1N8S02D", package_class="0402", pads=pads_from_kicad_mod(fp_mod),
+                   body_outline=outline_polygon(fp_mod, "F.Fab"), courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+                   size_mm=(1.0, 0.5), height_mm=0.55, source="samacsys").ensure_courtyard_clearance()
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Murata LQG15HS multilayer RF inductor 0402, 1.8 nH", package="0402",
+        size_mm=(1.0, 0.5), height_mm=0.55, inductance_h=parse_inductance_h(value),
+        weight_g=weight_g_for_passive("0402"), standards=["RoHS", "Pb-Free"], pins=_two_pin(),
+        footprint=fp, note="RF bias / match value (XV LNA). Replaces 744784018A (China lots), 2026-11-22.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_grm31cr60j476me19l(design, ref: str, *, value: str = "47uF", **overrides) -> Chip:
+    """Murata GRM31CR60J476ME19L — 47 µF 6.3 V X5R 1206, 1.6 ± 0.2 mm. Two in
+    parallel replace the 100 µF T520W107 polymer (China lots, 2026-11-22);
+    +0.3 mm face rise accepted by the user. DC bias at ~4 V costs ~half."""
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_1206_3216Metric", size_mm=(3.2, 1.6), height_mm=1.8,
+                         pad_size=(1.05, 1.75), pad_pitch_mm=2.95, package_class="1206")
+    pn = "GRM31CR60J476ME19L"
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Murata 1206 X5R 47 µF 6.3 V", package="1206", dielectric="X5R",
+        size_mm=(3.2, 1.6), height_mm=1.8, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=6.3, temp_range_c=(-55, 85), weight_g=weight_g_for_passive("1206"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="2 × 47 µF replaces 100 µF polymer (availability/decisions.csv).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+add_capacitor_grm31cr60j476me19l.array_value = "47uF"

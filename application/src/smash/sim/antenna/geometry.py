@@ -43,10 +43,10 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.434,
     "activation_interface": 24.502,
-    "wakeup_board": 27.67,        # (2026-11-21) activation↔wakeup gap 2.4 → 2.3 mm
-    "power_board": 31.538,         # (2026-11-22) wakeup↔power gap 3.1 → 3.0 mm (BAT64-06 SOT-23 → BAS40-02L)
-    "companion_compute": 34.906,
-    "radar_module": 38.774,
+    "wakeup_board": 27.97,        # (2026-11-22) activation↔wakeup gap 2.3 → 2.6 mm (U_TMR_LDO X2SON 0.4 → XC6504 SOT-25 1.3, accepted)
+    "power_board": 31.938,         # (2026-11-22) wakeup↔power gap 3.0 → 3.1 mm (U_AON_LDO → XC6504 SOT-25, accepted)
+    "companion_compute": 35.306,
+    "radar_module": 39.174,
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

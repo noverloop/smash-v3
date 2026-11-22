@@ -1,38 +1,38 @@
 Line,Original,Replacement,Status,Decided,Library,Note
 D_JUMP_WAKE / D_AON_WAKE,BAT64-06 (dual),2 x BAS40-02L each,APPLIED,2026-11-22,in repo,uncommitted
-C_BAT_BULK1 (+1),T545W477M006ATE035,6TPE470MI,ACCEPTED,2026-11-22,in repo,polymer only (user: 6TPE470MI better); Indonesia; 38 wk but stocked at 3
-C_BOOST_OUT1,T528W476M016ATE030,T521V476M016ATE070,ACCEPTED,2026-11-21,in repo,"promoted 2026-11-22 (R13: T520V476 clean only at Mouser); T521V Mouser + Digi-Key, Mexico, same V case; T520V476 now alternate"
+C_BAT_BULK1 (+1),T545W477M006ATE035,6TPE470MI,HELD (height),2026-11-22,in repo,polymer only (user: 6TPE470MI better); Indonesia; 38 wk but stocked at 3; 6TPE470MI is 3.8 mm (+2.3 mm) - low-profile 6TPE470MAZU (1.4 mm) to check
+C_BOOST_OUT1,T528W476M016ATE030,T521V476M016ATE070,HELD (height),2026-11-21,in repo,"promoted 2026-11-22 (R13: T520V476 clean only at Mouser); T521V Mouser + Digi-Key, Mexico, same V case; T520V476 now alternate; T521V476 2.0 mm (+0.5 mm) - 2 x GRM21BR61E226ME44L 0805 to check"
 U_FIN1 (x4),DRV8428ERTER,TC78H653,ACCEPTED,2026-11-21,in repo (generic QFN-16 3x3 land; check vs Toshiba drawing; no symbol),new pin map
 U_TMP1,TMP117MAIDRVR,MCP9808,ACCEPTED,2026-11-21,in repo for /MC (generic DFN-8 2x3 land) + /MS library,new pin map
 U_DEV_G474,STM32G474CEU6,STM32U535CBU6,ACCEPTED,2026-11-22,in repo,new pin map; flash 512 -> 128 KB
-C_TIA_A (+3),SQCSVA8R2BAT1A,C0603C829C5GACTU,ACCEPTED,2026-11-22,in repo,clear win
-C_WBA_HSE_BOT,SQCSVA100JAT1A,C0603C100J5GACTU,ACCEPTED,2026-11-22,in repo,clear win
-C_LR_HF_RX (+1),04025A0R8BAT2A,GJM1555C1HR80BB01D,ACCEPTED,2026-11-22,standard 0402,clear win
-C_LR_HF_TX1 (+1),AVX 0402 1.2 pF,GJM1555C1H1R2BB01D,ACCEPTED,2026-11-22,standard 0402,clear win
-C_XV_LNA_OUT,AVX 0402 5.1 pF,GJM1555C1H5R1BB01D,ACCEPTED,2026-11-22,standard 0402,clear win
-C_ACTIVATE_SS (+1),C0402C473K3RACTU,GRM155R71E473KA88D,ACCEPTED,2026-11-22,standard 0402,clear win
-L_XV_LNA_BIAS,744784018A,LQG15HS1N8S02D,ACCEPTED,2026-11-22,standard 0402,clear win
-D_ACTIVATE (+2),PMEG6010CEJ,RB160VAM-60TR,ACCEPTED,2026-11-22,in repo,clear win
-Y_CAM_EXTCLK,DSC1001CI5-027,DSC1001CI1-027,ACCEPTED,2026-11-22,same footprint,clear win
-U_XV_BOOST,MCP1640DT-I/MC,MCP1640D-I/MC,ACCEPTED,2026-11-22,same footprint,clear win (packaging)
-U_AON_LDO (+1),TPS7A0233PDQNR,XC6504A331MR-G,ACCEPTED,2026-11-22,in repo,clear win
-U_COMP_PZ,TLV3691IDPFR,MCP6541T-E/OT,ACCEPTED,2026-11-22,in repo,clear win
-U_CAN_GW,TCAN1042GVDRBRQ1,TJA1462BTK/0Z,ACCEPTED,2026-11-22,in repo,clear win
-U_DEV_ESD,TPD4E05U06DQAR,USBLC6-4SC6,ACCEPTED,2026-11-22,in repo,clear win
+C_TIA_A (+3),SQCSVA8R2BAT1A,C0603C829C5GACTU,APPLIED,2026-11-22,in repo,clear win
+C_WBA_HSE_BOT,SQCSVA100JAT1A,C0603C100J5GACTU,APPLIED,2026-11-22,in repo,clear win
+C_LR_HF_RX (+1),04025A0R8BAT2A,GJM1555C1HR80BB01D,APPLIED,2026-11-22,standard 0402,clear win
+C_LR_HF_TX1 (+1),AVX 0402 1.2 pF,GJM1555C1H1R2BB01D,APPLIED,2026-11-22,standard 0402,clear win
+C_XV_LNA_OUT,AVX 0402 5.1 pF,GJM1555C1H5R1BB01D,APPLIED,2026-11-22,standard 0402,clear win
+C_ACTIVATE_SS (+1),C0402C473K3RACTU,GRM155R71E473KA88D,APPLIED,2026-11-22,standard 0402,clear win
+L_XV_LNA_BIAS,744784018A,LQG15HS1N8S02D,APPLIED,2026-11-22,standard 0402,clear win
+D_ACTIVATE (+2),PMEG6010CEJ,RB160VAM-60TR,APPLIED,2026-11-22,in repo,clear win
+Y_CAM_EXTCLK,DSC1001CI5-027,DSC1001CI1-027,APPLIED,2026-11-22,same footprint,clear win
+U_XV_BOOST,MCP1640DT-I/MC,MCP1640D-I/MC,APPLIED,2026-11-22,same footprint,clear win (packaging)
+U_AON_LDO (+1),TPS7A0233PDQNR,XC6504A331MR-G,APPLIED,2026-11-22,in repo,clear win
+U_COMP_PZ,TLV3691IDPFR,MCP6541T-E/OT,HELD (height),2026-11-22,in repo,clear win; MCP6541 SOT-23-5 is 1.45 mm (+0.95 mm) - 0.4 mm X2SON comparator to find
+U_CAN_GW,TCAN1042GVDRBRQ1,TJA1462BTK/0Z,APPLIED,2026-11-22,in repo,clear win
+U_DEV_ESD,TPD4E05U06DQAR,USBLC6-4SC6,APPLIED,2026-11-22,in repo,clear win
 U_DEV_INA,INA228AIDGSR,PAC1941T-1E/J6CX,ACCEPTED,2026-11-22,datasheet only - footprint still needed,clear win
-QMAIN + Q_AON_EN,IRLML6402TRPBF (obsolete),SSM3J372R LF,ACCEPTED,2026-11-22,in repo,Vth -0.5..-1.2 V; 50 mOhm max at -4.5 V; pins G1 S2 D3 as IRLML6402; VGS +6 V max
+QMAIN + Q_AON_EN,IRLML6402TRPBF (obsolete),SSM3J372R LF,APPLIED,2026-11-22,in repo,Vth -0.5..-1.2 V; 50 mOhm max at -4.5 V; pins G1 S2 D3 as IRLML6402; VGS +6 V max
 U_DDR4 -> U_DDR3L,KTDM4G4B626BGIEAT (obsolete),MT41K256M16TW-107 IT:P (DDR3L) + KTDM4G3C618BGIEAT alt,ACCEPTED,2026-11-22,in repo (MT41K :P TR),BUCK6 1.35 V; drop LDO6 VPP; VREF 0.675 V; camera 1.2 V needs own feed
-QHOLD (+32),BSS138AKM-QYL (China),RU1J002YNTCL,ACCEPTED,2026-11-22,in repo,50 V 0.2 A; all 3 suppliers; larger package
-U_AWR_LDO18,LDL112PV18R,XC6220B181MR-G,ACCEPTED,2026-11-22,in repo (SnapMagic SOT-25 land from XC8107; check vs XC6220 drawing),SOT-25 600 mW: check radar current / thermal
+QHOLD (+32),BSS138AKM-QYL (China),RU1J002YNTCL,APPLIED,2026-11-22,in repo,50 V 0.2 A; all 3 suppliers; larger package
+U_AWR_LDO18,LDL112PV18R,XC6220B181MR-G,APPLIED,2026-11-22,in repo (SnapMagic SOT-25 land from XC8107; check vs XC6220 drawing),SOT-25 600 mW: check radar current / thermal
 Y_WBA_HSE,DSC1001CI5-032.0000 (already MEMS),keep original,KEEP,2026-11-22,in repo,"Mouser stock, 16 wk, Thailand"
-Y_AWR_HSE (+1),DSC1001CI5-040.0000 (already MEMS),SiT1602BI-12-18E-40.000000 (programmed to order),ACCEPTED,2026-11-22,in repo,DSC1001CI5-040 had 0 stock at Mouser + Digi-Key in R7; check SiT1602 pinout vs DSC1001 2520
+Y_AWR_HSE (+1),DSC1001CI5-040.0000 (already MEMS),SiT1602BI-12-18E-40.000000 (programmed to order),APPLIED,2026-11-22,in repo,DSC1001CI5-040 had 0 stock at Mouser + Digi-Key in R7; check SiT1602 pinout vs DSC1001 2520
 Y_LR_TCXO,TG2016SMN (quartz),SiT5356AECFQ-33N0-32.000000T fitted (3.3 V via load switch from VTCXO); TG2016 footprint unfitted alternate,ACCEPTED,2026-11-22,in repo (20 MHz model; same package),"R7: TG2016 Mouser 9 pcs, Digi-Key 0 (China lot), 26 wk -> fails; consider fitting SiT5356"
-U_CAM,AR0234 (EOL),ST VB1943CAJX/1,ACCEPTED,2026-11-22,in repo,"R7: Mouser 114, Farnell 29 (6 wk), Digi-Key 1341; Japan; VCORE 1.15 V"
+U_CAM,AR0234 (EOL),ST VB1943CAJX/1,HELD (height),2026-11-22,in repo,"R7: Mouser 114, Farnell 29 (6 wk), Digi-Key 1341; Japan; VCORE 1.15 V; VB1943 2.2 mm (+0.75 mm) + camera 1.15 V rail work"
 J_DEV_USB / nose USB-C,Same Sky,Hirose CX90B-16P / CX90B1-24P,ACCEPTED,2026-11-22,in repo - BUT SnapMagic file is CX90B-16P1 (we ordered CX90B-16P): confirm same land,R7: CX90B-16P all 3 (Korea); CX90B1-24P Farnell 930 + Digi-Key 5426 (Japan)
-D_IR_WAKE (+3),VBPW34FAS,VEMD5110X01,ACCEPTED,2026-11-22,in repo,"790-1050 nm daylight filter; Mouser 3,577 (Malaysia, 4 wk); 2nd supplier to confirm; smaller area: re-check wake margin"
-U_MPU,STM32MP255FAL3 (0 stock at all 3),STM32MP257FAL3,ACCEPTED,2026-11-22,in repo (MP255FAL footprint/symbol: identical ball map),"secure F variant; adds NPU (user: needed anyway); Farnell 50 + Mouser 8; Mouser 2026-11-22: 8 in stock + 1,008 on order expected 2026-12-07 (30 wk factory lead); ball map identical to MP255FAL (CubeMX db)"
-U_IMU,ISM330DHCXTR (0 at all 3),ISM330DLCTR,ACCEPTED,2026-11-22,in repo,"same LGA-14 2.5x3; check pinout + driver; Mouser 17,144 / Farnell 4,078 / Digi-Key 1,335"
-C_W107 (100 uF),T520W107M006ATE040 (China at all 3),2 x GRM31CR60J476ME19L,ACCEPTED,2026-11-22,standard 1206,Japan; all 3 suppliers
+D_IR_WAKE (+3),VBPW34FAS,VEMD5110X01,APPLIED,2026-11-22,in repo,"790-1050 nm daylight filter; Mouser 3,577 (Malaysia, 4 wk); 2nd supplier to confirm; smaller area: re-check wake margin"
+U_MPU,STM32MP255FAL3 (0 stock at all 3),STM32MP257FAL3,APPLIED,2026-11-22,in repo (MP255FAL footprint/symbol: identical ball map),"secure F variant; adds NPU (user: needed anyway); Farnell 50 + Mouser 8; Mouser 2026-11-22: 8 in stock + 1,008 on order expected 2026-12-07 (30 wk factory lead); ball map identical to MP255FAL (CubeMX db)"
+U_IMU,ISM330DHCXTR (0 at all 3),ISM330DLCTR,APPLIED,2026-11-22,in repo,"same LGA-14 2.5x3; check pinout + driver; Mouser 17,144 / Farnell 4,078 / Digi-Key 1,335"
+C_W107 (100 uF),T520W107M006ATE040 (China at all 3),2 x GRM31CR60J476ME19L,HELD (height),2026-11-22,standard 1206,Japan; all 3 suppliers; 2 x 47 uF 1206 is 1.6-1.8 mm > TALL_PART_MM -> forced to TOP -> +0.6 mm; 4 x 22 uF 0805 to check
 U_PMIC,STPMIC25APQR,keep,KEEP,2026-11-22,in repo,R10: Mouser 107 + Digi-Key 639
 U_H3LIS,H3LIS331DLTR,keep,KEEP,2026-11-22,in repo,"R10: Farnell 1,873 + Digi-Key 5,677"
 U_NAND (x2),MT29F4G01ABAFDWB-IT:F,keep,KEEP,2026-11-22,in repo,"R10: all 3, ~7.2k"
@@ -44,15 +44,16 @@ U_MAG,IIS2MDCTR (0 at all 3),BMM350,ACCEPTED,2026-11-22,in repo,"Mouser 30,188 +
 U_DTC,PE64906B-Z (0 at all 3),PE64904D-Z,ACCEPTED,2026-11-22,need,"Mouser 6,629 + Digi-Key 4,946, Malaysia; ~1.1-5.1 pF vs 0.9-4.6 pF: recheck matching + package"
 U_XV_MIX,LTC5549IUDB#PBF (restricted),ADL5801ACPZ-R7,ACCEPTED,2026-11-22,in repo (no symbol),"Farnell 7,500 + Digi-Key 991, Korea; mixer-stage redesign (LFCSP-24 4x4, LO drive, baluns, 5 V)"
 U_DEV_ISENSE,INA241A2IDGKR,keep (dev-board only),KEEP,2026-11-22,in repo,"user: dev-board chips may be less stocked; R11: 0 at all 3, 26 wk - order early"
-Q_ISO / Q_USB_OR (x4),DMP6110SVT-7 (China at Farnell + Digi-Key),BUK6D120-60PX,ACCEPTED,2026-11-22,in repo (new footprint),same part as the cutter P-FETs
-U_DEV_CAN,TCAN1042GVDQ1 (EOL),TJA1462BTK/0Z,ACCEPTED,2026-11-22,in repo (TJA1462 lib),dev board; consolidates with the tower gateway
-D_ACTIVATE fix,PMEG6010CEJ,RB160VAM-60TR,ACCEPTED,2026-11-22,in repo,mapping bug fixed in tools/full_bom.py
-C_WBA_PI1/PI2 (0.5 pF x4),"04025A0R5BAT2A (x3, China lots F/D) + SQCSVA0R5BAT1A (obsolete, 0603)",GJM1555C1HR50BB01D,ACCEPTED,2026-11-22,standard 0402,"R14: all 3, Singapore; C_WBA_PI2 footprint 0603 -> 0402"
-C_LR_HF_TX2 (1.0 pF),04025A1R0BAT2A,GJM1555C1H1R0BB01D,ACCEPTED,2026-11-22,standard 0402,"R14: all 3, Singapore"
-C_XV_BPF_SH (1.1 pF),04025A1R1BAT2A,GJM1555C1H1R1BB01D,ACCEPTED,2026-11-22,standard 0402,"R14: all 3, Singapore"
-C_AWR_CLKM (100 pF),SQCSVA101JAT1A (obsolete),C0603C101J5GACTU,ACCEPTED,2026-11-22,standard 0603,"R14: all 3, Taiwan"
-100 nF 0402 (~140),C0402C104K3RACTU (China at Mouser + Digi-Key),GRM155R71C104KA88D,ACCEPTED,2026-11-22,standard 0402,R14: Mouser 4.07M + Farnell 1.08M
-L_BOOST_COMP (4.7 uH),XGL5020-472MEC (Coilcraft only),74438357047,ACCEPTED,2026-11-22,in repo,"R14: all 3, Korea; check Isat/DCR/size vs XGL5020"
+Q_ISO / Q_USB_OR (x4),DMP6110SVT-7 (China at Farnell + Digi-Key),BUK6D120-60PX,APPLIED,2026-11-22,in repo (new footprint),same part as the cutter P-FETs
+U_DEV_CAN,TCAN1042GVDQ1 (EOL),TJA1462BTK/0Z,APPLIED,2026-11-22,in repo (TJA1462 lib),dev board; consolidates with the tower gateway
+D_ACTIVATE fix,PMEG6010CEJ,RB160VAM-60TR,APPLIED,2026-11-22,in repo,mapping bug fixed in tools/full_bom.py
+C_WBA_PI1/PI2 (0.5 pF x4),"04025A0R5BAT2A (x3, China lots F/D) + SQCSVA0R5BAT1A (obsolete, 0603)",GJM1555C1HR50BB01D,APPLIED,2026-11-22,standard 0402,"R14: all 3, Singapore; C_WBA_PI2 footprint 0603 -> 0402"
+C_LR_HF_TX2 (1.0 pF),04025A1R0BAT2A,GJM1555C1H1R0BB01D,APPLIED,2026-11-22,standard 0402,"R14: all 3, Singapore"
+C_XV_BPF_SH (1.1 pF),04025A1R1BAT2A,GJM1555C1H1R1BB01D,APPLIED,2026-11-22,standard 0402,"R14: all 3, Singapore"
+C_AWR_CLKM (100 pF),SQCSVA101JAT1A (obsolete),C0603C101J5GACTU,APPLIED,2026-11-22,standard 0603,"R14: all 3, Taiwan"
+100 nF 0402 (~140),C0402C104K3RACTU (China at Mouser + Digi-Key),GRM155R71C104KA88D,APPLIED,2026-11-22,standard 0402,R14: Mouser 4.07M + Farnell 1.08M
+L_BOOST_COMP (4.7 uH),XGL5020-472MEC (Coilcraft only),74438357047,HELD (height),2026-11-22,in repo,"R14: all 3, Korea; check Isat/DCR/size vs XGL5020; WE-MAPI 4030 is 3.1 mm (+1.0 mm) - WE-MAPI 4020 (2.0 mm) to check"
 U_ACTIVATE_BOOST (x2),TPS61175PWPR,TPS61175PWPR or TPS61175PWP (tube),KEEP,2026-11-22,in repo,"same part; reel at Mouser, tube at Farnell + Digi-Key"
-L_ACTIVATE (8.2 uH),XGL5020-822MEC (Coilcraft; Digi-Key 905),74438357082,ACCEPTED,2026-11-22,in repo,"R15: Mouser 2,701 / Farnell 542 / Digi-Key 7,415, Korea; 2.8 A 86 mOhm: check vs boost loop"
-U_AWR_FLASH,SST26VF080A-104I/MF (thin),MX25V8035FZNI (alternate SST26VF080A-104I/MF),ACCEPTED,2026-11-22,reuse SST26VF080A WSON 6x5 land (same package) - or SamacSys,"R15: Digi-Key 9,678 + Farnell 9, Taiwan; confirm AWR1843 boot-ROM support"
+L_ACTIVATE (8.2 uH),XGL5020-822MEC (Coilcraft; Digi-Key 905),74438357082,HELD (height),2026-11-22,in repo,"R15: Mouser 2,701 / Farnell 542 / Digi-Key 7,415, Korea; 2.8 A 86 mOhm: check vs boost loop; WE-MAPI 4030 is 3.1 mm (+1.0 mm) - 2.0 mm-tall 8.2 uH to find"
+U_AWR_FLASH,SST26VF080A-104I/MF (thin),MX25V8035FZNI (alternate SST26VF080A-104I/MF),APPLIED,2026-11-22,reuse SST26VF080A WSON 6x5 land (same package) - or SamacSys,"R15: Digi-Key 9,678 + Farnell 9, Taiwan; confirm AWR1843 boot-ROM support"
+Y_MPU_HSE,DSC1001CI5-040.0000 (3.3 V),SIT1602BI-12-33E-40.000000,APPLIED,2026-11-22,same land as DSC1001,the '+1' of Y_AWR_HSE: MPU clock runs from COMP_3V3 so it needs the 3.3 V code; not yet stock-checked (programmed to order)

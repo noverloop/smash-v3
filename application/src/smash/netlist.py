@@ -118,6 +118,10 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         from smash.parts.passives import add_capacitor_polymer_t545w477m006ate035
         return add_capacitor_polymer_t545w477m006ate035, 1
     if abs(farads - 100e-6) < 1e-9:
+        # (2026-11-22) T520W107 lots are China, but the accepted 2 × 47 µF 1206
+        # (GRM31CR60J476ME19L, add_capacitor_grm31cr60j476me19l) is 1.6-1.8 mm >
+        # TALL_PART_MM → forced to the power board TOP → +0.6 mm gap. HELD for
+        # the next height round (4 × 22 µF 0805 1.25 mm is the candidate).
         from smash.parts.passives import add_capacitor_polymer_t520w107m006ate040
         return add_capacitor_polymer_t520w107m006ate040, 1
     return add_capacitor_polymer_7343_kemet_t528, 1
@@ -178,7 +182,7 @@ def cap_to_gnd(design: Design,
     factory, n = _cap_factory_for_value(value, force_c0g=force_c0g)
     # For N×0603 parallel arrays (2.2–10 µF range), each instance is a
     # single 2.2 µF; the array sums to the requested total value.
-    per_instance_value = "2.2uF" if n > 1 else value
+    per_instance_value = (getattr(factory, "array_value", "2.2uF") if n > 1 else value)
     base_ref = ref or f"C_{net.replace('-', '_')}"
     chips: list[Chip] = []
     for i in range(n):
@@ -294,7 +298,8 @@ def ind_between(design: Design,
     if family == "auto" and abs(l_h - 1.3e-9) < 1e-12:      # (2026-11-21) not in WE-KI/WE-MK
         from smash.parts.passives import add_inductor_murata_lqg15hs1n3s02d as factory
     elif family == "auto" and abs(l_h - 1.8e-9) < 1e-12:    # (2026-11-21) not in WE-KI
-        from smash.parts.passives import add_inductor_we_mk_744784018a as factory
+        # (2026-11-22) 744784018A lots are China → Murata LQG15HS1N8S02D
+        from smash.parts.passives import add_inductor_murata_lqg15hs1n8s02d as factory
     elif family == "we-ki" or (family == "auto" and l_h <= 220e-9):
         factory = add_inductor_we_ki_0402_wurth
     elif family == "tms" or (family == "auto" and l_h <= 2.2e-6):

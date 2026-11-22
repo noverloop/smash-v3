@@ -102,6 +102,10 @@ from smash.parts.passives import (
     add_blm18pg221sn1d,
 )
 from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa: E402
+from smash.parts.swaps_2026_11 import (                                  # noqa: E402
+    add_stm32mp257fal3, add_adf4351bcpz_rl7, add_dsc1001ci1_027_0000, add_sit1602bi_12_xxe_40,
+    add_mx25v8035fzni, add_ssm3j372r_lf, add_ru1j002yntcl, add_rb160vam_60, add_vemd5110x01,
+    add_xc6504a331mr_g, add_xc6220b181mr_g, add_tja1462btk_0z, add_ism330dlctr, add_usblc6_4sc6)
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
 from smash.parts.comparators import add_tlv3691idpfr                      # noqa: E402
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
@@ -402,7 +406,7 @@ def build_companion_compute(d: Design) -> None:
     # (DDR_Ax / CSI_x), DQS drops the underscore-N (DDR_DQS0N), and the
     # power-rail balls differ in count — so power/ground are wired by
     # whatever balls the package exposes rather than fixed loops.
-    mpu = add_stm32mp255fal3(d, ref="U_MPU", board_tag=BTAG)
+    mpu = add_stm32mp257fal3(d, ref="U_MPU", board_tag=BTAG)   # (2026-11-22) sourcing swap, availability/decisions.csv: MP255FAL3 → MP257FAL3 (same balls, + NPU)
 
     # Supply rails — the FULL power tree (closes the long-deferred
     # "STPMIC2 power-tree pass": VDDCORE + 49 other power/strap balls
@@ -489,7 +493,7 @@ def build_companion_compute(d: Design) -> None:
     # HSE — 40 MHz into OSC_IN (R1); OSC_OUT (R2) NC.
     # feature="clock": rides the bottom face beneath the MP25's OSC balls
     # (the top face is full with the BGA + DDR4 + NAND).
-    hse_osc = add_dsc1001ci5_040_0000(d, ref="Y_MPU_HSE", board_tag=BTAG,
+    hse_osc = add_sit1602bi_12_xxe_40(d, ref="Y_MPU_HSE", board_tag=BTAG, vdd="33",   # (2026-11-22) 3.3 V code
                                       feature="clock")
     _net(d, "COMP_3V3")   .connect(hse_osc.pin("1"))  # STANDBY# tied high
     _net(d, "GND")        .connect(hse_osc.pin("2"))
@@ -954,12 +958,12 @@ def build_radar_module(d: Design) -> None:
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck.ref, None))
 
     # ── 1.8V LDO ────────────────────────────────────────────────────
-    ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
+    ldo18 = add_xc6220b181mr_g(d, ref="U_AWR_LDO18", board_tag=BTAG)
     _net(d, "BAT_PROT").connect(ldo18.pin("VIN"))
     _net(d, "GND")     .connect(ldo18.pin("GND"))
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
-    _net(d, "GND")      .connect(ldo18.pin("EP"))   # per DS10321 Table 1: EP must be GND
+    # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
 
     cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
@@ -1117,12 +1121,12 @@ def build_radar_module_awr2e44p(d: Design) -> None:
     cap_to_gnd(d, "AWR_1V0",   "100nF", ref="C_AWR_1V0_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck.ref, None))
 
-    ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
+    ldo18 = add_xc6220b181mr_g(d, ref="U_AWR_LDO18", board_tag=BTAG)
     _net(d, "BAT_PROT").connect(ldo18.pin("VIN"))
     _net(d, "GND")     .connect(ldo18.pin("GND"))
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
-    _net(d, "GND")      .connect(ldo18.pin("EP"))
+    # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
     cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
@@ -1277,7 +1281,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # Catch diode — the LMR10510 is NON-synchronous (DS pin table: SW
     # "connect to the inductor and catch diode"); without it the inductor
     # has no off-time path and the rail can't regulate.
-    d_b12 = add_pmeg6010cej(d, ref="D_AWR_BUCK12", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
+    d_b12 = add_rb160vam_60(d, ref="D_AWR_BUCK12", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
                            board_tag=BTAG)
     _net(d, "AWR_1V2_SW").connect(d_b12.pin("K"))
     _net(d, "GND")       .connect(d_b12.pin("A"))
@@ -1299,7 +1303,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     ind_between(d, "AWR_1V3_SW", "AWR_1V3", "2.2uH",
                 ref="L_AWR_BUCK13", feature="bottom",
                 board_tag=BTAG)   # see L_AWR_BUCK12 note
-    d_b13 = add_pmeg6010cej(d, ref="D_AWR_BUCK13", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
+    d_b13 = add_rb160vam_60(d, ref="D_AWR_BUCK13", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
                            board_tag=BTAG)   # catch diode (see BUCK12)
     _net(d, "AWR_1V3_SW").connect(d_b13.pin("K"))
     _net(d, "GND")       .connect(d_b13.pin("A"))
@@ -1319,12 +1323,12 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
 
     # ── 1.8 V LDO (LDL112PV18R) — analog (BB/VCO/CLK) + I/O ──────────────────
-    ldo18 = add_ldl112pv18r(d, ref="U_AWR_LDO18", board_tag=BTAG)
+    ldo18 = add_xc6220b181mr_g(d, ref="U_AWR_LDO18", board_tag=BTAG)
     _net(d, "BAT_PROT").connect(ldo18.pin("VIN"))
     _net(d, "GND")     .connect(ldo18.pin("GND"))
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8") .connect(ldo18.pin("VOUT"))
-    _net(d, "GND")     .connect(ldo18.pin("EP"))
+    # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
     cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
@@ -1421,7 +1425,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # the shortest reference route; and as a leadless DFN it's better off the
     # internal bottom face anyway. (The MP25 HSE differs — its OSC balls are on
     # its bottom, so that one keeps feature="clock".)
-    osc = add_dsc1001ci5_040_0000(d, ref="Y_AWR_HSE", board_tag=BTAG)
+    osc = add_sit1602bi_12_xxe_40(d, ref="Y_AWR_HSE", board_tag=BTAG, vdd="18")
     _net(d, "AWR_1V8")    .connect(osc.pin("1"))   # STANDBY# tied high → run
     _net(d, "GND")        .connect(osc.pin("2"))   # GND
     _net(d, "AWR_OSC_OUT").connect(osc.pin("3"))   # OUT (40 MHz)
@@ -1459,7 +1463,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # feature="bottom": the saturated top face left no slot for the 6×5 WDFN
     # (packer parked it off-board = the radar overflow). A leadless, low-mass
     # package with its EP soldered down rides the internal bottom face fine,
-    fl = add_sst26vf080a(d, ref="U_AWR_FLASH", feature="bottom", board_tag=BTAG)
+    fl = add_mx25v8035fzni(d, ref="U_AWR_FLASH", feature="bottom", board_tag=BTAG)
     _net(d, "COMP_3V3").connect(fl.pin("VDD"))
     _net(d, "GND")     .connect(fl.pin("VSS"))
     _net(d, "GND")     .connect(fl.pin("EP"))             # exposed pad
@@ -1854,7 +1858,7 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
         return sw
 
     # ── LO: ADF4351 on its own ferrite-isolated 3.3 V ─────────────────
-    lo = add_adf4351bcpz(d, ref="U_XV_LO", board_tag=BTAG, feature=F)
+    lo = add_adf4351bcpz_rl7(d, ref="U_XV_LO", board_tag=BTAG, feature=F)
     fb = add_blm18pg221sn1d(d, ref="FB_XV_LO", board_tag=BTAG, feature=F)
     _net(d, "3V3").connect(fb.pin("1")); _net(d, "XV_LO_3V3").connect(fb.pin("2"))
     cap_to_gnd(d, "XV_LO_3V3", "10uF", ref="C_XV_LO_BULK", board_tag=BTAG)
@@ -1957,7 +1961,8 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     # (2026-11-21, user) the PA-supply boost is DC, not RF: it rides wakeup's
     # BOTTOM (frees ~28 mm² of the radio-crowded top; same board, no lanes).
     _XVB = "bottom"
-    bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, feature=_XVB, variant="D")
+    bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, feature=_XVB, variant="D",
+                          manf_pn="MCP1640D-I/MC", name="MCP1640D-I/MC", value="MCP1640D-I/MC")   # (2026-11-22) sourcing swap, availability/decisions.csv: tube code (reel had 0 stock)
     _net(d, "3V3").connect(bst.pin("VIN"))
     gnd(bst, "SGND", "PGND", "EP")
     _net(d, "XV_PA_EN").connect(bst.pin("EN"))
@@ -2409,7 +2414,7 @@ def build_activation_interface(d: Design) -> None:
     for k in range(1, 5):
         res_between(d, "HEALTH_COIL_RET", "HEALTH_COIL_D", "47", ref=f"R_COIL_{k}",
                     board_tag="activation_interface")
-    q_coil = add_bss138akm_qyl(d, ref="Q_HEALTH_COIL", board_tag="activation_interface")
+    q_coil = add_ru1j002yntcl(d, ref="Q_HEALTH_COIL", board_tag="activation_interface")
     _net(d, "HEALTH_COIL_D").connect(q_coil.pin("3"))   # Drain
     _net(d, "GND")          .connect(q_coil.pin("2"))   # Source
     _net(d, "HEALTH_COIL_G").connect(q_coil.pin("1"))   # Gate
@@ -2541,7 +2546,7 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "COMP_5V").connect(l_activate.pin("2"))
     # (2026-11-20, user) flat 60 V / 1 A SOD-123Flat (1.1 mm) instead of the
     # 2.56 mm MBRS540T3G SMC — out of the tall-part group, more V_RRM margin
-    d_activate = add_pmeg6010cej(d, ref="D_ACTIVATE", board_tag=BT_BOOST)   # (2026-11-21) SOD323F 0.8 mm, same 60 V / 1 A
+    d_activate = add_rb160vam_60(d, ref="D_ACTIVATE", board_tag=BT_BOOST)   # (2026-11-21) SOD323F 0.8 mm, same 60 V / 1 A
     _net(d, "ACTIVATE_SW").connect(d_activate.pin("A"))
     _net(d, "ACTIVATE_HV").connect(d_activate.pin("K"))
     # FB: VOUT = 1.229 × (1 + 261/10) = 33.3 V
@@ -2579,7 +2584,7 @@ def _build_activation_array(d: Design) -> None:
     # → V_GS≈-16.5 V (PFET on, inside ±20 V); without parachute_cutter_activate → G=ACTIVATE_HV (off).
     res_between(d, "ACTIVATE_HV", "PARACHUTE_CUTTER_ACTIVATE_G", "100k", ref="R_PARACHUTE_CUTTER_ACTIVATE_H", board_tag=BT)
     res_between(d, "PARACHUTE_CUTTER_ACTIVATE_G", "PARACHUTE_CUTTER_ACTIVATE_GD", "100k", ref="R_PARACHUTE_CUTTER_ACTIVATE_L", board_tag=BT)
-    q_unlock = add_bss138akm_qyl(d, ref="Q_PARACHUTE_CUTTER_ACTIVATE_LS", board_tag=BT)
+    q_unlock = add_ru1j002yntcl(d, ref="Q_PARACHUTE_CUTTER_ACTIVATE_LS", board_tag=BT)
     _net(d, "PARACHUTE_CUTTER_ACTIVATE_GD").connect(q_unlock.pin("3"))   # drain
     _net(d, "GND")        .connect(q_unlock.pin("2"))   # source
     _net(d, "PARACHUTE_CUTTER_SET").connect(q_unlock.pin("1"))  # gate ← MP25 PARACHUTE_CUTTER_SET
@@ -2607,13 +2612,13 @@ def _build_activation_array(d: Design) -> None:
         res_between(d, "PARACHUTE_CUTTER_ACTIVATE", f"{row}_G", "100k",
                     ref=f"R_ACT_ROW{r}_H", board_tag=BT)
         res_between(d, f"{row}_G", f"{row}_GD", "100k", ref=f"R_ACT_ROW{r}_L", board_tag=BT)
-        ls = add_bss138akm_qyl(d, ref=f"Q_ACT_ROW{r}_LS", board_tag=BT)
+        ls = add_ru1j002yntcl(d, ref=f"Q_ACT_ROW{r}_LS", board_tag=BT)
         _net(d, f"{row}_GD").connect(ls.pin("3"))
         _net(d, "GND").connect(ls.pin("2"))
         _net(d, f"ACT_ROW_SEL_{r}").connect(ls.pin("1"))
         res_between(d, f"ACT_ROW_SEL_{r}", "GND", "100k", ref=f"R_ACT_ROW{r}_PD", board_tag=BT)
     for c in range(4):
-        q = add_bss138akm_qyl(d, ref=f"Q_ACT_COL{c}", board_tag=BT)
+        q = add_ru1j002yntcl(d, ref=f"Q_ACT_COL{c}", board_tag=BT)
         _net(d, f"ACT_COL_{c}").connect(q.pin("3"))
         _net(d, "GND").connect(q.pin("2"))
         _net(d, f"ACT_COL_SEL_{c}").connect(q.pin("1"))
@@ -2705,7 +2710,7 @@ def build_camera_module(d: Design) -> None:
     # (2026-11-21) local 27 MHz DSC1001 at the sensor's 1.8 V IO rail: the MP25
     # PA8 clock was 3.3 V into EXTCLK (abs max VDD_IO + 0.3 = 2.1 V); also
     # frees a sleeve lane and keeps a 27 MHz clock off the LDS.
-    ycam = add_dsc1001ci5_027_0000(d, ref="Y_CAM_EXTCLK", board_tag="camera_module")
+    ycam = add_dsc1001ci1_027_0000(d, ref="Y_CAM_EXTCLK", board_tag="camera_module")
     _net(d, "COMP_1V8")  .connect(ycam.pin("1"))     # STANDBY# tied high
     _net(d, "GND")       .connect(ycam.pin("2"))
     _net(d, "CAM_EXTCLK").connect(ycam.pin("3"))
@@ -2720,7 +2725,7 @@ def build_camera_module(d: Design) -> None:
     # drain bus side; pull-ups both sides — the bus side's are RPU_*_EXT on
     # wakeup). BSS138AKM: already in the library, 0.37 mm tall.
     for line in ("SCL", "SDA"):
-        q = add_bss138akm_qyl(d, ref=f"Q_CAM_{line}", board_tag="camera_module")
+        q = add_ru1j002yntcl(d, ref=f"Q_CAM_{line}", board_tag="camera_module")
         _net(d, "COMP_1V8")         .connect(q.pin("1"))   # gate
         _net(d, f"CAM_{line}")      .connect(q.pin("2"))   # source (1.8 V side)
         _net(d, f"SYS_I2C_{line}")  .connect(q.pin("3"))   # drain (3.3 V bus)
@@ -2803,7 +2808,7 @@ def _add_ir_service_link(d: Design, board_tag: str, sfx: str = "",
                 ref=f"R_IR_TX_A{sfx}", board_tag=board_tag)
     res_between(d, f"IR_TX_M{sfx}", f"IR_TX_D{sfx}", "27",
                 ref=f"R_IR_TX_B{sfx}", board_tag=board_tag)
-    q_irtx = add_bss138akm_qyl(d, ref=f"Q_IR_TX{sfx}", board_tag=board_tag)
+    q_irtx = add_ru1j002yntcl(d, ref=f"Q_IR_TX{sfx}", board_tag=board_tag)
     _net(d, f"IR_TX_D{sfx}").connect(q_irtx.pin("3"))   # Drain
     _net(d, "GND")    .connect(q_irtx.pin("2"))   # Source
     _net(d, f"IR_TX_G{sfx}").connect(q_irtx.pin("1"))   # Gate
@@ -2836,8 +2841,9 @@ def _add_ir_service_link(d: Design, board_tag: str, sfx: str = "",
     # operator/launcher action — revises the "no launcher cooperation"
     # ground rule in the power_states.md preamble. A round never given IR activation_unlock stays in
     # Standby through launch (no motion fallback any more).
-    pd_wake = add_vbpw34fas(d, ref=f"D_IR_WAKE{sfx}", board_tag=board_tag)
+    pd_wake = add_vemd5110x01(d, ref=f"D_IR_WAKE{sfx}", board_tag=board_tag)   # (2026-11-22) sourcing swap, availability/decisions.csv: VBPW34FAS → VEMD5110X01
     _net(d, "IR_WAKE").connect(pd_wake.pin("K"))   # reverse-biased by the pull-up
+    _net(d, "IR_WAKE").connect(pd_wake.pin("K2"))  # second cathode pad
     _net(d, "GND")    .connect(pd_wake.pin("A"))
     if dnp:
         for c in d.chips[first:]:
@@ -3026,7 +3032,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # inductors anyway); CANH/CANL ride two lanes down to the aft interface.
     _CAN_TAG = "power_board"
     # (2026-11-20, user) VSON-8 (1.0 mm) instead of the 1.75 mm SOIC-8
-    can_gw = add_tcan1042gvdrbrq1(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
+    can_gw = add_tja1462btk_0z(d, ref="U_CAN_GW", board_tag=_CAN_TAG)
     _net(d, "EXT_CAN_TX").connect(can_gw.pin("TXD"))
     _net(d, "EXT_CAN_RX").connect(can_gw.pin("RXD"))
     _net(d, "GND").connect(can_gw.pin("GND"))
@@ -3095,7 +3101,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     for idx, scl, sda, sa0 in [(1, "I2C2_SCL", "I2C2_SDA", "GND"),
                                (2, "I2C3_SCL", "I2C3_SDA", "GND"),
                                (3, "I2C3_SCL", "I2C3_SDA", "3V3")]:
-        imu = add_ism330dhcxtr(d, ref=f"U_IMU{idx}", board_tag=ITAG)
+        imu = add_ism330dlctr(d, ref=f"U_IMU{idx}", board_tag=ITAG)
         _net(d, "3V3").connect(imu.pin("VDD"))
         _net(d, "3V3").connect(imu.pin("VDDIO"))
         _net(d, "GND").connect(imu.pin("GND_1"))
@@ -3272,17 +3278,18 @@ def build_power_board(d: Design) -> None:
     # NOTE: forward-drop, gate-drive timing and the USB interlock want
     # bench/sim confirmation before fab (analog behaviour, not modelled
     # by the connectivity build).
-    q_iso = add_dmp6110svt_7(d, ref="Q_ISO", board_tag=BTAG)
-    for dp in ("D_1", "D_2", "D_3", "D_4"):
+    q_iso = add_buk6d120_60px(d, ref="Q_ISO", board_tag=BTAG)   # (2026-11-22) sourcing swap, availability/decisions.csv: DMP6110 → BUK6D120
+    for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
         _net(d, "BAT_RAW").connect(q_iso.pin(dp))      # drains → cell side
-    _net(d, "BAT_PROT") .connect(q_iso.pin("S"))       # source → load / USB side
+    for sp in ("S_1", "S_2"):
+        _net(d, "BAT_PROT").connect(q_iso.pin(sp))       # source → load / USB side
     _net(d, "BAT_ISO_G").connect(q_iso.pin("G"))
     # Gate divider: BAT_PROT ─100k─ G ─10k─ Q_ISO_DRV drain. DRV off →
     # G≈BAT_PROT (V_GS≈0, OFF, nanopower). DRV on → G≈BAT_PROT·10/110
     # ≈0.4 V → V_GS≈-3.6 V (fully on, within ±20 V V_GSS).
     res_between(d, "BAT_PROT",  "BAT_ISO_G",  "100k", ref="R_ISO_H", board_tag=BTAG)
     res_between(d, "BAT_ISO_G", "BAT_ISO_GD", "10k",  ref="R_ISO_L", board_tag=BTAG)
-    q_iso_drv = add_bss138akm_qyl(d, ref="Q_ISO_DRV", board_tag=BTAG)
+    q_iso_drv = add_ru1j002yntcl(d, ref="Q_ISO_DRV", board_tag=BTAG)
     _net(d, "BAT_ISO_GD").connect(q_iso_drv.pin("3"))   # drain → gate divider
     _net(d, "GND")       .connect(q_iso_drv.pin("2"))   # source
     _net(d, "BAT_ISO_EN").connect(q_iso_drv.pin("1"))   # gate (driven via R_ISO_EN_S)
@@ -3298,7 +3305,7 @@ def build_power_board(d: Design) -> None:
     # of (and overriding) firmware. The body diode is the unconditional backstop;
     # this interlock only matters in the one window where firmware has turned the
     # channel ON (low-drop forward) and USB is then plugged.
-    q_iso_usb = add_bss138akm_qyl(d, ref="Q_ISO_USB", board_tag=BTAG)
+    q_iso_usb = add_ru1j002yntcl(d, ref="Q_ISO_USB", board_tag=BTAG)
     _net(d, "BAT_ISO_EN")  .connect(q_iso_usb.pin("3"))   # drain → force EN low
     _net(d, "GND")         .connect(q_iso_usb.pin("2"))   # source
     _net(d, "BAT_ISO_USBG").connect(q_iso_usb.pin("1"))   # gate
@@ -3672,10 +3679,11 @@ def build_power_board(d: Design) -> None:
     # bench confirmation before fab (analog behaviour, not modelled by
     # the connectivity build).
     UT = "usb_nose"
-    q_usb_or = add_dmp6110svt_7(d, ref="Q_USB_OR", board_tag=UT)
-    for dp in ("D_1", "D_2", "D_3", "D_4"):
+    q_usb_or = add_buk6d120_60px(d, ref="Q_USB_OR", board_tag=UT)   # (2026-11-22) sourcing swap, availability/decisions.csv: DMP6110 → BUK6D120
+    for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
         _net(d, "USB_VBUS").connect(q_usb_or.pin(dp))   # drains → VBUS side
-    _net(d, "BAT_PROT")   .connect(q_usb_or.pin("S"))   # source → load side
+    for sp in ("S_1", "S_2"):
+        _net(d, "BAT_PROT").connect(q_usb_or.pin(sp))   # source → load side
     _net(d, "USB_OR_G")   .connect(q_usb_or.pin("G"))
     # Gate divider, mirroring Q_ISO: BAT_PROT ─100k─ G ─10k─ DRV drain.
     # DRV off → G≈BAT_PROT (V_GS≈0, OFF, nanopower, body-diode-only).
@@ -3685,7 +3693,7 @@ def build_power_board(d: Design) -> None:
     # off the cells.
     res_between(d, "BAT_PROT",  "USB_OR_G",  "100k", ref="R_USBOR_H", board_tag=UT)
     res_between(d, "USB_OR_G",  "USB_OR_GD", "10k",  ref="R_USBOR_L", board_tag=UT)
-    q_usbor_drv = add_bss138akm_qyl(d, ref="Q_USBOR_DRV", board_tag=UT)
+    q_usbor_drv = add_ru1j002yntcl(d, ref="Q_USBOR_DRV", board_tag=UT)
     _net(d, "USB_OR_GD").connect(q_usbor_drv.pin("3"))   # drain → gate divider
     _net(d, "GND")      .connect(q_usbor_drv.pin("2"))   # source
     _net(d, "USB_OR_EN").connect(q_usbor_drv.pin("1"))   # gate ← VBUS presence
@@ -3707,7 +3715,7 @@ def build_power_board(d: Design) -> None:
     # IQ any more). Unplug: VBUS falls → Q_USB_WAKE and the Q_ISO interlock
     # release; if no firmware hold is up the round drops cleanly back to
     # shelf, else Q_ISO's body diode hands the load back to the cells.
-    q_usbwk = add_bss138akm_qyl(d, ref="Q_USB_WAKE", board_tag=BTAG,
+    q_usbwk = add_ru1j002yntcl(d, ref="Q_USB_WAKE", board_tag=BTAG,
                           feature="bottom")  # keep the saturated companion joint face clear
     _net(d, "MAIN_SW_GATE").connect(q_usbwk.pin("3"))   # Drain → the latch OR
     _net(d, "GND")         .connect(q_usbwk.pin("2"))   # Source
@@ -3784,7 +3792,7 @@ def build_wakeup_board(d: Design) -> None:
     BTAG = "wakeup_board"
 
     # ── add_power_input_with_rf_wake — QMAIN load switch + QHOLD latch ──
-    qmain = add_irlml6402trpbf(d, ref="QMAIN", board_tag=BTAG)
+    qmain = add_ssm3j372r_lf(d, ref="QMAIN", board_tag=BTAG)
     _net(d, "BAT_PROT")     .connect(qmain.pin("2"))   # Source
     _net(d, "REG_IN_MAIN")  .connect(qmain.pin("3"))   # Drain
     _net(d, "MAIN_SW_GATE") .connect(qmain.pin("1"))   # Gate
@@ -3805,7 +3813,7 @@ def build_wakeup_board(d: Design) -> None:
     # already-live BAT_PROT. Every hold — NFC GPO diode, QHOLD/MP25,
     # QHOLD2/WBA — gates QMAIN alone now.)
 
-    qhold = add_bss138akm_qyl(d, ref="QHOLD", board_tag=BTAG)
+    qhold = add_ru1j002yntcl(d, ref="QHOLD", board_tag=BTAG)
     _net(d, "MAIN_SW_GATE") .connect(qhold.pin("3"))   # Drain
     _net(d, "GND")          .connect(qhold.pin("2"))   # Source
     _net(d, "QHOLD_GATE")   .connect(qhold.pin("1"))   # Gate
@@ -3879,8 +3887,7 @@ def build_wakeup_board(d: Design) -> None:
     # sequence is SLOW: bits ≥ ~3 s, full wake ~10-15 s — a depot
     # bulk-wake, not a tap. The WBA (once booted) IDs the wake source by
     # elimination and demands the pattern continue before holding.
-    tmr_ldo = add_tps7a0233pdqnr(d, ref="U_TMR_LDO", board_tag=_MAG_TAG)   # (2026-11-20) X2SON 0.4 mm
-    _net(d, "GND").connect(tmr_ldo.pin("EP"))
+    tmr_ldo = add_xc6504a331mr_g(d, ref="U_TMR_LDO", board_tag=_MAG_TAG)   # (2026-11-22) sourcing swap, availability/decisions.csv   # (2026-11-20) X2SON 0.4 mm
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("IN"))
     _net(d, "BAT_RAW").connect(tmr_ldo.pin("EN"))     # always on
     _net(d, "GND")    .connect(tmr_ldo.pin("GND"))
@@ -4016,8 +4023,7 @@ def build_wakeup_board(d: Design) -> None:
     # µA-class domain (it bypasses the eFuse by design). Sited on
     # wakeup_board beside the WBA + Hall (two of its loads) and the rest
     # of the wake-latch pattern; BAT_RAW reaches it over the backbone.
-    aon = add_tps7a0233pdqnr(d, ref="U_AON_LDO", board_tag=_ACT_TAG)   # (2026-11-20) X2SON 0.4 mm
-    _net(d, "GND").connect(aon.pin("EP"))
+    aon = add_xc6504a331mr_g(d, ref="U_AON_LDO", board_tag=_ACT_TAG)   # (2026-11-22) sourcing swap, availability/decisions.csv   # (2026-11-20) X2SON 0.4 mm
     _net(d, "BAT_RAW").connect(aon.pin("IN"))
     _net(d, "GND")    .connect(aon.pin("GND"))
     _net(d, "AON_EN") .connect(aon.pin("EN"))    # smart internal pull-down: floats = OFF
@@ -4035,7 +4041,7 @@ def build_wakeup_board(d: Design) -> None:
     #   shelf   = no holds, EN=0     → AON + main both off (~10 µA)
     #   standby = WBA holds EN only  → AON on, eFuse+QMAIN off (~28 µA)
     #   on      = + PB4/PWR_HOLD     → everything up
-    q_aon = add_irlml6402trpbf(d, ref="Q_AON_EN", board_tag=_ACT_TAG)
+    q_aon = add_ssm3j372r_lf(d, ref="Q_AON_EN", board_tag=_ACT_TAG)
     _net(d, "BAT_RAW")    .connect(q_aon.pin("2"))   # Source
     _net(d, "AON_EN")     .connect(q_aon.pin("3"))   # Drain → LDO EN
     _net(d, "AON_EN_GATE").connect(q_aon.pin("1"))   # Gate
@@ -4055,7 +4061,7 @@ def build_wakeup_board(d: Design) -> None:
     d_aon2 = add_bas40_02l(d, ref="D_AON_WAKE2", board_tag=_ACT_TAG)
     _net(d, "AON_EN_GATE").connect(d_aon2.pin("A"))
     _net(d, "MAG_SHELF_K").connect(d_aon2.pin("K"))    # TMR shelf-wake leg (twin-OR rule)
-    q_usbwk2 = add_bss138akm_qyl(d, ref="Q_USB_WAKE2", board_tag=_ACT_TAG)
+    q_usbwk2 = add_ru1j002yntcl(d, ref="Q_USB_WAKE2", board_tag=_ACT_TAG)
     _net(d, "AON_EN_GATE").connect(q_usbwk2.pin("3"))  # Drain
     _net(d, "GND")        .connect(q_usbwk2.pin("2"))  # Source
     _net(d, "USBWK_GATE") .connect(q_usbwk2.pin("1"))  # Gate ← shared VBUS divider
@@ -4174,7 +4180,7 @@ def build_wakeup_board(d: Design) -> None:
     # reflash over the UART/HCI link (initial load stays SWD-on-pogos).
     # feature="bottom": on the top (power-facing) face the SOT-23 threw
     # WBA_UART_*/WBA_RST_CMD off the tight wakeup↔power lands.
-    q_wbarst = add_bss138akm_qyl(d, ref="Q_WBA_RST", board_tag=BTAG,
+    q_wbarst = add_ru1j002yntcl(d, ref="Q_WBA_RST", board_tag=BTAG,
                               feature="bottom")
     _net(d, "WBA_NRST")   .connect(q_wbarst.pin("3"))   # Drain
     _net(d, "GND")        .connect(q_wbarst.pin("2"))   # Source
@@ -4323,7 +4329,8 @@ def build_wakeup_board(d: Design) -> None:
                board_tag=BTAG, feature="rf",
                **_as_built_0402("0.5pF", "C0G/NP0"), pin=wba.pin("RF"))
     cap_to_gnd(d, "BLE_RF", "0.5pF", ref="C_WBA_PI2",
-               board_tag=BTAG, feature="rf")
+               board_tag=BTAG, feature="rf",
+               **_as_built_0402("0.5pF", "C0G/NP0"))   # (2026-11-22) obsolete SQCS 0603 → GJM1555 0402
 
     # ── LR2021 long-range radio — on THIS board, top face beside the WBA RF
     # (2026-11-16): host lines and BLE_RF are local; only the two antenna
@@ -4361,7 +4368,7 @@ def build_wakeup_board(d: Design) -> None:
     # path when its driver is dead (the 100 k gate pull-down keeps it
     # off). ⚠ FIRMWARE: hold polarity INVERTED vs the old wiring — the
     # WBA now drives PB4 HIGH to hold power (was: low/open-drain-low).
-    qhold2 = add_bss138akm_qyl(d, ref="QHOLD2", board_tag=BTAG)
+    qhold2 = add_ru1j002yntcl(d, ref="QHOLD2", board_tag=BTAG)
     _net(d, "MAIN_SW_GATE").connect(qhold2.pin("3"))   # Drain
     _net(d, "GND")         .connect(qhold2.pin("2"))   # Source
     _net(d, "QHOLD2_GATE") .connect(qhold2.pin("1"))   # Gate
@@ -6590,6 +6597,8 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         if leaf in board_set and _BRANCH_PARENT[leaf][0] in board_set and leaf not in snake
     ]
     from smash.parts.coo import apply_coo
+    from smash.parts.orderable import apply_orderable
+    apply_orderable(d)                    # (2026-11-22) generic passives → orderable MPNs
     apply_coo(d)                               # (2026-11-21) Mouser origin data
     _empty_aft_end_top(d)
     panel, boards = build_config_panel(snake, branches=branches,
@@ -6747,6 +6756,8 @@ def main() -> int:
     # materialises one spacer Board per gap, so the spacer chips can only
     # be created once those Boards exist.
     from smash.parts.coo import apply_coo
+    from smash.parts.orderable import apply_orderable
+    apply_orderable(d)                    # (2026-11-22) generic passives → orderable MPNs
     print(f"country of origin: {apply_coo(d)} parts from Mouser data (smash/data/coo_mouser.json)")
     _moved = _empty_aft_end_top(d)
     print(f"aft reorder: {_moved} aft_end top-face parts → activation_interface")

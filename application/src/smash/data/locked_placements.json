@@ -714,12 +714,12 @@
  },
  "D_IR_WAKE": {
   "position_mm": [
-   8.05,
-   -8.05
+   8.65,
+   -8.65
   ],
-  "rotation_deg": 45,
+  "rotation_deg": 135,
   "face": "top",
-  "reason": "2026-11-21: radar IR-wake photodiode (VBPW34FAS, 5.45 × 4.4 mm — the one radar part the packer cannot fit round the 45°-turned AoP) parked against the AoP's SE flat side, turned 45° so its long edge runs parallel; opposite the NW potting hole. The radar's other IR parts are packer-placed."
+  "reason": "2026-11-21: radar IR-wake photodiode (VBPW34FAS, 5.45 × 4.4 mm — the one radar part the packer cannot fit round the 45°-turned AoP) parked against the AoP's SE flat side, turned 45° so its long edge runs parallel; opposite the NW potting hole. The radar's other IR parts are packer-placed. (2026-11-22) VEMD5110X01 replaces the VBPW34FAS: its long axis is Y in the vendor land, so the lock turns 90° more (45 → 135) to keep the long edge along the AoP flat. Moved out 0.85 mm along the diagonal (8.05 → 8.65) to clear the AoP with the vendor courtyard."
  },
  "Y_AWR_HSE": {
   "position_mm": [

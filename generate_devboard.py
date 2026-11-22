@@ -72,6 +72,8 @@ def build_design():
     removed = [b.ref for b in list(d.batteries) if remove_component(d, b.ref)]
     locks = build_diag(d)
     from smash.parts.coo import apply_coo
+    from smash.parts.orderable import apply_orderable
+    apply_orderable(d)                    # (2026-11-22) generic passives → orderable MPNs
     apply_coo(d)                          # (2026-11-21) Mouser origin data
     return d, removed, locks
 
@@ -130,9 +132,9 @@ def build_diag(d) -> dict:
     from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67
     from smash.parts.ldos import add_ldl112pv33r
     from smash.parts.oscillators import add_dsc1001ci5_032_0000
-    from smash.parts.transceivers import add_tcan1042gvdq1
+    from smash.parts.swaps_2026_11 import add_tja1462btk_0z, add_usblc6_4sc6, add_ru1j002yntcl
     from smash.parts.leds import add_ltst_c190gkt, add_ltst_c190krkt
-    from smash.parts.mosfets import add_dmp6110svt_7, add_bss138akm_qyl
+    from smash.parts.mosfets import add_buk6d120_60px
     from smash.parts.mechanical import add_pogo_pad
     N = lambda name: G._net(d, name)
     T = dict(board_tag=DIAG)
@@ -150,11 +152,10 @@ def build_diag(d) -> dict:
     for pn, net in (("DP1", "DEV_USB_UP_P"), ("DP2", "DEV_USB_UP_P"),
                     ("DN1", "DEV_USB_UP_N"), ("DN2", "DEV_USB_UP_N")):
         N(net).connect(usb.pin(pn))
-    esd = DB.add_tpd4e05u06dqar(d, ref="U_DEV_ESD", **T)
-    N("DEV_USB_UP_P").connect(esd.pin("D1+")); N("DEV_USB_UP_N").connect(esd.pin("D1-"))
-    N("DEV_G4_USB_P").connect(esd.pin("D2+")); N("DEV_G4_USB_N").connect(esd.pin("D2-"))
-    for pn in ("GND_1", "GND_2"):
-        N("GND").connect(esd.pin(pn))
+    esd = add_usblc6_4sc6(d, ref="U_DEV_ESD", **T)   # (2026-11-22) TPD4E05U06 (China lots) → USBLC6-4SC6
+    N("DEV_USB_UP_P").connect(esd.pin("I/O1")); N("DEV_USB_UP_N").connect(esd.pin("I/O2"))
+    N("DEV_G4_USB_P").connect(esd.pin("I/O3")); N("DEV_G4_USB_N").connect(esd.pin("I/O4"))
+    N("GND").connect(esd.pin("GND")); N("USB_VBUS").connect(esd.pin("VBUS"))
 
     # ── dev 3.3 V (from USB VBUS: the diag section lives without the DUT) ──
     ldo = add_ldl112pv33r(d, ref="U_DEV_LDO", **T)
@@ -256,19 +257,19 @@ def build_diag(d) -> dict:
         chain whatever the firmware does: the flat tower stays isolated."""
         node = top_net
         for k in (1, 2, 3):
-            q = add_bss138akm_qyl(d, ref=f"Q_DEV_ILK_{tag}{k}", **T)
+            q = add_ru1j002yntcl(d, ref=f"Q_DEV_ILK_{tag}{k}", **T)
             nxt = "GND" if k == 3 else f"DEV_ILK_{tag}{k}"
             N(node).connect(q.pin("3")); N(f"TWR_SEAT_{k}").connect(q.pin("1"))
             N(nxt).connect(q.pin("2"))
             node = nxt
 
-    q_en = add_bss138akm_qyl(d, ref="Q_DEV_FLAT_OE", **T)     # bank B /OE low = on
+    q_en = add_ru1j002yntcl(d, ref="Q_DEV_FLAT_OE", **T)     # bank B /OE low = on
     N("DEV_FLAT_OE_N").connect(q_en.pin("3")); N("DEV_FLAT_EN").connect(q_en.pin("1"))
     N("DEV_FLAT_OE_SRC").connect(q_en.pin("2"))
     seat_interlock("DEV_FLAT_OE_SRC", "OE")
 
     # ── CAN-FD to the tower (gs_usb) ───────────────────────────────────────
-    can = add_tcan1042gvdq1(d, ref="U_DEV_CAN", **T)
+    can = add_tja1462btk_0z(d, ref="U_DEV_CAN", **T)   # (2026-11-22) TCAN1042GVDQ1 (EOL) → TJA1462
     N("DEV_CAN_TX").connect(can.pin("TXD")); N("DEV_CAN_RX").connect(can.pin("RXD"))
     N("USB_VBUS").connect(can.pin("VCC")); N(V3).connect(can.pin("VIO"))
     N("GND").connect(can.pin("GND")); N("GND").connect(can.pin("STB"))
@@ -300,12 +301,14 @@ def build_diag(d) -> dict:
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_ISENSE", **T)
     for tag, out_net, en in (("TWR", "TWR_BAT_RAW", "DEV_TWR_PWR_EN"),
                              ("FLAT", "BAT_RAW", "DEV_FLAT_PWR_EN")):
-        qp = add_dmp6110svt_7(d, ref=f"Q_DEV_{tag}_PWR", **T)
-        for dp in ("D_1", "D_2", "D_3", "D_4"):
+        qp = add_buk6d120_60px(d, ref=f"Q_DEV_{tag}_PWR", **T)   # (2026-11-22) DMP6110 → BUK6D120
+        for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
             N(out_net).connect(qp.pin(dp))
-        N("DEV_FEED").connect(qp.pin("S")); N(f"DEV_{tag}_PWR_G").connect(qp.pin("G"))
+        for sp in ("S_1", "S_2"):
+            N("DEV_FEED").connect(qp.pin(sp))
+        N(f"DEV_{tag}_PWR_G").connect(qp.pin("G"))
         res_between(d, "DEV_FEED", f"DEV_{tag}_PWR_G", "100k", ref=f"R_DEV_{tag}_PWR_H", **T)
-        qn = add_bss138akm_qyl(d, ref=f"Q_DEV_{tag}_PWR_LS", **T)
+        qn = add_ru1j002yntcl(d, ref=f"Q_DEV_{tag}_PWR_LS", **T)
         src = "GND" if tag == "TWR" else "DEV_FLAT_PWR_SRC"  # flat supply: seat-interlocked
         N(f"DEV_{tag}_PWR_G").connect(qn.pin("3")); N(src).connect(qn.pin("2"))
         N(en).connect(qn.pin("1"))
