@@ -113,10 +113,10 @@ def main() -> None:
                     help="what-if: radar bucks rated to 2.4 V VIN instead of LMR10510 (3.0 V)")
     ap.add_argument("--radar-1v8-buck", action="store_true",
                     help="what-if: radar 1.8 V from a buck instead of the LDL112 LDO")
-    ap.add_argument("--comp-boost", default="tps61175", choices=["tps61175", "LTC3124", "A", "B"],
-                    help="what-if COMP_5V boost: A = 2.7 V/6 A, B = 1.8 V/8 A sync")
-    ap.add_argument("--radar-regs", default="as_built", choices=["as_built", "r21"],
-                    help="r21: TPS62822 on 1.2/1.8 V + TPS62088 on 1.3 V (sourcing round 21)")
+    ap.add_argument("--comp-boost", default="LTC3124", choices=["tps61175", "LTC3124", "A", "B"],
+                    help="COMP_5V boost: LTC3124 (as built), tps61175 (pre-r21), A = 2.7 V/6 A, B = 1.8 V/8 A")
+    ap.add_argument("--radar-regs", default="r21", choices=["r21", "pre_r21"],
+                    help="r21 (as built): TPS62822 1.2/1.8 V + TPS62088 1.3 V; pre_r21: LMR10510 x2 + LDO")
     ap.add_argument("--radar-off-in-ready", action="store_true",
                     help="radar fully off in Ready, boots at the drop")
     ap.add_argument("--mag-wake-min", type=float, default=None,

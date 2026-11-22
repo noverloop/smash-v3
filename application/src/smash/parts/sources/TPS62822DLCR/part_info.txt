@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS62822DLCR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=8
+Version=2.1
+Released=2019-01-23 03:39:28
+Downloaded=2026-11-22 22:56:50
+3D=Y

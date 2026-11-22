@@ -537,3 +537,69 @@ def add_pac1941t_1e_4mx(design, ref: str, **overrides) -> Chip:
                 size_mm=(3.0, 3.0), manf="Microchip", pins=pins,
                 description="Power monitor 1-ch, 9 V FSR, accumulator, I²C, VQFN-16",
                 note=f"Replaces INA228 on the bench shunt — {_WHY}.", **overrides)
+
+
+# ── 2026-11-23 battery-sim regulator swaps (sourcing round 21) ──────────────
+_WHY_R21 = ("battery sim on the fixed 3P pack, sourcing round 21 "
+            "(availability/decisions.csv)")
+
+
+def add_ltc3124edhc_trpbf(design, ref: str, **overrides) -> Chip:
+    """Analog Devices LTC3124EDHC#TRPBF — 2-phase synchronous boost, VIN 1.8 V
+    start / 0.5 V after start-up, VOUT 2.5-15 V, 2.5 A min (3.5 typ) peak
+    switch current PER PHASE, true output disconnect when SD is low (DS 3124f).
+    DFN-16 5 × 3 × 0.75 mm + EP. Pins (DS Pin Functions): 1 SWB, 2 PGNDB,
+    3 SWA, 4 PGNDA, 5 VIN, 6 PWM/SYNC, 7 VCC, 8 RT, 9 VC, 10 FB, 11 SD,
+    12 SGND, 13 VOUTA, 14 NC (DS: tie to VOUT for copper), 15 VOUTB, 16 CAP,
+    17 EP = PGND. SnapMagic land (no paste on the EP — add windows at layout);
+    the SnapMagic symbol omits pin 14, so pins are listed here from the DS."""
+    names = {1: "SWB", 2: "PGNDB", 3: "SWA", 4: "PGNDA", 5: "VIN", 6: "PWM/SYNC",
+             7: "VCC", 8: "RT", 9: "VC", 10: "FB", 11: "SD", 12: "SGND", 13: "VOUTA",
+             14: "NC", 15: "VOUTB", 16: "CAP", 17: "PGND"}
+    kinds = {"VIN": "power", "VOUTA": "power", "VOUTB": "power", "VCC": "power",
+             # grounds typed "power" like the other regulator factories (the
+             # power_board GND rides the FLEX_GND net)
+             "PGNDA": "power", "PGNDB": "power", "PGND": "power", "SGND": "power",
+             "SWA": "output", "SWB": "output", "NC": "passive"}
+    pins = [Pin(num=str(n), name=nm, aliases=(["EP"] if n == 17 else []),
+                type=kinds.get(nm, "input")) for n, nm in names.items()]
+    c = _sam(design, ref, pn="LTC3124EDHC#TRPBF", part_dir="LTC3124EDHC_TRPBF",
+             mod="SON50P300X500X80-17N.kicad_mod", package="DFN-16 (5×3) DHC", height_mm=0.8,
+             size_mm=(3.0, 5.0), manf="Analog Devices", pins=pins, ring_courtyard=True,
+             description="2-phase sync boost 1.8-5.5 V in, 2.5-15 V out, 2 × 2.5 A, output disconnect, DFN-16",
+             datasheet=datasheet_ref("LTC3124EDHC_TRPBF", "3124f.pdf"),
+             note=f"Replaces TPS61175 on COMP_5V — {_WHY_R21}. SnapMagic land.", **overrides)
+    c.footprint.source = "snapmagic"
+    # SnapMagic STEP is Y-up and long along X: −90° about X seats it (z 0-0.75),
+    # +90° about Z lays the 5 mm side along the pad columns. ⚠ Pin-1 marker
+    # orientation (±90° about Z) not verified — check in the 3D viewer.
+    c.footprint.model_rotate_deg = (-90.0, 0.0, 90.0)
+    return c
+
+
+def add_tps62822dlcr(design, ref: str, **overrides) -> Chip:
+    """TI TPS62822DLCR — 2 A synchronous buck, VIN 2.4-5.5 V (UVLO ~2.2 V
+    falling), VFB 0.6 V, 4 µA IQ, ILIM 2.7 A min; VQFN-8 2.0 × 1.5 × 1.0 mm
+    (DS SLVSDV6C). Pins: 1 EN, 2 FB, 3 AGND, 4 NC, 5 PGND, 6 SW, 7 VIN, 8 PG.
+    App values: L 0.47 µH, COUT 2 × 10 µF, R2 ≤ 120 k, CFF = 12 µs / R2."""
+    return _sam(design, ref, pn="TPS62822DLCR", part_dir="TPS62822DLCR",
+                mod="SON50P150X200X100-8N.kicad_mod", package="VQFN-8 (2.0×1.5) DLC",
+                height_mm=1.0, size_mm=(1.5, 2.0), manf="Texas Instruments",
+                description="Sync buck 2.4-5.5 V in, 2 A, 0.6 V FB, VQFN-8 2×1.5",
+                datasheet=datasheet_ref("TPS62822DLCR", "tps62822.pdf"),
+                note=f"Replaces LMR10510 / XC6220 on the radar rails — {_WHY_R21}.", **overrides)
+
+
+def add_tps62088yfpr(design, ref: str, **overrides) -> Chip:
+    """TI TPS62088YFPR — 3 A synchronous buck, VIN 2.4-5.5 V (UVLO 2.2 V
+    falling), VFB 0.6 V (adjustable version), ILIM 3.6 A min, 4 MHz; WCSP-6
+    0.8 × 1.2 × 0.5 mm, 0.4 mm pitch. Balls: A1 EN, A2 VIN, B1 PG, B2 SW,
+    C1 FB, C2 GND. App values: L 0.24 µH, COUT 2 × 10 µF, R2 100 k + 120 pF
+    feed-forward (required on the adjustable version)."""
+    return _sam(design, ref, pn="TPS62088YFPR", part_dir="TPS62088YFPR",
+                mod="BGA6C40P2X3_80X120X50.kicad_mod", package="DSBGA-6 (0.8×1.2) YFP",
+                height_mm=0.5, size_mm=(0.8, 1.2), manf="Texas Instruments", ring_courtyard=True,
+                description="Sync buck 2.4-5.5 V in, 3 A, 0.6 V FB, WCSP-6",
+                datasheet=datasheet_ref("TPS62088YFPR", "tps62088.pdf"),
+                note=f"Replaces LMR10510 on the AWR 1.3 V RF rail (up to 2.0 A) — {_WHY_R21}.",
+                **overrides)

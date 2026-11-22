@@ -180,6 +180,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "CAM_PHY_REG":  1.2,    # AR0234CS internal LDO output (MIPI PHY)
     "XV_5V":        5.0,    # S4 transverter PA rail (MCP1640D boost off REG_IN_MAIN, on only for TX)
     "XV_LO_3V3":    3.3,    # S4 transverter LO (ADF4351) supply, ferrite-isolated from 3V3
+    "COMP_BST_VCC": 4.25,   # LTC3124 internal gate-drive LDO (U_COMP_BOOST VCC, 2026-11-23)
 }
 
 # Ground nets — anything matching here gets kind="ground". Aliases are
@@ -1173,87 +1174,90 @@ def build_radar_module_awr1843aop(d: Design) -> None:
       • VPP grounded = no in-system fuse programming (keys factory-fused)."""
     BTAG = "radar_module"
 
-    # ── 1.2 V buck (LMR10510) — VDDIN core + SRAM + VNWA back-bias ──────────
-    # SWRS236 rail: 1.2 V (1.14–1.32) — the previous 1.0 V target was an
-    # AWR2944 leftover, and its 30k/100k divider actually made 0.78 V (the
-    # LMR10510 reference is 0.600 V, not 0.8). 100k/100k → 1.200 V.
-    buck12 = add_lmr10510ysde_nopb(d, ref="U_AWR_BUCK12", feature="bottom", board_tag=BTAG)   # (2026-11-22) WSON-6 0.8 mm (was SOT-23-5 1.45)
+    # (2026-11-23) RADAR REGULATORS → low-VIN synchronous bucks (sourcing round
+    # 21, battery sim smash.sim.battery). The LMR10510s needed VIN ≥ 3.0 V — the
+    # first floor the sagging 3P pack hit in descent — and were 1 A parts on a
+    # rail the AWR1843 can pull 2.0 A from (SWRS236C Table 6-3 max: 1.2 V 1.0 A,
+    # 1.3 V 2.0 A, 1.8 V 0.85 A). All three now run from 2.4 V (UVLO ~2.2 V),
+    # are synchronous (no catch diodes) and still self-gate on RADAR_EN off
+    # always-on BAT_PROT. FB = 0.6 V on all three: VOUT = 0.6 × (1 + R1/R2),
+    # R2 = 100 k, CFF = 120 pF across R1 (TPS6282x DS Eq. 5: 12 µs / R2; required
+    # on the adjustable TPS62088). PG pins unused (DS: may float).
+    from smash.parts.swaps_2026_11 import add_tps62822dlcr, add_tps62088yfpr
+
+    def _cff(top, fb, ref):
+        c = add_capacitor_c0g_0603_avx_sqcs(d, ref=ref, value="120pF", board_tag=BTAG,
+                                            feature="bottom", **_as_built_0402("120pF", "C0G/NP0"))
+        _net(d, top).connect(c.pin("1")); _net(d, fb).connect(c.pin("2"))
+
+    # ── 1.2 V (TPS62822, 2 A) — VDDIN core + SRAM + VNWA back-bias ──────────
+    # 100k/100k → 1.200 V (SWRS236 1.14–1.32 V). 0.47 µH (DS Table 3) → TMS
+    # 0805 R47, Isat 3.4 A over the 2.7 A min / 3.7 A max switch limit.
+    buck12 = add_tps62822dlcr(d, ref="U_AWR_BUCK12", feature="bottom", board_tag=BTAG)
     _net(d, "BAT_PROT")  .connect(buck12.pin("VIN"))
-    _net(d, "BAT_PROT")  .connect(buck12.pin("VINA"))
-    _net(d, "GND")       .connect(buck12.pin("GND"))
-    _net(d, "GND")       .connect(buck12.pin("DAP"))
+    _net(d, "GND")       .connect(buck12.pin("PGND"))
+    _net(d, "GND")       .connect(buck12.pin("AGND"))
     _net(d, "AWR_1V2_SW").connect(buck12.pin("SW"))
     _net(d, "RADAR_EN")  .connect(buck12.pin("EN"))
     _net(d, "AWR_1V2_FB").connect(buck12.pin("FB"))
     res_between(d, "RADAR_EN", "GND", "100k", ref="R_RADAR_EN_PD", board_tag=BTAG)
-    # 2.2 µH TMS: ΔiL ≈ 0.32 A p-p @1.6 MHz → peak ≈ 0.6 A, inside the
-    # LMR10510's 1.2 A limit and the TMS-2R2's Isat (the old binding was
-    # a nonexistent "WE-KI 0402 4.7 µH" — an RF family capped ~120 nH).
-    # The WHOLE buck cluster (U+L+D+caps) rides the BOTTOM
-    # (companion-facing) face with the locked J_USB_C + its usb_zone
-    # column owning the top NE: packer-placed L/D/C on the top face
-    # ended up hugging the USB area (L13 at board (7.7,7.7)) and
-    # dragging the nose-side cutout into it — and the SMC catch
-    # diodes found no top slot at all (parked = the radar overflow).
-    # Bottom south is open, and one face keeps the switch loop tight.
-    ind_between(d, "AWR_1V2_SW", "AWR_1V2", "2.2uH",
+    ind_between(d, "AWR_1V2_SW", "AWR_1V2", "0.47uH",
                 ref="L_AWR_BUCK12", feature="bottom", board_tag=BTAG)
-    # Catch diode — the LMR10510 is NON-synchronous (DS pin table: SW
-    # "connect to the inductor and catch diode"); without it the inductor
-    # has no off-time path and the rail can't regulate.
-    d_b12 = add_rb160vam_60(d, ref="D_AWR_BUCK12", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
-                           board_tag=BTAG)
-    _net(d, "AWR_1V2_SW").connect(d_b12.pin("K"))
-    _net(d, "GND")       .connect(d_b12.pin("A"))
     res_between(d, "AWR_1V2", "AWR_1V2_FB", "100k", ref="R_AWR12_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V2_FB", "GND", "100k", ref="R_AWR12_FB2", board_tag=BTAG)
+    _cff("AWR_1V2", "AWR_1V2_FB", "C_AWR12_FF")
     cap_to_gnd(d, "AWR_1V2", "22uF/LV",  ref="C_AWR_1V2_1",
                feature="bottom", board_tag=BTAG, pin=(buck12.ref, None))
     cap_to_gnd(d, "AWR_1V2", "100nF", ref="C_AWR_1V2_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck12.ref, None))
 
-    # ── 1.3 V buck (LMR10510) — VIN_13RF RF supply ──────────────────────────
-    # 118k/100k → 0.6×2.18 = 1.308 V (the old 68k/100k made 1.008 V).
-    buck13 = add_lmr10510ysde_nopb(d, ref="U_AWR_BUCK13", feature="bottom", board_tag=BTAG)   # (2026-11-22) WSON-6 0.8 mm (was SOT-23-5 1.45)
+    # ── 1.3 V (TPS62088, 3 A) — VIN_13RF RF supply (up to 2.0 A) ────────────
+    # 118k/100k → 0.6 × 2.18 = 1.308 V. 0.24 µH (DS app) → TMS 0805 R24, Isat
+    # 4.6 A (switch limit 3.6 min / 5.0 max — the max sits above Isat, check
+    # at layout / swap to a 5 A part if the bench shows saturation).
+    buck13 = add_tps62088yfpr(d, ref="U_AWR_BUCK13", feature="bottom", board_tag=BTAG)
     _net(d, "BAT_PROT")  .connect(buck13.pin("VIN"))
-    _net(d, "BAT_PROT")  .connect(buck13.pin("VINA"))
     _net(d, "GND")       .connect(buck13.pin("GND"))
-    _net(d, "GND")       .connect(buck13.pin("DAP"))
     _net(d, "AWR_1V3_SW").connect(buck13.pin("SW"))
     _net(d, "RADAR_EN")  .connect(buck13.pin("EN"))
     _net(d, "AWR_1V3_FB").connect(buck13.pin("FB"))
-    ind_between(d, "AWR_1V3_SW", "AWR_1V3", "2.2uH",
-                ref="L_AWR_BUCK13", feature="bottom",
-                board_tag=BTAG)   # see L_AWR_BUCK12 note
-    d_b13 = add_rb160vam_60(d, ref="D_AWR_BUCK13", feature="bottom",   # (2026-11-20) 1.1 mm, 1 A ≫ 0.35 A avg; was 2.61 mm SMC MBRS340
-                           board_tag=BTAG)   # catch diode (see BUCK12)
-    _net(d, "AWR_1V3_SW").connect(d_b13.pin("K"))
-    _net(d, "GND")       .connect(d_b13.pin("A"))
+    ind_between(d, "AWR_1V3_SW", "AWR_1V3", "0.24uH",
+                ref="L_AWR_BUCK13", feature="bottom", board_tag=BTAG)
     res_between(d, "AWR_1V3", "AWR_1V3_FB", "118k", ref="R_AWR13_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V3_FB", "GND", "100k", ref="R_AWR13_FB2", board_tag=BTAG)
+    _cff("AWR_1V3", "AWR_1V3_FB", "C_AWR13_FF")
     cap_to_gnd(d, "AWR_1V3", "22uF/LV",  ref="C_AWR_1V3_1",
                feature="bottom", board_tag=BTAG, pin=(buck13.ref, None))
     cap_to_gnd(d, "AWR_1V3", "100nF", ref="C_AWR_1V3_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck13.ref, None))
 
-    # Shared buck input decoupling on always-on BAT_PROT (bottom, at
-    # the bucks' VIN — the 10 µF was landing on F.Cu dead-centre,
-    # inside the U_AWR courtyard)
+    # ── 1.8 V (TPS62822, 2 A) — analog (BB/VCO/CLK) + I/O, up to 0.85 A ─────
+    # Was the XC6220 LDO: burned (VBAT − 1.8 V) × I — ~0.06 W of the radar's
+    # Ready idle. 200k/100k → 1.800 V.
+    ldo18 = add_tps62822dlcr(d, ref="U_AWR_LDO18", feature="bottom", board_tag=BTAG)   # ref kept (layout continuity); it is a buck now
+    _net(d, "BAT_PROT")  .connect(ldo18.pin("VIN"))
+    _net(d, "GND")       .connect(ldo18.pin("PGND"))
+    _net(d, "GND")       .connect(ldo18.pin("AGND"))
+    _net(d, "AWR_1V8_SW").connect(ldo18.pin("SW"))
+    _net(d, "RADAR_EN")  .connect(ldo18.pin("EN"))
+    _net(d, "AWR_1V8_FB").connect(ldo18.pin("FB"))
+    ind_between(d, "AWR_1V8_SW", "AWR_1V8", "0.47uH",
+                ref="L_AWR_BUCK18", feature="bottom", board_tag=BTAG)
+    res_between(d, "AWR_1V8", "AWR_1V8_FB", "200k", ref="R_AWR18_FB1", board_tag=BTAG)
+    res_between(d, "AWR_1V8_FB", "GND", "100k", ref="R_AWR18_FB2", board_tag=BTAG)
+    _cff("AWR_1V8", "AWR_1V8_FB", "C_AWR18_FF")
+    cap_to_gnd(d, "AWR_1V8", "22uF/LV", ref="C_AWR_1V8_1", feature="bottom",
+               board_tag=BTAG, pin=(ldo18.ref, None))
+    cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
+               embedded_cap_absorbs=True, board_tag=BTAG, pin=(ldo18.ref, None))
+
+    # Shared input decoupling on always-on BAT_PROT (DS: 10 µF per buck input)
     cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1",
                feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
+    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN3",
+               feature="bottom", board_tag=BTAG, pin=ldo18.pin("VIN"))
     cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2",
                feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
-
-    # ── 1.8 V LDO (LDL112PV18R) — analog (BB/VCO/CLK) + I/O ──────────────────
-    ldo18 = add_xc6220b181mr_g(d, ref="U_AWR_LDO18", board_tag=BTAG)
-    _net(d, "BAT_PROT").connect(ldo18.pin("VIN"))
-    _net(d, "GND")     .connect(ldo18.pin("GND"))
-    _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
-    _net(d, "AWR_1V8") .connect(ldo18.pin("VOUT"))
-    # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
-    cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
     # ── AWR1843AOP ──────────────────────────────────────────────────────────
     # feature="rf": the AoP is the radiator → stays on the nose-facing TOP
@@ -3292,61 +3296,56 @@ def build_power_board(d: Design) -> None:
     # core_radar — bottom face also co-locates it with L_BOOST_COMP (tight
     # SW loop on one face).
     # (2026-11-20) TOP face with the fire boost (tall parts grouped on one face)
-    boost = add_tps61175pwpr(d, ref="U_COMP_BOOST", board_tag=BTAG)
-    _net(d, "REG_IN_MAIN") .connect(boost.pin("VIN"))     # 3
-    _net(d, "COMP_5V_SW")  .connect(boost.pin("SW_1"))    # 1 ┐ switch node
-    _net(d, "COMP_5V_SW")  .connect(boost.pin("SW_2"))    # 2 ┘
-    _net(d, "COMP_5V_FB")  .connect(boost.pin("FB"))      # 9
-    _net(d, "GND")         .connect(boost.pin("PGND_1"))  # 12
-    _net(d, "GND")         .connect(boost.pin("PGND_2"))  # 13
-    _net(d, "GND")         .connect(boost.pin("PGND_3"))  # 14
-    _net(d, "GND")         .connect(boost.pin("AGND"))    # 7
-    _net(d, "GND")         .connect(boost.pin("EP"))      # 15 thermal pad → GND plane vias
-    _net(d, "GND")         .connect(boost.pin("NC"))      # 11 DS: "Reserved. Must connect to ground."
-    _net(d, "GND")         .connect(boost.pin("SYNC"))    # 6 internal osc — DS: tie to AGND when unused
-    _net(d, "REG_IN_MAIN") .connect(boost.pin("EN"))      # 4 (always-on, follows the main switch)
-    _net(d, "COMP_5V_COMP").connect(boost.pin("COMP"))    # 8
-    # fSW = 600 kHz via R_FREQ = 176 k (DS Table 2) — matched to the 10 µH
-    # inductor: ΔI_L ≈ 0.2 A (~12 % ripple) keeps a usable current-sense
-    # ramp; at 1.2 MHz the same L leaves ~6 % and the DS warns internal-osc
-    # pulse-skipping above 1.2 MHz anyway. FREQ must never be left open.
-    _net(d, "COMP_5V_FREQ").connect(boost.pin("FREQ"))    # 10
-    res_between(d, "COMP_5V_FREQ", "GND", "174k",          # (2026-11-21) 176k not E96
-                ref="R_BOOST_FREQ", board_tag=BTAG)
-    # Soft-start 47 nF (DS §7.3.2: "eliminates the output overshoot ... for
-    # most applications") — closes the rail-audit inrush item: the PMIC +
-    # 47 µF + fin bulk downstream of QMAIN were unmanaged with the 61085's
-    # open SS pin.
-    _net(d, "COMP_5V_SS")  .connect(boost.pin("SS"))      # 5
-    cap_to_gnd(d, "COMP_5V_SS", "47nF", ref="C_BOOST_SS", board_tag=BTAG, pin=boost.pin("SS"))
-
-    # Boost topology per DS §Typical Application (non-synchronous):
-    # inductor IN → SW, Schottky rectifier SW → VOUT.
-    # (2026-11-21) Coilcraft XGL5020-472MEC 4.7 µH: Isat 5.3 A at 30 % drop
-    # covers the TPS61175's 5 A MAX switch limit (3.0/3.8/5.0 A), which the
-    # fin pulses drive it into; DCR 36 mΩ, 2.1 mm. The earlier WE-PD
-    # 744043100 (10 µH, mislabelled "Isat 6 A" here) and LPS4018 saturated at
-    # ~1-1.2 A. 4.7 µH = bottom of the DS 4.7–47 µH window; ripple ≈ 0.43 A
-    # at 600 kHz. COMP network re-derived for 4.7 µH below.
-    # Pin 1 (marked start lead) on the SW node, per Coilcraft (lowest EMI).
-    l_boost = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP", board_tag=BTAG)   # (2026-11-22) XGL5020-472 → WE-MAPI 4020, same 2.1 mm
+    # (2026-11-23) TPS61175 → LTC3124EDHC (sourcing round 21, battery sim
+    # smash.sim.battery): the TPS61175's 2.9 V VIN minimum and 3.0 A min switch
+    # limit failed the descent + cutter pulse on the fixed 3P pack. LTC3124 (DS
+    # 3124f): 2-phase synchronous, VIN 1.8 V start / 0.5 V after start-up,
+    # 2.5 A min (3.5 typ) peak per phase, true output disconnect when SD is low.
+    # Synchronous → no catch diode, no FREQ / SS parts. Because it runs down to
+    # 0.5 V it would drain the cells flat: COMP_BOOST_SD is the hook for the
+    # ~2.5 V pack undervoltage cutoff (supervisor vs WBA firmware: OPEN).
+    from smash.parts.swaps_2026_11 import add_ltc3124edhc_trpbf
+    boost = add_ltc3124edhc_trpbf(d, ref="U_COMP_BOOST", board_tag=BTAG)
+    _net(d, "REG_IN_MAIN") .connect(boost.pin("VIN"))
+    _net(d, "COMP_5V_SW")  .connect(boost.pin("SWA"))     # phase A (net name kept)
+    _net(d, "COMP_5V_SWB") .connect(boost.pin("SWB"))     # phase B
+    for _p in ("VOUTA", "VOUTB", "NC"):                    # DS: NC to VOUT for copper
+        _net(d, "COMP_5V_RAW").connect(boost.pin(_p))
+    for _p in ("PGNDA", "PGNDB", "PGND", "SGND"):
+        _net(d, "GND").connect(boost.pin(_p))
+    _net(d, "COMP_5V_FB")  .connect(boost.pin("FB"))
+    _net(d, "COMP_5V_COMP").connect(boost.pin("VC"))
+    # VCC: internal 4.25 V gate-drive LDO, ≥ 4.7 µF to SGND. PWM/SYNC high
+    # (> 0.9 VCC) = fixed-frequency PWM: Burst Mode caps the output current,
+    # which the descent load (MP25 + cutter, ~1.4 A) would exceed.
+    _net(d, "COMP_BST_VCC").connect(boost.pin("VCC"))
+    _net(d, "COMP_BST_VCC").connect(boost.pin("PWM/SYNC"))
+    cap_to_gnd(d, "COMP_BST_VCC", "4.7uF", ref="C_BOOST_VCC", board_tag=BTAG, pin=boost.pin("VCC"))
+    # CAP: 100 nF from CAP to VOUT (rectifier gate-drive floor, DS pin 16)
+    c_cap = add_capacitor_x7r_0402_kemet(d, ref="C_BOOST_CAP", value="100nF", board_tag=BTAG)
+    _net(d, "COMP_BST_CAP").connect(boost.pin("CAP"))
+    _net(d, "COMP_BST_CAP").connect(c_cap.pin("1")); _net(d, "COMP_5V_RAW").connect(c_cap.pin("2"))
+    # RT: f_phase ≈ 28 / RT(kΩ) MHz → 28.0 k = 1 MHz per phase (2 MHz ripple)
+    _net(d, "COMP_5V_FREQ").connect(boost.pin("RT"))
+    res_between(d, "COMP_5V_FREQ", "GND", "28k", ref="R_BOOST_FREQ", board_tag=BTAG)
+    # SD (> 1.6 V on, < 0.25 V off, never float): pulled up to REG_IN_MAIN —
+    # the UV-cutoff source pulls COMP_BOOST_SD low (to be added).
+    _net(d, "COMP_BOOST_SD").connect(boost.pin("SD"))
+    res_between(d, "REG_IN_MAIN", "COMP_BOOST_SD", "100k", ref="R_BOOST_SD", board_tag=BTAG)
+    # Inductors: 4.7 µH per phase (DS typical application), WE-MAPI 4020
+    # (Isat 3.05 A @10 % / 5.75 A @30 %; peak limit 2.5 min / 4.5 A max per phase).
+    l_boost = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP", board_tag=BTAG)
     _net(d, "COMP_5V_SW") .connect(l_boost.pin("1"))
     _net(d, "REG_IN_MAIN").connect(l_boost.pin("2"))
-    # PMEG040V050EPE-QZ 5 A/40 V low-V_F Schottky (was an MBRS540T3G in SMC
-    # until 2026-09-02): diode average current = IOUT (≤ ~2.2 A) but fin-pulse
-    # peaks track the 3.8 A typ switch limit, so the 5 A envelope stays.
-    # A non-synchronous boost NEEDS a rectifier diode — the TPS61175 carries
-    # only the low-side switch — so unlike the depot-USB OR this cannot become
-    # an ideal-diode FET. The swap is about HEIGHT: CFP15B is 1.1 mm against
-    # the SMC's 2.56 mm, and the SMC was the single part on this face driving
-    # the power↔companion spacer past what the rest of the gap needs (see
-    # spacer_sizing). Same 40 V/5 A, same drop (520 vs 500 mV max at 5 A),
-    # lower leakage, 175 °C T_j, AEC-Q101. Pins 1+2 are both anode (tie both
-    # — the clip-bond package splits the anode across two leads), 3 = cathode.
-    d_boost = add_pmeg040v050epe_qz(d, ref="D_BOOST_COMP", board_tag=BTAG)
-    _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_1"))
-    _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_2"))
-    _net(d, "COMP_5V_RAW").connect(d_boost.pin("K"))
+    # ⚠ LAYOUT (2026-11-23, user): the packer puts this 2.1 mm part on the
+    # companion-facing face under companion_compute's 0.95 mm bottom caps →
+    # power↔companion gap 2.5 → 3.4 mm (stack +0.9 mm). Layout EE: place it
+    # off the companion bottom-face parts (next to L_BOOST_COMP) to restore the
+    # 2.5 mm gap. test_antenna_sim_stack fails until then.
+    l_boost_b = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP_B", board_tag=BTAG)
+    _net(d, "COMP_5V_SWB").connect(l_boost_b.pin("1"))
+    _net(d, "REG_IN_MAIN").connect(l_boost_b.pin("2"))
+    cap_to_gnd(d, "REG_IN_MAIN", "10uF", ref="C_BOOST_IN", board_tag=BTAG, pin=boost.pin("VIN"))
     # (2026-11-22, height round 16) 47 µF polymer → 2 × 22 µF 25 V 0805 (1.25 mm)
     from smash.parts.passives import add_capacitor_grm21br61e226me44l
     for _k in (1, 2):
@@ -3356,23 +3355,28 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref="C_BOOST_OUT3",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(boost.ref, None))
-    # VOUT = 1.229 × (1 + 309/100) = 5.03 V (TPS61175 V_REF, DS §6.5)
-    res_between(d, "COMP_5V_RAW", "COMP_5V_FB", "309k",
+    # VOUT = 1.2 × (1 + R1/R2); DS: R2 = 113 k, R1 = 94 × (VOUT − 1.2) kΩ
+    # → R1 360 k → 5.02 V.
+    res_between(d, "COMP_5V_RAW", "COMP_5V_FB", "360k",
                 ref="R_BOOST_R1", board_tag=BTAG)
-    res_between(d, "COMP_5V_FB", "GND",        "100k",
+    res_between(d, "COMP_5V_FB", "GND",        "113k",
                 ref="R_BOOST_R2", board_tag=BTAG)
-    # Loop compensation (DS §8.2.2.10; Gea 340 µS, Rsense 40 mΩ). (2026-11-21)
-    # re-derived for L = 4.7 µH: fRHPZ = RO/(2πL)·(VIN/VOUT)² rises to ≈ 30 kHz
-    # at VIN 3.0 V / 2 A (was 14 kHz at 10 µH), so fC may go to ≈ 10 kHz
-    # (fRHPZ/3). R3 2.7 k / C4 120 nF (fZ ≈ 490 Hz) → fC 7-10 kHz, PM 93-96°
-    # over VIN 3.0-4.2 V, 0.3-2.2 A (COUT_eff ≈ 70 µF) — ~2× faster recovery
-    # from fin-pulse load steps than the 1.6 k / 220 nF set for 10 µH, and
-    # ≥ 30 % below the limit for the ±30 % Gea spread. (The 51 k/1.1 nF pair
-    # was the 61085's gm/sense design.)
-    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "2.7k",
+    # Loop compensation per DS "Compensating the Feedback Loop", worst case
+    # VIN 2.5 V / IOUT 1.5 A (RL 3.35 Ω), COUT_eff ≈ 40 µF, L 4.7 µH, η 0.9:
+    # RHP zero Z3 = VIN²·2RL / (2π·VOUT²·L) ≈ 56 kHz → fC 8 kHz (< Z3/6);
+    # GDC = 3.4·η·VIN·RL/VOUT ≈ 5.1, P1 ≈ 2.4 kHz → GfC ≈ 1.45. Φm 60° split
+    # Φ1 40° (Type II) + Φ2 28° (phase lead) → a1 4.6, a2 2.77 →
+    # CC 1.5 nF, RC 60.4 k, CF 390 pF; RPL 68.1 k + CPL 47 pF across R1.
+    # ⚠ Verify with a Bode measurement on the bench (DS recommends it).
+    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "60.4k",
                 ref="R_BOOST_COMP", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_5V_COMP_C", "120nF",
+    cap_to_gnd(d, "COMP_5V_COMP_C", "1.5nF",
                ref="C_BOOST_COMP", board_tag=BTAG, pin=(boost.ref, None))
+    cap_to_gnd(d, "COMP_5V_COMP", "390pF",
+               ref="C_BOOST_COMP_F", board_tag=BTAG, pin=boost.pin("VC"))
+    c_pl = add_capacitor_x7r_0402_kemet(d, ref="C_BOOST_PL", value="47pF", board_tag=BTAG)
+    _net(d, "COMP_5V_RAW").connect(c_pl.pin("1")); _net(d, "COMP_5V_PL").connect(c_pl.pin("2"))
+    res_between(d, "COMP_5V_PL", "COMP_5V_FB", "68.1k", ref="R_BOOST_PL", board_tag=BTAG)
     # LC filter: COMP_5V_RAW (fins, noisy) → COMP_5V (PMIC, clean).
     ind_between(d, "COMP_5V_RAW", "COMP_5V", "1uH",
                 ref="L_PMIC_FILT", board_tag=BTAG)   # TMS-1R0, Isat 2.7 A (was bogus WE-KI 0402)

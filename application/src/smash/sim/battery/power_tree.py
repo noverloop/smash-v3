@@ -37,7 +37,7 @@ class Converter:
 
 
 # fmt: off
-CONVERTERS: tuple[Converter, ...] = (
+_PRE_R21: tuple[Converter, ...] = (   # the tree before the 2026-11-23 swaps
     Converter("U_AON_LDO", "BAT", "3V3_AON", "ldo", 3.3, iq_a=0.1e-6, dropout_v=0.25,
               v_out_min=1.8,   # WBA55 1.71 V, TLV3691 0.9 V
               basis="S-1318 nano-LDO (AON domain off BAT_RAW)"),
@@ -76,7 +76,7 @@ CONVERTERS: tuple[Converter, ...] = (
 )
 # fmt: on
 
-RAIL_V_NOM = {c.out: c.v_out for c in CONVERTERS}
+RAIL_V_NOM = {c.out: c.v_out for c in _PRE_R21}
 
 
 @dataclass(frozen=True)
@@ -228,7 +228,7 @@ _TPS62822 = dict(kind="buck", vin_min=2.4, vin_uvlo=2.2, eta=0.88, iq_a=4e-6,
 _TPS62088 = dict(kind="buck", vin_min=2.4, vin_uvlo=2.2, eta=0.88, iq_a=4e-6,
                  i_out_max_a=3.0, basis="TPS62088YFP (R21 alt): VIN 2.4-5.5 V, 3 A")
 RADAR_REGS = {
-    "as_built": {},
+    "pre_r21": {},
     # R21 picks: TPS62822 on 1.2 V and 1.8 V (one part type), 3 A TPS62088
     # on the 1.3 V RF rail (AWR1843 up to 2.0 A there)
     "r21": {"U_AWR_BUCK12": _TPS62822, "U_AWR_BUCK13": _TPS62088,
@@ -237,15 +237,17 @@ RADAR_REGS = {
 
 
 def converters(radar_from: str = "BAT", radar_bucks_low_v: bool = False,
-               radar_1v8_buck: bool = False, comp_boost: str = "tps61175",
-               radar_regs: str = "as_built") -> tuple[Converter, ...]:
-    """The tree as built (all defaults), or with what-if swaps:
+               radar_1v8_buck: bool = False, comp_boost: str = "LTC3124",
+               radar_regs: str = "r21") -> tuple[Converter, ...]:
+    """The tree as built (all defaults = generate_stackup.py since 2026-11-23:
+    LTC3124 COMP boost, TPS62822 / TPS62088 radar regulators), or what-ifs:
       radar_from="COMP_5V"  radar bucks + 1.8 V regulator behind the 5 V boost;
       radar_bucks_low_v     LMR10510 -> buck rated to 2.4 V VIN (85 % at idle);
       radar_1v8_buck        LDL112PV18R LDO -> small buck (85 %, 2.4 V VIN);
-      comp_boost            "tps61175" (as built) | "A" | "B" (COMP_BOOSTS)."""
+      comp_boost            "LTC3124" (as built) | "tps61175" (pre-r21) | "A" | "B";
+      radar_regs            "r21" (as built) | "pre_r21" (LMR10510 x2 + LDO)."""
     out = []
-    for c in CONVERTERS:
+    for c in _PRE_R21:
         if c.ref in _RADAR_REFS and radar_from != "BAT":
             c = replace(c, src=radar_from)
         if radar_bucks_low_v and c.ref in ("U_AWR_BUCK12", "U_AWR_BUCK13"):
@@ -261,6 +263,9 @@ def converters(radar_from: str = "BAT", radar_bucks_low_v: bool = False,
             c = replace(c, **COMP_BOOSTS[comp_boost])
         out.append(c)
     return tuple(out)
+
+
+CONVERTERS = converters()   # as built
 
 
 def load_power_w(loads: list[Load]) -> float:

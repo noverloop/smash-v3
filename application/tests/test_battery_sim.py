@@ -56,8 +56,8 @@ def test_cutter_load_scales_with_sectors():
 def test_radar_1v8_buck_draws_less_than_the_ldo():
     from smash.sim.battery.power_tree import converters
     ld = [Load("radar 1.8 V idle", "AWR_1V8", 0.03)]
-    ldo = solve_tree(ld, 3.7, convs=converters())
-    buck = solve_tree(ld, 3.7, convs=converters(radar_1v8_buck=True))
+    ldo = solve_tree(ld, 3.7, convs=converters(radar_regs="pre_r21"))
+    buck = solve_tree(ld, 3.7, convs=converters(radar_regs="pre_r21", radar_1v8_buck=True))
     assert buck.i_bat < 0.6 * ldo.i_bat
 
 
@@ -65,3 +65,12 @@ def test_comp_boost_variant_raises_the_switch_limit():
     from smash.sim.battery.power_tree import converters
     c = {x.ref: x for x in converters(comp_boost="B")}["U_COMP_BOOST"]
     assert c.i_sw_max_a == 8.0 and c.vin_min < 2.9
+
+
+def test_as_built_tree_matches_the_generator_swaps():
+    from smash.sim.battery.power_tree import CONVERTERS
+    c = {x.ref: x for x in CONVERTERS}
+    assert c["U_COMP_BOOST"].i_sw_max_a == 5.0              # LTC3124 2 x 2.5 A
+    assert c["U_AWR_BUCK13"].i_out_max_a == 3.0             # TPS62088
+    assert c["U_AWR_LDO18"].kind == "buck"                  # TPS62822
+    assert all(c[r].vin_min <= 2.4 for r in ("U_AWR_BUCK12", "U_AWR_BUCK13", "U_AWR_LDO18"))

@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS62088YFPR
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=6
+Version=1.1
+Released=2021-10-04 12:26:43
+Downloaded=2026-11-22 22:57:06
+3D=Y

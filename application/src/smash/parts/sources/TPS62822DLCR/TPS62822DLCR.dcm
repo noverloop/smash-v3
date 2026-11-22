@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS62822DLCR
+D 2.4V-5.5V input, 2A step-down converter With 1% Accuracy in 1.5x2mm QFN
+K
+F http://www.ti.com/lit/gpn/tps62822
+$ENDCMP
+#
+#End Doc Library
