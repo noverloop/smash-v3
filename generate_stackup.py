@@ -105,7 +105,9 @@ from smash.parts.sensors import add_iis2mdctr, add_ism330dhcxtr           # noqa
 from smash.parts.swaps_2026_11 import (                                  # noqa: E402
     add_stm32mp257fal3, add_adf4351bcpz_rl7, add_dsc1001ci1_027_0000, add_sit1602bi_12_xxe_40,
     add_mx25v8035fzni, add_ssm3j372r_lf, add_ru1j002yntcl, add_rb160vam_60, add_vemd5110x01,
-    add_xc6504a331mr_g, add_xc6220b181mr_g, add_tja1462btk_0z, add_ism330dlctr, add_usblc6_4sc6)
+    add_xc6504a331mr_g, add_xc6220b181mr_g, add_tja1462btk_0z, add_ism330dlctr, add_usblc6_4sc6,
+    add_stm32u545rei6q, add_tc78h653ftg, add_mcp9808t_e_mc, add_bmm350,
+    add_sit5356aecfq_33n0_32)
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
 from smash.parts.comparators import add_tlv3691idpfr                      # noqa: E402
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
@@ -1410,56 +1412,55 @@ def build_radar_module_awr1843aop(d: Design) -> None:
 _N_FIN_DRIVERS = 4
 
 
-def _g0b1_node(d: Design, *, suffix: str, board_tag: str) -> Chip:
-    """STM32G0B1 peripheral node MCU on the SYS_SPI bus (MP25 M33 is master),
-    with the standard decoupling + reset network. Returns the G0B1 Chip so
-    the caller can wire its application GPIO.
+def _fin_mcu_node(d: Design, *, board_tag: str) -> Chip:
+    """(2026-11-22) Fin-node MCU = STM32U545REI6Q (replaces the STM32G0B1REI6N:
+    Mouser 39 pcs / 52 wk; availability/decisions.csv) on the SYS_SPI bus (MP25
+    M33 is master), with its SMPS, decoupling and reset network. Returns the
+    Chip so the caller can wire its application GPIO.
 
-    Replaces the former DroneCAN node: the TCAN1042 PHY + the shared CAN
-    bus are gone. The node is flashed (G0 SPI system bootloader, AN2606) and
-    commanded over SYS_SPI — single-ended over the LGA backbone, no
-    transceiver. CS is the per-node `SYS_SPI_CS_<suffix>` line from the MP25 M33."""
-    # UFBGA-64 REI6N (back 2026-11-14 — the LQFP-64 RET6 swap was reverted:
-    # its 12 × 12 mm body had no room on fin_ble). feature="bottom": fin_ble's
-    # top is full (piezo + comparator column + 4 fin drivers); its bottom is
-    # free since the 2026-11-14 battery headroom (≤ 1.8 mm parts).
-    g = add_stm32g0b1rei6n(d, ref=f"U_G0B1_{suffix}", board_tag=board_tag,
-                           feature="bottom")
-    _net(d, "3V3").connect_all(g.pins_by_name("VDD/_VDDA"))
-    _net(d, "3V3").connect(g.pin("VDDIO_2"))
-    _net(d, "3V3").connect(g.pin("VBAT"))
-    # VREF+ — the DAC (PA4 = FIN_VREF, the fin-driver current reference)
-    # is active, so VREF+ must sit between 2 V and VDDA (G0B1 DS §power):
-    # tie to VDDA (3V3). Floating it leaves the DAC reference undefined.
-    # Decap rides the ECM laminate like the other ≤100 nF rail bypasses.
-    _net(d, "3V3").connect(g.pin("VREF+"))
-    cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VREF",
-               embedded_cap_absorbs=True, board_tag=board_tag, pin=g.pin("VREF+"))
-    _net(d, "GND").connect_all(g.pins_by_name("VSS"))
-    _net(d, "GND").connect_all(g.pins_by_name("VSS/_VSSA"))
-    cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VDD1",
-               embedded_cap_absorbs=True, board_tag=board_tag, pin=(g.ref, "VDD/_VDDA"))
-    cap_to_gnd(d, "3V3", "100nF", ref=f"C_G0B1_{suffix}_VDD2",
-               embedded_cap_absorbs=True, board_tag=board_tag, pin=(g.ref, "VDD/_VDDA"))
-    cap_to_gnd(d, "3V3", "1uF", ref=f"C_G0B1_{suffix}_BULK",
-               board_tag=board_tag, pin=(g.ref, None))
-    nrst = f"G0B1_{suffix}_NRST"
-    _net(d, nrst).connect(g.pin("PF2-_NRST"))
-    res_between(d, "3V3", nrst, "10k", ref=f"R_G0B1_{suffix}_NRST",
+    Flashed + commanded over SYS_SPI = the U5 ROM bootloader's SPI1 slave
+    (AN2606 §98, STM32U535xx/545xx: PA4 NSS, PA5 SCK, PA6 MISO, PA7 MOSI —
+    SPI2 is unusable here, PB12 is not bonded on UFBGA-64). Entry: BOOT0
+    (PH3) pulled LOW = run from flash; the application jumps to system memory
+    on an update command (or an empty part boots the bootloader). SWD stays
+    the recovery path. Ball map = SamacSys symbol, checked 64/64 against
+    CubeMX STM32U545REIxQ.xml."""
+    g = add_stm32u545rei6q(d, ref="U_FIN_MCU", board_tag=board_tag, feature="bottom")
+    for p in g.pins:
+        if p.name.startswith(("VDD_", "VDDA", "VDDSMPS", "VBAT", "VDDUSB")):
+            _net(d, "3V3").connect(p)
+        elif p.name.startswith(("VSS", "VSSA", "VSSSMPS")):
+            _net(d, "GND").connect(p)
+    # SMPS: VLXSMPS → 2.2 µH → VDD11 (both balls), 2.2 µF per VDD11 ball
+    ind_between(d, "FIN_MCU_VLX", "FIN_MCU_VDD11", "2.2uH", ref="L_FIN_MCU_SMPS",
                 board_tag=board_tag)
-    cap_to_gnd(d, nrst, "100nF", ref=f"C_G0B1_{suffix}_NRST",
-               board_tag=board_tag, pin=g.pin("PF2-_NRST"))
-    # (2026-11-21) SWD to the aft interface: the G0B1's only recovery path
-    # (nothing else drives its NRST / BOOT0). PA14 is SWCLK while the option
-    # byte nBOOT_SEL = 1 (factory default) — keep it so.
-    _net(d, f"G0B1_{suffix}_SWDIO").connect(g.pin("PA13"))
-    _net(d, f"G0B1_{suffix}_SWCLK").connect(g.pin("PA14-_BOOT0"))
-    # SYS_SPI slave (SPI3) — shared SCLK/MISO/MOSI from the MP25 M33 root + a
-    # per-node chip-select. Carries firmware (ISP) + runtime command/telemetry.
-    _net(d, "SYS_SPI_SCLK").connect(g.pin("PC10"))            # SPI3_SCK
-    _net(d, "SYS_SPI_MISO").connect(g.pin("PC11"))            # SPI3_MISO
-    _net(d, "SYS_SPI_MOSI").connect(g.pin("PC12"))            # SPI3_MOSI
-    _net(d, f"SYS_SPI_CS_{suffix}").connect(g.pin("PA15"))    # SPI3_NSS ← MP25 M33
+    _net(d, "FIN_MCU_VLX").connect(g.pin("VLXSMPS"))
+    for k in (1, 2):
+        _net(d, "FIN_MCU_VDD11").connect(g.pin(f"VDD11_{k}"))
+        cap_to_gnd(d, "FIN_MCU_VDD11", "2.2uF", ref=f"C_FIN_MCU_VDD11_{k}",
+                   board_tag=board_tag, pin=g.pin(f"VDD11_{k}"))
+    cap_to_gnd(d, "3V3", "4.7uF", ref="C_FIN_MCU_SMPS_IN", board_tag=board_tag,
+               pin=g.pin("VDDSMPS"))
+    for k in (1, 2):
+        cap_to_gnd(d, "3V3", "100nF", ref=f"C_FIN_MCU_VDD{k}", embedded_cap_absorbs=True,
+                   board_tag=board_tag, pin=g.pin(f"VDD_{k}"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_FIN_MCU_VDDA", board_tag=board_tag, pin=g.pin("VDDA"))
+    cap_to_gnd(d, "3V3", "1uF", ref="C_FIN_MCU_BULK", board_tag=board_tag, pin=(g.ref, None))
+    # reset + boot
+    _net(d, "FIN_MCU_NRST").connect(g.pin("NRST"))
+    res_between(d, "3V3", "FIN_MCU_NRST", "10k", ref="R_FIN_MCU_NRST", board_tag=board_tag)
+    cap_to_gnd(d, "FIN_MCU_NRST", "100nF", ref="C_FIN_MCU_NRST", board_tag=board_tag,
+               pin=g.pin("NRST"))
+    _net(d, "FIN_MCU_BOOT0").connect(g.pin("PH3-BOOT0"))
+    res_between(d, "FIN_MCU_BOOT0", "GND", "10k", ref="R_FIN_MCU_BOOT0", board_tag=board_tag)
+    # SWD to the aft interface (recovery)
+    _net(d, "FIN_MCU_SWDIO").connect(g.pin("PA13"))
+    _net(d, "FIN_MCU_SWCLK").connect(g.pin("PA14"))
+    # SYS_SPI slave = bootloader SPI1
+    _net(d, "SYS_SPI_SCLK").connect(g.pin("PA5"))
+    _net(d, "SYS_SPI_MISO").connect(g.pin("PA6"))
+    _net(d, "SYS_SPI_MOSI").connect(g.pin("PA7"))
+    _net(d, "SYS_SPI_CS_FIN").connect(g.pin("PA4"))
     return g
 
 
@@ -1575,11 +1576,37 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     _net(d, "LR_VR_PA").connect(lr.pin("VR_PA"))
     cap_to_gnd(d, "LR_VR_PA", "1nF", ref="C_LR_VRPA", board_tag=BTAG, pin=lr.pin("VR_PA"))
 
-    # ── 32 MHz TCXO on VTCXO → AC-coupled into XTA ───────────────────
+    # ── 32 MHz reference → AC-coupled into XTA (and the ADF4351 REFIN) ─
+    # (2026-11-22, user) DUAL FOOTPRINT: the SiTime SiT5356 MEMS TCXO is FITTED
+    # (shock-robust; 3.3 V, so it cannot run off the LR2021 VTCXO pin: a P-FET
+    # load switch from 3V3, its gate pulled low by an N-FET driven by VTCXO, so
+    # the radio still powers the reference on/off itself). The Epson TG2016
+    # quartz TCXO stays on VTCXO as the UNFITTED alternate. One 0 Ω select
+    # link per source onto LR_TCXO_OUT (fit exactly one). FIRMWARE: set the
+    # LR2021 TCXO start-up delay to the SiT5356's (datasheet) value.
     _net(d, "LR_VTCXO").connect(lr.pin("VTCXO")); _net(d, "LR_VTCXO").connect(tcxo.pin("VDD"))
     cap_to_gnd(d, "LR_VTCXO", "100nF", ref="C_LR_VTCXO", board_tag=BTAG, pin=tcxo.pin("VDD"))
     _net(d, "GND").connect(tcxo.pin("GND"))
-    _net(d, "LR_TCXO_OUT").connect(tcxo.pin("OUT"))
+    _net(d, "LR_TCXO_OUT_QZ").connect(tcxo.pin("OUT"))
+    tcxo.dnp = True
+    r_qz = res_between(d, "LR_TCXO_OUT_QZ", "LR_TCXO_OUT", "0", ref="R_LR_TCXO_SEL_QZ", board_tag=BTAG)
+    r_qz.dnp = True
+    mems = add_sit5356aecfq_33n0_32(d, ref="Y_LR_TCXO_MEMS", board_tag=BTAG, feature=F)
+    q_sw = add_ssm3j372r_lf(d, ref="Q_LR_TCXO_SW", board_tag=BTAG)
+    _net(d, "3V3").connect(q_sw.pin("S"))
+    _net(d, "LR_TCXO_3V3").connect(q_sw.pin("D"))
+    _net(d, "LR_TCXO_SW_G").connect(q_sw.pin("G"))
+    res_between(d, "3V3", "LR_TCXO_SW_G", "100k", ref="R_LR_TCXO_SW_PU", board_tag=BTAG)
+    q_en = add_ru1j002yntcl(d, ref="Q_LR_TCXO_EN", board_tag=BTAG)
+    _net(d, "LR_TCXO_SW_G").connect(q_en.pin("D"))
+    _net(d, "GND").connect(q_en.pin("S"))
+    _net(d, "LR_VTCXO").connect(q_en.pin("G"))       # VTCXO high → reference on
+    _net(d, "LR_TCXO_3V3").connect(mems.pin("VDD"))
+    _net(d, "GND").connect(mems.pin("GND"))
+    cap_to_gnd(d, "LR_TCXO_3V3", "100nF", ref="C_LR_TCXO_MEMS1", board_tag=BTAG, pin=mems.pin("VDD"))
+    cap_to_gnd(d, "LR_TCXO_3V3", "1uF", ref="C_LR_TCXO_MEMS2", board_tag=BTAG, pin=mems.pin("VDD"))
+    _net(d, "LR_TCXO_OUT_MEMS").connect(mems.pin("CLK"))
+    res_between(d, "LR_TCXO_OUT_MEMS", "LR_TCXO_OUT", "0", ref="R_LR_TCXO_SEL_MEMS", board_tag=BTAG)
     series_cap("LR_TCXO_OUT", "LR_XTA", "10pF", "C_LR_TCXO_AC")
     _net(d, "LR_XTA").connect(lr.pin("XTA"))
 
@@ -1946,72 +1973,52 @@ def build_fins_module(d: Design) -> None:
     # the low-profile swaps both tiles' parts fit on activation's top face
     # (~440 of 644 mm²), which drops one board + one gap (~3.5 mm).
     BTAG = "activation_interface"
-    g = _g0b1_node(d, suffix="FIN", board_tag=BTAG)
-    # (2026-11-20) parachute-matrix SELECT lines (rows PA0..3, columns PA5..8)
-    # → the BSS138 gates on activation_interface (see _build_activation_array)
-    for k, pin in enumerate(("PA0", "PA1", "PA2", "PA3")):
+    g = _fin_mcu_node(d, board_tag=BTAG)
+    # (2026-11-22) U545 pin map (CubeMX STM32U545REIxQ.xml; PA4-7 = SYS_SPI):
+    # parachute-matrix SELECT lines → rows PC0..PC3, columns PA8..PA11
+    for k, pin in enumerate(("PC0", "PC1", "PC2", "PC3")):
         _net(d, f"ACT_ROW_SEL_{k}").connect(g.pin(pin))
-    for k, pin in enumerate(("PA5", "PA6", "PA7", "PA8")):
+    for k, pin in enumerate(("PA8", "PA9", "PA10", "PA11")):
         _net(d, f"ACT_COL_SEL_{k}").connect(g.pin(pin))
-    # Shared enable + per-fin PH/EN control lines from the node MCU.
+    # Shared standby + per-bridge ENB (PWM, timer channels) / PHA (GPIO)
     _net(d, "FIN_NSLEEP").connect(g.pin("PB7"))
-    _fin_aen = {1: "PC0", 2: "PC1", 3: "PC2", 4: "PC3"}   # PWM (enable A)
-    _fin_aph = {1: "PC4", 2: "PC5", 3: "PC6", 4: "PC7"}   # phase A
-    _fin_ben = {1: "PB0", 2: "PB1", 3: "PB2", 4: "PB10"}  # PWM (enable B)
-    _fin_bph = {1: "PB3", 2: "PB4", 3: "PB5", 4: "PB6"}   # phase B
+    _fin_aen = {1: "PA0", 2: "PA2", 3: "PC6", 4: "PC8"}   # TIM2_CH1/CH3, TIM3_CH1/CH3
+    _fin_ben = {1: "PA1", 2: "PA3", 3: "PC7", 4: "PC9"}   # TIM2_CH2/CH4, TIM3_CH2/CH4
+    _fin_aph = {1: "PB0", 2: "PB1", 3: "PB2", 4: "PB3"}
+    _fin_bph = {1: "PB4", 2: "PB5", 3: "PB6", 4: "PB8"}
     for i in range(1, _N_FIN_DRIVERS + 1):
         _net(d, f"FIN{i}_AEN").connect(g.pin(_fin_aen[i]))
         _net(d, f"FIN{i}_APH").connect(g.pin(_fin_aph[i]))
         _net(d, f"FIN{i}_BEN").connect(g.pin(_fin_ben[i]))
         _net(d, f"FIN{i}_BPH").connect(g.pin(_fin_bph[i]))
-
-    # Shared current-set reference: the node MCU's DAC (DAC_OUT1 = PA4) drives
-    # FIN_VREF directly, so firmware sets the fin current globally (run/hold
-    # scaling, ramps). VREF inputs are high-Z; a small cap filters the DAC.
-    _net(d, "FIN_VREF").connect(g.pin("PA4"))
-    cap_to_gnd(d, "FIN_VREF", "100nF", ref="C_FIN_VREF", board_tag=BTAG, pin=g.pin("PA4"))
-
-    # ── 4× DRV8428E integrated fin-stepper drivers ───────────────────
+    # ── 4× TC78H653FTG dual H-bridges (2026-11-22; were DRV8428E) ─────
+    # PHASE input mode (MODE = H), two independent bridges (LARGE = L),
+    # STBY = FIN_NSLEEP. No current regulator / VREF any more: the coil
+    # current is VM / R_winding, firmware PWMs ENB (TIM2/TIM3) to limit it.
+    # VM = COMP_5V_RAW (5 V; part max 7.5 V operating, 8.0 V abs).
     for i in range(1, _N_FIN_DRIVERS + 1):
-        drv = add_drv8428erter(d, ref=f"U_FIN{i}", board_tag=BTAG)   # (2026-11-21) WQFN-16 0.8 mm (was HTSSOP 1.2)
+        drv = add_tc78h653ftg(d, ref=f"U_FIN{i}", board_tag=BTAG)
         _net(d, "COMP_5V_RAW").connect(drv.pin("VM"))
-        for gpin in ("PGND", "GND", "EP"):
+        for gpin in ("GND_1", "GND_2", "EP"):
             _net(d, "GND").connect(drv.pin(gpin))
-        _net(d, f"FIN{i}_DVDD").connect(drv.pin("DVDD"))
-        cap_to_gnd(d, f"FIN{i}_DVDD", "1uF", ref=f"C_FIN{i}_DVDD",
-                   board_tag=BTAG, pin=drv.pin("DVDD"))
+        _net(d, "3V3").connect(drv.pin("MODE"))      # phase/enable inputs
+        _net(d, "GND").connect(drv.pin("LARGE"))     # two bridges (stepper)
         cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref=f"C_FIN{i}_VM", board_tag=BTAG, pin=drv.pin("VM"))
-        # PH/EN control + shared enable
-        _net(d, f"FIN{i}_AEN").connect(drv.pin("AEN"))
-        _net(d, f"FIN{i}_APH").connect(drv.pin("APH"))
-        _net(d, f"FIN{i}_BEN").connect(drv.pin("BEN"))
-        _net(d, f"FIN{i}_BPH").connect(drv.pin("BPH"))
-        _net(d, "FIN_NSLEEP").connect(drv.pin("NSLEEP"))
-        # Internal current regulator: shared VREF on both bridges; a
-        # resistor on DECAY/TOFF sets off-time + smart-tune decay.
-        _net(d, "FIN_VREF").connect(drv.pin("VREFA"))
-        _net(d, "FIN_VREF").connect(drv.pin("VREFB"))
-        _net(d, f"FIN{i}_DECAY").connect(drv.pin("DECAY/TOFF"))
-        # 44.2 kΩ ±1% EXACTLY — DECAY/TOFF is a seven-level strap and TI
-        # only defines the decode windows for the listed E96 values
-        # (level 3 = mixed 30% decay, 16 µs Toff). The previous 47 k sat
-        # between the level-3 (≤0.8 V) and level-4 (≥1.0 V) windows.
-        res_between(d, f"FIN{i}_DECAY", "GND", "44.2k",
-                    ref=f"R_FIN{i}_DECAY", board_tag=BTAG)
-        # Motor-coil outputs → off-tile to each fin stepper
-        for pn in ("AOUT1", "AOUT2", "BOUT1", "BOUT2"):
-            _net(d, f"FIN{i}_{pn}").connect(drv.pin(pn))
-
-    # Local VM bulk — DRV8428 DS pin table: "bypass to PGND with a 0.01 µF
-    # ceramic plus a bulk capacitor rated for VM". The per-driver 100 nF
-    # covers the local HF bypass; this shared bulk keeps the stepper coil
-    # current pulses off the LGA lands (the rail's 22 µF bulk lives on
-    # power_board, one gap away). 10 µF → 5×2.2 µF 0603 array.
+        _net(d, f"FIN{i}_AEN").connect(drv.pin("IN1/ENB_A"))
+        _net(d, f"FIN{i}_APH").connect(drv.pin("IN2/PHA_A"))
+        _net(d, f"FIN{i}_BEN").connect(drv.pin("IN3/ENB_B"))
+        _net(d, f"FIN{i}_BPH").connect(drv.pin("IN4/PHA_B"))
+        _net(d, "FIN_NSLEEP").connect(drv.pin("STBY"))
+        # Motor-coil outputs → off-tile to each fin stepper (bridge A = OUT1/2,
+        # bridge B = OUT3/4; net names kept from the DRV8428 AOUTx/BOUTx)
+        for net_pin, drv_pin in (("AOUT1", "OUT1"), ("AOUT2", "OUT2"), ("BOUT1", "OUT3"), ("BOUT2", "OUT4")):
+            _net(d, f"FIN{i}_{net_pin}").connect(drv.pin(drv_pin))
+    # Local VM bulk (coil current pulses stay off the LGA lands).
     cap_to_gnd(d, "COMP_5V_RAW", "10uF", ref="C_FIN_VM_BULK", board_tag=BTAG)
 
     # Hall position sensor (fin-deploy reference)
     _hall_switch(d, ref="J_HALL_FIN", board_tag=BTAG, out_net="FIN_HALL",
-                 gpio_chip=g, gpio_pin="PB13")
+                 gpio_chip=g, gpio_pin="PC13")
 
     # (2026-11-16) The long-range radio moved to wakeup_board, next to its
     # WBA55 host (build_wakeup_board → _build_lr_radio).
@@ -2187,10 +2194,10 @@ def build_activation_interface(d: Design) -> None:
         "TP_WBA_SWDIO":   "WBA_SWDIO",
         "TP_WBA_SWCLK":   "WBA_SWCLK",
         "TP_WBA_NRST":    "WBA_NRST",
-        # G0B1 (fin MCU) SWD — its only recovery path
-        "TP_FIN_SWDIO":   "G0B1_FIN_SWDIO",
-        "TP_FIN_SWCLK":   "G0B1_FIN_SWCLK",
-        "TP_FIN_NRST":    "G0B1_FIN_NRST",
+        # fin MCU (STM32U545) SWD — its recovery path
+        "TP_FIN_SWDIO":   "FIN_MCU_SWDIO",
+        "TP_FIN_SWCLK":   "FIN_MCU_SWCLK",
+        "TP_FIN_NRST":    "FIN_MCU_NRST",
     }
     # Pin-1 convention: the FIRST pad of each silkscreen group is SQUARE,
     # the rest round. Same 2.0 mm size and pitch either way — the silhouette
@@ -2899,7 +2906,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     The default board_tag="flight_board" keeps the standalone Ø34 tile available
     as a test fixture (and for any config that still folds it separately).
 
-    Builds on `board_tag`: IIS2MDC magnetometer + 3x ISM330DHCX IMU on I2C2/3,
+    Builds on `board_tag`: BMM350 magnetometer + 3x ISM330DLC IMU on I2C2/3,
     their pull-ups + the SYS_I2C pull-ups, and the flex-bus alias merges. Two
     blocks created here are tagged to their OWN tiles (placement follows the tag,
     not `board_tag`): the EXT_CAN TCAN1042 (aft_end_board, by the TP_CAN pads)
@@ -2908,7 +2915,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
 
     `imu_tag` (2026-11-16): the 3x ISM330DHCX + their passives / test points
     go on that tile instead (fin_ble_board), freeing wakeup for the radio;
-    the IIS2MDC and the I2C2/3 + SYS_I2C pull-ups stay on `board_tag`."""
+    the magnetometer and the I2C2/3 + SYS_I2C pull-ups stay on `board_tag`."""
     BTAG = board_tag
     ITAG = imu_tag or board_tag
 
@@ -2967,23 +2974,23 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     res_between(d, "EXT_CAN_P", "EXT_CAN_N", "120",
                 ref="R_EXT_CAN_TERM", board_tag=_CAN_TAG)
 
-    # ── IIS2MDC magnetometer on I2C2 (DRDY -> M33 EXTI) ──────────────
-    # bottom face (kept from wakeup, where the LR2021 PA sat on the top face);
-    # on fin_ble it faces activation_interface, away from the fin drivers.
-    mag = add_iis2mdctr(d, ref="U_MAG", board_tag=_MAG_TAG, feature="bottom")
+    # ── BMM350 magnetometer on I2C2 (INT/DRDY -> M33 EXTI) ────────────
+    # (2026-11-22) replaces the IIS2MDC (0 stock at all 3 suppliers;
+    # availability/decisions.csv). I²C address 0x14 (ADSEL = GND).
+    # FIRMWARE: new driver; ⚠ re-run the magnetic-link sim with BMM350 noise.
+    mag = add_bmm350(d, ref="U_MAG", board_tag=_MAG_TAG, feature="bottom")
     _net(d, "3V3")     .connect(mag.pin("VDD"))
-    _net(d, "3V3")     .connect(mag.pin("VDD_IO"))
-    _net(d, "GND")     .connect(mag.pin("GND_1"))
-    _net(d, "GND")     .connect(mag.pin("GND_2"))
-    _net(d, "I2C2_SCL").connect(mag.pin("SCL"))
+    _net(d, "3V3")     .connect(mag.pin("VDDIO"))
+    _net(d, "GND")     .connect(mag.pin("GND"))
+    _net(d, "GND")     .connect(mag.pin("BYPASS"))
+    _net(d, "GND")     .connect(mag.pin("ADSEL"))     # → 0x14
+    _net(d, "I2C2_SCL").connect(mag.pin("SCK"))
     _net(d, "I2C2_SDA").connect(mag.pin("SDA"))
-    _net(d, "MAG_DRDY").connect(mag.pin("INT_DRDY"))
-    _net(d, "3V3")     .connect(mag.pin("CS"))    # high -> I2C mode
-    _net(d, "MAG_C1_TERM").connect(mag.pin("C1"))
-    # 220 nF per IIS2MDC DS Table (set/reset reservoir, voltage forced by
-    # the device): low ESR (≤200 mΩ), tight to pins 5/6 — a REAL discrete,
-    # never ECM-absorbed (private node, not a rail).
-    cap_to_gnd(d, "MAG_C1_TERM", "220nF", ref="C_MAG_C1", board_tag=_MAG_TAG, pin=mag.pin("C1"))
+    _net(d, "MAG_DRDY").connect(mag.pin("INT"))
+    _net(d, "MAG_CRST").connect(mag.pin("CRST"))
+    # CRST reservoir: 2.2 µF low-ESL, tight to C2 — a real discrete, never
+    # ECM-absorbed (private node, not a rail).
+    cap_to_gnd(d, "MAG_CRST", "2.2uF", ref="C_MAG_C1", board_tag=_MAG_TAG, pin=mag.pin("CRST"))
     cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=_MAG_TAG, pin=(mag.ref, None))
     cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=_MAG_TAG, pin=(mag.ref, None))
     tp_drdy = _add_testpoint(d, ref="TP_MAG_DRDY", board_tag=_MAG_TAG)
@@ -3004,7 +3011,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
         res_between(d, "3V3", f"{bus}_SDA", "4.7k", ref=f"RPU_{bus}_SDA", board_tag=BTAG)
 
     # ── 3x ISM330DHCX IMU (INT1 -> M33 EXTI) ────────────────────────
-    # I2C2: mag (0x1E) + IMU1 (SA0=0). I2C3: IMU2 (SA0=0) + IMU3 (SA0=1) —
+    # I2C2: mag (BMM350 0x14) + IMU1 (SA0=0). I2C3: IMU2 (SA0=0) + IMU3 (SA0=1) —
     # distinct addresses per bus; two independent buses still isolate a fault.
     for idx, scl, sda, sa0 in [(1, "I2C2_SCL", "I2C2_SDA", "GND"),
                                (2, "I2C3_SCL", "I2C3_SDA", "GND"),
@@ -3521,19 +3528,24 @@ def build_power_board(d: Design) -> None:
     # (local rails, 0 Ω-selectable) — see build_camera_module.
 
     # ── add_tmp117(1, I2C2_SCL, I2C2_SDA) ────────────────────────────
-    tmp = add_tmp117maidrvr(d, ref="U_TMP1", board_tag=BTAG)
+    # (2026-11-22) TMP117 → MCP9808T-E/MC (availability/decisions.csv).
+    # Address 0x1A (A2=0, A1=1, A0=0): clear of the
+    # magnetometer (BMM350 0x14) on I2C2. FIRMWARE: new driver + address.
+    tmp = add_mcp9808t_e_mc(d, ref="U_TMP1", board_tag=BTAG)
     _net(d, "I2C2_SCL")  .connect(tmp.pin("SCL"))
     _net(d, "I2C2_SDA")  .connect(tmp.pin("SDA"))
-    _net(d, "3V3")       .connect(tmp.pin("V+"))
+    _net(d, "3V3")       .connect(tmp.pin("VDD"))
     _net(d, "GND")       .connect(tmp.pin("GND"))
-    _net(d, "GND")       .connect(tmp.pin("ADD0"))  # → I²C addr 0x48
+    _net(d, "GND")       .connect(tmp.pin("A2"))
+    _net(d, "3V3")       .connect(tmp.pin("A1"))
+    _net(d, "GND")       .connect(tmp.pin("A0"))
     _net(d, "TMP1_ALERT").connect(tmp.pin("ALERT"))
     # TMP117 DS pin table: ALERT is open-drain and "requires a pullup
     # resistor". COMP_3V3 = the reading MP25's IO domain (same rationale
     # as the eFuse PGOOD/FLT pull-ups); the pin is 5.5 V-tolerant.
     res_between(d, "COMP_3V3", "TMP1_ALERT", "10k",
                 ref="R_TMP1_ALERT_PU", board_tag=BTAG)
-    _net(d, "GND")       .connect(tmp.pin("EP"))    # WSON-6 thermal pad → GND
+    _net(d, "GND")       .connect(tmp.pin("EP"))    # DFN-8 exposed pad → GND
     cap_to_gnd(d, "3V3", "100nF", ref="C_TMP1",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=tmp.pin("V+"))
     # NB: system.py's TMP117 placeholder doesn't expose EP. The smash
@@ -3680,7 +3692,7 @@ def build_wakeup_board(d: Design) -> None:
       • H3LIS331DL ±400g accelerometer — on the MAIN 3V3 rail +
         M33 I2C3/PD10 (launch witness only; board_tag=activation)
       • 3× test points
-      • IIS2MDC magnetometer + 3× ISM330DHCX IMU on I2C2/3 — the flight sensor
+      • BMM350 magnetometer + 3× ISM330DLC IMU on I2C2/3 — the flight sensor
         cluster, folded in from the merged-away flight_board (each aft tile had
         only a handful of chips left after flight control moved onto the MP25
         M33). Built via build_flight_board(board_tag="wakeup_board"); their
@@ -4239,7 +4251,7 @@ def build_wakeup_board(d: Design) -> None:
     # ── LR2021 long-range radio — on THIS board, top face beside the WBA RF
     # (2026-11-16): host lines and BLE_RF are local; only the two antenna
     # feeds (S1, S3) leave (castellations in the antenna sector).
-    # The IIS2MDC sits on the opposite (bottom) face, away from the PA bursts.
+    # The magnetometer sits on the opposite (bottom) face, away from the PA bursts.
     _build_lr_radio(d, BTAG, face="rf")
     # S4 transverter, 4.4-5.0 GHz (2026-11-18): IF from U_LR_IFSW.
     _build_transverter(d, BTAG, face="rf")

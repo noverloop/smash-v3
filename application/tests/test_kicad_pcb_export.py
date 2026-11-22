@@ -969,7 +969,12 @@ def test_full_twin_exports_clean(tmp_path):
     # → 709 (2026-11-22): DDR4 → DDR3L (MT41K256M16TW-107 IT:P): the DDR4-only
     #   parts go (ALERT_N pull-up, VPP + PMIC-VPP decaps, R_CAM_VDD_SRC), a
     #   VREFDQ decap and the spare-LDO6 termination cap come in (net −5).
-    assert total_fps == 709      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    # → 714 (2026-11-22): fin node G0B1 → STM32U545REI6Q (+SMPS inductor and
+    #   VDD11/VDDSMPS caps, BOOT0 pull-down; −DAC/VREF cap) with 4× TC78H653
+    #   (−4 DECAY resistors, −4 DVDD caps); TMP117 → MCP9808; IIS2MDC → BMM350;
+    #   LoRa reference: SiT5356 MEMS TCXO fitted (+ P/N-FET load switch,
+    #   decaps, 2 select links) beside the unfitted TG2016 (net +5).
+    assert total_fps == 714      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
     #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
     #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
     #   BUCK3 terminations in)

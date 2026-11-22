@@ -8,7 +8,7 @@ flashes and diagnoses a TOWER through its aft interface:
 
   phase 1 (this file so far): the tower schematic retagged onto `dev_board`,
           tower-only parts removed (aft-cap pads, cells), placed + exported.
-  phase 2: USB-C → hub (USB2514B) → MP25 USB + STM32G474 (CMSIS-DAP probe,
+  phase 2: USB-C → hub (USB2514B) → MP25 USB + STM32U535 (CMSIS-DAP probe,
           consoles, gs_usb CAN, INA228 / INA241 power meter), bus switches
           to the on-board aft fixture, printed slot antennas + u.FL ports.
 
@@ -101,7 +101,7 @@ DIAG = "dev_diag"            # schematic section (retagged onto dev_board after)
 FIXTURE_CENTRE = (22.0, 0.0)  # aft fixture centre on the dev board (board frame, mm)
 # (2026-11-21, user) seating: 3 dowels into the cap's locating holes (uneven
 # angles = key), a guide collar (Ø36.2 bore) on 3 M2 screws, and 3 GND contacts
-# ~120° apart split off as SEAT sense lines (LED each + G474 input).
+# ~120° apart split off as SEAT sense lines (LED each + dev-MCU input).
 # dowels = Mill-Max 5849 locating pins (parts, P_DEV_DOWEL1-3), pinned below
 FIXTURE_COLLAR_R_MM, FIXTURE_COLLAR_ANGLES_DEG = 22.5, (0.0, 120.0, 240.0)
 FIXTURE_KEEPOUT_R_MM = 25.0       # collar OD
@@ -123,7 +123,7 @@ def aft_contacts() -> list:
 
 
 def build_diag(d) -> dict:
-    """USB-C → ESD → USB2514B hub → (1) MP25 USB, (2) STM32G474 [CMSIS-DAP for
+    """USB-C → ESD → USB2514B hub → (1) MP25 USB, (2) STM32U535 [CMSIS-DAP for
     6 SWD targets, consoles, gs_usb CAN-FD, INA228 / INA241 power meter];
     bus-switched link to a tower through the on-board aft fixture."""
     import math
@@ -132,7 +132,8 @@ def build_diag(d) -> dict:
     from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67
     from smash.parts.ldos import add_ldl112pv33r
     from smash.parts.oscillators import add_dsc1001ci5_032_0000
-    from smash.parts.swaps_2026_11 import add_tja1462btk_0z, add_usblc6_4sc6, add_ru1j002yntcl
+    from smash.parts.swaps_2026_11 import (add_tja1462btk_0z, add_usblc6_4sc6, add_ru1j002yntcl,
+                                           add_stm32u535cbu6)
     from smash.parts.leds import add_ltst_c190gkt, add_ltst_c190krkt
     from smash.parts.mosfets import add_buk6d120_60px
     from smash.parts.mechanical import add_pogo_pad
@@ -208,39 +209,46 @@ def build_diag(d) -> dict:
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_HUB_OSC", **T)
     N("DEV_HUB_CLK").connect(hub.pin("XTALIN"))
 
-    # ── STM32G474: probe + consoles + CAN + meter ──────────────────────────
-    g = DB.add_stm32g474ceu6(d, ref="U_DEV_G474", **T)
-    for pn in ("VDD_1", "VDD_2", "VDD_3", "VDDA", "VREF+", "VBAT"):
+    # ── STM32U535: probe + consoles + CAN + meter ──────────────────────────
+    # (2026-11-22) replaces the STM32G474CEU6 (0 stock, 52 wk; availability/
+    # decisions.csv). Same UFQFPN-48 7×7 body, different ball map (CubeMX
+    # STM32U535CBUx.xml): USB FS PA11/12 (ROM DFU), FDCAN1 PB8/9, USART1 PA9/10
+    # ↔ tower console, LPUART1_RX PA3 ← SWO, ADC1 PA0/PA1, I2C1 PB6/7, LDO VCAP.
+    # Net names keep the DEV_G4_ prefix (USB/NRST/BOOT0) so the hub/ESD/switch
+    # wiring is untouched.
+    g = add_stm32u535cbu6(d, ref="U_DEV_MCU", **T)
+    for pn in ("VDD_1", "VDD_2", "VDD_3", "VDDA", "VBAT"):
         N(V3).connect(g.pin(pn))
+    for pn in ("VSS_1", "VSS_2", "VSS_3", "VSSA", "PE"):
+        N("GND").connect(g.pin(pn))
     for k in range(4):
-        cap_to_gnd(d, V3, "100nF", ref=f"C_DEV_G474_{k}", **T)
-    cap_to_gnd(d, V3, "4.7uF", ref="C_DEV_G474_BULK", **T)
-    N("GND").connect(g.pin("EP"))
-    N("DEV_G4_NRST").connect(g.pin("PG10-NRST"))
-    cap_to_gnd(d, "DEV_G4_NRST", "100nF", ref="C_DEV_G474_NRST", **T)
-    N("DEV_G4_BOOT0").connect(g.pin("PB8-BOOT0"))                  # ROM DFU over the same USB
-    res_between(d, "DEV_G4_BOOT0", "GND", "10k", ref="R_DEV_G474_BOOT0", **T)
+        cap_to_gnd(d, V3, "100nF", ref=f"C_DEV_MCU_{k}", **T)
+    cap_to_gnd(d, V3, "4.7uF", ref="C_DEV_MCU_BULK", **T)
+    N("DEV_MCU_VCAP").connect(g.pin("VCAP"))
+    cap_to_gnd(d, "DEV_MCU_VCAP", "4.7uF", ref="C_DEV_MCU_VCAP", pin=g.pin("VCAP"), **T)
+    N("DEV_G4_NRST").connect(g.pin("NRST"))
+    cap_to_gnd(d, "DEV_G4_NRST", "100nF", ref="C_DEV_MCU_NRST", **T)
+    N("DEV_G4_BOOT0").connect(g.pin("PH3-BOOT0"))                  # ROM DFU over the same USB
+    res_between(d, "DEV_G4_BOOT0", "GND", "10k", ref="R_DEV_MCU_BOOT0", **T)
     N("DEV_G4_USB_P").connect(g.pin("PA12")); N("DEV_G4_USB_N").connect(g.pin("PA11"))
     pinmap = {
-        "PA0": "DEV_ISENSE",          # INA241 → ADC (fast current)
-        "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC)
+        "PA0": "DEV_ISENSE",          # INA241 → ADC1_IN5 (fast current)
+        "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC1_IN6)
         "PA2": "DEV_BTN_METER",       # meter-reset button
-        "PA15": "DEV_I2C_SCL", "PB7": "DEV_I2C_SDA",
-        "PB12": "DEV_CAN_RX", "PB13": "DEV_CAN_TX",      # FDCAN2
-        "PB10": "DEV_TWR_CONS_RX_G", "PB11": "DEV_TWR_CONS_TX_G",   # USART3 ↔ tower console
-        "PC11": "DEV_TWR_SWO_G",      # UART4_RX ← tower SWO
-        # (2026-11-21) ONE set of tower ports: bank A → socket, bank B → the flat
-        # tower through the sleeve channel; the seat lines pick (firmware)
+        "PB6": "DEV_I2C_SCL", "PB7": "DEV_I2C_SDA",          # I2C1
+        "PB8": "DEV_CAN_RX", "PB9": "DEV_CAN_TX",            # FDCAN1
+        "PA10": "DEV_TWR_CONS_RX_G", "PA9": "DEV_TWR_CONS_TX_G",   # USART1 ↔ tower console
+        "PA3": "DEV_TWR_SWO_G",       # LPUART1_RX ← tower SWO
         "PA4": "DEV_FLAT_EN",         # bank B (flat tower) request — gated by the seat interlock
         "PA5": "DEV_FLAT_PWR_EN",     # flat-tower supply switch
-        "PB4": "DEV_TWR_MP25_SWDIO_G", "PB5": "DEV_TWR_MP25_SWCLK_G", "PB6": "DEV_TWR_MP25_NRST_G",
-        "PB14": "DEV_TWR_WBA_SWDIO_G", "PB15": "DEV_TWR_WBA_SWCLK_G", "PC4": "DEV_TWR_WBA_NRST_G",
-        "PC6": "DEV_TWR_FIN_SWDIO_G", "PC10": "DEV_TWR_FIN_SWCLK_G", "PC13": "DEV_TWR_FIN_NRST_G",
-        "PF0-OSC_IN": "DEV_TWR_OE_N",        # bus switches (high = isolated)
-        "PF1-OSC_OUT": "DEV_TWR_PWR_EN",      # tower supply switch
+        "PB4": "DEV_TWR_MP25_SWDIO_G", "PB5": "DEV_TWR_MP25_SWCLK_G", "PB3": "DEV_TWR_MP25_NRST_G",
+        "PB14": "DEV_TWR_WBA_SWDIO_G", "PB15": "DEV_TWR_WBA_SWCLK_G", "PB12": "DEV_TWR_WBA_NRST_G",
+        "PA6": "DEV_TWR_FIN_SWDIO_G", "PA7": "DEV_TWR_FIN_SWCLK_G", "PA8": "DEV_TWR_FIN_NRST_G",
+        "PH0-OSC_IN": "DEV_TWR_OE_N",        # bus switches (high = isolated)
+        "PH1-OSC_OUT": "DEV_TWR_PWR_EN",      # tower supply switch
         "PC14-OSC32_IN": "DEV_LED_ACT", "PC15-OSC32_OUT": "DEV_INA_ALERT_N",
-        # seat sense (the G474's own SWD pins — it is flashed by USB DFU)
-        "PA13": "TWR_SEAT_1", "PA14": "TWR_SEAT_2", "PB9": "TWR_SEAT_3",
+        # seat sense (the MCU's own SWD pins — it is flashed by USB DFU)
+        "PA13": "TWR_SEAT_1", "PA14": "TWR_SEAT_2", "PA15": "TWR_SEAT_3",
     }
     for pn, net in pinmap.items():
         N(net).connect(g.pin(pn))

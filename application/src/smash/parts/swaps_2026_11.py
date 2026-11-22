@@ -212,3 +212,118 @@ def add_usblc6_4sc6(design, ref: str, **overrides) -> Chip:
                 package="SOT-23-6", height_mm=1.45, size_mm=(2.9, 2.8), manf="STMicroelectronics",
                 description="4-line USB ESD protection, SOT-23-6", pins=build_pins(_sym("USBLC6-4SC6")),
                 note=f"Replaces TPD4E05U06DQAR (China lots) — {_WHY}.", **overrides)
+
+
+def add_stm32u545rei6q(design, ref: str, **overrides) -> Chip:
+    """ST STM32U545REI6Q — Cortex-M33 160 MHz, 512 KB, TrustZone + AES/SAES/PKA,
+    UFBGA-64 5×5, SMPS ("Q") package: VLXSMPS → 2.2 µH → VDD11 (both balls)
+    with VDD11 + VDDSMPS decoupling. Pins/balls = SamacSys symbol, checked
+    against CubeMX STM32U545REIxQ.xml (64/64 match). Replaces the
+    STM32G0B1REI6N fin-node MCU (Mouser 39 pcs, 52 wk)."""
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins
+    return _sam(design, ref, pn="STM32U545REI6Q", part_dir="STM32U545REI6Q",
+                mod="BGA64C50P8X8_500X500X60.kicad_mod", package="UFBGA-64 (5×5, 0.5)",
+                height_mm=0.6, size_mm=(5.0, 5.0), manf="STMicroelectronics",
+                description="MCU Cortex-M33 160 MHz, 512 KB flash, TrustZone, AES/PKA, SMPS, UFBGA-64",
+                pins=build_pins(_sym("STM32U545REI6Q")),
+                note=f"Fin node MCU — {_WHY}.", **overrides)
+
+
+_TC78H653_PINS = {1: "IN4/PHA_B", 2: "IN3/ENB_B", 3: "NC_1", 4: "IN1/ENB_A", 5: "IN2/PHA_A",
+                  6: "STBY", 7: "NC_2", 8: "GND_1", 9: "OUT2", 10: "OUT1", 11: "OUT3",
+                  12: "OUT4", 13: "GND_2", 14: "VM", 15: "LARGE", 16: "MODE", 17: "EP"}
+
+
+def add_tc78h653ftg(design, ref: str, **overrides) -> Chip:
+    """Toshiba TC78H653FTG,EL — 1.8 V dual H-bridge, VM 1.8-7.5 V, 2 A/bridge
+    (small mode), P-VQFN16 3×3. Pins per the Toshiba datasheet (2018-11-13,
+    vendored as TC78H653FTG_datasheet.pdf): MODE = H → PHASE input mode
+    (IN1/ENB_A = enable/PWM, IN2/PHA_A = phase; IN3/ENB_B, IN4/PHA_B), LARGE = L
+    → two independent bridges (stepper). No internal current regulation —
+    the coil current is set by VM / winding R, firmware PWMs ENB to limit it.
+    Generic IPC QFN-16 land (no vendor land); EP → GND."""
+    pins = [Pin(num=str(n), name=nm, type=("ground" if nm.startswith(("GND", "EP")) else
+                                           "nc" if nm.startswith("NC") else "io"))
+            for n, nm in _TC78H653_PINS.items()]
+    return _sam(design, ref, pn="TC78H653FTG,EL", part_dir="TC78H653FTG_EL",
+                mod="QFN50P300X300X90-17N.kicad_mod", package="P-VQFN16-0303 (3×3)",
+                height_mm=0.9, size_mm=(3.0, 3.0), manf="Toshiba",
+                description="Dual H-bridge driver 1.8-7.5 V, 2 A, phase/enable, VQFN-16",
+                pins=pins, ring_courtyard=True,
+                note=f"Replaces DRV8428 (China lots) — {_WHY}. No current regulation (VREF gone).",
+                **overrides)
+
+
+def add_stm32u535cbu6(design, ref: str, **overrides) -> Chip:
+    """ST STM32U535CBU6 — Cortex-M33 160 MHz, 128 KB flash, TrustZone, USB FS
+    (crystal-less, HSI48 + CRS), FDCAN1, UFQFPN-48 7×7 + EP (LDO version:
+    VCAP 4.7 µF). Dev-board probe MCU replacing the STM32G474CEU6 (0 stock,
+    52 wk). Ball map = SamacSys symbol; peripheral pins from CubeMX
+    STM32U535CBUx.xml."""
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins
+    pins = build_pins(_sym("STM32U535CBU6"))
+    for p in pins:
+        if p.name == "PE":
+            p.aliases = list(p.aliases or []) + ["EP"]
+    return _sam(design, ref, pn="STM32U535CBU6", part_dir="STM32U535CBU6",
+                mod="QFN50P700X700X60-49N.kicad_mod", package="UFQFPN-48 (7×7)",
+                height_mm=0.6, size_mm=(7.0, 7.0), manf="STMicroelectronics",
+                description="MCU Cortex-M33 160 MHz, 128 KB flash, USB FS, FDCAN, UFQFPN-48",
+                pins=pins, note=f"Dev-board MCU — {_WHY}. Buy the Mouser Taiwan lot.", **overrides)
+
+
+def add_mcp9808t_e_mc(design, ref: str, **overrides) -> Chip:
+    """Microchip MCP9808T-E/MC — ±0.25 °C (typ) I²C temperature sensor, DFN-8
+    2×3 + EP. Pins (DS20005095): 1 SDA, 2 SCL, 3 Alert (open-drain), 4 GND,
+    5 A2, 6 A1, 7 A0, 8 VDD, 9 EP (→ GND). Address 0b0011 A2 A1 A0.
+    Generic IPC DFN land (SnapMagic SON50P200X300X100-9N)."""
+    pins = [Pin(num="1", name="SDA", type="io"), Pin(num="2", name="SCL", type="input"),
+            Pin(num="3", name="ALERT", type="output"), Pin(num="4", name="GND", type="ground"),
+            Pin(num="5", name="A2", type="input"), Pin(num="6", name="A1", type="input"),
+            Pin(num="7", name="A0", type="input"), Pin(num="8", name="VDD", aliases=["V+"], type="power"),
+            Pin(num="9", name="EP", type="ground")]
+    return _sam(design, ref, pn="MCP9808T-E/MC", part_dir="MCP9808T-E_MC",
+                mod="SON50P200X300X100-9N.kicad_mod", package="DFN-8 (2×3)", height_mm=1.0,
+                size_mm=(2.0, 3.0), manf="Microchip", description="I²C digital temperature sensor ±0.25 °C, DFN-8",
+                pins=pins, ring_courtyard=True, note=f"Replaces TMP117 (China lots) — {_WHY}.", **overrides)
+
+
+def add_bmm350(design, ref: str, **overrides) -> Chip:
+    """Bosch Sensortec BMM350 — 3-axis TMR magnetometer, I²C/I3C, WLCSP-9
+    1.28×1.28×0.54, 0.4 mm pitch. Balls (Bosch DS): A1 INT, A2 SDA, A3 SCK,
+    B1 GND, B2 ADSEL (GND → 0x14, VDDIO → 0x15), B3 VDDIO, C1 VDD, C2 CRST
+    (external 2.2 µF low-ESL), C3 BYPASS (→ GND). SnapMagic land + symbol.
+    Replaces the IIS2MDC (0 stock). ⚠ check its noise against the magnetic-
+    link sim (written for the IIS2MDC)."""
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins
+    c = _sam(design, ref, pn="BMM350", part_dir="BMM350", mod="BGA9C40P3X3_128X128X54.kicad_mod",
+             package="WLCSP-9 (1.28×1.28)", height_mm=0.54, size_mm=(1.28, 1.28),
+             manf="Bosch Sensortec", description="3-axis TMR magnetometer, I²C/I3C, WLCSP-9",
+             pins=build_pins(_sym("BMM350")), ring_courtyard=True,
+             note=f"Replaces IIS2MDCTR (0 stock) — {_WHY}; new driver; check noise vs the mag-link sim.",
+             **overrides)
+    return c
+
+
+def add_sit5356aecfq_33n0_32(design, ref: str, **overrides) -> Chip:
+    """SiTime SiT5356AECFQ-33N0-32.000000T — 32 MHz MEMS Super-TCXO, clipped
+    sine, 3.3 V, −40…105 °C, 5.0 × 3.2 mm ceramic QFN-10, programmed to order
+    (SiTime direct). This configuration: pin 1 = NC (no OE/VC), no I²C.
+    Balls: 1 OE/VC/NC, 2 SCL/NC, 3 NC, 4 GND, 5 A0/NC, 6 CLK, 7-8 NC, 9 VDD,
+    10 SDA/NC. Library = SamacSys model of the 20 MHz sibling (same package)."""
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins
+    pins = build_pins(_sym("SiT5356AECFQ-33N0-20.000000"))
+    for p in pins:
+        if p.name == "CLK":
+            p.aliases = list(p.aliases or []) + ["OUT"]
+    c = _sam(design, ref, pn="SiT5356AECFQ-33N0-32.000000T", part_dir="SiT5356AECFQ-33N0-20.000000",
+             mod="Ceramic_QFN_5032_10pins.kicad_mod", package="QFN-10 ceramic (5.0×3.2)", height_mm=0.9,
+             size_mm=(5.0, 3.2), manf="SiTime", description="32 MHz MEMS Super-TCXO, clipped sine, 3.3 V",
+             pins=pins, note=f"Fitted LoRa reference (MEMS, shock) — {_WHY}; TG2016 footprint stays as the unfitted alternate.",
+             **overrides)
+    c.footprint.model_3d_path = "application/src/smash/parts/sources/SiT5356AECFQ-33N0-20.000000/SiT5356AECFQ-33N0-20.000000.stp"
+    return c

@@ -216,9 +216,9 @@ def test_parachute_matrix(built):
         r, col = k // 4, k % 4
         assert (f"D_ACT_WIRE_{k}", "A") in nets[f"ACT_ROW_{r}"]
         assert {(f"D_ACT_WIRE_{k}", "K"), (f"P_ACT_WIRE_{k}", "1")} <= nets[f"ACT_WIRE_{k}"]
-    for i in range(4):
-        assert ("U_G0B1_FIN", f"PA{i}") in nets[f"ACT_ROW_SEL_{i}"]
-        assert ("U_G0B1_FIN", f"PA{5 + i}") in nets[f"ACT_COL_SEL_{i}"]
+    for i in range(4):   # (2026-11-22) fin MCU = STM32U545 (PA4-7 now SYS_SPI = bootloader SPI1)
+        assert ("U_FIN_MCU", f"PC{i}") in nets[f"ACT_ROW_SEL_{i}"]
+        assert ("U_FIN_MCU", f"PA{8 + i}") in nets[f"ACT_COL_SEL_{i}"]
     refs = {pl.item.ref: pl for b in boards.values() for pl in b.chip_placements}
     pocket = SS.piezo_pocket()
     for k in range(16):
