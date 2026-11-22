@@ -107,7 +107,7 @@ from smash.parts.swaps_2026_11 import (                                  # noqa:
     add_mx25v8035fzni, add_ssm3j372r_lf, add_ru1j002yntcl, add_rb160vam_60, add_vemd5110x01,
     add_xc6504a331mr_g, add_xc6220b181mr_g, add_tja1462btk_0z, add_ism330dlctr, add_usblc6_4sc6,
     add_stm32u545rei6q, add_tc78h653ftg, add_mcp9808t_e_mc, add_bmm350,
-    add_sit5356aecfq_33n0_32)
+    add_sit5356aecfq_33n0_32, add_mcp6541t_e_ot)
 from smash.parts.opamps import add_ad8603aujz_r2_single_supply             # noqa: E402
 from smash.parts.comparators import add_tlv3691idpfr                      # noqa: E402
 from smash.parts.optical import add_vbpw34fas, add_vsmb1940x01           # noqa: E402
@@ -120,6 +120,7 @@ from smash.parts.rf import (add_lr2021imltrt, add_tcxo_32m_2016,          # noqa
                             add_adf4351bcpz, add_ltc5549iudb, add_grf5126,
                             add_grf2073w)
 from smash.netlist import cap_to_gnd, res_between, ind_between          # noqa: E402
+from smash.parts.passives import add_inductor_we_mapi_74438356047     # noqa: E402
 from smash.export.canonical_netlist import write_canonical_netlist     # noqa: E402
 from smash.export import (                                              # noqa: E402
     write_kicad_pcb, write_kicad_panel, write_all_spacer_steps,
@@ -2288,6 +2289,10 @@ def build_activation_interface(d: Design) -> None:
     # load. Push-pull output → NO pull-up (the LMV331's R_COMP_PU is gone, which
     # would otherwise sink ~33 µA whenever COMP_OUT is low ≈ always). V+ is pin 6
     # (pin 5 is NC). COMP_OUT drives the M33 PD5 EXTI directly.
+    # (2026-11-22) TLV3691 lots are China. The MCP6541 (SOT-23-5, 1.45 mm) does
+    # NOT fit: this column sits in the battery-holder floor's 0.6 mm piezo
+    # pocket, the floor is 1.2 mm and the slot lies under a cell (no
+    # through-cut). Needs a ≤ 0.6 mm comparator (TLV7031 X2SON: Digi-Key US lot).
     comp = add_tlv3691idpfr(d, ref="U_COMP_PZ", board_tag="aft_end_board")
     _net(d, "COMP_INP").connect(comp.pin("1"))   # IN+
     _net(d, "GND")     .connect(comp.pin("2"))   # GND / V−
@@ -3174,10 +3179,20 @@ def build_power_board(d: Design) -> None:
     # dropped — the TLM-1530M/S passes Tadiran's external-short safety
     # test, so an unprotected short does not vent — and (1), the safety-
     # critical one, is kept as a nanopower P-FET ideal diode (Q_ISO).
-    # (2026-11-20) polymer bulk (1.4 mm, ≤ the 1.5 mm tall-part line) on the
-    # BOTTOM: power's top carries both boost stages (tall parts grouped)
-    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK1", board_tag=BTAG, feature="bottom")
-    cap_to_gnd(d, "BAT_RAW", "470uF", ref="C_BAT_BULK2", board_tag=BTAG, feature="bottom")
+    # (2026-11-22, user) CERAMIC bank instead of 2 × 470 µF polymer. The 940 µF
+    # dated from the DRV8711 era (fins straight on the cell rail, ~33 A for four
+    # fins) — and its own sum was off ×1000 (24 A × 10 ms = 240 mC, not µC;
+    # 940 µF could hold that for ~40 µs). Now every heavy load sits behind a
+    # boost/regulator with its own storage (fins + PMIC on COMP_5V_RAW, cutter
+    # on the 33 V boost, PA on XV_5V); BAT_RAW only needs low impedance for
+    # sub-100 µs edges. A ~4 A coincident step settles at ~0.5 V droop set by
+    # the cells' source R (3 × (R_cell + 200 mΩ)) whatever the capacitance; the
+    # bank just sets the edge time constant (~6 µs). 6 × 22 µF 10 V 0805,
+    # 1.25 mm (no 470 µF ≤ 1.5 mm part was orderable outside China lots).
+    from smash.parts.passives import add_capacitor_grm21br61a226me44l
+    for _k in range(1, 7):
+        _c = add_capacitor_grm21br61a226me44l(d, ref=f"C_BAT_BULK{_k}", board_tag=BTAG, feature="bottom")
+        _net(d, "BAT_RAW").connect(_c.pin("1")); _net(d, "GND").connect(_c.pin("2"))
 
     # Q_ISO — ideal-diode reverse-block, BAT_RAW (cell) → BAT_PROT (load /
     # USB-OR point). Body diode (drain=BAT_RAW → source=BAT_PROT) passes
@@ -3284,7 +3299,7 @@ def build_power_board(d: Design) -> None:
     # ~1-1.2 A. 4.7 µH = bottom of the DS 4.7–47 µH window; ripple ≈ 0.43 A
     # at 600 kHz. COMP network re-derived for 4.7 µH below.
     # Pin 1 (marked start lead) on the SW node, per Coilcraft (lowest EMI).
-    l_boost = add_xgl5020_472mec(d, ref="L_BOOST_COMP", board_tag=BTAG)
+    l_boost = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP", board_tag=BTAG)   # (2026-11-22) XGL5020-472 → WE-MAPI 4020, same 2.1 mm
     _net(d, "COMP_5V_SW") .connect(l_boost.pin("1"))
     _net(d, "REG_IN_MAIN").connect(l_boost.pin("2"))
     # PMEG040V050EPE-QZ 5 A/40 V low-V_F Schottky (was an MBRS540T3G in SMC
@@ -3302,7 +3317,12 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_1"))
     _net(d, "COMP_5V_SW") .connect(d_boost.pin("A_2"))
     _net(d, "COMP_5V_RAW").connect(d_boost.pin("K"))
-    cap_to_gnd(d, "COMP_5V_RAW", "47uF",  ref="C_BOOST_OUT1", board_tag=BTAG, pin=(boost.ref, None), feature="bottom")
+    # (2026-11-22, height round 16) 47 µF polymer → 2 × 22 µF 25 V 0805 (1.25 mm)
+    from smash.parts.passives import add_capacitor_grm21br61e226me44l
+    for _k in (1, 2):
+        _c = add_capacitor_grm21br61e226me44l(d, ref=f"C_BOOST_OUT1_{_k}", board_tag=BTAG, feature="bottom")
+        _c.decouples = [(boost.ref, None)]
+        _net(d, "COMP_5V_RAW").connect(_c.pin("1")); _net(d, "GND").connect(_c.pin("2"))
     cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref="C_BOOST_OUT3",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(boost.ref, None))

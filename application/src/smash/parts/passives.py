@@ -1013,3 +1013,55 @@ def add_capacitor_grm31cr60j476me19l(design, ref: str, *, value: str = "47uF", *
 
 
 add_capacitor_grm31cr60j476me19l.array_value = "47uF"
+
+
+def _grm21_22u(design, ref, *, pn, volts, value="22uF", **overrides) -> Chip:
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_0805_2012Metric", size_mm=(2.0, 1.25), height_mm=1.25,
+                         pad_size=(1.15, 1.45), pad_pitch_mm=1.95, package_class="0805")
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description=f"Murata 0805 X5R 22 µF {volts} V", package="0805", dielectric="X5R",
+        size_mm=(2.0, 1.25), height_mm=1.25, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=float(volts), temp_range_c=(-55, 85), weight_g=weight_g_for_passive("0805"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="(2026-11-22) ceramic bank replacing a polymer (height round 16, availability/decisions.csv).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_grm21br61a226me44l(design, ref: str, *, value: str = "22uF", **overrides) -> Chip:
+    """Murata GRM21BR61A226ME44L — 22 µF 10 V X5R 0805, 1.25 mm max. Bank
+    element for the battery rails (BAT_RAW / BAT_PROT); ~50-60 % left at 4 V bias."""
+    return _grm21_22u(design, ref, pn="GRM21BR61A226ME44L", volts=10, value=value, **overrides)
+
+
+add_capacitor_grm21br61a226me44l.array_value = "22uF"
+
+
+def add_capacitor_grm21br61e226me44l(design, ref: str, *, value: str = "22uF", **overrides) -> Chip:
+    """Murata GRM21BR61E226ME44L — 22 µF 25 V X5R 0805, 1.25 mm max (5 V rails)."""
+    return _grm21_22u(design, ref, pn="GRM21BR61E226ME44L", volts=25, value=value, **overrides)
+
+
+def add_inductor_we_mapi_74438356047(design, ref: str, **overrides) -> Chip:
+    """Würth WE-MAPI 4020 74438356047 — 4.7 µH ±20 %, 4.1 × 4.1 × 2.1 mm max,
+    AEC-Q200 grade 1. Isat 3.05 A (10 %) / 5.75 A (30 %) typ, IRP 4 A (ΔT 40 K),
+    RDC 63 typ / 76 max mΩ, SRF 22 MHz (Würth DS 2026-09-01). The 30 % point
+    covers the TPS61175's 5 A max switch limit like the XGL5020's 5.3 A did.
+    Land = Würth's recommended 0.98 × 3.7 mm pads at 2.37 mm pitch, identical
+    to the vendored WE-MAPI 4030 land (parts/sources/74438357047)."""
+    pn = "74438356047"
+    fp_mod = src("74438357047", "WE-MAPI_4030.kicad_mod")
+    fp = Footprint(name="WE-MAPI_4020", package_class="WE-MAPI 4020", pads=pads_from_kicad_mod(fp_mod),
+                   body_outline=[(-2.05, -2.05), (2.05, -2.05), (2.05, 2.05), (-2.05, 2.05), (-2.05, -2.05)],
+                   size_mm=(4.1, 4.1), height_mm=2.1, source="wurth-ds").ensure_courtyard_clearance()
+    fields = dict(
+        manf="Würth Elektronik", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value="4.7uH",
+        description="Würth WE-MAPI 4020 4.7 µH power inductor, Isat(30 %) 5.75 A, 63 mΩ",
+        package="WE-MAPI 4020", size_mm=(4.1, 4.1), height_mm=2.1, inductance_h=4.7e-6,
+        standards=["AEC-Q200", "RoHS"], pins=[Pin(num="1", name="1", type="io"), Pin(num="2", name="2", type="io")],
+        footprint=fp, note="Replaces Coilcraft XGL5020-472MEC (Coilcraft-only) — height round 16 (2026-11-22).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

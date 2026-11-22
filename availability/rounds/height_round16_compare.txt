@@ -1,0 +1,21 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+C_BAT_BULK1+1 H16ALT 6TPE470MAZU                  |       0     w    0.00 China     |       0 35.0w    1.12 Indonesia |       0   17w    0.00 Indonesia | End of Life Obsolete
+L_BOOST_COMP H16ALT1 74438356047                  |   11703   42w    1.72 Korea, Re |    2394 42.0w    1.97 South Kor |   11411   42w    1.94 South Kor | 
+L_BOOST_COMP H16ALT2 XGL4020-472MEC               |                        - |                        - |                        - | 
+L_BOOST_COMP H16ALT3 SPM5020T-4R7M                |       0     w    0.00 China     |     469 28.0w    1.36 China     |       0   10w    0.00 China     | Obsolete Obsolete
+L_ACTIVATE H16ALT1   744383560068                 |    2169   42w    1.72 Korea, Re |     187 42.0w    1.99 South Kor |     397   42w    1.94 South Kor | 
+L_ACTIVATE H16ALT2   XGL4020-822MEC               |                        - |                        - |                        - | 
+L_ACTIVATE H16ALT3   SPM5020T-6R8M-LR             |     648   15w    1.13 China     |       0 28.0w    1.12 China     |     382   15w    1.27 China     | 
+L_ACTIVATE H16ALT4   SPM5020T-100M-LR             |    2988   15w    1.20 China     |   12149 15.0w    1.17 China     |     616   15w    1.35 China     | 
+U_COMP_PZ H16REF     TLV3691IDPFR                 |       0   26w    1.24 China/Chi |    2680 22.0w    1.06 China     |    9566   26w    1.48 China     | 
+U_COMP_PZ H16ALT1    TLV7031DPWR                  |    2240   26w    0.74 China/Chi |                        - |     480   26w    0.88 United St | 
+U_COMP_PZ H16ALT2    TLV7011DPWR                  |    2176   26w    0.68 China/Chi |       0     w    0.00 United St |       0   26w    0.72 Germany   | 
+C_BOOST_OUT1 H16ALT1 GRM21BR61E226ME44L           |       0   53w    0.64 Japan     |   15915 13.0w    0.34 Japan     |       0   17w    0.36 Japan     | 
+CBAT1+1 H16ALT1      GRM21BR61A226ME44L           |       0   53w    0.54 Japan     |   48461 20.0w    0.28 Japan     |       0   17w    0.32 Japan     | 
+CBAT1+1 H16ALT2      GRM21BR60J226ME39L           |       0   53w    0.25 Japan     |       0 20.0w    0.23 Japan     |       0   17w    0.18 China     | 
+U_XV_MIX H16ALT1     HMC1048ALC3B                 |      29     w  104.17 United St |      14 15.0w  109.37 United St |      64   13w  126.42 United St | 
+U_XV_MIX H16ALT2     MCA1-60LH+                   |                        - |                        - |                        - | 
+U_XV_MIX H16ALT3     SIM-63LH+                    |       0   19w   13.97 Malaysia  |                        - |       0   18w   13.84 Malaysia  | 
+U_XV_MIX H16ALT4     MM1-0212HSM-2                |       0   10w   93.52 United St |                        - |                        - | New at Mouser
+
+Digi-Key rows not in the upload:

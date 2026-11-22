@@ -357,12 +357,24 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         spans = [s_.span_deg for s_ in _ANT_SLOTS if s_.lower in pos and pos[s_.lower] <= hi]
         return [a for a in upper_angles
                 if all(not (sp[0] - _pm_deg <= a <= sp[1] + _pm_deg) for sp in spans)]
+    # (2026-11-22) signal-sector-only lanes first, then the low lanes (which can
+    # fall back to the antenna sector), each group longest-span first.
+    # Low lanes with the FEWEST antenna-sector fallbacks go first, so the ones
+    # that can still escape to the antenna sector yield the signal angles.
+    def _order(t):
+        low = t[1] < lo_upper - 1 and t[0] < lo_upper
+        return (low, len(_low_angles(t[1])) if low else 0, -(t[1] - t[0]), t[0], t[2].name)
+    todo.sort(key=_order)
     for lo, hi, net, bset in todo:
         need, got = _mult(net), []
         # antenna-sector-eligible lanes try those angles FIRST, keeping the
         # signal sector for the lanes that can only run there
+        # (2026-11-22, user) LOW lanes (aft_end → activation) now try the
+        # SIGNAL sector first: their battery-zone fan diagonals ran through
+        # S4's ground patch from the antenna-sector angles. Antenna-sector low
+        # angles stay as the fallback when the signal sector is full there.
         cand = (upper_angles + angles if lo >= lo_upper
-                else _low_angles(hi) + angles if hi < lo_upper - 1 else angles)
+                else angles + _low_angles(hi) if hi < lo_upper - 1 else angles)
         for a in cand:
             if len(got) == need:
                 break

@@ -118,12 +118,10 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         from smash.parts.passives import add_capacitor_polymer_t545w477m006ate035
         return add_capacitor_polymer_t545w477m006ate035, 1
     if abs(farads - 100e-6) < 1e-9:
-        # (2026-11-22) T520W107 lots are China, but the accepted 2 × 47 µF 1206
-        # (GRM31CR60J476ME19L, add_capacitor_grm31cr60j476me19l) is 1.6-1.8 mm >
-        # TALL_PART_MM → forced to the power board TOP → +0.6 mm gap. HELD for
-        # the next height round (4 × 22 µF 0805 1.25 mm is the candidate).
-        from smash.parts.passives import add_capacitor_polymer_t520w107m006ate040
-        return add_capacitor_polymer_t520w107m006ate040, 1
+        # (2026-11-22, height round 16) T520W107 lots are China → 4 × Murata
+        # 22 µF 10 V 0805 (1.25 mm, stays on the bottom face).
+        from smash.parts.passives import add_capacitor_grm21br61a226me44l
+        return add_capacitor_grm21br61a226me44l, 4
     return add_capacitor_polymer_7343_kemet_t528, 1
 
 

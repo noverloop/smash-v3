@@ -327,3 +327,15 @@ def add_sit5356aecfq_33n0_32(design, ref: str, **overrides) -> Chip:
              **overrides)
     c.footprint.model_3d_path = "application/src/smash/parts/sources/SiT5356AECFQ-33N0-20.000000/SiT5356AECFQ-33N0-20.000000.stp"
     return c
+
+
+def add_mcp6541t_e_ot(design, ref: str, **overrides) -> Chip:
+    """Microchip MCP6541T-E/OT — push-pull nanopower comparator (600 nA),
+    1.6-5.5 V, SOT-23-5: 1 OUT, 2 VSS, 3 VIN+, 4 VIN−, 5 VDD."""
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins
+    return _sam(design, ref, pn="MCP6541T-E/OT", part_dir="MCP6541T-E_OT", mod="SOT95P270X145-5N.kicad_mod",
+                package="SOT-23-5", height_mm=1.45, size_mm=(2.9, 2.8), manf="Microchip",
+                description="Push-pull nanopower comparator 600 nA, SOT-23-5",
+                pins=build_pins(_sym("MCP6541T-E_OT")),
+                note=f"Replaces TLV3691IDPFR (China lots) — {_WHY}.", **overrides)

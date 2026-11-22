@@ -24,7 +24,8 @@ for r in range(1, sh.nrows):
     if g("BOM: Qualifier") not in ("Direct", "Voorgesteld"): continue
     F[N(g("Mfr Part Number"))] = dict(st=num(g("BOM: Stock Availability")), lt=g("BOM: Manufacturing Lead Time in weeks"), pr=num(g("BOM: Unit Price(€)")),
         coo=str(g("BOM: Country of Origin")), life="", got=g("BOM: Matched MPN") + ("" if g("BOM: Qualifier") == "Direct" else " (sugg)"))
-dr = list(openpyxl.load_workbook(f"{SP}/digikey.xlsx", read_only=True, data_only=True).worksheets[0].iter_rows(values_only=True))
+import os
+dr = list(openpyxl.load_workbook(f"{SP}/digikey.xlsx", read_only=True, data_only=True).worksheets[0].iter_rows(values_only=True)) if os.path.exists(f"{SP}/digikey.xlsx") else [("Requested Part Number",)]
 hdr = next(i for i, r in enumerate(dr) if r and "Requested Part Number" in r); di = {h: i for i, h in enumerate(dr[hdr])}; D = {}; Dall = []
 for r in dr[hdr + 1:]:
     if not any(r): continue
