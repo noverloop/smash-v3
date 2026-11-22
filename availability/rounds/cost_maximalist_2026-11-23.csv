@@ -1,0 +1,155 @@
+MPN,Manufacturer,Qty,Unit EUR,Ext EUR,Price source,Boards
+MT03-092,Marktech,1,123.470,123.47,Mouser r13,qpd_module:1
+MT41K256M16TW-107 IT:P,Micron,1,75.400,75.40,Digi-Key r13,companion_compute:1
+AWR1843ARBGALPQ1,Texas Instruments,1,62.100,62.10,Mouser r13,radar_module:1
+MT29F4G01ABAFDWB-IT_F,Micron,2,29.410,58.82,Farnell r10,companion_compute:2
+LTC5552IUDB#TRMPBF,Analog Devices,1,53.840,53.84,Mouser r19,wakeup_board:1
+C0603C225K8RACTU,KEMET,124,0.321,39.80,Farnell r13,activation_interface:23; camera_module:3; power_board:40; radar_module:10; companion_compute:22; usb_nose:5; wakeup_board:21
+AR0234CSSM00SUKA0-CP,onsemi,1,33.320,33.32,Digi-Key r2,camera_module:1
+ISM330DLCTR,STMicroelectronics,3,7.600,22.80,Mouser r13,activation_interface:3
+STM32MP257FAL3,STMicroelectronics,1,22.680,22.68,Mouser r13,companion_compute:1
+ADF4351BCPZ-RL7,Analog Devices,1,19.360,19.36,Mouser r13,wakeup_board:1
+AD8603AUJZ-R2,Analog Devices,4,3.460,13.84,Mouser r13,qpd_module:4
+H3LIS331DLTR,STMicroelectronics,1,10.660,10.66,Farnell r13,activation_interface:1
+LR2021IMLTRT,Semtech,1,8.730,8.73,Mouser r13,wakeup_board:1
+LTC3124EDHC#TRPBF,Analog Devices,1,8.620,8.62,Mouser r21,power_board:1
+C0603C105K3RACTU,KEMET,24,0.353,8.47,Farnell r13,activation_interface:3; qpd_module:2; radar_module:1; usb_nose:1; camera_module:7; companion_compute:3; power_board:1; wakeup_board:6
+STM32U545REI6Q,STMicroelectronics,1,7.970,7.97,Mouser r14,activation_interface:1
+PE64904D-Z,pSemi,2,3.620,7.24,Mouser r13,wakeup_board:2
+STPMIC25APQR,STMicroelectronics,1,6.500,6.50,Farnell r13,power_board:1
+BAS4002LE6327XTMA1,Infineon,20,0.315,6.30,Digi-Key r13,aft_end_board:16; wakeup_board:4
+VEMD5110X01,Vishay,4,1.440,5.76,Farnell r13,qpd_module:1; radar_module:1; usb_nose:1; camera_module:1
+STM32WBA55UGI7,STMicroelectronics,1,5.730,5.73,Farnell r13,wakeup_board:1
+"TC78H653FTG,EL",Toshiba,4,1.310,5.24,Mouser r13,activation_interface:4
+GRF5126,Guerrilla RF,1,4.990,4.99,Mouser r13,wakeup_board:1
+BUK6D120-60PX,Nexperia,7,0.634,4.44,Farnell r13,aft_end_board:5; power_board:1; usb_nose:1
+TPS61175PWPR,Texas Instruments,1,4.010,4.01,Mouser r14,power_board:1
+GRM21BR61A226ME44L,Murata,14,0.275,3.85,Farnell r16,power_board:14
+TPS62822DLCR,Texas Instruments,2,1.740,3.48,Mouser r21,radar_module:2
+74438356047,Würth Elektronik,2,1.720,3.44,Mouser r16,power_board:2
+T491T226K010AT,KEMET,5,0.657,3.29,Farnell r13,power_board:4; wakeup_board:1
+VSMB1940X01,Vishay,4,0.817,3.27,Mouser r13,qpd_module:1; radar_module:1; usb_nose:1; camera_module:1
+GRF2073W,Guerrilla RF,1,3.010,3.01,Mouser r13,wakeup_board:1
+"SSM3K35CTC,L3F",Toshiba,15,0.184,2.76,Digi-Key r17,qpd_module:1; radar_module:1; usb_nose:2; camera_module:3; power_board:3; wakeup_board:5
+SIT1602BI-12-18E-40.000000,SiTime,1,2.400,2.40,Digi-Key r13,radar_module:1
+TMS201210ALM-2R2MTAA,TDK,6,0.396,2.38,Farnell r13,power_board:3; wakeup_board:2; activation_interface:1
+UJ20-C-V-G-SMT-23B-P16-TR-X5,Same Sky,1,2.180,2.18,Mouser r2,usb_nose:1
+S-1318D33-A4T2U4,ABLIC,2,1.035,2.07,Digi-Key r17,activation_interface:1; wakeup_board:1
+BMM350,Bosch Sensortec,1,1.850,1.85,Mouser r13,activation_interface:1
+BGS12P2L6E6327XTSA1,Infineon,5,0.355,1.77,Mouser r13,wakeup_board:5
+TPS62088YFPR,Texas Instruments,1,1.700,1.70,Mouser r21,radar_module:1
+"SSM3K7002KFU,LF",Toshiba,10,0.169,1.69,Mouser r19,activation_interface:1; aft_end_board:9
+GRM155R71C104KA88D,Murata,121,0.014,1.68,Digi-Key r14,power_board:24; activation_interface:16; qpd_module:5; camera_module:4; aft_end_board:1; radar_module:11; companion_compute:23; wakeup_board:37
+TMS201210ALM-1R0MTAA,TDK,4,0.396,1.58,Farnell r13,power_board:4
+CL10A106KP8NNNC,Samsung Electro-Mechanics,14,0.113,1.58,Digi-Key r19,radar_module:6; power_board:8
+NCS1-292+,Mini-Circuits,1,1.460,1.46,Mouser r19,wakeup_board:1
+MCP9808T-E/MC,Microchip,1,1.240,1.24,Mouser r13,power_board:1
+TJA1462BTK/0Z,NXP,1,1.190,1.19,Farnell r13,power_board:1
+DSC1001CI5-032.0000,Microchip,1,1.170,1.17,Mouser r13,wakeup_board:1
+"SSM3J372R,LF",Toshiba,3,0.364,1.09,Mouser r13,wakeup_board:3
+RR123-1H02-612,Coto Technology,1,1.060,1.06,Mouser r13,activation_interface:1
+RCWE0402R200FKEA,Vishay,3,0.302,0.91,Mouser r13,power_board:3
+C2012X7R1H225K125AC,TDK,2,0.447,0.89,Farnell r17,power_board:2
+TMS201210ALM-R47MTAA,TDK,2,0.396,0.79,Farnell r22,radar_module:2
+CRCW0402100KFKED,Vishay,59,0.013,0.77,Farnell r13,qpd_module:3; radar_module:7; usb_nose:4; camera_module:1; aft_end_board:22; activation_interface:1; companion_compute:1; power_board:7; wakeup_board:13
+744765027A,Würth Elektronik,2,0.378,0.76,Farnell r13,wakeup_board:2
+744765022A,Würth Elektronik,2,0.378,0.76,Farnell r13,wakeup_board:2
+IHLP2020BZER100M01,Vishay,1,0.749,0.75,Farnell r19,power_board:1
+TLV7031DPWR,Texas Instruments,1,0.737,0.74,Mouser r17,aft_end_board:1
+MCP1640CT-I/MC,Microchip,1,0.719,0.72,Mouser r13,power_board:1
+MCP1640D-I/MC,Microchip,1,0.719,0.72,Mouser r13,wakeup_board:1
+DSC1001CI1-027.0000,Microchip,1,0.693,0.69,Mouser r13,camera_module:1
+GRM21BR61E226ME44L,Murata,2,0.335,0.67,Farnell r16,power_board:2
+SIT1533AI-H4-DCC-32.768E,SiTime,1,0.634,0.63,Farnell r13,companion_compute:1
+TG2016SMN 32.0000M-MCGNNM0,Epson,1,0.576,0.58,Digi-Key r7,wakeup_board:1
+LP5907MFX-1.2/NOPB,Texas Instruments,1,0.506,0.51,part record (USD),camera_module:1
+LP5907MFX-2.8/NOPB,Texas Instruments,1,0.506,0.51,part record (USD),camera_module:1
+CRCW040210K0FKED,Vishay,38,0.012,0.47,Farnell r13,activation_interface:9; camera_module:1; power_board:12; radar_module:7; companion_compute:3; usb_nose:1; aft_end_board:1; wakeup_board:4
+LDL112PV33R,STMicroelectronics,1,0.471,0.47,Mouser r13,power_board:1
+C0603C829C5GACTU,KEMET,4,0.110,0.44,Farnell r13,qpd_module:4
+RB160VAM-60TR,ROHM,1,0.417,0.42,Farnell r7,power_board:1
+TMS201210ALM-R24MTAA,TDK,1,0.396,0.40,Farnell r22,radar_module:1
+744765033A,Würth Elektronik,1,0.382,0.38,Farnell r13,wakeup_board:1
+744765039A,Würth Elektronik,1,0.378,0.38,Farnell r13,wakeup_board:1
+744765122A,Würth Elektronik,1,0.378,0.38,Farnell r13,wakeup_board:1
+744765010A,Würth Elektronik,1,0.370,0.37,Farnell r13,wakeup_board:1
+744765062A,Würth Elektronik,1,0.343,0.34,Farnell r13,wakeup_board:1
+DRV5032AJDMRR,Texas Instruments,1,0.337,0.34,Mouser r13,activation_interface:1
+744765110A,Würth Elektronik,1,0.337,0.34,Mouser r13,wakeup_board:1
+C0402C102J3GACTU,KEMET,2,0.157,0.31,Farnell r13,wakeup_board:2
+C0603C474K3RACTU,KEMET,1,0.236,0.24,Farnell r13,wakeup_board:1
+C0603C224K5RACTU,KEMET,1,0.224,0.22,Farnell r13,power_board:1
+04025A101JAT2A,Kyocera AVX,10,0.022,0.22,Farnell r13,wakeup_board:10
+GJM1555C1HR50BB01D,Murata,4,0.046,0.19,Farnell r14,wakeup_board:4
+CRCW0402220RFKED,Vishay,7,0.026,0.18,Farnell r13,wakeup_board:7
+BLM18PG221SN1D,Murata,2,0.086,0.17,Farnell r13,wakeup_board:2
+CRCW040227R0FKED,Vishay,8,0.021,0.17,Farnell r13,qpd_module:2; radar_module:2; usb_nose:2; camera_module:2
+CRCW04021M00FKED,Vishay,11,0.013,0.14,Farnell r13,qpd_module:4; aft_end_board:2; wakeup_board:4; activation_interface:1
+CRCW0402470RFKED,Vishay,4,0.032,0.13,Farnell r13,wakeup_board:4
+CRCW0402100RFKED,Vishay,9,0.014,0.13,Farnell r13,qpd_module:1; radar_module:1; usb_nose:1; camera_module:1; activation_interface:1; wakeup_board:4
+C0402C225M9PACTU,KEMET,1,0.115,0.12,Farnell r13,wakeup_board:1
+CRCW04021K00FKED,Vishay,8,0.014,0.11,Farnell r13,aft_end_board:1; wakeup_board:7
+CRCW04024K70FKED,Vishay,8,0.014,0.11,Farnell r13,wakeup_board:6; camera_module:2
+CRCW040247R0FKED,Vishay,4,0.026,0.11,Farnell r13,activation_interface:4
+GJM1555C1HR80BB01D,Murata,2,0.050,0.10,Farnell r13,wakeup_board:2
+C0402C103K3RACTU,KEMET,5,0.020,0.10,Farnell r13,activation_interface:3; aft_end_board:1; wakeup_board:1
+CRCW040251R0FKED,Vishay,3,0.032,0.10,Farnell r13,wakeup_board:3
+GJM1555C1H1R2BB01D,Murata,2,0.046,0.09,Farnell r13,wakeup_board:2
+CRCW04022K32FKED,Vishay,1,0.089,0.09,Mouser r13,wakeup_board:1
+C0603C101J5GACTU,KEMET,1,0.079,0.08,Farnell r14,radar_module:1
+C0402C152K3RACTU,KEMET,1,0.074,0.07,Farnell r22,power_board:1
+C0603C391J5GACTU,KEMET,1,0.071,0.07,Farnell r22,power_board:1
+CRCW04025K10FKED,Vishay,3,0.022,0.07,Farnell r13,usb_nose:2; wakeup_board:1
+C0402C223K3RACTU,KEMET,1,0.061,0.06,Farnell r13,wakeup_board:1
+GJM1555C1H1R0BB01D,Murata,1,0.057,0.06,Farnell r14,wakeup_board:1
+C0603C100J5GACTU,KEMET,1,0.055,0.06,Farnell r13,wakeup_board:1
+CRCW04023K30FKED,Vishay,2,0.027,0.05,Farnell r13,activation_interface:1; wakeup_board:1
+04025A1R5BAT2A,Kyocera AVX,1,0.052,0.05,Farnell r13,wakeup_board:1
+CRCW040222K0FKED,Vishay,2,0.025,0.05,Farnell r13,wakeup_board:2
+04025A3R3BAT2A,Kyocera AVX,1,0.048,0.05,Farnell r13,wakeup_board:1
+GJM1555C1H5R1BB01D,Murata,1,0.048,0.05,Farnell r13,wakeup_board:1
+CRCW04020000Z0ED,Vishay,4,0.012,0.05,Farnell r13,camera_module:1; wakeup_board:3
+CRCW0402300RFKED,Vishay,2,0.022,0.04,Farnell r13,wakeup_board:2
+04025A221JAT2A,Kyocera AVX,1,0.042,0.04,Farnell r13,wakeup_board:1
+CRCW0402309KFKED,Vishay,1,0.039,0.04,Farnell r13,wakeup_board:1
+C0402C102K3RACTU,KEMET,1,0.039,0.04,Farnell r13,wakeup_board:1
+CRCW0402118KFKED,Vishay,1,0.034,0.03,Farnell r13,radar_module:1
+CRCW04022K74FKED,Vishay,1,0.033,0.03,Farnell r13,wakeup_board:1
+CRCW040211K0FKED,Vishay,1,0.033,0.03,Farnell r13,aft_end_board:1
+04025A471JAT2A,Kyocera AVX,1,0.033,0.03,Farnell r13,wakeup_board:1
+LQG15HS1N8S02D,Murata,1,0.033,0.03,Farnell r13,wakeup_board:1
+CRCW040260K4FKED,Vishay,1,0.032,0.03,Farnell r22,power_board:1
+CRCW0402470KFKED,Vishay,1,0.032,0.03,Farnell r13,wakeup_board:1
+GJM1555C1H1R1BB01D,Murata,1,0.032,0.03,Farnell r14,wakeup_board:1
+CRCW04021K60FKED,Vishay,1,0.032,0.03,Farnell r13,power_board:1
+CRCW0402390RFKED,Vishay,1,0.032,0.03,Farnell r13,radar_module:1
+CRCW0402240RFKED,Vishay,1,0.032,0.03,Farnell r13,companion_compute:1
+C0402C470J5GACTU,KEMET,1,0.031,0.03,Farnell r22,power_board:1
+CRCW040212K0FKED,Vishay,1,0.029,0.03,Farnell r13,companion_compute:1
+04025A121JAT2A,Kyocera AVX,3,0.009,0.03,Farnell r22,radar_module:3
+CRCW0402261KFKED,Vishay,1,0.025,0.02,Farnell r13,power_board:1
+CRCW0402200RFKED,Vishay,1,0.025,0.02,Farnell r13,companion_compute:1
+CRCW040218R0FKED,Vishay,1,0.025,0.02,Farnell r13,wakeup_board:1
+CRCW040268K1FKED,Vishay,1,0.024,0.02,Farnell r22,power_board:1
+CRCW0402174KFKED,Vishay,1,0.021,0.02,Farnell r13,power_board:1
+CRCW0402113KFKED,Vishay,1,0.021,0.02,Farnell r22,power_board:1
+CRCW0402360KFKED,Vishay,1,0.021,0.02,Farnell r22,power_board:1
+CRCW040228K0FKED,Vishay,1,0.020,0.02,Farnell r22,power_board:1
+CRCW0402220KFKED,Vishay,1,0.020,0.02,Farnell r13,power_board:1
+CRCW040268R0FKED,Vishay,1,0.020,0.02,Farnell r13,wakeup_board:1
+GRM155R71E473KA88D,Murata,1,0.020,0.02,Farnell r13,power_board:1
+CRCW0402200KFKED,Vishay,1,0.019,0.02,Farnell r22,radar_module:1
+CRCW0402120RFKED,Vishay,1,0.019,0.02,Farnell r13,power_board:1
+CRCW04021K50FKED,Vishay,1,0.018,0.02,Farnell r13,camera_module:1
+CRCW04022K20FKED,Vishay,1,0.017,0.02,Farnell r13,wakeup_board:1
+LQG15HS1N3S02D,Murata,1,0.015,0.02,Farnell r13,wakeup_board:1
+CRCW0402330RFKED,Vishay,1,0.014,0.01,Farnell r13,radar_module:1
+CRCW040215K0FKED,Vishay,1,0.013,0.01,Farnell r13,wakeup_board:1
+04025A100JAT2A,Kyocera AVX,3,0.004,0.01,Digi-Key r13,wakeup_board:3
+SMD10T04R111,Steminc,1,,0.00,-,aft_end_board:1
+Clamp_Tab_D1.6mm,project,20,,0.00,-,aft_end_board:20
+MX25V8035FZNI,Macronix,1,,0.00,-,radar_module:1
+SIT1602BI-12-33E-40.000000,SiTime,1,,0.00,-,companion_compute:1
+CRCW040210M0FKED,Vishay,1,,0.00,-,wakeup_board:1
+SiT5356AECFQ-33N0-32.000000T,SiTime,1,,0.00,-,wakeup_board:1
+04025A180JAT2A,Kyocera AVX,1,,0.00,-,wakeup_board:1
