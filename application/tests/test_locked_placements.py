@@ -31,7 +31,7 @@ def test_real_data_has_mpu_and_ddr4_anchors():
     """The two anchors the user called out explicitly."""
     locked = load_locked_placements()
     assert "U_MPU" in locked
-    assert "U_DDR4" in locked
+    assert "U_DDR" in locked
 
 
 def test_u_ddr4_rotation_is_zero():
@@ -40,8 +40,8 @@ def test_u_ddr4_rotation_is_zero():
     (2026-11-20, user) the whole compute layout was turned 180° so U_NAND_B
     clears the main-axis potting hole: MPU and DDR4 share one rotation."""
     locked = load_locked_placements()
-    assert locked["U_DDR4"].rotation_deg in (0.0, 180.0)
-    assert locked["U_DDR4"].rotation_deg == locked["U_MPU"].rotation_deg
+    assert locked["U_DDR"].rotation_deg in (0.0, 180.0)
+    assert locked["U_DDR"].rotation_deg == locked["U_MPU"].rotation_deg
 
 
 def test_u_mpu_west_of_ddr4_no_overlap():
@@ -52,7 +52,7 @@ def test_u_mpu_west_of_ddr4_no_overlap():
     apart in X (both moved 2 mm south for top-face SPI-NAND room)."""
     locked = load_locked_placements()
     mpu_x = locked["U_MPU"].position_mm[0]
-    ddr_x = locked["U_DDR4"].position_mm[0]
+    ddr_x = locked["U_DDR"].position_mm[0]
     assert mpu_x * ddr_x < 0                  # opposite sides (layout turned 180° 2026-11-20)
     assert abs(ddr_x - mpu_x) >= 10.8
 
@@ -69,7 +69,7 @@ def test_real_data_has_all_anchors():
     locked = load_locked_placements()
     # (2026-11-20, user) the routed power_board's locks (U_PMIC …) were
     # dropped — every board is being re-routed; the packer places them.
-    expected = {"U_MPU", "U_DDR4",
+    expected = {"U_MPU", "U_DDR",
                 "P_CELL_PIN_NEG1", "P_CELL_PIN_NEG2", "P_CELL_PIN_NEG3",
                 "P_CELL_WIRE_POS1", "P_CELL_WIRE_POS2", "P_CELL_WIRE_POS3"}
     assert expected <= set(locked)

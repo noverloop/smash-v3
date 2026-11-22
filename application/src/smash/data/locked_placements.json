@@ -21,14 +21,6 @@
   "rotation_deg": 0,
   "reason": "VFBGA-361 (10x10 mm body, 12x12 courtyard). Hand-placed + locked at (-7.7, 2.7) KiCad-frame, SW of the disc; Y negated for the math-Y-up placement frame. Rotation 0 deg per the ST AN5724 STM32MP25xxAK reference. Diagonal with U_DDR4 (NE) so the pair clears the NW/SE potting holes and leaves the centre/south of the top face for the SPI-NAND + DDR decoupling. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
  },
- "U_DDR4": {
-  "position_mm": [
-   6.9,
-   2.3
-  ],
-  "rotation_deg": 0,
-  "reason": "SMARTsemi KTDM4G4B626BGIEAT DDR4 (FBGA-96 7.5x13, courtyard 9.6x15.1). Hand-placed + locked at (6.9, -2.3) KiCad-frame, NE of the 34 mm disc; un-rotated (0 deg) per the STM32MP2 DDR4 reference (was 270 deg DDR3L). Diagonal with U_MPU (SW): the un-rotated 15.1 mm-tall courtyard sits between the NW/SE potting holes (radius 14, 135/315 deg), clearing both, and leaves the centre/south of the top face for the two SPI-NAND dies. Refdes renamed U_DDR3 -> U_DDR4 in the DDR3->DDR4 swap. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.)"
- },
  "ANT_NFC": {
   "position_mm": [
    0.0,
@@ -729,5 +721,13 @@
   "rotation_deg": 45,
   "face": "top",
   "reason": "2026-11-21: AWR 40 MHz MEMS clock locked on the NE diagonal against the AoP's flat side, turned 45° like the AoP (its 5.45 × 5.2 mm courtyard box would hang off the board elsewhere); the packer's adjacency anchors missed the pockets round the turned AoP and dumped it off-board at x 168."
+ },
+ "U_DDR": {
+  "position_mm": [
+   7.05,
+   2.8
+  ],
+  "rotation_deg": 0,
+  "reason": "SMARTsemi KTDM4G4B626BGIEAT DDR4 (FBGA-96 7.5x13, courtyard 9.6x15.1). Hand-placed + locked at (6.9, -2.3) KiCad-frame, NE of the 34 mm disc; un-rotated (0 deg) per the STM32MP2 DDR4 reference (was 270 deg DDR3L). Diagonal with U_MPU (SW): the un-rotated 15.1 mm-tall courtyard sits between the NW/SE potting holes (radius 14, 135/315 deg), clearing both, and leaves the centre/south of the top face for the two SPI-NAND dies. Refdes renamed U_DDR3 -> U_DDR4 in the DDR3->DDR4 swap. (2026-11-20, user: the whole compute layout turned 180° about the centre — U_NAND_B sat on the potting hole, which stays on the main potting axis; MPU/DDR4/NAND keep their relative geometry.) (2026-11-22) Now the DDR3L MT41K256M16TW-107 IT:P (VFBGA-96 8×14, ref U_DDR) at the same spot. 2026-11-22: y +0.5 mm (DDR3L VFBGA-96 is 14 mm long vs the DDR4's 13: cleared U_NAND_B) and x +0.15 mm (clears U_NAND_A)."
  }
 }

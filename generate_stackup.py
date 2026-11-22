@@ -82,7 +82,7 @@ from smash.parts.mcus import (                                          # noqa: 
 
 )
 from smash.parts.flash import (                                         # noqa: E402
-    add_ktdm4g4b626bgieat,
+    add_ktdm4g4b626bgieat, add_mt41k256m16tw_107_ptr,
     add_mt29f4g01abafdwb_it_f, add_s25hl512tfamhi010, add_sst26wf080b,
     add_sst26vf080a,
 )
@@ -154,8 +154,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "COMP_5V_RAW":  5.0,    # boost output, fin/VM side of the LC filter (rule-sweep F6 — was kind="signal")
     "COMP_3V3":     3.3,    # PMIC BUCK2 — MP25 IO ring (rule-sweep F6 — was kind="signal")
     "COMP_1V8":     1.8,
-    "COMP_VPP":     2.5,
-    "COMP_1V2":     1.2,
+    "COMP_1V35":    1.35,   # (2026-11-22) DDR3L VDD/VDDQ (was COMP_1V2 DDR4 + COMP_VPP 2.5 V)
     "COMP_0V9":     0.9,
     "COMP_0V82":    0.82,   # MP25 VDDCORE domain (PMIC BUCK5; DS ROC 0.79–0.842 V)
     "3V3_AON":      3.3,    # nanopower standby domain (TPS7A02 off BAT_RAW; WBA+H3LIS+ST25DV+TLV3691)
@@ -432,7 +431,7 @@ def build_companion_compute(d: Design) -> None:
             # own buck later if NPU throughput needs the 0.9 V point.
             _net(d, "COMP_0V82").connect(mpu.pin(p.num))
         elif re.fullmatch(r"VDDQDDR_\d+", p.name):
-            _net(d, "COMP_1V2").connect(mpu.pin(p.num))   # DDR4 I/O = 1.2 V
+            _net(d, "COMP_1V35").connect(mpu.pin(p.num))   # DDR3L I/O = 1.35 V
         elif p.name in ("VDDA18AON", "VDDA18PLL1", "VDDA18PLL2", "VDDA18PLL3",
                         "VDDA18DDR", "VDDA18ADC", "VDDA18CSI", "VDDA18DSI",
                         "VDDA18LVDS", "VDDA18COMBOPHY", "PDR_ON"):
@@ -479,9 +478,9 @@ def build_companion_compute(d: Design) -> None:
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_MPU_18A_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
-    cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_MPU_QDDR_1",
+    cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_MPU_QDDR_1",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
-    cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_MPU_QDDR_2",
+    cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_MPU_QDDR_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
 
     # ── System clocks — shock-tolerant MEMS oscillators in bypass mode ──
@@ -737,158 +736,68 @@ def build_companion_compute(d: Design) -> None:
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_33b",
                embedded_cap_absorbs=True, board_tag=BTAG)
 
-    # ── DDR4 (SMARTsemi KTDM4G4B626BGIEAT, FBGA-96; 1.2 V + VPP 2.5 V) ─
-    # Swapped in for the AS4C DDR3L. DQ bus follows the ST AN5724 DDR4 reference
-    # swizzle (see below); the A/C bus follows the ST DDR4 reference mapping
-    # VERBATIM (Research/STM32MP25xxAx/STM32MP25xxAL/1DDR4_Memory_length_
-    # equalization…AL (10x10)_Template.xlsx, BALL NAME → NET NAME columns —
-    # AL/VFBGA-361 = our DAL3 package). The earlier DDR3L-derived guess is
-    # gone; see the MPU-side block below for the locked table.
-    ddr = add_ktdm4g4b626bgieat(d, ref="U_DDR4", board_tag=BTAG)
+    # ── DDR3L (Micron MT41K256M16TW-107 IT:P, VFBGA-96 8×14; 1.35 V) ──
+    # (2026-11-22, user) the DDR4 (SMARTsemi KTDM4G4B626BGIEAT) went OBSOLETE
+    # and no orderable DDR4/LPDDR4 x16 had stock at two suppliers; the
+    # MT41K256M16TW-107 IT:P is stocked at Mouser/Farnell/Digi-Key (38k), with
+    # SMARTsemi KTDM4G3C618BGIEAT and ISSI IS43TR16256BL as same-land
+    # alternates (availability/bom_alternates.csv). DDR3L-1866 on a 16-bit bus
+    # (MP25: DDR3L up to 1066 MHz) — ~20 % less bandwidth than the DDR4-2400.
+    # A/C + data mapping = ST's AL (10×10) DDR3L template VERBATIM
+    # (Research/STM32MP25xxAx/STM32MP25xxAL/1DDR3L_Memory_length_equalization_
+    # in_mm_for_STM32MP25xxAL (10x10)_Template.xlsx, BALL NAME → NET NAME).
+    # UNROUTED (user): the DDR4 pre-route (smash.layout.ddr_route, mined from
+    # ST's routed DDR4 reference) does not carry over — the layout EE routes
+    # the DDR3L with ST's length template (CLK ±3.55 mm A/C window, DQS ±1.42).
+    ddr = add_mt41k256m16tw_107_ptr(d, ref="U_DDR", board_tag=BTAG,
+                                    manf_pn="MT41K256M16TW-107 IT:P",
+                                    name="MT41K256M16TW-107 IT:P", value="MT41K256M16TW-107 IT:P")
 
-    # DQ swizzle = ST AN5724 DDR4 reference verbatim (STM32MP25xxAL "with
-    # DDR4", Sheet 6 — AL/VFBGA-361 = our DAL3 package). A WITHIN-BYTE bit
-    # permutation, hardware-transparent (the DDR4 PHY deskews each DQ bit;
-    # DM masks per-byte, DBI inverts per-byte — so bit order inside a lane
-    # is free). Kept VERBATIM deliberately: the reference's routed escape/
-    # corridor topology (CAD_Project ascii PcbDoc) is co-designed with this
-    # swizzle, and smash.layout.ddr_route mines that topology — re-swizzling
-    # for our corridor would invalidate it. DRAM byte-pin DQL{m}/DQU{m} <-
-    # controller DDR4_DQ{n}:
-    _DQL_FROM = [7, 0, 6, 2, 5, 1, 4, 3]        # DQL0..7 <- DQ7,0,6,2,5,1,4,3
-    _DQU_FROM = [15, 9, 12, 10, 14, 11, 13, 8]  # DQU0..7 <- DQ15,9,12,10,14,11,13,8
+    # Data: byte 0 = L*, byte 1 = U* (1:1 per the ST template)
+    for i in range(8):
+        _net(d, f"DDR3L_DQ{i}").connect(ddr.pin(f"DQ{i}"))
+        _net(d, f"DDR3L_DQ{i + 8}").connect(ddr.pin(f"DQ{i + 8}"))
+    _net(d, "DDR3L_DQS0_P").connect(ddr.pin("LDQS")); _net(d, "DDR3L_DQS0_N").connect(ddr.pin("LDQS#"))
+    _net(d, "DDR3L_DQS1_P").connect(ddr.pin("UDQS")); _net(d, "DDR3L_DQS1_N").connect(ddr.pin("UDQS#"))
+    _net(d, "DDR3L_DM0").connect(ddr.pin("LDM")); _net(d, "DDR3L_DM1").connect(ddr.pin("UDM"))
+    # Address A0..A14 (4 Gb x16: 32K rows; A15 not used), bank, command
+    for i in range(15):
+        pin = {10: "A10/AP", 12: "A12/BC#"}.get(i, f"A{i}")
+        _net(d, f"DDR3L_A{i}").connect(ddr.pin(pin))
+    for k in range(3):
+        _net(d, f"DDR3L_BA{k}").connect(ddr.pin(f"BA{k}"))
+    for net, pin in (("DDR3L_RAS_N", "RAS#"), ("DDR3L_CAS_N", "CAS#"), ("DDR3L_WE_N", "WE#"),
+                     ("DDR3L_CK_P", "CK"), ("DDR3L_CK_N", "CK#"), ("DDR3L_CKE", "CKE"),
+                     ("DDR3L_CS_N", "CS#"), ("DDR3L_ODT", "ODT"), ("DDR3L_RESET_N", "RESET#")):
+        _net(d, net).connect(ddr.pin(pin))
+    res_between(d, "DDR3L_RESET_N", "GND", "10k", ref="R_DDR_RESETN_PD", board_tag=BTAG)
 
-    # Data byte 0 (lower)
-    for m, n in enumerate(_DQL_FROM):
-        _net(d, f"DDR4_DQ{n}").connect(ddr.pin(f"DQL{m}"))
-    _net(d, "DDR4_DQS0_P").connect(ddr.pin("DQSL_T"))
-    _net(d, "DDR4_DQS0_N").connect(ddr.pin("DQSL_C"))
-    _net(d, "DDR4_DM0_N") .connect(ddr.pin("DML_NDBIL_N"))
+    # References: VREFCA + VREFDQ = VDD/2 (0.675 V) from one 1k/1k divider,
+    # each pin with its own 100 nF; ZQ 240 Ω 1 % to GND.
+    _net(d, "DDR3L_VREF").connect(ddr.pin("VREFCA")); _net(d, "DDR3L_VREF").connect(ddr.pin("VREFDQ"))
+    _net(d, "DDR3L_ZQ").connect(ddr.pin("ZQ"))
+    # Power: VDD/VDDQ = 1.35 V (COMP_1V35, PMIC BUCK6)
+    for p in ddr.pins:
+        if re.fullmatch(r"VDDQ?_\d+", p.name):
+            _net(d, "COMP_1V35").connect(p)
+        elif re.fullmatch(r"VSSQ?_\d+", p.name):
+            _net(d, "GND").connect(p)
 
-    # Data byte 1 (upper)
-    for m, n in enumerate(_DQU_FROM):
-        _net(d, f"DDR4_DQ{n}").connect(ddr.pin(f"DQU{m}"))
-    _net(d, "DDR4_DQS1_P").connect(ddr.pin("DQSU_T"))
-    _net(d, "DDR4_DQS1_N").connect(ddr.pin("DQSU_C"))
-    _net(d, "DDR4_DM1_N") .connect(ddr.pin("DMU_NDBIU_N"))
-
-    # Address A0..A13 (A10/AP, A12/BC_n are mux pins). Address-bit names
-    # A1..A9 collide with the row-A ball coords; the factory BALL_-prefixes
-    # those balls, so `ddr.pin("A1")` resolves to the address-bit pin.
-    for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13]:
-        _net(d, f"DDR4_A{i}").connect(ddr.pin(f"A{i}"))
-    _net(d, "DDR4_A10").connect(ddr.pin("A10/AP"))
-    _net(d, "DDR4_A12").connect(ddr.pin("A12/BC_N"))
-
-    # Command + muxed upper address: ACT_n low → RAS/CAS/WE, ACT_n high →
-    # A16/A15/A14.
-    _net(d, "DDR4_ACT_N")    .connect(ddr.pin("ACT_N"))
-    _net(d, "DDR4_RAS_N_A16").connect(ddr.pin("RAS_N/A16"))
-    _net(d, "DDR4_CAS_N_A15").connect(ddr.pin("CAS_N/A15"))
-    _net(d, "DDR4_WE_N_A14") .connect(ddr.pin("WE_N/A14"))
-
-    # Bank group (x16 has BG0 only) + bank address
-    _net(d, "DDR4_BG0").connect(ddr.pin("BG0"))
-    _net(d, "DDR4_BA0").connect(ddr.pin("BA0"))
-    _net(d, "DDR4_BA1").connect(ddr.pin("BA1"))
-
-    # Clock + control
-    _net(d, "DDR4_CK_P")   .connect(ddr.pin("CK_T"))
-    _net(d, "DDR4_CK_N")   .connect(ddr.pin("CK_C"))
-    _net(d, "DDR4_CKE")    .connect(ddr.pin("CKE"))
-    _net(d, "DDR4_CS_N")   .connect(ddr.pin("CS_N"))
-    _net(d, "DDR4_ODT")    .connect(ddr.pin("ODT"))
-    _net(d, "DDR4_RESET_N").connect(ddr.pin("RESET_N"))
-    res_between(d, "DDR4_RESET_N", "GND", "10k",
-                ref="R_DDR_RESETN_PD", board_tag=BTAG)
-
-    # DDR4 extras: ALERT_n → MP25 GPIO (monitored) + pull-up; PAR (C/A
-    # parity) is WIRED per the EE reference layout (MPU DDR_A9/E18 →
-    # DRAM PAR/T3) but stays disabled in MR5 — firmware must never
-    # enable CA parity (ALERT_N reader is blind, rule-sweep F3); TEN
-    # (connectivity test) tied low.
-    _net(d, "DDR4_ALERT_N").connect(ddr.pin("ALERT_N"))
-    # ALERT_N is a VDDQ-domain open-drain output (abs max ≈ VDDQ+0.3 V)
-    # — the 1.2 V pull rail is mandatory. ⚠ rule-sweep F3: its MP25
-    # reader PG12 is a TT input on a 3.3 V VDDIO bank (VIH ≈ 2.3 V), so
-    # a 1.2 V high can never register. FIRMWARE: never enable DDR4 CA
-    # parity / write-CRC — the only ALERT_N sources; the GPIO is dead.
-    res_between(d, "DDR4_ALERT_N", "COMP_1V2", "10k",
-                ref="R_DDR_ALERTN_PU", board_tag=BTAG)
-    _net(d, "DDR4_PAR").connect(ddr.pin("PAR"))
-    _net(d, "GND").connect(ddr.pin("TEN"))
-
-    # VREFCA (external divider; DDR4 VREFDQ is internal) + ZQ calibration
-    _net(d, "DDR4_VREFCA").connect(ddr.pin("VREFCA"))
-    _net(d, "DDR4_ZQ_CAL").connect(ddr.pin("ZQ"))
-
-    # DDR4 power: VDD/VDDQ = 1.2 V (COMP_1V2), VPP = 2.5 V (COMP_VPP — the
-    # PMIC BUCK3 freed by dropping the DDR3L 1.35 V rail, retuned to 2.5 V)
-    for n in range(1, 11): _net(d, "COMP_1V2").connect(ddr.pin(f"VDD_{n}"))
-    for n in range(1, 11): _net(d, "COMP_1V2").connect(ddr.pin(f"VDDQ_{n}"))
-    for n in range(1, 3):  _net(d, "COMP_VPP").connect(ddr.pin(f"VPP_{n}"))
-    for n in range(1, 10): _net(d, "GND").connect(ddr.pin(f"VSS_{n}"))
-    for n in range(1, 11): _net(d, "GND").connect(ddr.pin(f"VSSQ_{n}"))
-
-    # ── MPU-side DDR4 wiring ──────────────────────────────────────────
-    # Data + DQS + DM (1:1; DDR4 byte 0 = DQL, byte 1 = DQU)
+    # ── MPU-side DDR3L wiring (ST AL template, BALL NAME → NET NAME) ──
     for i in range(16):
-        _net(d, f"DDR4_DQ{i}").connect(mpu.pin(f"DDR_DQ{i}"))
-    _net(d, "DDR4_DQS0_P").connect(mpu.pin("DDR_DQS0P"))
-    _net(d, "DDR4_DQS0_N").connect(mpu.pin("DDR_DQS0N"))
-    _net(d, "DDR4_DQS1_P").connect(mpu.pin("DDR_DQS1P"))
-    _net(d, "DDR4_DQS1_N").connect(mpu.pin("DDR_DQS1N"))
-    _net(d, "DDR4_DM0_N") .connect(mpu.pin("DDR_DQM0"))
-    _net(d, "DDR4_DM1_N") .connect(mpu.pin("DDR_DQM1"))
-
-    # A/C mapping — EE REFERENCE LAYOUT swizzle (siniziacompanion_compute,
-    # imported via tools/import_ee_layout.py). The combo-PHY DDR_Ax balls
-    # are generic; the PHY-signal→ball map is firmware-configurable, and
-    # the EE re-swizzled 18 A/C balls (vs the ST AL template) to fit his
-    # escape pattern, bringing DDR_A27 (L19, BG1 in the ST personality)
-    # into service for ACT_n and DDR_A9 (E18) for PAR. Unchanged from the
-    # ST template: CKE/CS_n/ODT/CK_T/CK_C (DDR_A0/A2/A3/A4/A5),
-    # A3→DDR_A16, A9→DDR_A18, BA1→DDR_A29. FIRMWARE: the DDR tool /
-    # PHY config must encode this map.
-    A_MAP = {0: 20, 1: 10, 2: 17, 3: 16, 4: 26, 5: 21, 6: 30,
-             7: 22, 8: 28, 9: 18, 10: 8, 11: 25, 12: 31, 13: 23}
-    for i, mpu_a in A_MAP.items():
-        _net(d, f"DDR4_A{i}").connect(mpu.pin(f"DDR_A{mpu_a}"))
-
-    # Command + muxed upper address (EE reference: RASN→DDR_A11,
-    # CASN→DDR_A15, WEN→DDR_A14, ACTN→DDR_A27, BG0→DDR_A12,
-    # BA0→DDR_A13, PAR→DDR_A9).
-    _net(d, "DDR4_RAS_N_A16").connect(mpu.pin("DDR_A11"))
-    _net(d, "DDR4_CAS_N_A15").connect(mpu.pin("DDR_A15"))
-    _net(d, "DDR4_WE_N_A14") .connect(mpu.pin("DDR_A14"))
-    _net(d, "DDR4_ACT_N")    .connect(mpu.pin("DDR_A27"))
-    _net(d, "DDR4_BG0")      .connect(mpu.pin("DDR_A12"))
-    _net(d, "DDR4_BA0")      .connect(mpu.pin("DDR_A13"))
-    _net(d, "DDR4_BA1")      .connect(mpu.pin("DDR_A29"))
-    _net(d, "DDR4_PAR")      .connect(mpu.pin("DDR_A9"))
-
-    # Clock + control (unchanged from the DDR3L reference — the DDR4
-    # template keeps them on the same balls)
-    _net(d, "DDR4_CK_P").connect(mpu.pin("DDR_A4"))
-    _net(d, "DDR4_CK_N").connect(mpu.pin("DDR_A5"))
-    _net(d, "DDR4_CKE") .connect(mpu.pin("DDR_A0"))
-    _net(d, "DDR4_CS_N").connect(mpu.pin("DDR_A2"))
-    _net(d, "DDR4_ODT") .connect(mpu.pin("DDR_A3"))
-
-    # ALERT_n → MP25 PG12 — placeholder tie only: PG12 is TT on a 3.3 V
-    # bank, blind to the 1.2 V swing (rule-sweep F3, disposition "never
-    # enable CA parity"). Level-shift (BSS138) if alert telemetry is
-    # ever wanted.
-    try:
-        _net(d, "DDR4_ALERT_N").connect(mpu.pin("PG12"))
-    except KeyError:
-        pass
-
-    # Reset + VREFCA
-    _net(d, "DDR4_RESET_N").connect(mpu.pin("DDR_RESETN"))
-    _net(d, "DDR4_VREFCA") .connect(mpu.pin("DDR_VREF"))
-
-    # MPU-side ZQ decoupling
+        _net(d, f"DDR3L_DQ{i}").connect(mpu.pin(f"DDR_DQ{i}"))
+    _net(d, "DDR3L_DQS0_P").connect(mpu.pin("DDR_DQS0P")); _net(d, "DDR3L_DQS0_N").connect(mpu.pin("DDR_DQS0N"))
+    _net(d, "DDR3L_DQS1_P").connect(mpu.pin("DDR_DQS1P")); _net(d, "DDR3L_DQS1_N").connect(mpu.pin("DDR_DQS1N"))
+    _net(d, "DDR3L_DM0").connect(mpu.pin("DDR_DQM0")); _net(d, "DDR3L_DM1").connect(mpu.pin("DDR_DQM1"))
+    _DDR3L_AC = {   # MPU ball DDR_A<n> → DDR3L net (template rows; DDR_A1/A6/A7 = NA)
+        0: "CKE", 2: "CS_N", 3: "ODT", 4: "CK_P", 5: "CK_N", 8: "A0", 9: "A7", 10: "A2", 11: "A9",
+        12: "A8", 13: "WE_N", 14: "RAS_N", 15: "A12", 16: "A10", 17: "A14", 18: "A4", 20: "A13",
+        21: "A5", 22: "A3", 23: "BA0", 25: "BA2", 26: "CAS_N", 28: "A1", 29: "A11", 30: "BA1", 31: "A6"}
+    # (DDR_A27 → DDR3L A15 in the template: unused on a 4 Gb x16, left open)
+    for ball, sig in _DDR3L_AC.items():
+        _net(d, f"DDR3L_{sig}").connect(mpu.pin(f"DDR_A{ball}"))
+    _net(d, "DDR3L_RESET_N").connect(mpu.pin("DDR_RESETN"))
+    _net(d, "DDR3L_VREF").connect(mpu.pin("DDR_VREF"))
     try:
         _net(d, "MPU_DDR_ZQ").connect(mpu.pin("DDR_ZQ"))
         cap_to_gnd(d, "MPU_DDR_ZQ", "0.1uF", ref="C_MPU_DDR_ZQ",
@@ -896,23 +805,19 @@ def build_companion_compute(d: Design) -> None:
     except KeyError:
         pass
 
-    # DDR4 calibration + VREFCA generation (VREFDQ is internal on DDR4)
-    res_between(d, "DDR4_ZQ_CAL", "GND", "240", ref="R_DDR_ZQ", board_tag=BTAG)
-    res_between(d, "COMP_1V2", "DDR4_VREFCA", "1k",
-                ref="R_DDR_VREFCA_TOP", board_tag=BTAG)
-    res_between(d, "DDR4_VREFCA", "GND", "1k",
-                ref="R_DDR_VREFCA_BOT", board_tag=BTAG)
-    cap_to_gnd(d, "DDR4_VREFCA", "100nF", ref="C_DDR_VREFCA", board_tag=BTAG, pin=ddr.pin("VREFCA"))
+    # Calibration + reference generation
+    res_between(d, "DDR3L_ZQ", "GND", "240", ref="R_DDR_ZQ", board_tag=BTAG)
+    res_between(d, "COMP_1V35", "DDR3L_VREF", "1k", ref="R_DDR_VREF_TOP", board_tag=BTAG)
+    res_between(d, "DDR3L_VREF", "GND", "1k", ref="R_DDR_VREF_BOT", board_tag=BTAG)
+    cap_to_gnd(d, "DDR3L_VREF", "100nF", ref="C_DDR_VREFCA", board_tag=BTAG, pin=ddr.pin("VREFCA"))
+    cap_to_gnd(d, "DDR3L_VREF", "100nF", ref="C_DDR_VREFDQ", board_tag=BTAG, pin=ddr.pin("VREFDQ"))
 
-    # DDR4 power decoupling: 1.2 V rail (6× per-ball 100 nF ECM + 2× 10 µF
-    # bulk) + VPP 2.5 V (1 µF + 100 nF).
+    # 1.35 V decoupling: 6× per-ball 100 nF (ECM) + 2× 10 µF bulk
     for n in range(1, 7):
-        cap_to_gnd(d, "COMP_1V2", "100nF", ref=f"C_DDR_VDD{n}",
+        cap_to_gnd(d, "COMP_1V35", "100nF", ref=f"C_DDR_VDD{n}",
                    embedded_cap_absorbs=True, board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK1", board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_1V2", "10uF", ref="C_DDR_BULK2", board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_VPP", "1uF",   ref="C_DDR_VPP1", board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_VPP", "100nF", ref="C_DDR_VPP2", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V35", "10uF", ref="C_DDR_BULK1", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V35", "10uF", ref="C_DDR_BULK2", board_tag=BTAG, pin=(ddr.ref, None))
 
 
 def build_radar_module(d: Design) -> None:
@@ -2670,20 +2575,23 @@ def build_camera_module(d: Design) -> None:
         _net(d, "CAM_VAA_2V8").connect(cam.pin(ball))   # VAA_PIX
     _net(d, "CAM_VAA_2V8").connect(cam.pin("F8"))       # VAA_PHY
     CT = "camera_module"
-    res_between(d, "COMP_1V2", "CAM_VDD_1V2", "0", ref="R_CAM_VDD_SRC", board_tag=CT)
+    # (2026-11-22) DDR3L moved the PMIC DDR rail to 1.35 V, so the camera's
+    # 1.2 V core can no longer share it: U_CAM_LDO_VDD (LP5907 1.2 V from
+    # BAT_PROT) is now FITTED, enabled by the camera IO rail COMP_1V8 (camera
+    # off whenever the compute is off). The 2.8 V keeps its 0 Ω + DNP LDO pair.
     res_between(d, "COMP_2V8", "CAM_VAA_2V8", "0", ref="R_CAM_VAA_SRC", board_tag=CT)
-    for ref, factory, out, cin, cout in (
-            ("U_CAM_LDO_VDD", add_lp5907mfx_1_2_nopb, "CAM_VDD_1V2", "1uF", "2.2uF"),
-            ("U_CAM_LDO_VAA", add_lp5907mfx_2_8_nopb, "CAM_VAA_2V8", "1uF", "4.7uF")):
+    for ref, factory, out, cin, cout, en, fitted in (
+            ("U_CAM_LDO_VDD", add_lp5907mfx_1_2_nopb, "CAM_VDD_1V2", "1uF", "2.2uF", "COMP_1V8", True),
+            ("U_CAM_LDO_VAA", add_lp5907mfx_2_8_nopb, "CAM_VAA_2V8", "1uF", "4.7uF", "BAT_PROT", False)):
         ldo = factory(d, ref=ref, board_tag=CT)
         _net(d, "BAT_PROT").connect(ldo.pin("1"))   # IN
         _net(d, "GND")     .connect(ldo.pin("2"))
-        _net(d, "BAT_PROT").connect(ldo.pin("3"))   # EN tied IN
+        _net(d, en)        .connect(ldo.pin("3"))   # EN
         _net(d, out)       .connect(ldo.pin("5"))   # OUT
-        ldo.dnp = True
+        ldo.dnp = not fitted
         for c in (cap_to_gnd(d, "BAT_PROT", cin, ref=f"C_{ref[2:]}_IN", board_tag=CT, pin=ldo.pin("1"))
                   + cap_to_gnd(d, out, cout, ref=f"C_{ref[2:]}_OUT", board_tag=CT, pin=ldo.pin("5"))):
-            c.dnp = True
+            c.dnp = not fitted
 
     # ── Grounds ─────────────────────────────────────────────────────
     for ball in ["A2", "A3", "A6", "B2", "C1", "C5", "D8", "D9",
@@ -3461,8 +3369,8 @@ def build_power_board(d: Design) -> None:
     #   rank 2  BUCK2 0.82 V → COMP_0V82 (VDDCORE, 2 A)
     #   rank 3  BUCK1 0.80 V → COMP_0V9  (VDDCPU; firmware raises to 0.9 V)
     #   rank 3  BUCK5 1.80 V → COMP_1V8  (VDDA18*, camera IO; 0.5 A)
-    #   off     BUCK6 → COMP_1V2 (DDR4 VDD/VDDQ) and LDO6 → COMP_VPP (2.5 V):
-    #           boot firmware sets + enables them before DDR init.
+    #   off     BUCK6 → COMP_1V35 (DDR3L VDD/VDDQ, 2026-11-22; was 1.2 V DDR4):
+    #           boot firmware sets 1.35 V + enables it before DDR init.
     # BUCK3 / BUCK7 unused. ⚠ NVM: BUCK7 (3.3 V rank 4) and LDO1/2/4 default
     # ON with no load — set their rank to 0 in the provisioning pass.
     _net(d, "PMIC_SW1") .connect(pmic.pin("VLX1"))
@@ -3474,7 +3382,7 @@ def build_power_board(d: Design) -> None:
     _net(d, "PMIC_SW5") .connect(pmic.pin("VLX5"))
     _net(d, "COMP_1V8") .connect(pmic.pin("VOUT5"))
     _net(d, "PMIC_SW6") .connect(pmic.pin("VLX6"))
-    _net(d, "COMP_1V2") .connect(pmic.pin("VOUT6"))
+    _net(d, "COMP_1V35").connect(pmic.pin("VOUT6"))
     # feature="bottom" on the VDDCORE inductor: the 4×4 mm part's spacer
     # cavity on the top face ate the power↔companion joint (kept from BUCK5).
     ind_between(d, "PMIC_SW2", "COMP_0V82", "1uH",
@@ -3496,15 +3404,14 @@ def build_power_board(d: Design) -> None:
         cap_to_gnd(d, vlx_net,  "100nF", ref=f"C_PMIC_VLX{n}",  board_tag=BTAG, pin=pmic.pin(f"VLX{n}"))
         cap_to_gnd(d, vout_net, "100nF", ref=f"C_PMIC_VOUT{n}", board_tag=BTAG, pin=pmic.pin(f"VOUT{n}"))
 
-    # LDO6 → COMP_VPP: DDR4 VPP 2.5 V (was BUCK3, which cannot exceed 1.5 V).
-    # LDO56IN = COMP_5V; VPP draws tens of mA. Default OFF (rank 0).
-    _net(d, "COMP_VPP").connect(pmic.pin("LDO6OUT"))
+    # (2026-11-22) LDO6 was the DDR4 VPP 2.5 V — DDR3L has no VPP: unused now,
+    # handled with the other spare LDOs below.
 
     # LDO5 → COMP_2V8 (camera analog rail)
     _net(d, "COMP_2V8").connect(pmic.pin("LDO5OUT"))
 
     # Remaining LDOs (1-2, 4, 7-8) — decoupling caps on auto-named nets
-    for n in (1, 2, 4, 7, 8):
+    for n in (1, 2, 4, 6, 7, 8):
         ldo_net = f"PMIC_LDO{n}_TERM"
         _net(d, ldo_net).connect(pmic.pin(f"LDO{n}OUT"))
         cap_to_gnd(d, ldo_net, "100nF", ref=f"C_PMIC_LDO{n}",
@@ -3566,7 +3473,7 @@ def build_power_board(d: Design) -> None:
                 ref="L_PMIC_BUCK4", board_tag=BTAG)   # ST Table 2 (≥ 1.8 V rail)
     ind_between(d, "PMIC_SW5", "COMP_1V8",  "2.2uH",
                 ref="L_PMIC_BUCK5", board_tag=BTAG)   # ST Table 2 (≥ 1.8 V rail)
-    ind_between(d, "PMIC_SW6", "COMP_1V2",  "1uH",
+    ind_between(d, "PMIC_SW6", "COMP_1V35", "1uH",
                 ref="L_PMIC_BUCK6", board_tag=BTAG)
 
     # Per-rail output decoupling
@@ -3580,14 +3487,11 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_0V9",  "22uF",  ref="C_PMIC_0V9_1", board_tag=BTAG, pin=pmic.pin("VOUT1"))
     cap_to_gnd(d, "COMP_0V9",  "100nF", ref="C_PMIC_0V9_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT1"))
-    cap_to_gnd(d, "COMP_VPP",  "4.7uF", ref="C_PMIC_VPP_1", board_tag=BTAG, pin=pmic.pin("LDO6OUT"))  # ST BOM: 4.7 µF per LDO
-    cap_to_gnd(d, "COMP_VPP",  "100nF", ref="C_PMIC_VPP_2",
-               embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("LDO6OUT"))
     cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_PMIC_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
-    cap_to_gnd(d, "COMP_1V2",  "10uF",  ref="C_PMIC_1V2_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
-    cap_to_gnd(d, "COMP_1V2",  "100nF", ref="C_PMIC_1V2_2",
+    cap_to_gnd(d, "COMP_1V35", "10uF",  ref="C_PMIC_1V35_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
+    cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_PMIC_1V35_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_2V8",  "4.7uF", ref="C_PMIC_2V8_1", board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
     cap_to_gnd(d, "COMP_2V8",  "100nF", ref="C_PMIC_2V8_2",
@@ -4540,7 +4444,7 @@ _FLEX_LAUNCH_CATALOG = [
       "QPD_TIA_D", "BAT_PROT", "IR_TX", "IR_WAKE"]),
     ("companion_compute", "camera_module", "S",
      ["CAM_CSI_CLK_N", "CAM_CSI_CLK_P", "CAM_CSI_D0_N", "CAM_CSI_D0_P",
-      "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK", "COMP_1V2",
+      "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK",
       "COMP_1V8", "COMP_2V8", "FLEX_GND", "BAT_PROT", "IR_TX", "IR_WAKE"]),
     ("companion_compute", "usb_nose", "E",
      ["USB_VBUS", "USB_D_P", "USB_D_N", "BAT_PROT", "IR_TX", "IR_WAKE"]),

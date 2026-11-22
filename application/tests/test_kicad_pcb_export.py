@@ -966,7 +966,10 @@ def test_full_twin_exports_clean(tmp_path):
     #   (every part kept; one per-tile footprint fewer).
     # → 714 (2026-11-22): both dual BAT64-06 wake ORs (D_JUMP_WAKE,
     #   D_AON_WAKE) split into two single BAS40-02L each (+2).
-    assert total_fps == 714      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    # → 709 (2026-11-22): DDR4 → DDR3L (MT41K256M16TW-107 IT:P): the DDR4-only
+    #   parts go (ALERT_N pull-up, VPP + PMIC-VPP decaps, R_CAM_VDD_SRC), a
+    #   VREFDQ decap and the spare-LDO6 termination cap come in (net −5).
+    assert total_fps == 709      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
     #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
     #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
     #   BUCK3 terminations in)

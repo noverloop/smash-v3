@@ -1,15 +1,7 @@
 {
  "_source": "/Users/nicolas/Documents/1306companion_compute.kicad_pcb",
- "_note": "COPPER REMOVED 2026-09-03. This drop's routing is not manufacturable and companion_compute is being re-routed, so its 1121 tracks / 234 vias / 8 zones were dropped rather than shipped in every regeneration (they also carried no filled_polygon fills, so the plane layers plotted empty). The full capture is in git before this commit. PLACEMENTS ARE KEPT \u2014 documentation/ee_companion_compute_review.md accepted them and the re-route will be drawn against them. For a new drop, re-run tools/import_ee_layout.py (it now captures zone fills) and re-add the copper attach in _apply_companion_reference_layout.",
+ "_note": "COPPER REMOVED 2026-09-03. This drop's routing is not manufacturable and companion_compute is being re-routed, so its 1121 tracks / 234 vias / 8 zones were dropped rather than shipped in every regeneration (they also carried no filled_polygon fills, so the plane layers plotted empty). The full capture is in git before this commit. PLACEMENTS ARE KEPT — documentation/ee_companion_compute_review.md accepted them and the re-route will be drawn against them. For a new drop, re-run tools/import_ee_layout.py (it now captures zone fills) and re-add the copper attach in _apply_companion_reference_layout.",
  "placements": {
-  "U_DDR4": {
-   "pos": [
-    6.9,
-    2.3
-   ],
-   "rot": 0.0,
-   "face": "top"
-  },
   "J_FLEXL_companion_compute__qpd_module": {
    "pos": [
     0.0,
@@ -554,6 +546,15 @@
    ],
    "rot": 90.0,
    "face": "bottom"
+  },
+  "U_DDR": {
+   "pos": [
+    7.05,
+    2.8
+   ],
+   "rot": 0.0,
+   "face": "top",
+   "_moved": "2026-11-22: y +0.5 mm (DDR3L VFBGA-96 is 14 mm long vs the DDR4's 13: cleared U_NAND_B) and x +0.15 mm (clears U_NAND_A)."
   }
  }
 }
