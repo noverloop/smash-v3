@@ -537,7 +537,8 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "NAND_OSPI_CS1").connect(mpu.pin("PE9"))
     for die, cs in (("A", "NAND_OSPI_CS0"), ("B", "NAND_OSPI_CS1")):
         nand = add_mt29f4g01abafdwb_it_f(d, ref=f"U_NAND_{die}",
-                                         board_tag=BTAG)
+                                         board_tag=BTAG,
+                                         height_mm=0.65)   # U-PDFN-8 8×6 (IPC SON127P800X600X65): factory left it unset
         _net(d, cs)             .connect(nand.pin("1"))   # CS#
         _net(d, "NAND_OSPI_IO1").connect(nand.pin("2"))   # SO/IO1
         _net(d, "NAND_OSPI_IO2").connect(nand.pin("3"))   # WP#/IO2
@@ -754,7 +755,8 @@ def build_companion_compute(d: Design) -> None:
     # the DDR3L with ST's length template (CLK ±3.55 mm A/C window, DQS ±1.42).
     ddr = add_mt41k256m16tw_107_ptr(d, ref="U_DDR", board_tag=BTAG,
                                     manf_pn="MT41K256M16TW-107 IT:P",
-                                    name="MT41K256M16TW-107 IT:P", value="MT41K256M16TW-107 IT:P")
+                                    name="MT41K256M16TW-107 IT:P", value="MT41K256M16TW-107 IT:P",
+                                    height_mm=1.2)   # Micron TW VFBGA-96: 1.2 max (factory left it unset)
 
     # Data: byte 0 = L*, byte 1 = U* (1:1 per the ST template)
     for i in range(8):
@@ -1195,7 +1197,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "GND")       .connect(d_b12.pin("A"))
     res_between(d, "AWR_1V2", "AWR_1V2_FB", "100k", ref="R_AWR12_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V2_FB", "GND", "100k", ref="R_AWR12_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_1V2", "22uF",  ref="C_AWR_1V2_1",
+    cap_to_gnd(d, "AWR_1V2", "22uF/LV",  ref="C_AWR_1V2_1",
                feature="bottom", board_tag=BTAG, pin=(buck12.ref, None))
     cap_to_gnd(d, "AWR_1V2", "100nF", ref="C_AWR_1V2_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck12.ref, None))
@@ -1217,7 +1219,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "GND")       .connect(d_b13.pin("A"))
     res_between(d, "AWR_1V3", "AWR_1V3_FB", "118k", ref="R_AWR13_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V3_FB", "GND", "100k", ref="R_AWR13_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_1V3", "22uF",  ref="C_AWR_1V3_1",
+    cap_to_gnd(d, "AWR_1V3", "22uF/LV",  ref="C_AWR_1V3_1",
                feature="bottom", board_tag=BTAG, pin=(buck13.ref, None))
     cap_to_gnd(d, "AWR_1V3", "100nF", ref="C_AWR_1V3_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(buck13.ref, None))
@@ -2477,8 +2479,9 @@ def _build_activation_array(d: Design) -> None:
     # (2026-11-21, user) on the 33 V rail: 2 × 2.2 µF 0805 X7R 50 V (KEMET
     # C0805C225K5RACTU) — no 0603 2.2 µF X7R is made above 10 V.
     for _k in (1, 2):
-        from smash.parts.passives import add_capacitor_c0805c225k5ractu
-        _c = add_capacitor_c0805c225k5ractu(d, ref=f"C_ACTIVATE_OUT_{_k}", board_tag=BT_BOOST)
+        # (2026-11-22, smaller-parts round 17) 1.45 → 1.25 mm: TDK C2012X7R1H225K125AC
+        from smash.parts.passives import add_capacitor_tdk_c2012x7r1h225k125ac
+        _c = add_capacitor_tdk_c2012x7r1h225k125ac(d, ref=f"C_ACTIVATE_OUT_{_k}", board_tag=BT_BOOST)
         _net(d, "ACTIVATE_HV").connect(_c.pin("1")); _net(d, "GND").connect(_c.pin("2"))
 
     # ── bleed + HV monitor ─────────────────────────────────────────────
@@ -3414,11 +3417,11 @@ def build_power_board(d: Design) -> None:
     # cavity on the top face ate the power↔companion joint (kept from BUCK5).
     ind_between(d, "PMIC_SW2", "COMP_0V82", "1uH",
                 ref="L_PMIC_BUCK2", board_tag=BTAG, feature="bottom")
-    cap_to_gnd(d, "COMP_0V82", "22uF",  ref="C_PMIC_0V82_1", board_tag=BTAG,
+    cap_to_gnd(d, "COMP_0V82", "22uF/LV",  ref="C_PMIC_0V82_1", board_tag=BTAG,
                feature="bottom", pin=pmic.pin("VOUT2"))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_PMIC_0V82_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT2"))
-    cap_to_gnd(d, "COMP_3V3", "22uF",  ref="C_PMIC_3V3_1", board_tag=BTAG, pin=pmic.pin("VOUT4"))
+    cap_to_gnd(d, "COMP_3V3", "22uF/LV",  ref="C_PMIC_3V3_1", board_tag=BTAG, pin=pmic.pin("VOUT4"))
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_PMIC_3V3_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT4"))
 
@@ -3511,10 +3514,10 @@ def build_power_board(d: Design) -> None:
     # on companion (C_MPU_*, C_DDR_BULK*), and (c) the power↔companion
     # LGA joint being SATURATED — adding four more tantalum bodies on
     # this tile threw 21 nets off the lands when tried (2026-06-10).
-    cap_to_gnd(d, "COMP_0V9",  "22uF",  ref="C_PMIC_0V9_1", board_tag=BTAG, pin=pmic.pin("VOUT1"))
+    cap_to_gnd(d, "COMP_0V9",  "22uF/LV",  ref="C_PMIC_0V9_1", board_tag=BTAG, pin=pmic.pin("VOUT1"))
     cap_to_gnd(d, "COMP_0V9",  "100nF", ref="C_PMIC_0V9_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT1"))
-    cap_to_gnd(d, "COMP_1V8",  "22uF",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT5"))
+    cap_to_gnd(d, "COMP_1V8",  "22uF/LV",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_PMIC_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V35", "10uF",  ref="C_PMIC_1V35_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))

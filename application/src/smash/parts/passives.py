@@ -1065,3 +1065,48 @@ def add_inductor_we_mapi_74438356047(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_tdk_c2012x7r1h225k125ac(design, ref: str, *, value: str = "2.2uF", **overrides) -> Chip:
+    """TDK C2012X7R1H225K125AC — 2.2 µF 50 V X7R 0805, 1.25 mm thickness
+    (vs the 1.45 mm KEMET C0805C225K5RACTU): smaller-parts round 17
+    (2026-11-22), all 3 suppliers, Japan. KiCad stock 0805 land."""
+    pn = "C2012X7R1H225K125AC"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_0805_2012Metric", size_mm=(2.0, 1.25),
+                         height_mm=1.25, pad_size=(1.15, 1.45), pad_pitch_mm=1.95,
+                         package_class="0805")
+    fields = dict(
+        manf="TDK", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="TDK 0805 X7R 2.2 µF 50 V, 1.25 mm", package="0805", dielectric="X7R",
+        size_mm=(2.0, 1.25), height_mm=1.25, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=50.0, temp_range_c=(-55, 125), weight_g=weight_g_for_passive("0805"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="50 V 2.2 µF X7R on the 33 V rail; DC bias at 33 V leaves well under 2.2 µF.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_samsung_cl10a106kp8nnnc(design, ref: str, *, value: str = "10uF", **overrides) -> Chip:
+    """Samsung CL10A106KP8NNNC — 10 µF 10 V X5R 0603, 0.8 mm. Pairs replace
+    the 1.1 mm KEMET T491T 22 µF tantalum on rails ≤ 3.3 V (round 19,
+    2026-11-22: Digi-Key 75,367, Philippines; single stocked supplier,
+    user-accepted exception). Not used ≥ 5 V (DC-bias loss)."""
+    pn = "CL10A106KP8NNNC"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_0603_1608Metric", size_mm=(1.6, 0.8),
+                         height_mm=0.8, pad_size=(0.85, 0.95), pad_pitch_mm=1.60,
+                         package_class="0603")
+    fields = dict(
+        manf="Samsung Electro-Mechanics", manf_pn=pn, canonical_id=canonical_id(pn), name=pn,
+        value=value, description="Samsung 0603 X5R 10 µF 10 V, 0.8 mm", package="0603",
+        dielectric="X5R", size_mm=(1.6, 0.8), height_mm=0.8,
+        capacitance_f=parse_capacitance_f(value), voltage_rating_v=10.0, temp_range_c=(-55, 85),
+        weight_g=weight_g_for_passive("0603"), standards=["RoHS", "Pb-Free"], pins=_two_pin(),
+        footprint=fp,
+        note="2 × 10 µF replace one 22 µF T491T on ≤ 3.3 V rails (smaller and 0.3 mm lower).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+add_capacitor_samsung_cl10a106kp8nnnc.array_value = "10uF"

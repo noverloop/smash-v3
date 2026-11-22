@@ -977,7 +977,7 @@ def test_full_twin_exports_clean(tmp_path):
     # → 725 (2026-11-22, height round 16): C_BAT_BULK 2 × 470 µF polymer →
     #   6 × 22 µF 0805; CBAT1/2 100 µF → 4 × 22 µF 0805 each; C_BOOST_OUT1
     #   47 µF → 2 × 22 µF 25 V 0805 (net +11).
-    assert total_fps == 725      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    assert total_fps == 729      # 2026-11-22: +4 (22 µF tantalum -> 2 × 10 µF 0603 on 4 PMIC rails); 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
     #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
     #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
     #   BUCK3 terminations in)

@@ -1,0 +1,25 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_TMR_LDO+U_AON_LDO  XC6504A331NR-G               |       0   17w    0.43 Japan     |       0 32.0w    0.44 Japan     |       0   16w    0.47 Japan     | 
+U_TMR_LDO+U_AON_LDO  S-1318D33-A4T2U4             |    5214   16w    1.71 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_TMR_LDO+U_AON_LDO  BU33UA3WNVX-TL               |       0   14w    0.00 Philippin |                        - |    5000   14w    0.37 Philippin | Not Recommended for New Design
+QHOLD+32 S17A        SSM3K35CTC,L3F               |   27484   24w    0.27 Thailand/ |   28902 24.0w    0.26 Thailand  |    6002   24w    0.18 Thailand  | 
+QHOLD+32 S17B        SSM3K56ACT,L3F               |       0   24w    0.53 Thailand/ |       0 18.0w    0.52 Thailand  |   18807   24w    0.27 Thailand  | 
+QHOLD+32 S17C        RE1J002YNTCL                 |       0   16w    0.32 Philippin |       0 20.0w    0.31 Thailand  |       0   16w    0.21 Philippin | 
+QHOLD+32 S17D        RE1C002UNTCL                 |   56456   16w    0.20 Philippin |   17129 20.0w    0.20 Philippin |  431257   16w    0.14 Philippin | 
+C_ACTIVATE_OUT S17A  CGA4J3X7R1H225K125AB         |       0   24w    0.45 Japan     |    4761 15.0w    0.46 Japan     |       0   36w    0.51 Japan     | 
+C_ACTIVATE_OUT S17B  C2012X7R1H225K125AC          |   17672   24w    0.47 Japan     |   72255 15.0w    0.45 Japan     |  357192   36w    0.53 Japan     | 
+U_AWR_BUCK12+13 S17A LMR10510YSDE/NOPB            |     530   26w    1.47 Malaysia/ |                        - |     619   26w    1.66 United St | 
+U_AWR_BUCK12+13 S17B LMR10510YSDX/NOPB            |       0   26w    1.29           |                        - |       0   26w    0.74 Malaysia  | 
+C_T491T_22U S17A     GRM188R61A106KE69D           |       0   53w    0.00 Japan     |       0     w    0.00 Japan     |       0   19w    0.00 Japan     | 
+L_ACTIVATE S17A      74437346100                  |    3696   21w    2.00 China     |    2676 20.0w    2.00 China     |    2355   21w    2.25 China     | 
+L_ACTIVATE S17B      74437346082                  |     265   21w    2.00 China     |     196 20.0w    2.00 China     |     985   21w    2.25 China     | 
+L_ACTIVATE S17C      IHLP2020BZER8R2M11           |                        - |                        - |                        - | 
+L_ACTIVATE S17D      IHLP2020BZER100M11           |    3219   10w    1.00 China     |    1910 24.0w    0.95 Israel    |     908   13w    1.13 China     | 
+U_XV_LO_AMP S17A     TQP3M9036                    |    9031   16w    6.25 United St |                        - |     538   25w    5.79 United St | 
+U_XV_LO_AMP S17B     GRF2101                      |   24697    5w    2.10 Malaysia  |                        - |                        - | 
+U_XV_LO_AMP S17C     HMC311SC70E                  |       0     w    0.00 Malaysia/ |       7 12.0w  371.64 Philippin |       0   31w    0.00 Malaysia  | Obsolete Obsolete
+U_XV_LO_AMP S17D     ADL5611ARKZ-R7               |    1777     w    5.25 Philippin |    4958 12.0w    6.28 Philippin |   15520   10w    7.03 Philippin | 
+U_XV_MIX S17         HMC1048ALC3B                 |      29     w  104.17 United St |      14 15.0w  109.37 United St |      64   13w  126.42 United St | 
+U_COMP_PZ S17        TLV7031DPWR                  |    2240   26w    0.74 China/Chi |                        - |     480   26w    0.88 United St | 
+
+Digi-Key rows not in the upload:

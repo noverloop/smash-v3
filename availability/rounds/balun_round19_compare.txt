@@ -1,0 +1,19 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+T_XV_IF B19A         TC1-1-13M+                   |       0   19w    3.63 United St |       0 10.0w    6.10 United St |       0   18w    4.09 Indonesia | 
+T_XV_IF B19B         TCM1-83X+                    |       0   19w   12.95 China/Ind |                        - |       0   18w   14.58 Indonesia | 
+T_XV_IF B19C         TCM1-63AX+                   |       0   19w   10.04 Indonesia |                        - |       0   18w   11.31 Indonesia | 
+T_XV_IF B19D         NCS1-292+                    |       0   17w    1.46 Taiwan    |                        - |    2689   16w    1.64 Taiwan    | 
+U_XV_MIX B19         LTC5552IUDB#TRMPBF           |      95     w   53.84 Thailand/ |     591 35.0w   58.53 Thailand  |    1648   33w   67.00 Thailand  | 
+U_XV_MIX B19R        LTC5552IUDB#TRPBF            |       0     w    0.00 Thailand  |       0 35.0w   40.25 Thailand  |    3687   33w   67.00 Thailand  | Restricted Availability
+C_T491T_22U B19A     C1608X5R1A106K080AC          |       0   24w    0.24 Japan/Jap |       0 19.0w    0.23 Japan     |       0   32w    0.16 Japan     | 
+C_T491T_22U B19B     GRM188R61A106MAALD           |       0   53w    0.37 Japan     |       0 20.0w    0.12 Japan     |       0   17w    0.14 Japan     | 
+C_T491T_22U B19C     CL10A106KP8NNNC              |       0   52w    0.29 Philippin |       0 23.0w    0.17 Philippin |   75367   61w    0.11 Philippin | 
+Q_33V_FETS B19A      2N7002BKMB,315               |       0     w    0.00 China     |                        - |       0    8w    0.00 China     | End of Life Obsolete
+Q_33V_FETS B19B      NX7002BKMBYL                 |       0   53w    0.25 Malaysia  |       0 54.0w    0.30 China     |       0   30w    0.21 China     | 
+Q_33V_FETS B19C      SSM3K7002KFU,LF              |    6749   24w    0.17 Thailand/ |   14420 24.0w    0.21 Thailand  |   25880   24w    0.19 Thailand  | 
+L_ACTIVATE B19       IHLP2020BZER100M01           |   28199   10w    1.00 Mexico    |     636 24.0w    0.75 China     |    6870   13w    1.13 Mexico    | 
+L_ACTIVATE B19R      IHLP2020BZER100M11           |    3219   10w    1.00 China     |    1910 24.0w    0.95 Israel    |     908   13w    1.13 China     | 
+U_COMP_PZ B19A       TLV7011DPWR                  |    2176   26w    0.68 China/Chi |       0     w    0.00 United St |       0   26w    0.72 Germany   | 
+U_COMP_PZ B19B       TLV7041DPWR                  |    5225   26w    0.78 China/Chi |                        - |    5838   26w    0.88 China     | 
+
+Digi-Key rows not in the upload:

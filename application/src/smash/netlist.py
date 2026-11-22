@@ -112,6 +112,12 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         n = max(1, int(round(farads / 2.2e-6)))
         return add_capacitor_x7r_0603_kemet_mil, n
     if farads < 47e-6:
+        # (2026-11-22, round 19) "22uF/LV" = a 22 µF position on a rail
+        # ≤ 3.3 V → 2 × Samsung 10 µF 0603 (0.8 mm) instead of the 1.1 mm
+        # tantalum; ≥ 5 V rails keep the T491T (X5R DC-bias loss).
+        if value.upper().endswith("/LV") and abs(farads - 22e-6) < 1e-9:
+            from smash.parts.passives import add_capacitor_samsung_cl10a106kp8nnnc
+            return add_capacitor_samsung_cl10a106kp8nnnc, 2
         return add_capacitor_tantalum_3528_kemet_t491, 1
     # (2026-11-21) orderable W-case polymers where the T528 value is not made
     if abs(farads - 470e-6) < 1e-9:

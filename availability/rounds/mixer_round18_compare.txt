@@ -1,0 +1,34 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_XV_MIX M18REF      LTC5549IUDB#PBF              |       0     w    0.00 Thailand  |       2 12.0w  276.82 United St |                        - | Restricted Availability
+U_XV_MIX M18REF2     LTC5549IUDB#TRPBF            |       0     w    0.00 Thailand  |                        - |       0   52w    0.00 Thailand  | Restricted Availability Discon
+U_XV_MIX M18A1       LTC5548IUDB#PBF              |       0     w    0.00 Thailand  |       0 12.0w  655.95 United St |       0   10w    0.00 Thailand  | Restricted Availability Discon
+U_XV_MIX M18A2       LTC5548IUDB#TRPBF            |                        - |                        - |       0   20w    0.00 Thailand  | Discontinued at Digi-Key
+U_XV_MIX M18B1       LTC5553IUDB#PBF              |       0     w    0.00 Thailand  |       3 12.0w  506.42 United St |                        - | Restricted Availability
+U_XV_MIX M18B2       LTC5553IUDB#TRPBF            |       0     w    0.00 Thailand  |       0 52.0w   40.25 Thailand  |       0   52w   45.87 -         | Restricted Availability
+U_XV_MIX M18B3       LTC5553IUDB#TRMPBF           |       0     w    0.00 Thailand/ |       0 52.0w   59.26 Taiwan    |       0   52w   67.00 Taiwan    | 
+U_XV_MIX M18C1       LTC5552IUDB#PBF              |       0     w    0.00 Thailand  |      14 12.0w  655.95 Philippin |                        - | Restricted Availability
+U_XV_MIX M18C2       LTC5552IUDB#TRPBF            |       0     w    0.00 Thailand  |       0 35.0w   40.25 Thailand  |    3687   33w   67.00 Thailand  | Restricted Availability
+U_XV_MIX M18C3       LTC5552IUDB#TRMPBF           |      95     w   53.84 Thailand/ |     591 35.0w   58.53 Thailand  |    1648   33w   67.00 Thailand  | 
+U_XV_MIX M18D1       HMC1048ALC3B                 |      29     w  104.17 United St |      14 15.0w  109.37 United St |      64   13w  126.42 United St | 
+U_XV_MIX M18D2       HMC1048LC3B                  |       0     w    0.00 United St |                        - |       0    6w    0.00 United St | Obsolete Obsolete
+U_XV_MIX M18E1       HMC8193LC4                   |     146     w   70.73 United St |     137 12.0w   77.61 United St |     567   10w   87.53 United St | 
+U_XV_MIX M18F1       MM1-0212HSM-2                |       0   10w   93.52 United St |                        - |                        - | New at Mouser
+U_XV_MIX M18F2       MM1-0212SSM-2                |       0   10w  127.53 United St |                        - |                        - | New at Mouser
+U_XV_MIX M18F3       ML1-0220LCH-2                |                        - |                        - |                        - | 
+U_XV_MIX M18F4       ML1-0220ICH-2                |                        - |                        - |                        - | 
+U_XV_MIX M18F5       MM1-0320HSM-2                |       7   10w   76.53 United St |                        - |                        - | New at Mouser
+U_XV_MIX M18G1       MDB-73H+                     |     807   17w   10.15 Malaysia  |                        - |     800   16w   11.43 Malaysia  | 
+U_XV_MIX M18G2       MDB-54H+                     |      25   17w   40.02 Malaysia  |                        - |     842   16w   45.07 Malaysia  | 
+U_XV_MIX M18G3       MDB-44H+                     |       0   17w   15.98 Israel    |                        - |       0   16w   18.00 Malaysia  | 
+U_XV_MIX M18G4       MAC-60LH+                    |                        - |                        - |                        - | 
+U_XV_MIX M18G5       MCA1-60LH+                   |                        - |                        - |                        - | 
+U_XV_MIX M18G6       SIM-63LH+                    |       0   19w   13.97 Malaysia  |                        - |       0   18w   13.84 Malaysia  | 
+U_XV_MIX M18G7       SIM-14LH+                    |       0   19w   13.97 Malaysia  |                        - |       0   18w   13.84 Malaysia  | 
+U_XV_MIX M18H1       MAMX-011054-TR0100           |     174   18w  120.27 Malaysia  |                        - |     951   18w  135.44 Malaysia  | 
+U_XV_MIX M18H2       MAMX-011036-TR0100           |      14   18w  130.03 Malaysia  |                        - |    7539   18w  155.22 Malaysia  | 
+U_XV_MIX M18I1       ADL5350ACPZ-R7               |       0     w    0.00 Philippin |    1855 36.0w    7.96 Philippin |       0   34w    8.74 Philippin | 
+U_XV_MIX_RX M18S1    ADL5801ACPZ-R7               |       0     w    0.00 Korea, Re |    7500 26.0w   16.00 South Kor |     991   18w   17.56 South Kor | Restricted Availability
+U_XV_MIX_TX M18S2    LTC5510IUF#PBF               |    3563     w   13.09 Thailand/ |     719 52.0w   15.63 Thailand  |    3121   52w   17.00 Thailand  | 
+U_XV_MIX_TX M18S3    LTC5510IUF#TRPBF             |    2224     w   13.09 Thailand/ |    2857 52.0w   14.46 Thailand  |    6283   52w   17.00 Thailand  | 
+
+Digi-Key rows not in the upload:

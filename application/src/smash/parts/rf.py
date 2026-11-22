@@ -846,6 +846,76 @@ def add_ltc5549iudb(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+
+_LTC5552_NOTE = """\
+Datasheet: ADI (Linear) LTC5552 rev F, Japanese edition "j5552f" (vendored
+LTC5552IUDB.pdf; the English PDF was not retrievable 2026-11-22).
+Package: UDB 12-lead 3 x 2 mm QFN, LTC DWG 05-08-1985 Rev 0 -- the SAME
+drawing as the LTC5549, so the LTC5549's SamacSys land/3D model is reused.
+
+Passive double-balanced mixer, up- OR down-conversion. RF 3-20 GHz, LO
+1-20 GHz (0 dBm drive, internal LO amplifier), IF DC-6 GHz. Conversion loss
+~6.9-7 dB at 4 GHz. VCC 3.0-3.6 V, 132 mA typ / 150 mA max; EN > 1.2 V on
+(internal pull-down). No LO doubler.
+
+IF is DIFFERENTIAL: IF+ (2) / IF- (3), ~25 ohm each single-ended -> 50 ohm
+single-ended needs an external 1:1 balun (ADI eval: Mini-Circuits
+TC1-1-13M+, 4.5 MHz-3 GHz; TCM1-83X+ to 6 GHz). IF pins are DC-coupled to
+the diodes (no DC block on the balanced side). RF and LO 50 ohm; LO takes an
+18 pF series cap (pin ~DC-biased).
+
+Pinout vs LTC5549: identical except pin 3 (GND -> IF-) and pin 8
+(X2 -> GND). Chosen 2026-11-22 (mixer round 18) as the buildable
+replacement for the restricted LTC5549: #TRMPBF stocked at Mouser 95 /
+Farnell 591 / Digi-Key 1,648 (Thailand).
+
+Pins: 1/4/6/8/10/12 + EP 13 GND, 2 IF+, 3 IF-, 5 RF, 7 EN, 9 VCC, 11 LO.
+"""
+
+
+def add_ltc5552iudb(design, ref: str, **overrides) -> Chip:
+    """ADI LTC5552IUDB#TRMPBF -- 3-20 GHz passive double-balanced mixer,
+    0 dBm LO (internal LO amp), differential DC-6 GHz IF, up/down-conversion,
+    3.3 V / 132 mA, 12-lead 3 x 2 mm QFN (UDB, same land as the LTC5549)."""
+    pn = "LTC5552IUDB"
+    fp = _samacsys_qfn_footprint(
+        "LTC5549IUDB", "UDB_VARIATIONA.kicad_mod", name="UDB_VARIATIONA",
+        package_class="QFN-12 3x2 (UDB) + EP", pitch_mm=0.5, size_mm=(3.0, 2.0),
+        height_mm=0.75)
+    gnd = {"1": "GND_1", "4": "GND_3", "6": "GND_4", "8": "GND_7",
+           "10": "GND_5", "12": "GND_6", "13": "EP"}
+    named = {
+        "2": Pin(num="2", name="IF+", type="io", note="differential IF DC-6 GHz, ~25 ohm; to 1:1 balun"),
+        "3": Pin(num="3", name="IF-", type="io", note="differential IF DC-6 GHz, ~25 ohm; to 1:1 balun"),
+        "5": Pin(num="5", name="RF", type="io", note="RF port 3-20 GHz, 50 ohm; DC block"),
+        "7": Pin(num="7", name="EN", type="input", note="> 1.2 V on; internal pull-down"),
+        "9": Pin(num="9", name="VCC", type="power", note="3.3 V, 132 mA"),
+        "11": Pin(num="11", name="LO", type="input", note="LO 1-20 GHz, 0 dBm; 18 pF series cap"),
+    }
+    pins = [named[n] if n in named else Pin(num=n, name=gnd[n], type="ground")
+            for n in sorted({p.num for p in fp.pads}, key=int)]
+    _check_pins_vs_pads(pn, pins, fp)
+    fields = dict(
+        manf="Analog Devices", manf_pn="LTC5552IUDB#TRMPBF", canonical_id=canonical_id(pn),
+        name=pn, value="LTC5552",
+        description=("Mixer 3-20 GHz RF / DC-6 GHz differential IF, up/down-conversion, "
+                     "0 dBm LO, 3.3 V 132 mA, QFN-12 3x2"),
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        fab_country="TH (assembly)", currency=None, price_1pc=None,
+        price_20kpc=None, weight_g=None, standards=["RoHS"], eccn=None, itar=None,
+        package="QFN-12 3x2 (UDB)", size_mm=(3.0, 2.0), height_mm=0.75,
+        temp_range_c=(-40, 105),
+        body_material=None, lead_material=None,
+        voltage_rating_v=4.0, vcc_nominal_v=3.3,
+        i_rms_a=None, power_rating_w=None,
+        rth_jc_cw=25.0, rth_ja_cw=None, tj_max_c=150.0,
+        p_active_w=0.44,                 # 132 mA x 3.3 V (DS)
+        pins=pins, footprint=fp, note=_LTC5552_NOTE,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 _GRF5126_NOTE = """\
 Datasheet: Guerrilla RF GRF5126 Rel. 0 (2026-01-20, vendored GRF5126.pdf) +
 Custom Tune 4400-5000 MHz (2025-10-08, GRF5126_tune_4400-5000MHz.pdf).
