@@ -1,0 +1,70 @@
+"""Load sets per mission state — maximalist build (every subsystem fitted).
+
+Each Load carries its basis so the report shows how firm each number is:
+  "DS"   datasheet figure;
+  "old"  smash-electronics documentation/power_budget.md (2026-07/09);
+  "user" figures from the 2026-11-22 transverter power review;
+  "est"  engineering estimate — bench-measure before trusting the margin.
+
+Currents are at the load's own rail. PMIC_OUT entries are WATTS (see
+power_tree). The S4 transverter (XV_*) and the fins are listed here but
+dropped by mission.build_profile unless asked for (xv_tx / fins).
+"""
+from __future__ import annotations
+
+from smash.sim.battery.power_tree import Load
+
+# ── dormant states (constant current at BAT, closed-form) ─────────────────
+I_SHELF_A = 1.0e-6     # old: latch/leakage lump + TMR shelf ear (DS worst cases)
+I_STANDBY_A = 9.0e-6   # old: + 3V3_AON (WBA Stop1, TLV3691, Hall arming listener)
+
+# ── Ready (armed hold): MP25 booted then Stop, radar idle, sensors LP ─────
+READY = [
+    Load("WBA55 Stop1 + AON listeners", "3V3_AON", 8e-6, "old"),
+    Load("IMU x3 LP FIFO + H3LIS + mag + temp/power monitors", "3V3", 3.5e-3, "old+est"),
+    Load("fin MCU U545 Stop", "3V3", 0.1e-3, "est"),
+    Load("LR2021 + XV chain off", "3V3", 0.0, "DS (~uA)"),
+    Load("MP25 M33 Stop + A35 retention + PMIC Iq [W]", "PMIC_OUT", 0.038, "old"),
+    Load("DDR3L self-refresh [W]", "PMIC_OUT", 0.025, "est (MT41K256M16 IDD6)"),
+    Load("AWR1843 idle, image resident: core", "AWR_1V2", 0.15, "old (SWRA689 ~0.22 W device)"),
+    Load("AWR1843 idle: 1.8 V", "AWR_1V8", 0.03, "old"),
+]
+
+# 1 s once at arming: radar image load + calibration (~2 W at the pack)
+RADAR_BOOT_EXTRA = [
+    Load("AWR1843 boot: core", "AWR_1V2", 0.35, "old (~2 W pack, 1 s)"),
+    Load("AWR1843 boot: RF", "AWR_1V3", 0.50, "old"),
+    Load("AWR1843 boot: 1.8 V", "AWR_1V8", 0.10, "old"),
+]
+
+# Ready pulse: health-beacon coil, 4 x 47 ohm off BAT_PROT (≈ 0.19 A)
+HEALTH_COIL = Load("health coil pulse (4 x 47 R from BAT_PROT)", "BAT", 0.19, "DS (generator)")
+HEALTH_COIL_DUTY = 0.03   # est: 3-30 Hz keying, ~1 ms pulses
+
+# ── Descent (drop -> parachute opens): everything running ─────────────────
+DESCENT = [
+    Load("WBA55 run (BLE)", "3V3_AON", 10e-3, "old"),
+    Load("LR2021 IF drive + sensors + MCUs", "3V3", 50e-3, "user"),
+    Load("XV LO ADF4351", "3V3", 125e-3, "user"),
+    Load("XV mixer LTC5552", "3V3", 132e-3, "user"),
+    Load("XV PA GRF5126 (TX keyed)", "XV_5V", 110e-3, "user / DS"),
+    Load("MP25 dual A35 + NPU + M33 run [W]", "PMIC_OUT", 1.60, "old (~420 mA SoC) est"),
+    Load("DDR3L active [W]", "PMIC_OUT", 0.30, "est"),
+    Load("camera AR0234 1080p30 [W]", "PMIC_OUT", 0.11, "old"),
+    Load("QPD + NAND + misc COMP_3V3 [W]", "PMIC_OUT", 0.05, "old"),
+    Load("AWR1843 framing: core", "AWR_1V2", 0.30, "old (~250 mA avg) est split"),
+    Load("AWR1843 framing: RF (avg)", "AWR_1V3", 0.35, "est"),
+    Load("AWR1843 framing: 1.8 V", "AWR_1V8", 0.10, "est"),
+    Load("fins, steering average (4 x TC78H653)", "COMP_5V", 1.0 / 5.03, "est (1 W avg)"),
+]
+
+# ms-class peaks on top of DESCENT
+RADAR_CHIRP_EXTRA = Load("AWR1843 TX chirp peak (RF rail to ~0.8 A)", "AWR_1V3", 0.45, "old (0.5 A TX) est")
+FIN_STEP_EXTRA = Load("one fin driver step (~5 W, firmware-staggered)", "COMP_5V", 4.0 / 5.03,
+                      "old (5 W/driver) — winding R not in netlist")
+CUTTER_W_PER_SECTOR = 4.0   # DS-derived range 0.65-4 W per nichrome sector (generator docstring)
+
+
+def cutter(sectors: int = 1, watts: float = CUTTER_W_PER_SECTOR) -> Load:
+    return Load(f"parachute cutter, {sectors} sector(s) x {watts:g} W, ~5 ms",
+                "ACTIVATE_HV", sectors * watts / 33.0, "generator docstring")

@@ -145,7 +145,7 @@ def test_tx_chain_pad_pa_and_switched_5v(design):
     bst = _chip(design, "U_XV_BOOST")
     assert bst.manf_pn == "MCP1640D-I/MC"       # DFN-8 (2026-11-20); tube code (2026-11-22)
     assert _net(design, bst, "VOUTP") == _net(design, bst, "VOUTS") == "XV_5V"
-    assert _net(design, bst, "VIN") in _names(design, "3V3")
+    assert _net(design, bst, "VIN") in _names(design, "REG_IN_MAIN")   # (2026-11-22) off the 3V3 budget
     en = _net(design, bst, "EN")
     assert en == "XV_PA_EN" == _net(design, _chip(design, "U_WBA"), "PB7")
     assert _two_ended(design, _chip(design, "R_XV_PA_EN_PD")) == {en, _gnd(design)}

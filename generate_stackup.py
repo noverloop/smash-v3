@@ -178,7 +178,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "VCAP2":        1.2,
     "WBA_VDD11":    1.1,    # WBA55 SMPS output → core supply
     "CAM_PHY_REG":  1.2,    # AR0234CS internal LDO output (MIPI PHY)
-    "XV_5V":        5.0,    # S4 transverter PA rail (MCP1640D boost off 3V3, on only for TX)
+    "XV_5V":        5.0,    # S4 transverter PA rail (MCP1640D boost off REG_IN_MAIN, on only for TX)
     "XV_LO_3V3":    3.3,    # S4 transverter LO (ADF4351) supply, ferrite-isolated from 3V3
 }
 
@@ -1765,7 +1765,8 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
         ≥ ~1 ms before TX (boost start-up), drop it after.
 
     Power while active: LO ~0.41 W + mixer 0.38 W; TX + PA 0.55 W (5 V,
-    110 mA) / boost efficiency; RX + LNA ~0.2 W. ⚠ PLACEHOLDERS: loop
+    110 mA) / boost efficiency, drawn from REG_IN_MAIN, not 3V3 (see the
+    U_BOOST load budget); RX + LNA ~0.2 W. ⚠ PLACEHOLDERS: loop
     filter (ADIsimPLL), LO pad, BPF,
     GRF2073W 4.4-5.0 GHz match + VENABLE resistor (only 2.3 / 3.4-3.8 GHz
     BOMs published — re-tune from the vendored S-parameters), GRF5126 VDD1
@@ -1917,18 +1918,25 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     _XVB = "bottom"
     bst = add_mcp1640_dfn(d, ref="U_XV_BOOST", board_tag=BTAG, feature=_XVB, variant="D",
                           manf_pn="MCP1640D-I/MC", name="MCP1640D-I/MC", value="MCP1640D-I/MC")   # (2026-11-22) sourcing swap, availability/decisions.csv: tube code (reel had 0 stock)
-    _net(d, "3V3").connect(bst.pin("VIN"))
+    # (2026-11-22) VIN on REG_IN_MAIN (QMAIN drain, born on this board — no new
+    # lanes), NOT 3V3: TX through 3V3 was ~0.5 A (LO 125 + mixer 132 + this
+    # boost's 110 mA @ 5 V ≈ 190 mA at 3.3 V + LR/MCU/sensors ~50) against the
+    # U_BOOST MCP1640's ~350 mA here (400 mA abs max in pass-through on a fresh
+    # pack ≥ 3.87 V). Off REG_IN_MAIN the 3V3 TX load drops to ~0.31 A, and
+    # the PA still dies with QMAIN in shelf. 3.0-4.2 V in → 4.95 V out stays a
+    # true boost (MCP1640 VIN ≤ 5.5 V); ~165 mA in at 4 V, ~215 mA at 3.0 V.
+    _net(d, "REG_IN_MAIN").connect(bst.pin("VIN"))
     gnd(bst, "SGND", "PGND", "EP")
     _net(d, "XV_PA_EN").connect(bst.pin("EN"))
     R("XV_PA_EN", "GND", "100k", "R_XV_PA_EN_PD")
     _net(d, "XV_BST_SW").connect(bst.pin("SW"))
-    ind_between(d, "3V3", "XV_BST_SW", "2.2uH", ref="L_XV_BOOST", board_tag=BTAG, feature=_XVB)
+    ind_between(d, "REG_IN_MAIN", "XV_BST_SW", "2.2uH", ref="L_XV_BOOST", board_tag=BTAG, feature=_XVB)
     _net(d, "XV_5V").connect(bst.pin("VOUTP"))
     _net(d, "XV_5V").connect(bst.pin("VOUTS"))
     _net(d, "XV_BST_FB").connect(bst.pin("VFB"))
     res_between(d, "XV_5V", "XV_BST_FB", "309k", ref="R_XV_BST_FB1", board_tag=BTAG, feature=_XVB)                  # 1.21 V × (1 + 309/100) = 4.95 V
     res_between(d, "XV_BST_FB", "GND", "100k", ref="R_XV_BST_FB2", board_tag=BTAG, feature=_XVB)
-    cap_to_gnd(d, "3V3", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, feature=_XVB, pin=bst.pin("VIN"))
+    cap_to_gnd(d, "REG_IN_MAIN", "10uF", ref="C_XV_BST_IN", board_tag=BTAG, feature=_XVB, pin=bst.pin("VIN"))
     cap_to_gnd(d, "XV_5V", "22uF", ref="C_XV_BST_OUT", board_tag=BTAG, feature=_XVB, pin=bst.pin("VOUTP"))
 
     # ── RX: GRF2073W LNA on 3V3 (⚠ match = DS 3.4-3.8 GHz BOM, PLACEHOLDER) ─
@@ -3924,8 +3932,14 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "BOOST_OUT")   .connect(boost.pin("VOUTS"))
     _net(d, "BOOST_FB")    .connect(boost.pin("VFB"))
 
-    # 2.2 µH TMS (real 0806 power part, Isat 1.2 A » the ~0.2 A boost
-    # peaks; MCP1640 DS inductor range 2.2–10 µH). The old binding was a
+    # 2.2 µH TMS (real 0806 power part, Isat 1.2 A; MCP1640 DS inductor
+    # range 2.2–10 µH). (2026-11-22) LOAD BUDGET — the old "~0.2 A boost
+    # peaks" predates the 11-18 transverter. 3V3 peak = S4 TX: LO ~125 mA +
+    # mixer (LTC5552) ~132 mA + LR2021/WBA/sensors ~50 mA ≈ 0.31 A (the PA
+    # boost U_XV_BOOST moved to REG_IN_MAIN; on 3V3 it was ~0.5 A). Limit:
+    # MCP1640 ~350 mA at this VIN/VOUT, and on a fresh pack (≥ 3.87 V) it
+    # passes VIN through — 400 mA ABS MAX. ~0.31 A fits with thin margin;
+    # next steps if loads grow: LO + mixer → COMP_3V3, or a ≥ 1 A buck-boost. The old binding was a
     # nonexistent "WE-KI 0402 4.7 µH" RF part (family capped ~120 nH) —
     # same bogus binding fixed on L_BOOST_COMP + both AWR bucks.
     ind_between(d, "REG_IN_MAIN", "BOOST_SW", "2.2uH",
