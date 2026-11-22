@@ -68,7 +68,8 @@ CONVERTERS: tuple[Converter, ...] = (
               basis="LMR10510Y: VIN 3.0-5.5 V, 1 A (UVLO taken = 3.0 V, conservative)"),
     Converter("U_AWR_BUCK13", "BAT", "AWR_1V3", "buck", 1.3, eta=0.80, iq_a=1.5e-3,
               vin_min=3.0, vin_uvlo=3.0, i_out_max_a=1.0,
-              basis="LMR10510Y, RF front-end rail"),
+              basis="LMR10510Y, RF front-end rail (AWR1843 draws up to 2.0 A here: "
+                    "SWRS236C T6-3)"),
     Converter("U_AWR_LDO18", "BAT", "AWR_1V8", "ldo", 1.8, iq_a=50e-6, dropout_v=0.35,
               v_out_min=1.71,
               i_out_max_a=1.2, basis="LDL112PV18R"),
@@ -207,6 +208,13 @@ COMP_BOOSTS = {
     "A": dict(vin_min=2.7, vin_uvlo=2.5, i_sw_max_a=6.0, eta=0.90, l_h=1.0e-6,
               f_hz=1.0e6, iq_a=1e-3,
               basis="what-if: 2.7 V / 6 A non-sync boost class (TPS61088-like)"),
+    # LTC3124EDHC (DS 3124f): VIN 1.8 V start / 0.5 V after start, 2 phases
+    # x 2.5 A min peak limit; 4.7 uH per phase at 1 MHz -> modelled as one
+    # 5 A stage with L/2. Below ~2.5 V the PACK UV cutoff (to be added) is
+    # the floor, not the part.
+    "LTC3124": dict(vin_min=2.5, vin_uvlo=2.5, i_sw_max_a=5.0, eta=0.92, l_h=2.35e-6,
+                    f_hz=1.0e6, iq_a=0.6e-3,
+                    basis="LTC3124EDHC (R21): 2 x 2.5 A min, floor = planned 2.5 V pack UV cutoff"),
     "B": dict(vin_min=1.8, vin_uvlo=1.6, i_sw_max_a=8.0, eta=0.92, l_h=0.47e-6,
               f_hz=1.0e6, iq_a=0.1e-3,
               basis="what-if: ~1.8 V / 8 A synchronous boost class (TPS61022-like); "
@@ -214,9 +222,23 @@ COMP_BOOSTS = {
 }
 
 
+_TPS62822 = dict(kind="buck", vin_min=2.4, vin_uvlo=2.2, eta=0.88, iq_a=4e-6,
+                 dropout_v=0.0, v_out_min=0.0, i_out_max_a=2.0,
+                 basis="TPS62822DLC (R21): VIN 2.4-5.5 V, UVLO ~2.2 V, 2 A, ILIM 2.7 A min")
+_TPS62088 = dict(kind="buck", vin_min=2.4, vin_uvlo=2.2, eta=0.88, iq_a=4e-6,
+                 i_out_max_a=3.0, basis="TPS62088YFP (R21 alt): VIN 2.4-5.5 V, 3 A")
+RADAR_REGS = {
+    "as_built": {},
+    # R21 picks: TPS62822 on 1.2 V and 1.8 V (one part type), 3 A TPS62088
+    # on the 1.3 V RF rail (AWR1843 up to 2.0 A there)
+    "r21": {"U_AWR_BUCK12": _TPS62822, "U_AWR_BUCK13": _TPS62088,
+            "U_AWR_LDO18": _TPS62822},
+}
+
+
 def converters(radar_from: str = "BAT", radar_bucks_low_v: bool = False,
-               radar_1v8_buck: bool = False, comp_boost: str = "tps61175"
-               ) -> tuple[Converter, ...]:
+               radar_1v8_buck: bool = False, comp_boost: str = "tps61175",
+               radar_regs: str = "as_built") -> tuple[Converter, ...]:
     """The tree as built (all defaults), or with what-if swaps:
       radar_from="COMP_5V"  radar bucks + 1.8 V regulator behind the 5 V boost;
       radar_bucks_low_v     LMR10510 -> buck rated to 2.4 V VIN (85 % at idle);
@@ -233,6 +255,8 @@ def converters(radar_from: str = "BAT", radar_bucks_low_v: bool = False,
             c = replace(c, kind="buck", eta=0.85, iq_a=20e-6, vin_min=2.4, vin_uvlo=2.3,
                         dropout_v=0.0, v_out_min=0.0, i_out_max_a=0.6,
                         basis="what-if: 1.8 V buck instead of the LDO")
+        if c.ref in RADAR_REGS[radar_regs]:
+            c = replace(c, **RADAR_REGS[radar_regs][c.ref])
         if c.ref == "U_COMP_BOOST" and COMP_BOOSTS[comp_boost]:
             c = replace(c, **COMP_BOOSTS[comp_boost])
         out.append(c)

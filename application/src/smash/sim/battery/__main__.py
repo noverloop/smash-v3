@@ -21,7 +21,8 @@ def _opts(args) -> dict:
 def _tree(args) -> dict:
     return dict(radar_from="COMP_5V" if args.radar_from_5v else "BAT",
                 radar_bucks_low_v=args.radar_bucks_2v4,
-                radar_1v8_buck=args.radar_1v8_buck, comp_boost=args.comp_boost)
+                radar_1v8_buck=args.radar_1v8_buck, comp_boost=args.comp_boost,
+                radar_regs=args.radar_regs)
 
 
 def _profile(args, shelf: float):
@@ -112,8 +113,10 @@ def main() -> None:
                     help="what-if: radar bucks rated to 2.4 V VIN instead of LMR10510 (3.0 V)")
     ap.add_argument("--radar-1v8-buck", action="store_true",
                     help="what-if: radar 1.8 V from a buck instead of the LDL112 LDO")
-    ap.add_argument("--comp-boost", default="tps61175", choices=["tps61175", "A", "B"],
+    ap.add_argument("--comp-boost", default="tps61175", choices=["tps61175", "LTC3124", "A", "B"],
                     help="what-if COMP_5V boost: A = 2.7 V/6 A, B = 1.8 V/8 A sync")
+    ap.add_argument("--radar-regs", default="as_built", choices=["as_built", "r21"],
+                    help="r21: TPS62822 on 1.2/1.8 V + TPS62088 on 1.3 V (sourcing round 21)")
     ap.add_argument("--radar-off-in-ready", action="store_true",
                     help="radar fully off in Ready, boots at the drop")
     ap.add_argument("--mag-wake-min", type=float, default=None,

@@ -52,14 +52,19 @@ DESCENT = [
     Load("DDR3L active [W]", "PMIC_OUT", 0.30, "est"),
     Load("camera AR0234 1080p30 [W]", "PMIC_OUT", 0.11, "old"),
     Load("QPD + NAND + misc COMP_3V3 [W]", "PMIC_OUT", 0.05, "old"),
-    Load("AWR1843 framing: core", "AWR_1V2", 0.30, "old (~250 mA avg) est split"),
-    Load("AWR1843 framing: RF (avg)", "AWR_1V3", 0.35, "est"),
-    Load("AWR1843 framing: 1.8 V", "AWR_1V8", 0.10, "est"),
+    # SWRS236C Table 6-4: 2TX/4RX, 25 % duty = 1.36 W average at the device
+    # terminals (split across the rails est: 0.54 + 0.52 + 0.32 W)
+    Load("AWR1843 framing: core", "AWR_1V2", 0.45, "DS T6-4 1.36 W avg, split est"),
+    Load("AWR1843 framing: RF (avg)", "AWR_1V3", 0.40, "DS T6-4, split est"),
+    Load("AWR1843 framing: 1.8 V", "AWR_1V8", 0.18, "DS T6-4, split est"),
     Load("fins, steering average (4 x TC78H653)", "COMP_5V", 1.0 / 5.03, "est (1 W avg)"),
 ]
 
 # ms-class peaks on top of DESCENT
-RADAR_CHIRP_EXTRA = Load("AWR1843 TX chirp peak (RF rail to ~0.8 A)", "AWR_1V3", 0.45, "old (0.5 A TX) est")
+# Active part of the frame (~6 ms of chirps): RF rail to 1.5 A of its 2.0 A
+# max (SWRS236C Table 6-3: 1.2 V 1.0 A, 1.3 V 2.0 A, 1.8 V 0.85 A max)
+RADAR_CHIRP_EXTRA = Load("AWR1843 active frame (RF rail to 1.5 A)", "AWR_1V3", 1.10,
+                         "DS T6-3/6-4 est")
 FIN_STEP_EXTRA = Load("one fin driver step (~5 W, firmware-staggered)", "COMP_5V", 4.0 / 5.03,
                       "old (5 W/driver) — winding R not in netlist")
 CUTTER_W_PER_SECTOR = 4.0   # DS-derived range 0.65-4 W per nichrome sector (generator docstring)
