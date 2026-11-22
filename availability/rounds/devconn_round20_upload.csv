@@ -1,0 +1,9 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+TSW-120-07-G-D,Samtec,2,J_DEV_IO A,"2x20 2.54 mm pin header, gold: tower-fixture + flat-tower aft signals breakout"
+TSW-120-07-T-D,Samtec,2,J_DEV_IO B,"2x20 2.54 mm pin header, tin"
+61304021121,Wurth Elektronik,2,J_DEV_IO C,"WR-PHD 2x20 2.54 mm pin header (check origin)"
+1984617,Phoenix Contact,1,J_DEV_PWR A,"MKDS 1/2-3.81 2-pos PCB terminal block: bench supply in (BAT_RAW emulation)"
+1729128,Phoenix Contact,1,J_DEV_PWR B,"MKDSN 1,5/2-5.08 2-pos PCB terminal block"
+691137710002,Wurth Elektronik,1,J_DEV_PWR C,"WR-TBL 2-pos 5.0 mm terminal block (check origin)"
+PAC1941T-1E/4MX,Microchip,1,U_DEV_INA Q,"PAC1941 in 16-VQFN 3x3 (instead of the J6CX WLCSP)"
+PAC1941T-1E/J6CX,Microchip,1,U_DEV_INA W,"PAC1941 WLCSP (reference)"

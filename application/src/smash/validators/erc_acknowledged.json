@@ -8,5 +8,7 @@
  "E2 LR_DTC_SCL_LV": "2026-11-21: divided (3.1 V-max) side of the PE64906 3-wire serial bus — push-pull, not I2C. No pull-up.",
  "E2 LR_DTC_SDA_LV": "2026-11-21: divided (3.1 V-max) side of the PE64906 3-wire serial bus — push-pull, not I2C. No pull-up.",
  "E2 DEV_HUB_SDA": "2026-11-21: USB2514B SMBDATA/SMBCLK used as CONFIG STRAPS (10 k to GND = internal default configuration), not an I2C bus.",
- "E2 DEV_HUB_SCL": "2026-11-21: USB2514B SMBDATA/SMBCLK used as CONFIG STRAPS (10 k to GND = internal default configuration), not an I2C bus."
+ "E2 DEV_HUB_SCL": "2026-11-21: USB2514B SMBDATA/SMBCLK used as CONFIG STRAPS (10 k to GND = internal default configuration), not an I2C bus.",
+ "E2 TWR_I2C_SDA": "2026-11-22: tower-side I2C reached through the aft fixture, broken out on J_DEV_TWR_IO; the pull-ups live in the tower (SYS_I2C).",
+ "E2 TWR_I2C_SCL": "2026-11-22: tower-side I2C reached through the aft fixture, broken out on J_DEV_TWR_IO; the pull-ups live in the tower (SYS_I2C)."
 }

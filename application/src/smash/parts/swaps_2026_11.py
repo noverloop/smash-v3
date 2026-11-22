@@ -339,3 +339,201 @@ def add_mcp6541t_e_ot(design, ref: str, **overrides) -> Chip:
                 description="Push-pull nanopower comparator 600 nA, SOT-23-5",
                 pins=build_pins(_sym("MCP6541T-E_OT")),
                 note=f"Replaces TLV3691IDPFR (China lots) — {_WHY}.", **overrides)
+
+
+# ── 2026-11-22 libraries drop (rounds 17-19) ────────────────────────────────
+from smash.state import Pad, Footprint                       # noqa: E402
+from smash.parts._artifacts import datasheet_ref             # noqa: E402
+
+
+def add_lmr10510ysde_nopb(design, ref: str, **overrides) -> Chip:
+    """TI LMR10510YSDE/NOPB — the same 1 A / 1.6 MHz non-synchronous buck as
+    the XMFE, in WSON-6 3 × 3 × 0.8 mm (vs SOT-23-5 1.45 mm): smaller-parts
+    round 17. Pins 1 FB, 2 GND, 3 SW, 4 VIND (power in), 5 VINA (analog in,
+    tie to VIN), 6 EN, 7 DAP (exposed pad → GND)."""
+    pins = [Pin(num="1", name="FB", type="input"), Pin(num="2", name="GND", type="power"),
+            Pin(num="3", name="SW", type="output"),
+            Pin(num="4", name="VIN", aliases=["VIND"], type="power"),
+            Pin(num="5", name="VINA", type="power"), Pin(num="6", name="EN", type="input"),
+            Pin(num="7", name="DAP", aliases=["EP"], type="power")]
+    return _sam(design, ref, pn="LMR10510YSDE/NOPB", part_dir="LMR10510YSDE_NOPB",
+                mod="SON95P300X300X80-7N.kicad_mod", package="WSON-6 (3×3)", height_mm=0.8,
+                size_mm=(3.0, 3.0), manf="Texas Instruments",
+                description="Step-down buck 3-5.5 V in, 1 A, 1.6 MHz, WSON-6 3×3",
+                pins=pins, note=f"Replaces LMR10510XMFE (SOT-23-5 1.45 mm) — {_WHY}.", **overrides)
+
+
+def add_ssm3k35ctc_l3f(design, ref: str, **overrides) -> Chip:
+    """Toshiba SSM3K35CTC,L3F — N-FET 20 V 0.25 A, CST3C 0.8 × 0.6 × 0.38 mm
+    (vs RU1J002YN 1.05 mm). VGS ±10 V; for drains ≤ ~12 V only. Pins 1 G,
+    2 S, 3 D. Land = SamacSys CST3C (SSM3J64CTC family)."""
+    pins = [Pin(num="1", name="G", aliases=["Gate"], type="input"),
+            Pin(num="2", name="S", aliases=["Source"], type="io"),
+            Pin(num="3", name="D", aliases=["Drain"], type="io")]
+    return _sam(design, ref, pn="SSM3K35CTC,L3F", part_dir="SSM3K35CTC_L3F", mod="SSM3J64CTCL3F.kicad_mod",
+                package="CST3C", height_mm=0.38, size_mm=(0.8, 0.6), manf="Toshiba",
+                description="N-MOSFET 20 V 0.25 A, CST3C 0.38 mm", pins=pins, ring_courtyard=True,
+                note=f"Low-voltage replacement for RU1J002YNTCL (height) — {_WHY}.", **overrides)
+
+
+def add_ssm3k7002kfu_lf(design, ref: str, **overrides) -> Chip:
+    """Toshiba SSM3K7002KFU,LF — N-FET 60 V 0.4 A, USM (SOT-323) 2.0 × 2.1 ×
+    0.9 mm. For the 33 V activation / cutter / coil positions. Pins 1 G,
+    2 S, 3 D. VGS ±20 V."""
+    pins = [Pin(num="1", name="G", aliases=["Gate"], type="input"),
+            Pin(num="2", name="S", aliases=["Source"], type="io"),
+            Pin(num="3", name="D", aliases=["Drain"], type="io")]
+    return _sam(design, ref, pn="SSM3K7002KFU,LF", part_dir="SSM3K7002KFU_LF", mod="1SS294LFT.kicad_mod",
+                package="USM (SOT-323)", height_mm=0.9, size_mm=(2.0, 2.1), manf="Toshiba",
+                description="N-MOSFET 60 V 0.4 A, USM/SOT-323", pins=pins, ring_courtyard=True,
+                note=f"33 V-position replacement for RU1J002YNTCL — {_WHY}.", **overrides)
+
+
+def add_ihlp2020bzer100m01(design, ref: str, **overrides) -> Chip:
+    """Vishay IHLP2020BZER100M01 — 10 µH ±20 %, IHLP-2020BZ-01, 5.49 × 5.18 ×
+    2.0 mm. Replaces the XGL5020-822 on L_ACTIVATE (round 19: Mouser + Digi-Key
+    Mexico lots). CHECK Isat against the TPS61175 peak (DS: ~2.5-3 A class)."""
+    pins = [Pin(num="1", name="1", type="passive"), Pin(num="2", name="2", type="passive")]
+    return _sam(design, ref, pn="IHLP2020BZER100M01", part_dir="IHLP2020BZER100M01",
+                mod="INDPM5552X200N.kicad_mod", package="IHLP-2020BZ", height_mm=2.0,
+                size_mm=(5.49, 5.18), manf="Vishay", value="10uH",
+                description="Power inductor 10 µH, IHLP-2020BZ-01, 2.0 mm", pins=pins,
+                note=f"Replaces XGL5020-822MEC — {_WHY}.", **overrides)
+
+
+def add_ncs1_292p(design, ref: str, **overrides) -> Chip:
+    """Mini-Circuits NCS1-292+ — 1:1 50 Ω LTCC balun 1650-2850 MHz, 2.0 × 1.25
+    × 0.84 mm (GE0805C-1). 1 unbalanced (dot), 2 GND / DC feed, 3 balanced,
+    4 balanced (dot), 5 not used (ground externally), 6 NC. LTC5552 IF balun."""
+    pins = [Pin(num="1", name="UNBAL", type="io"), Pin(num="2", name="GND_DC", type="power"),
+            Pin(num="3", name="BAL_N", type="io"), Pin(num="4", name="BAL_P", type="io"),
+            Pin(num="5", name="NU_GND", type="power"), Pin(num="6", name="NC", type="no_connect")]
+    return _sam(design, ref, pn="NCS1-292+", part_dir="NCS1-292P", mod="NCS1292.kicad_mod",
+                package="GE0805C-1", height_mm=0.84, size_mm=(2.0, 1.25), manf="Mini-Circuits",
+                description="Ceramic balun 1:1 50 Ω, 1.65-2.85 GHz, 0805", pins=pins,
+                note=f"LTC5552 differential IF → single-ended 2.1-2.4 GHz — {_WHY}.", **overrides)
+
+
+def add_pe64904d_z(design, ref: str, **overrides) -> Chip:
+    """pSemi PE64904D-Z — DTC ~1.1-5.1 pF, 32 states, 3-wire serial; 10-lead
+    QFN 2 × 2 × 0.45 mm. Land = SamacSys PE64904C-Z (the C → D change is the
+    2023 ordering-code PCN, same package). Pins 1/2 RF−, 3 DGND, 4 VDD, 5 SCL,
+    6 SEN, 7 SDA, 8/9 RF+, 10 GND. Same pin roles as the PE64906 (no EP)."""
+    pins = [Pin(num="1", name="RF-_1", type="io"), Pin(num="2", name="RF-_2", type="io"),
+            Pin(num="3", name="GND_1", aliases=["DGND"], type="power"),
+            Pin(num="4", name="VDD", type="power"), Pin(num="5", name="SCL", type="input"),
+            Pin(num="6", name="SEN", type="input"), Pin(num="7", name="SDA", type="input"),
+            Pin(num="8", name="RF+_1", type="io"), Pin(num="9", name="RF+_2", type="io"),
+            Pin(num="10", name="GND_2", aliases=["GND"], type="power")]
+    return _sam(design, ref, pn="PE64904D-Z", part_dir="PE64904C-Z", mod="QFN50P200X200X50-10N-D.kicad_mod",
+                package="QFN-10 2x2", height_mm=0.45, size_mm=(2.0, 2.0), manf="pSemi",
+                description="Digitally tunable capacitor ~1.1-5.1 pF, 32 states, QFN-10 2x2",
+                pins=pins, note=f"Replaces PE64906B-Z (0 stock) — {_WHY}. RECHECK the S1 tuner match (range shifted up ~0.2-0.5 pF).",
+                **overrides)
+
+
+def _land_fp(name, pads, size, height, part_dir=None, note=""):
+    w, h = size
+    fp = Footprint(name=name, package_class=name, pads=pads,
+                   body_outline=[(-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2)],
+                   courtyard=[], size_mm=size, height_mm=height,
+                   model_3d_path=datasheet_ref(part_dir, f"{part_dir}.stp") if part_dir else None,
+                   source="datasheet", note=note)
+    return fp.ensure_courtyard_clearance()
+
+
+def add_tlv7031dpwr(design, ref: str, **overrides) -> Chip:
+    """TI TLV7031DPWR — nanopower (335 nA) push-pull comparator, X2SON-5 (DPW)
+    0.8 × 0.8 × 0.4 mm max. Pins (X2SON, DS Table 4-1): 1 OUT, 2 V+, 3 V−
+    (centre pad), 4 IN−, 5 IN+. Land = TI DPW0005A "Example board layout"
+    (4 × 0.42 × 0.22 at ±0.39 / ±0.24; TI centre 0.25 ◇ drawn as a 0.20 □ for 0.08 mm clearance)."""
+    pads = [Pad(num="1", position_mm=(-0.39, -0.24), size_mm=(0.42, 0.22)),
+            Pad(num="2", position_mm=(-0.39, 0.24), size_mm=(0.42, 0.22)),
+            Pad(num="4", position_mm=(0.39, 0.24), size_mm=(0.42, 0.22)),
+            Pad(num="5", position_mm=(0.39, -0.24), size_mm=(0.42, 0.22)),
+            Pad(num="3", position_mm=(0.0, 0.0), size_mm=(0.20, 0.20))]
+    fp = _land_fp("TI_DPW0005A_X2SON-5", pads, (0.8, 0.8), 0.4, part_dir="TLV7031DPWR",
+                  note="TI DPW0005A land (datasheet SNOSD20, p.54)")
+    pins = [Pin(num="1", name="OUT", type="output"), Pin(num="2", name="V+", aliases=["VCC"], type="power"),
+            Pin(num="3", name="V-", aliases=["GND", "VEE"], type="power"),
+            Pin(num="4", name="IN-", type="input"), Pin(num="5", name="IN+", type="input")]
+    fields = dict(manf="Texas Instruments", manf_pn="TLV7031DPWR", canonical_id=canonical_id("TLV7031DPWR"),
+                  name="TLV7031DPWR", value="TLV7031", package="X2SON-5 (DPW)",
+                  description="Nanopower comparator 335 nA, push-pull, X2SON-5 0.8×0.8×0.4",
+                  size_mm=(0.8, 0.8), height_mm=0.4, pins=pins, footprint=fp,
+                  datasheet="application/src/smash/parts/sources/TLV7031DPWR/tlv7031.pdf",
+                  note=f"Replaces TLV3691 (China lots; Digi-Key US lot) — {_WHY}.")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_s1318d33_a4t2u4(design, ref: str, **overrides) -> Chip:
+    """ABLIC S-1318D33-A4T2U4 — 3.3 V 100 mA LDO, 95 nA Iq, HSNT-4(1010)
+    1.0 × 1.0 × 0.4 mm. D type: ON/OFF active-high, NO discharge shunt, NO
+    ON/OFF pull-down (add one where 'floating = off' is relied on). Pins (DS
+    Table 8): 1 VOUT, 2 VSS, 3 ON/OFF, 4 VIN; heat sink → GND (DS note *1).
+    Land = ABLIC PL004-A-L-SD-2.0 (pads 0.30 × 0.37 at ±0.325 / ±0.54;
+    heat sink drawn as a 0.30 □ + 1.02 × 0.12 bar)."""
+    pads = [Pad(num="1", position_mm=(-0.325, -0.54), size_mm=(0.30, 0.37)),
+            Pad(num="4", position_mm=(0.325, -0.54), size_mm=(0.30, 0.37)),
+            Pad(num="2", position_mm=(-0.325, 0.54), size_mm=(0.30, 0.37)),
+            Pad(num="3", position_mm=(0.325, 0.54), size_mm=(0.30, 0.37)),
+            Pad(num="5", position_mm=(0.0, 0.0), size_mm=(0.30, 0.30)),
+            Pad(num="5", position_mm=(0.0, 0.0), size_mm=(1.02, 0.12))]
+    fp = _land_fp("ABLIC_HSNT-4-1010", pads, (1.0, 1.0), 0.4,
+                  note="ABLIC HSNT-4(1010) land PL004-A-L-SD-2.0 (S-1318 DS p.41)")
+    pins = [Pin(num="1", name="VOUT", aliases=["OUT"], type="power"),
+            Pin(num="2", name="VSS", aliases=["GND"], type="power"),
+            Pin(num="3", name="ON/OFF", aliases=["EN"], type="input"),
+            Pin(num="4", name="VIN", aliases=["IN"], type="power"),
+            Pin(num="5", name="EP", type="power")]
+    fields = dict(manf="ABLIC", manf_pn="S-1318D33-A4T2U4", canonical_id=canonical_id("S-1318D33-A4T2U4"),
+                  name="S-1318D33-A4T2U4", value="3.3V", package="HSNT-4(1010)",
+                  description="LDO 3.3 V 100 mA, 95 nA Iq, HSNT-4 1.0×1.0×0.4",
+                  size_mm=(1.0, 1.0), height_mm=0.4, pins=pins, footprint=fp,
+                  datasheet="application/src/smash/parts/sources/S-1318D33-A4T2U4/S-1318_datasheet.pdf",
+                  note=f"Replaces XC6504A331MR-G (SOT-25 1.3 mm) — {_WHY}.")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ── dev board: round 20 (2026-11-22) ─────────────────────────────────────────
+def add_wurth_61304021121(design, ref: str, **overrides) -> Chip:
+    """Würth WR-PHD 61304021121 — 2 × 20 pin header, 2.54 mm, THT, 8.69 mm
+    (round 20: all 3 suppliers, Taiwan). Engineer breakout on the dev board."""
+    return _sam(design, ref, pn="61304021121", part_dir="61304021121",
+                mod="HDRV40W64P254X254_2X20_5080X508X869P.kicad_mod", package="2x20 2.54 mm THT",
+                height_mm=8.69, size_mm=(50.8, 5.08), manf="Würth Elektronik",
+                description="Pin header 2×20, 2.54 mm, THT", note=f"Dev breakout — {_WHY}.", **overrides)
+
+
+def add_wurth_691137710002(design, ref: str, **overrides) -> Chip:
+    """Würth WR-TBL 691137710002 — 2-pole PCB terminal block, 5.0 mm, THT
+    (round 20: all 3 suppliers, Italy). Bench supply input."""
+    pins = [Pin(num="1", name="1", type="passive"), Pin(num="2", name="2", type="passive")]
+    return _sam(design, ref, pn="691137710002", part_dir="691137710002",
+                mod="SHDR2W70P0X500_1X2_1000X750X1150P.kicad_mod", package="Terminal block 2P 5.0 mm",
+                height_mm=11.5, size_mm=(10.0, 7.5), manf="Würth Elektronik", pins=pins,
+                description="PCB terminal block 2-pole 5.0 mm", note=f"Bench input — {_WHY}.", **overrides)
+
+
+def add_pac1941t_1e_4mx(design, ref: str, **overrides) -> Chip:
+    """Microchip PAC1941T-1E/4MX — 1-channel power monitor with accumulator,
+    0-9 V bus, ±100 mV sense FSR, I²C; 16-VQFN 3 × 3 (round 20: Mouser 2,346 +
+    Digi-Key 763, Thailand). Pins (DS Table 3-1): 1 SLOW/ALERT1, 2 VDD, 3 GND,
+    4 SCL, 5 SDA, 6 ADDRSEL, 11 SENSE1+, 12 SENSE1−, 15 GPIO/ALERT2, 16 PWRDN,
+    17 EP (not connected). PAC1941-1: pins 7-10, 13, 14 must be grounded."""
+    pins = [Pin(num="1", name="SLOW/ALERT1", type="io"), Pin(num="2", name="VDD", type="power"),
+            Pin(num="3", name="GND", type="power"), Pin(num="4", name="SCL", type="input"),
+            Pin(num="5", name="SDA", type="io"), Pin(num="6", name="ADDRSEL", type="input"),
+            Pin(num="7", name="SENSE3-", type="input"), Pin(num="8", name="SENSE3+", type="input"),
+            Pin(num="9", name="SENSE4-", type="input"), Pin(num="10", name="SENSE4+", type="input"),
+            Pin(num="11", name="SENSE1+", type="input"), Pin(num="12", name="SENSE1-", type="input"),
+            Pin(num="13", name="SENSE2+", type="input"), Pin(num="14", name="SENSE2-", type="input"),
+            Pin(num="15", name="GPIO/ALERT2", type="io"), Pin(num="16", name="PWRDN", type="input"),
+            Pin(num="17", name="EP", type="passive")]
+    return _sam(design, ref, pn="PAC1941T-1E/4MX", part_dir="PAC1941T-1E_4MX",
+                mod="QFN50P300X300X90-17N-D.kicad_mod", package="VQFN-16 3x3", height_mm=0.9,
+                size_mm=(3.0, 3.0), manf="Microchip", pins=pins,
+                description="Power monitor 1-ch, 9 V FSR, accumulator, I²C, VQFN-16",
+                note=f"Replaces INA228 on the bench shunt — {_WHY}.", **overrides)

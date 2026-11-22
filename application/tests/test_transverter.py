@@ -75,19 +75,25 @@ def test_if_switch_keeps_s1_as_the_default(design):
 
 def test_if_switch_rf2_feeds_the_mixer_if(design):
     sw, mix = _chip(design, "U_LR_IFSW"), _chip(design, "U_XV_MIX")
-    assert _other_end(design, "C_XV_MIX_IF", _net(design, sw, "RF2")) == _net(design, mix, "IF")
+    # (2026-11-22) LTC5552: differential IF through the 1:1 balun T_XV_IF (NCS1-292+)
+    bal = _chip(design, "T_XV_IF")
+    assert bal.manf_pn == "NCS1-292+"
+    assert _other_end(design, "C_XV_MIX_IF", _net(design, sw, "RF2")) == _net(design, bal, "UNBAL")
+    assert _net(design, bal, "BAL_P") == _net(design, mix, "IF+")
+    assert _net(design, bal, "BAL_N") == _net(design, mix, "IF-")
+    assert _net(design, bal, "GND_DC") == _net(design, bal, "NU_GND") == _gnd(design)
 
 
 def test_lo_drives_the_mixer_lo_from_the_shared_tcxo(design):
     lo, mix = _chip(design, "U_XV_LO"), _chip(design, "U_XV_MIX")
-    assert lo.manf_pn == "ADF4351BCPZ-RL7" and mix.manf_pn == "LTC5549IUDB#TRMPBF"   # (2026-11-22) reel code
+    assert lo.manf_pn == "ADF4351BCPZ-RL7" and mix.manf_pn == "LTC5552IUDB#TRMPBF"   # (2026-11-22) mixer round 18
     # reference = the LR2021 TCXO output, AC-coupled
     assert _other_end(design, "C_XV_LO_REF", "LR_TCXO_OUT") == _net(design, lo, "REFIN")
     # RFOUTA+ → 100 pF → π pad → 100 pF → LO
     pad_i = _other_end(design, "C_XV_LO_OUTP", _net(design, lo, "RFOUTA+"))
     pad_o = _other_end(design, "R_XV_LO_PAD2", pad_i)
     assert _other_end(design, "C_XV_MIX_LO", pad_o) == _net(design, mix, "LO")
-    assert _net(design, mix, "X2") == _gnd(design)                 # no LO doubler
+    assert _net(design, mix, "GND_7") == _gnd(design)              # LTC5552 pin 8 (LTC5549's X2)
     # LO SPI shares the DTC bus; LE/CE/MUXOUT on spare WBA GPIO
     wba = _chip(design, "U_WBA")
     assert _net(design, lo, "CLK") == "LR_DTC_SCL" and _net(design, lo, "DATA") == "LR_DTC_SDA"

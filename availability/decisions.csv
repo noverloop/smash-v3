@@ -62,3 +62,7 @@ L_ACTIVATE,XGL5020-822MEC,IHLP2020BZER100M01,ACCEPTED (user),2026-11-22,need,"R1
 Q_33V_FETS (9 x RU1J002YN at 33 V),RU1J002YNTCL,"SSM3K7002KFU,LF",ACCEPTED (user),2026-11-22,need,"R19: 60 V SOT-323 0.9 mm, all 3 suppliers, Thailand; Nexperia 2N7002BKMB/NX7002BKMB are China/EOL"
 "C_22U low-voltage (AWR 1V2/1V3, PMIC 0V82/0V9/1V8/3V3)",T491T226K010AT,2 x CL10A106KP8NNNC,"APPLIED (user, single-supplier exception)",2026-11-22,stock 0603,"R19: Samsung 10 uF 10 V X5R 0603 0.8 mm, DK 75,367 Philippines only; TDK/Murata 0 stock; >= 5 V positions keep T491T"
 U_COMP_PZ,TLV3691,TLV7031DPWR,OPEN (library),2026-11-22,need,R19: TLV7011/TLV7041 China lots; TLV7031 Digi-Key 480 US lot only
+(applied 2026-11-22),libraries drop,"LMR10510YSDE, SSM3K35CTC x15, SSM3K7002KFU x10, IHLP2020BZER100M01, LTC5552 + NCS1-292+, PE64904D-Z (C-Z land), TLV7031DPWR (TI DPW land), S-1318D33-A4T2U4 x2 (ABLIC land, +10M AON_EN pull-down)",APPLIED,2026-11-22,vendored,stack 39.4 -> 38.8 mm; PAC1941 (WLCSP J6CX) not applied - package question open
+J_DEV_TWR_IO / J_DEV_FLAT_IO,(new),61304021121 x2,APPLIED,2026-11-22,vendored,"R20: Wurth 2x20 2.54 mm, all 3 suppliers, Taiwan; alt Samtec TSW-120-07-G-D"
+J_DEV_BENCH,TP_DEV_BENCH pads,691137710002,APPLIED,2026-11-22,vendored,"R20: Wurth 2-pole 5.0 mm terminal block, all 3 suppliers, Italy"
+U_DEV_INA,INA228AIDGSR,PAC1941T-1E/4MX,APPLIED,2026-11-22,vendored,"R20: VQFN-16 3x3, Mouser 2,346 + DK 763, Thailand (WLCSP J6CX not used)"

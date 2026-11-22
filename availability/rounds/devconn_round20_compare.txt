@@ -1,0 +1,11 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+J_DEV_IO A           TSW-120-07-G-D               |    3176    1w    3.15 Vietnam   |     650  6.0w    3.62 Vietnam   |     475    2w    4.18 Malaysia  | 
+J_DEV_IO B           TSW-120-07-T-D               |     758    7w    1.44 United St |       0  3.0w    1.76 United St |     173    2w    2.19 Mexico    | 
+J_DEV_IO C           61304021121                  |    4526   16w    1.78 Taiwan    |    1502 17.0w    1.98 Taiwan    |    7470   16w    1.91 Taiwan    | 
+J_DEV_PWR A          1984617                      |   25107   12w    0.52 China     |                        - |   38958    6w    0.59 China     | 
+J_DEV_PWR B          1729128                      |   31038   18w    0.84 China     |   10001  6.0w    0.97 Germany   |   32630    6w    0.95 China     | 
+J_DEV_PWR C          691137710002                 |    4651   17w    0.34 Italy     |   13287 15.0w    0.35 Italy     |   75435   17w    0.38 Italy     | 
+U_DEV_INA Q          PAC1941T-1E/4MX              |    2346   10w    1.03 Thailand  |      24 57.0w    0.92 Thailand  |     763    4w    1.48 Thailand  | 
+U_DEV_INA W          PAC1941T-1E/J6CX             |    3190   19w    1.03 Taiwan    |                        - |    3281    8w    1.16 Taiwan    | 
+
+Digi-Key rows not in the upload:

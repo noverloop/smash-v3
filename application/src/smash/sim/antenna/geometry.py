@@ -43,10 +43,10 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.434,
     "activation_interface": 24.502,
-    "wakeup_board": 27.97,        # (2026-11-22) activation↔wakeup gap 2.3 → 2.6 mm (U_TMR_LDO X2SON 0.4 → XC6504 SOT-25 1.3, accepted)
-    "power_board": 31.738,         # (2026-11-22) wakeup↔power gap 3.0 → 3.1 (XC6504) → 2.9 mm (power bottom polymers → 0805 ceramic banks)
-    "companion_compute": 35.106,
-    "radar_module": 38.974,
+    "wakeup_board": 27.67,   # (2026-11-22 r17-19) activation↔wakeup 2.6 → 2.3 mm (S-1318 HSNT-4, low FETs)
+    "power_board": 31.138,   # (2026-11-22 r17-19) wakeup↔power 2.9 → 2.6 mm
+    "companion_compute": 34.506,   # (2026-11-22) follows the stack (power↔compute 2.5 unchanged)
+    "radar_module": 38.374,   # (2026-11-22) follows the stack (compute↔radar 3.0 unchanged)
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

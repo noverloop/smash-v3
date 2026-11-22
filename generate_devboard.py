@@ -105,7 +105,21 @@ FIXTURE_CENTRE = (22.0, 0.0)  # aft fixture centre on the dev board (board frame
 # dowels = Mill-Max 5849 locating pins (parts, P_DEV_DOWEL1-3), pinned below
 FIXTURE_COLLAR_R_MM, FIXTURE_COLLAR_ANGLES_DEG = 22.5, (0.0, 120.0, 240.0)
 FIXTURE_KEEPOUT_R_MM = 25.0       # collar OD
-SEAT_TEETH = (19, 43, 56)         # GND teeth at 117° / 261° / 339° (largest gap 144° < 180°)
+def seat_teeth() -> tuple:
+    """(2026-11-22) three GND teeth of the LIVE aft contact map, spread so the
+    largest angular gap stays < 180° (a tilted tower always lifts one). Was a
+    hard-coded (19, 43, 56) — after the lane reassignment 19 = FIN3_AOUT2 and
+    56 = 3V3, so the seat pull-ups would have driven tower nets."""
+    import itertools
+    gnd = [(t, a) for t, a, _n, _l, role in aft_contacts() if role == "gnd"]
+    best = None
+    for tri in itertools.combinations(gnd, 3):
+        ang = sorted(a for _t, a in tri)
+        gaps = [ang[1] - ang[0], ang[2] - ang[1], 360 - ang[2] + ang[0]]
+        if max(gaps) < 180 and (best is None or max(gaps) < best[0]):
+            best = (max(gaps), tuple(sorted(t for t, _a in tri)))
+    assert best, "no 3 GND teeth with every gap < 180°"
+    return best[1]
 FIXTURE_R = (15.2, 16.6)      # spring pins staggered radially (6° contact pitch = 1.67 mm)
 _AFT_MAP = REPO / "dist" / "maximalist" / "sleeve" / "aft_end_cap" / "aft_end_cap.md"
 
@@ -133,7 +147,8 @@ def build_diag(d) -> dict:
     from smash.parts.ldos import add_ldl112pv33r
     from smash.parts.oscillators import add_dsc1001ci5_032_0000
     from smash.parts.swaps_2026_11 import (add_tja1462btk_0z, add_usblc6_4sc6, add_ru1j002yntcl,
-                                           add_stm32u535cbu6)
+                                           add_stm32u535cbu6, add_wurth_61304021121,
+                                           add_wurth_691137710002, add_pac1941t_1e_4mx)
     from smash.parts.leds import add_ltst_c190gkt, add_ltst_c190krkt
     from smash.parts.mosfets import add_buk6d120_60px
     from smash.parts.mechanical import add_pogo_pad
@@ -155,7 +170,7 @@ def build_diag(d) -> dict:
         N(net).connect(usb.pin(pn))
     esd = add_usblc6_4sc6(d, ref="U_DEV_ESD", **T)   # (2026-11-22) TPD4E05U06 (China lots) → USBLC6-4SC6
     N("DEV_USB_UP_P").connect(esd.pin("I/O1")); N("DEV_USB_UP_N").connect(esd.pin("I/O2"))
-    N("DEV_G4_USB_P").connect(esd.pin("I/O3")); N("DEV_G4_USB_N").connect(esd.pin("I/O4"))
+    N("DEV_MCU_USB_P").connect(esd.pin("I/O3")); N("DEV_MCU_USB_N").connect(esd.pin("I/O4"))
     N("GND").connect(esd.pin("GND")); N("USB_VBUS").connect(esd.pin("VBUS"))
 
     # ── dev 3.3 V (from USB VBUS: the diag section lives without the DUT) ──
@@ -163,6 +178,7 @@ def build_diag(d) -> dict:
     N("USB_VBUS").connect(ldo.pin("VIN")); N(V3).connect(ldo.pin("VOUT"))
     next(n for n in d.nets if n.name == V3).voltage_v = 3.3   # (2026-11-21) for the electrical rules
     N("USB_VBUS").connect(ldo.pin("EN")); N("GND").connect(ldo.pin("GND"))
+    N("GND").connect(ldo.pin("EP"))                                  # thermal pad
     cap_to_gnd(d, "USB_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
     cap_to_gnd(d, V3, "10uF", ref="C_DEV_LDO_OUT", **T)
 
@@ -175,7 +191,7 @@ def build_diag(d) -> dict:
     N("GND").connect(hub.pin("EP")); N("GND").connect(hub.pin("TEST"))
     N("DEV_USB_UP_P").connect(hub.pin("USBDP_UP")); N("DEV_USB_UP_N").connect(hub.pin("USBDM_UP"))
     N("USB_D_P").connect(hub.pin("USBDP_DN1")); N("USB_D_N").connect(hub.pin("USBDM_DN1"))   # → MP25
-    N("DEV_G4_USB_P").connect(hub.pin("USBDP_DN2")); N("DEV_G4_USB_N").connect(hub.pin("USBDM_DN2"))
+    N("DEV_MCU_USB_P").connect(hub.pin("USBDP_DN2")); N("DEV_MCU_USB_N").connect(hub.pin("USBDM_DN2"))
     for pn in ("USBDP_DN3", "USBDM_DN3", "USBDP_DN4", "USBDM_DN4"):   # DS: both D± high = port off
         N(V3).connect(hub.pin(pn))
     for pn in ("OCS1_N", "OCS2_N", "OCS3_N", "OCS4_N"):
@@ -214,8 +230,6 @@ def build_diag(d) -> dict:
     # decisions.csv). Same UFQFPN-48 7×7 body, different ball map (CubeMX
     # STM32U535CBUx.xml): USB FS PA11/12 (ROM DFU), FDCAN1 PB8/9, USART1 PA9/10
     # ↔ tower console, LPUART1_RX PA3 ← SWO, ADC1 PA0/PA1, I2C1 PB6/7, LDO VCAP.
-    # Net names keep the DEV_G4_ prefix (USB/NRST/BOOT0) so the hub/ESD/switch
-    # wiring is untouched.
     g = add_stm32u535cbu6(d, ref="U_DEV_MCU", **T)
     for pn in ("VDD_1", "VDD_2", "VDD_3", "VDDA", "VBAT"):
         N(V3).connect(g.pin(pn))
@@ -226,11 +240,11 @@ def build_diag(d) -> dict:
     cap_to_gnd(d, V3, "4.7uF", ref="C_DEV_MCU_BULK", **T)
     N("DEV_MCU_VCAP").connect(g.pin("VCAP"))
     cap_to_gnd(d, "DEV_MCU_VCAP", "4.7uF", ref="C_DEV_MCU_VCAP", pin=g.pin("VCAP"), **T)
-    N("DEV_G4_NRST").connect(g.pin("NRST"))
-    cap_to_gnd(d, "DEV_G4_NRST", "100nF", ref="C_DEV_MCU_NRST", **T)
-    N("DEV_G4_BOOT0").connect(g.pin("PH3-BOOT0"))                  # ROM DFU over the same USB
-    res_between(d, "DEV_G4_BOOT0", "GND", "10k", ref="R_DEV_MCU_BOOT0", **T)
-    N("DEV_G4_USB_P").connect(g.pin("PA12")); N("DEV_G4_USB_N").connect(g.pin("PA11"))
+    N("DEV_MCU_NRST").connect(g.pin("NRST"))
+    cap_to_gnd(d, "DEV_MCU_NRST", "100nF", ref="C_DEV_MCU_NRST", **T)
+    N("DEV_MCU_BOOT0").connect(g.pin("PH3-BOOT0"))                  # ROM DFU over the same USB
+    res_between(d, "DEV_MCU_BOOT0", "GND", "10k", ref="R_DEV_MCU_BOOT0", **T)
+    N("DEV_MCU_USB_P").connect(g.pin("PA12")); N("DEV_MCU_USB_N").connect(g.pin("PA11"))
     pinmap = {
         "PA0": "DEV_ISENSE",          # INA241 → ADC1_IN5 (fast current)
         "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC1_IN6)
@@ -247,11 +261,18 @@ def build_diag(d) -> dict:
         "PH0-OSC_IN": "DEV_TWR_OE_N",        # bus switches (high = isolated)
         "PH1-OSC_OUT": "DEV_TWR_PWR_EN",      # tower supply switch
         "PC14-OSC32_IN": "DEV_LED_ACT", "PC15-OSC32_OUT": "DEV_INA_ALERT_N",
-        # seat sense (the MCU's own SWD pins — it is flashed by USB DFU)
-        "PA13": "TWR_SEAT_1", "PA14": "TWR_SEAT_2", "PA15": "TWR_SEAT_3",
+        # seat sense (2026-11-22: moved off PA13/PA14 = the probe's own SWD)
+        "PB0": "TWR_SEAT_1", "PB1": "TWR_SEAT_2", "PB2": "TWR_SEAT_3",
+        "PA13": "DEV_MCU_SWDIO", "PA14": "DEV_MCU_SWCLK",
     }
     for pn, net in pinmap.items():
         N(net).connect(g.pin(pn))
+    # (2026-11-22) SWD pads for the probe MCU itself (CMSIS-DAP / any SWD probe)
+    for ref, net in (("TP_DEV_MCU_SWDIO", "DEV_MCU_SWDIO"), ("TP_DEV_MCU_SWCLK", "DEV_MCU_SWCLK"),
+                     ("TP_DEV_MCU_NRST", "DEV_MCU_NRST"), ("TP_DEV_MCU_3V3", V3),
+                     ("TP_DEV_MCU_GND", "GND")):
+        pad = add_pogo_pad(d, ref=ref, manf_pn=None, **T)
+        N(net).connect(pad.pin("1"))
     for net in ("DEV_I2C_SCL", "DEV_I2C_SDA", "DEV_INA_ALERT_N"):
         res_between(d, V3, net, "4.7k", ref=f"R_DEV_PU_{net[4:]}", **T)
     res_between(d, V3, "DEV_TWR_OE_N", "10k", ref="R_DEV_TWR_OE", **T)   # isolated by default
@@ -281,25 +302,33 @@ def build_diag(d) -> dict:
     N("DEV_CAN_TX").connect(can.pin("TXD")); N("DEV_CAN_RX").connect(can.pin("RXD"))
     N("USB_VBUS").connect(can.pin("VCC")); N(V3).connect(can.pin("VIO"))
     N("GND").connect(can.pin("GND")); N("GND").connect(can.pin("STB"))
+    N("GND").connect(can.pin("EP"))                                  # HVSON exposed pad
     N("TWR_CAN_P").connect(can.pin("CANH")); N("TWR_CAN_N").connect(can.pin("CANL"))
     cap_to_gnd(d, "USB_VBUS", "100nF", ref="C_DEV_CAN_VCC", **T)
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_CAN_VIO", **T)
     res_between(d, "TWR_CAN_P", "TWR_CAN_N", "120", ref="R_DEV_CAN_TERM", **T)
 
     # ── power meter: bench feed → (shunt) → this board's BAT_RAW and the tower ──
-    for ref in ("TP_DEV_BENCH_P", "TP_DEV_BENCH_N"):
-        pad = add_pogo_pad(d, ref=ref, manf_pn=None, **T)
-        N("DEV_BENCH" if ref.endswith("_P") else "GND").connect(pad.pin("1"))
+    # (2026-11-22, user) a real bench input: Würth 2-pole terminal block (was
+    # two pogo test pads). Emulates the cells (≈ 3.0-4.0 V) on the metered path.
+    tb = add_wurth_691137710002(d, ref="J_DEV_BENCH", **T)
+    N("DEV_BENCH").connect(tb.pin("1")); N("GND").connect(tb.pin("2"))
     # one metered feed (bench → 10 mΩ shunt → DEV_FEED), switched to the
     # SOCKET (a real tower) or the FLAT tower (the tiles) — never both
     res_between(d, "DEV_BENCH", "DEV_FEED", "10m", ref="R_DEV_SH", **T)
-    ina = DB.add_ina228aidgsr(d, ref="U_DEV_INA", **T)
-    N("DEV_BENCH").connect(ina.pin("IN+")); N("DEV_FEED").connect(ina.pin("IN-"))
-    N("DEV_FEED").connect(ina.pin("VBUS"))
-    N(V3).connect(ina.pin("VS")); N("GND").connect(ina.pin("GND"))
+    # (2026-11-22, round 20) INA228 → PAC1941T-1E/4MX (channel 1 on the shunt;
+    # ±100 mV FSR = 10 A at 10 mΩ). ADDRSEL → GND. FIRMWARE: pin 1 powers up as
+    # the SLOW input (pulled high here → 8 SPS) until set to ALERT1.
+    ina = add_pac1941t_1e_4mx(d, ref="U_DEV_INA", **T)
+    N("DEV_BENCH").connect(ina.pin("SENSE1+")); N("DEV_FEED").connect(ina.pin("SENSE1-"))
+    N(V3).connect(ina.pin("VDD")); N("GND").connect(ina.pin("GND"))
     N("DEV_I2C_SCL").connect(ina.pin("SCL")); N("DEV_I2C_SDA").connect(ina.pin("SDA"))
-    N("DEV_INA_ALERT_N").connect(ina.pin("ALERT"))
-    N("GND").connect(ina.pin("A1")); N("GND").connect(ina.pin("A0"))
+    N("DEV_INA_ALERT_N").connect(ina.pin("SLOW/ALERT1"))
+    N("GND").connect(ina.pin("ADDRSEL")); N(V3).connect(ina.pin("PWRDN"))
+    for pn in ("SENSE2+", "SENSE2-", "SENSE3+", "SENSE3-", "SENSE4+", "SENSE4-", "EP"):
+        N("GND").connect(ina.pin(pn))                 # PAC1941-1: unused inputs grounded (DS note 1)
+    res_between(d, "DEV_INA_GPIO", "GND", "10k", ref="R_DEV_INA_GPIO", **T)
+    N("DEV_INA_GPIO").connect(ina.pin("GPIO/ALERT2"))
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_INA", **T)
     fast = DB.add_ina241a2idgkr(d, ref="U_DEV_ISENSE", **T)       # fast path, same shunt
     N("DEV_BENCH").connect(fast.pin("IN+")); N("DEV_FEED").connect(fast.pin("IN-"))
@@ -341,8 +370,8 @@ def build_diag(d) -> dict:
     # bank B: the same 12 lines to the FLAT tower (through the sleeve channel)
     flat = {"MP25_SWDIO": "COMP_SWDIO", "MP25_SWCLK": "COMP_SWDCLK", "MP25_NRST": "NRST",
             "SWO": "SWO", "WBA_SWDIO": "WBA_SWDIO", "WBA_SWCLK": "WBA_SWCLK",
-            "WBA_NRST": "WBA_NRST", "FIN_SWDIO": "G0B1_FIN_SWDIO",
-            "FIN_SWCLK": "G0B1_FIN_SWCLK", "FIN_NRST": "G0B1_FIN_NRST",
+            "WBA_NRST": "WBA_NRST", "FIN_SWDIO": "FIN_MCU_SWDIO",
+            "FIN_SWCLK": "FIN_MCU_SWCLK", "FIN_NRST": "FIN_MCU_NRST",
             "CONS_TX": "MP25_CONSOLE_TX", "CONS_RX": "MP25_CONSOLE_RX"}
     for k, (gname, _label) in enumerate(chans):
         sw = k // 4
@@ -361,12 +390,13 @@ def build_diag(d) -> dict:
     fx, fy = FIXTURE_CENTRE
     to_twr = {"3V3_AON": "TWR_VDD", "BAT_RAW": "TWR_BAT_RAW", "EXT_CAN_P": "TWR_CAN_P",
               "EXT_CAN_N": "TWR_CAN_N", "FLEX_GND": "GND"}
+    seats = seat_teeth()
     for tooth, ang, net, label, role in aft_contacts():
         if role in ("screw", "key"):
             continue
         pin = DB.add_mill_max_0906(d, ref=f"P_DEV_FIX_{tooth:02d}", **T)
-        if tooth in SEAT_TEETH:                         # GND contact → seat sense line
-            net_ = f"TWR_SEAT_{SEAT_TEETH.index(tooth) + 1}"
+        if tooth in seats:                              # GND contact → seat sense line
+            net_ = f"TWR_SEAT_{seats.index(tooth) + 1}"
         else:
             net_ = to_twr.get(net, f"TWR_{label}" if role != "gnd" else "GND")
         N(net_).connect(pin.pin("1"))
@@ -375,6 +405,24 @@ def build_diag(d) -> dict:
         locks[pin.ref] = {"position_mm": [round(fx + r * math.cos(a), 4),
                                           round(fy + r * math.sin(a), 4)],
                           "rotation_deg": 0, "face": "top"}
+
+    # (2026-11-22, user) engineer breakouts: every aft-contact signal the
+    # probe does not already use, once for a real tower in the fixture
+    # (TWR_*) and once for the flat tower on this board (its own nets).
+    used = {"CONS_RX", "CONS_TX", "SWO", "NRST", "SWCLK", "SWDIO", "WBA_NRST", "WBA_SWCLK",
+            "WBA_SWDIO", "FIN_NRST", "FIN_SWCLK", "FIN_SWDIO", "CAN_P", "CAN_N", "VDD", "BAT_RAW"}
+    brk = sorted(((label, net) for tooth, _a, net, label, role in aft_contacts()
+                  if role == "signal" and label not in used and tooth not in seats),
+                 key=lambda x: x[0])
+    assert len(brk) <= 40, len(brk)
+    for hdr, side in (("J_DEV_TWR_IO", "twr"), ("J_DEV_FLAT_IO", "flat")):
+        h = add_wurth_61304021121(d, ref=hdr, **T)
+        for k in range(1, 41):
+            if k <= len(brk):
+                label, net = brk[k - 1]
+                N(f"TWR_{label}" if side == "twr" else net).connect(h.pin(str(k)))
+            else:
+                N("GND").connect(h.pin(str(k)))
 
     # locating pins (the real fit): into the aft cap's 3 through locating holes
     from smash.export.aft_cap import CAP_LOCATE_R_MM, CAP_LOCATE_ANGLES_DEG
@@ -398,7 +446,7 @@ def build_diag(d) -> dict:
     btns = (("S_DEV_MP25_RST", "NRST", "GND"), ("S_DEV_WBA_RST", "WBA_NRST", "GND"),
             ("S_DEV_WAKE", "MAG_WAKE_N", "GND"), ("S_DEV_JUMP", "JUMP_PAD", "GND"),
             ("S_DEV_LAUNCH", "DEV_LAUNCH_SW", "3V3"), ("S_DEV_METER", "DEV_BTN_METER", "GND"),
-            ("S_DEV_G4_BOOT", "DEV_G4_BOOT0", V3))
+            ("S_DEV_MCU_BOOT", "DEV_MCU_BOOT0", V3))
     for ref, a_, b_ in btns:
         sw = DB.add_b3u_1000p(d, ref=ref, **T)
         N(a_).connect(sw.pin("K")); N(b_).connect(sw.pin("A"))
@@ -410,7 +458,7 @@ def build_diag(d) -> dict:
             ("D_DEV_LED_3V3", V3, "1k", add_ltst_c190gkt),
             ("D_DEV_LED_TWR", "TWR_BAT_RAW", "1k", add_ltst_c190gkt),     # socket powered
             ("D_DEV_LED_FLAT", "BAT_RAW", "1k", add_ltst_c190gkt),        # flat tower powered
-            ("D_DEV_LED_HV", "ACTIVATE_HV", "10k", add_ltst_c190krkt))
+            ("D_DEV_LED_HV", "ACTIVATE_HV", "33k", add_ltst_c190krkt))   # 33 V: 29 mW in the 0402 (10k was 96 mW)
     for ref, net, rv, fn in leds:
         led = fn(d, ref=ref, **T)
         res_between(d, net, f"{ref}_A", rv, ref=f"R_{ref[2:]}", **T)
@@ -525,7 +573,7 @@ _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
               "companion_compute", "radar_module", "qpd_module", "camera_module", "usb_nose")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
-PROG_W_MM = 56.0               # programming-board strip (left edge = board edge: USB-C)
+PROG_W_MM = 70.0               # programming-board strip (left edge = board edge: USB-C); (2026-11-22) +14 mm for the 2×20 breakout headers (right of the USB-C, clear of the strip fiducial)
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
 # (2026-11-21, user) 4 tabs, none where the bus crosses: the bus passes a
 # fully cut stretch of the slot (|y| ≤ channel/2 + margin stays open)
@@ -699,7 +747,11 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
              and c.ref not in locks]
     ui = [c for c in debug if c.ref.startswith(("S_DEV_", "D_DEV_"))]
     usb = [c for c in debug if c.ref == "J_DEV_USB"]
-    rest = [c for c in debug if c not in ui and c not in usb]
+    # (2026-11-22) through-hole parts (breakout headers, bench terminal) pierce
+    # both faces: own rows, nothing on the bottom under them
+    tht = [c for c in debug if c not in ui and c not in usb and any(
+        getattr(p, "drill_mm", None) for p in (getattr(c.footprint, "pads", None) or []))]
+    rest = [c for c in debug if c not in ui and c not in usb and c not in tht]
     ry1 = sy - FIXTURE_KEEPOUT_R_MM - 1.0
     ry0 = -H / 2 + 7.5                                          # above the corner holes
     for c in usb:
@@ -710,8 +762,16 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
         usb_w = h + 3.0
     cx0 = -W / 2 + 1.0 + (usb_w if usb else 0.0)
     cx1 = -W / 2 + PROG_W_MM - 1.5
+    # THT band at the strip's bottom (right of the USB-C); the rest fills above it
+    rel = _shelf(tht, cx0, 0.0, cx1 - 3.0, gap=1.5)     # 3 mm clear of the strip-corner fiducial
+    band = -min((y - _crt_box(next(c for c in tht if c.ref == r))[1] / 2 for r, (_x, y) in rel.items()),
+                default=0.0)
+    tht_pos = {r: (x, y + ry0 + band) for r, (x, y) in rel.items()}
+    if tht_pos:
+        ry0 = ry0 + band + 1.5
     top_pos = _shelf(ui, cx0, ry1, cx1)
     used_y = min((y for _x, y in top_pos.values()), default=ry1) - 4.0
+    top_pos.update(tht_pos)
     rest_sorted = sorted(rest, key=lambda c: -(_crt_box(c)[0] * _crt_box(c)[1]))
     a_top = (cx1 - cx0) * (used_y - ry0)
     acc, top_set = 0.0, []
@@ -721,7 +781,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
             top_set.append(c); acc += (w + 0.6) * (h + 0.6)
     bot_set = [c for c in rest_sorted if c not in top_set]
     pos_top = _shelf(top_set, cx0, used_y, cx1)
-    pos_bot = _shelf(bot_set, cx0, ry1, cx1)
+    pos_bot = _shelf(bot_set, cx0, ry1, cx1)        # ends above the THT band (nothing under it)
     for ref, (x, y) in {**top_pos, **pos_top}.items():
         locks[ref] = {"position_mm": [round(x, 4), round(y, 4)], "rotation_deg": 0, "face": "top"}
     for ref, (x, y) in pos_bot.items():
