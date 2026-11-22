@@ -1519,7 +1519,7 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
       LR_NSS      WBA PA4  (GPIO, software NSS) → NSS
       LR_BUSY     WBA PB0  (GPIO in)          ← BUSY
       LR_IRQ      WBA PB13 (EXTI13)           ← DIO7 (IRQ, firmware-mapped)
-      LR_NRESET   WBA PA3  (GPIO out)         → NRESET
+      LR_NRESET   WBA PC13 (GPIO out)         → NRESET
     Series R on the host lines as in the Semtech reference design (Fig 23-1):
     220 Ω on SCK / MOSI / NSS, 470 Ω on BUSY / IRQ / NRESET (MISO direct).
 
@@ -3302,8 +3302,8 @@ def build_power_board(d: Design) -> None:
     # 3124f): 2-phase synchronous, VIN 1.8 V start / 0.5 V after start-up,
     # 2.5 A min (3.5 typ) peak per phase, true output disconnect when SD is low.
     # Synchronous → no catch diode, no FREQ / SS parts. Because it runs down to
-    # 0.5 V it would drain the cells flat: COMP_BOOST_SD is the hook for the
-    # ~2.5 V pack undervoltage cutoff (supervisor vs WBA firmware: OPEN).
+    # 0.5 V it would drain the cells flat: the ~2.5 V pack cutoff is WBA
+    # firmware (BAT_SENSE on PA3, releases QMAIN — see build_wakeup_board).
     from smash.parts.swaps_2026_11 import add_ltc3124edhc_trpbf
     boost = add_ltc3124edhc_trpbf(d, ref="U_COMP_BOOST", board_tag=BTAG)
     _net(d, "REG_IN_MAIN") .connect(boost.pin("VIN"))
@@ -3328,8 +3328,9 @@ def build_power_board(d: Design) -> None:
     # RT: f_phase ≈ 28 / RT(kΩ) MHz → 28.0 k = 1 MHz per phase (2 MHz ripple)
     _net(d, "COMP_5V_FREQ").connect(boost.pin("RT"))
     res_between(d, "COMP_5V_FREQ", "GND", "28k", ref="R_BOOST_FREQ", board_tag=BTAG)
-    # SD (> 1.6 V on, < 0.25 V off, never float): pulled up to REG_IN_MAIN —
-    # the UV-cutoff source pulls COMP_BOOST_SD low (to be added).
+    # SD (> 1.6 V on, < 0.25 V off, never float): pulled up to REG_IN_MAIN.
+    # The pack UV cutoff is WBA firmware via BAT_SENSE + QMAIN (wakeup_board);
+    # COMP_BOOST_SD is a spare hook.
     _net(d, "COMP_BOOST_SD").connect(boost.pin("SD"))
     res_between(d, "REG_IN_MAIN", "COMP_BOOST_SD", "100k", ref="R_BOOST_SD", board_tag=BTAG)
     # Inductors: 4.7 µH per phase (DS typical application), WE-MAPI 4020
@@ -4229,7 +4230,21 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "LR_NSS")     .connect(wba.pin("PA4"))   # GPIO (software NSS)
     _net(d, "LR_BUSY")    .connect(wba.pin("PB0"))   # GPIO in
     _net(d, "LR_IRQ")     .connect(wba.pin("PB13"))  # EXTI13 ← LR2021 DIO7
-    _net(d, "LR_NRESET")  .connect(wba.pin("PA3"))   # GPIO out
+    # (2026-11-23) LR_NRESET PA3 → PC13 (low-speed pin, fine for a reset) so
+    # PA3 = ADC4_IN6 can read BAT_SENSE for the firmware pack UV cutoff.
+    _net(d, "LR_NRESET")  .connect(wba.pin("PC13"))  # GPIO out
+    # ── Pack undervoltage cutoff (2026-11-23, user: WBA firmware) ─────────
+    # The LTC3124 COMP boost runs down to 0.5 V and would drain the primary
+    # cells flat. BAT_SENSE = REG_IN_MAIN / 2 (1 M / 1 M, 100 nF; after QMAIN
+    # → zero drain in shelf, ~2 µA when on; 4.07 V pack → 2.03 V). FIRMWARE:
+    # sample ADC4_IN6 against VREFINT (VDDA = 3V3_AON sags with the pack once
+    # its LDO drops out); below ~2.5 V for > ~10 ms (ignore cutter / chirp
+    # dips), tell the MP25 to drop PWR_HOLD, then release WBA_WAKE (QHOLD2) →
+    # QMAIN opens and REG_IN_MAIN dies. COMP_BOOST_SD stays a pulled-up spare.
+    _net(d, "BAT_SENSE").connect(wba.pin("PA3"))      # ADC4_IN6
+    res_between(d, "REG_IN_MAIN", "BAT_SENSE", "1M", ref="R_BAT_SENSE_H", board_tag=BTAG)
+    res_between(d, "BAT_SENSE", "GND", "1M", ref="R_BAT_SENSE_L", board_tag=BTAG)
+    cap_to_gnd(d, "BAT_SENSE", "100nF", ref="C_BAT_SENSE", board_tag=BTAG, pin=wba.pin("PA3"))
     # S1 tuner DTCs (U_LR_DTC1/2, on 3V3 like the LR2021 — hold these low
     # while 3V3 is off). Bit-banged, ≥ 38.4 ns SCL period.
     _net(d, "LR_DTC_SCL") .connect(wba.pin("PA7"))
