@@ -6828,7 +6828,7 @@ def main() -> int:
 
     # Start dist/ clean of generated PCB/3D artifacts. Netlist above is
     # rewritten in place. Hand-edited .kicad_pcb files (stem ≠ directory
-    # name and ≠ stackup) are salvaged to dist/kicad_pcbs_user/.
+    # name and ≠ stackup) used to be salvaged to dist/kicad_pcbs_user/ (off since 2026-11-22).
     pcb_out = _DIST
     keep_root = _DIST / "kicad_pcbs_user"
 
@@ -6848,8 +6848,10 @@ def main() -> int:
             print(f"preserved hand-edit: {f.relative_to(REPO)} → "
                   f"{dest.relative_to(REPO)}")
 
-    _salvage_stray_pcbs(pcb_out / "kicad_pcbs_smash")
-    _salvage_stray_pcbs(pcb_out)
+    # (2026-11-22, user) salvage OFF: the tile PCBs are named by project
+    # letter (H_boost, L_power, …), so every generated tile looked like a
+    # "hand edit" and was copied — overwriting — into kicad_pcbs_user on each
+    # run. Generated outputs are disposable; nothing is salvaged any more.
     shutil.rmtree(pcb_out / "kicad_pcbs_smash", ignore_errors=True)
     shutil.rmtree(_MAXIMALIST_DIR, ignore_errors=True)
     shutil.rmtree(_ASSEMBLY_DIR, ignore_errors=True)
