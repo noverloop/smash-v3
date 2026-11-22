@@ -1,0 +1,9 @@
+Manufacturer=Yageo Group
+PartNumber=T520W107M006ATE040
+PartCategory=Capacitor Polarised
+PackageCategory=Other
+PinCount=2
+Version=7.1
+Released=2022-04-30 15:52:01
+Downloaded=2026-11-21 21:20:05
+3D=Y

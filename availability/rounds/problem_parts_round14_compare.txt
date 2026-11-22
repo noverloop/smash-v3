@@ -1,0 +1,24 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+C_WBA_PI1+3 R14      GJM1555C1HR50BB01D           |   18868   53w    0.12 Singapore |   11570 16.0w    0.05 Singapore |  107343   17w    0.10 Singapore | 
+C_LR_HF_TX2 R14      GJM1555C1H1R0BB01D           |  167256   53w    0.11 Singapore |   26192 17.0w    0.06 Singapore |  533041   17w    0.12 Singapore | 
+C_XV_BPF_SH R14      GJM1555C1H1R1BB01D           |   97765   53w    0.09 Singapore |    4446 16.0w    0.03 Singapore |   68673   17w    0.10 Singapore | 
+C_AWR_CLKM R14ALT1   C0603C101J5GACTU             | 1166922   41w    0.13 Taiwan    |   67905 49.0w    0.08 Taiwan    |  538851   22w    0.14 Taiwan    | 
+C_AWR_CLKM R14ALT2   GRM1885C1H101JA01D           |  558466   53w    0.10 Japan/Jap |    2150 17.0w    0.05 Japan     | 2894624   17w    0.11 Japan     | Not Recommended for New Design
+C_0402_100N R14ALT1  GRM155R71C104KA88D           | 4072284   53w    0.44 Philippin | 1082540 17.0w    0.03 Japan     |       0   17w    0.01 Philippin | 
+C_0402_100N R14ALT2  CL05B104KO5NNNC              |       0   52w    0.09 Philippin |  733953 23.0w    0.02 China     |       0   61w    0.01 Philippin | 
+L_BOOST_COMP R14REF  XGL5020-472MEC               |                        - |                        - |                        - | 
+L_BOOST_COMP R14ALT1 SRP5020TA-4R7M               |      41   20w    0.92 China     |       0 22.0w    0.89 China     |    1627   20w    1.03 China     | 
+L_BOOST_COMP R14ALT2 74438357047                  |   11566   42w    1.50 Korea, Re |     700 42.0w    1.71 South Kor |   10707   42w    1.69 South Kor | 
+L_ACTIVATE R14REF    XGL5020-822MEC               |                        - |                        - |     905    1w    3.83 Vietnam   | 
+L_ACTIVATE R14ALT1   SRP5020TA-8R2M               |       0   20w    0.00 China     |                        - |     950   20w    1.03 China     | 
+U_ACTIVATE_BOOST+1 R TPS61175PWPR                 |    4532   26w    4.01 Taiwan/Ta |       0     w    0.00 Taiwan    |       0   26w    4.43 Japan     | 
+U_ACTIVATE_BOOST+1 R TPS61175PWP                  |      49   26w    4.60 Taiwan    |     182 16.0w    4.50 Taiwan    |     492   26w    5.53 Japan     | 
+U_ACTIVATE_BOOST+1 R TPS61175PWPRG4               |       0   26w    0.00 Taiwan    |                        - |                        - | 
+U_AWR_FLASH R14REF   SST26VF080A-104I/MF          |     489   15w    1.50 Taiwan/Ch |       0  6.0w    1.20 Thailand  |     167    4w    1.58 Taiwan    | 
+U_AWR_FLASH R14ALT1  SST26VF080AT-104I/MF         |       0   15w    0.00           |       0  6.0w    1.23 Thailand  |       0    4w    1.74 Taiwan    | 
+U_AWR_FLASH R14ALT2  IS25LP080D-JKLE              |      32   30w    2.64 Taiwan/Ch |                        - |     889   30w    2.38 Taiwan    | 
+U_AWR_FLASH R14ALT3  W25Q16JVZPIQ                 |       0     w    0.00 Taiwan    |                        - |       2   52w    2.26 Taiwan    | Obsolete Obsolete
+C_BOOST_OUT1 R14     T521V476M016ATE070           |    1936   26w    2.04 Mexico    |    1000 25.0w    2.01 China     |    1000   32w    2.64 Mexico    | 
+U_G0B1_FIN R14       STM32U545REI6Q               |    2800   30w    7.97 Taiwan    |       0 32.0w    7.99 Taiwan    |    2802   30w    8.98 Taiwan    | 
+
+Digi-Key rows not in the upload:

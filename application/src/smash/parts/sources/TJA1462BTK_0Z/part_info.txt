@@ -1,0 +1,9 @@
+Manufacturer=NXP
+PartNumber=TJA1462BTK/0Z
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=9
+Version=1.1
+Released=2022-02-17 05:16:57
+Downloaded=2026-11-22 12:49:15
+3D=Y

@@ -118,7 +118,7 @@ def test_feed_castellations_cover_the_drawn_slots():
     m = cases.option_model("C2", feed="castellation", skin="local", S1_scale=0.95,
                            S1_angle=110, S3_dir=-1, S3_gap="wakeup_board", S3_feed=5,
                            S3_scale=0.905, S4_f=4.4, S4_gap="activation_interface", S4_angle=143,
-                           S4_scale=0.9, S4_width=2.0, S4_feed=3.0,
+                           S4_scale=0.9, S4_width=2.0, S4_feed=3.5,
                            skin_clip_deg=(109.0, 255.0))
     sim = {s.name: s for s in m.slots}
     strips = {s.name: s for s in m.sectors if s.name.endswith("_cpw_strip")}

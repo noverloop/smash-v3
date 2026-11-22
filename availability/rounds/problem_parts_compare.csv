@@ -1,0 +1,105 @@
+line,role,mpn,manf,note,why,carried,instock,nonchina,life,lead,price,coo
+C_WBA_PI2,ORIGINAL,SQCSVA0R5BAT1A,AVX (KYOCERA AVX),"AVX SQCS 0603 RF/microwave C0G MLC, 0.5pF, 250 V",lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete; STOCK@1dist; LEAD21wk; VOLUME 12300<20000,2,-,-,BAD: Obsolete Obsolete,21.0,,M:United States; D:-
+C_WBA_PI2,ALT1,C0603C508C5GACTU,KEMET,C0G 0.5pF 0603 (SQCS obsolete),,3,M+F+D,M+F+D,Active,12.0,0.215,M:Mexico; F:Mexico; D:Mexico
+C_WBA_PI2,ALT2,GRM1885C1HR50CA01D,Murata,C0G 0.5pF 0603,,1,-,-,Not Recommended for New Designs,,,M:Japan
+C_AWR_CLKM,ORIGINAL,SQCSVA101JAT1A,AVX (KYOCERA AVX),"AVX SQCS 0603 RF/microwave C0G MLC, 100pF, 250 V",lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete; STOCK@1dist; LEAD16wk; VOLUME 18540<20000,2,-,-,BAD: Obsolete Obsolete,16.0,,M:United States; D:United States
+C_AWR_CLKM,ALT1,C0603C101J5GACTU,KEMET,C0G 100pF 0603,,3,M+F+D,M+F+D,Active,22.0,0.0792,M:Taiwan; F:Taiwan; D:Taiwan
+C_AWR_CLKM,ALT2,GRM1885C1H101JA01D,Murata,C0G 100pF 0603,,3,M+F+D,M+F+D,BAD: Not Recommended for New Designs Not For New Designs,17.0,0.0516,M:Japan/Japan; F:Japan; D:Japan
+C_WBA_HSE_BOT,ORIGINAL,SQCSVA100JAT1A,AVX (KYOCERA AVX),"AVX SQCS 0603 RF/microwave C0G MLC, 10pF, 250 V",lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete,2,-,-,BAD: Obsolete Obsolete,99.0,,M:United States; D:United States
+C_WBA_HSE_BOT,ALT1,C0603C100J5GACTU,KEMET,C0G 10pF 0603 (lib supplied),,3,M+F+D,M+F+D,Active,14.0,0.055,M:Taiwan; F:Mexico; D:Taiwan
+C_WBA_HSE_BOT,ALT2,GRM1885C1H100JA01D,Murata,C0G 10pF 0603,,3,M+D,M+D,BAD: Not Recommended for New Designs Not For New Designs,17.0,0.0611,M:Japan; F:Japan; D:Japan
+C_TIA_A+3,ORIGINAL,SQCSVA8R2BAT1A,AVX (KYOCERA AVX),"AVX SQCS 0603 RF/microwave C0G MLC, 8.2pF, 250 V",lifecycle: Obsolete | LIFECYCLE:Obsolete; VOLUME 5290<80000,1,-,-,BAD: Obsolete,,,M:United States
+C_TIA_A+3,ALT1,C0603C829C5GACTU,KEMET,C0G 8.2pF 0603 (lib supplied),,3,M+F+D,M+F+D,Active,20.0,0.11,M:Mexico; F:Mexico; D:Mexico
+C_TIA_A+3,ALT2,GRM1885C1H8R2CA01D,Murata,C0G 8.2pF 0603,,3,M+F+D,M+F+D,BAD: Not Recommended for New Designs Not For New Designs,17.0,0.0175,M:Japan; F:Japan; D:Japan
+U_DDR4,ORIGINAL,KTDM4G4B626BGIEAT,SMARTsemi,"4 Gbit DDR4 SDRAM (256M × 16), DDR4-2666 (1333 MHz), 1.2 V +",lifecycle: Obsolete | LIFECYCLE:Obsolete; STOCK@1dist,2,M,M,BAD: Obsolete,8.0,23.0,M:Taiwan; D:-
+U_DDR4,ALT1,MT40A256M16LY-062E IT:F,Micron,DDR4 4Gb x16 96-FBGA (lib supplied),,2,-,-,BAD: End of Life Obsolete,8.0,,M:Taiwan; D:-
+U_DDR4,ALT2,K4A4G165WF-BCWE,Samsung,DDR4 4Gb x16,,0,-,-,,,,
+U_DDR4,ALT3,IS43QR16256B-083RBLI,ISSI,DDR4 4Gb x16,,3,M+D,M+D,Active,52.0,62.06,M:Taiwan/Taiwan; F:Taiwan; D:Taiwan
+U_CAM,ORIGINAL,AR0234CSSM00SUKA0-CP,onsemi,"CMOS image sensor, 1/2.6"" 2.3 MP (1920×1200), global shutter",lifecycle: Factory Special Order Last Time Buy | LIFECYCLE:Factory Special Order Last Time Buy; STOCK@1dist; LEAD26wk; VOLUME 1507<20000 | China origin at every supplier that reported it,2,D,-,BAD: Factory Special Order Last Time Buy,26.0,33.32,M:Italy/China/Italy; D:China
+U_CAM,ALT1,AR0234CSSM00SUKA0-CR,onsemi,"same sensor, tray w/o film",,2,D,-,BAD: Factory Special Order Last Time Buy,52.0,35.68,M:Italy/China/Italy; D:China
+U_CAM,ALT2,AR0234CSSM00SUKA0-CP1,onsemi,"same sensor, low-MOQ tray",,3,-,-,BAD: End of Life Obsolete,38.0,,M:China; F:Taiwan; D:China
+QMAIN+1,ORIGINAL,IRLML6402TRPBF,Infineon,"HEXFET Power MOSFET, P-Channel, V_DSS=-20 V, R_DS(on)=65 mOh",lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete,3,M,M,BAD: Obsolete Obsolete,48.0,,M:Israel/Philippines/Israel; F:Malaysia; D:Israel
+QMAIN+1,ALT1,"PMV48XP,215",Nexperia,P-FET SOT-23 (lib supplied),,2,-,-,Active,20.0,0.6,M:China; D:China
+QMAIN+1,ALT2,DMP2035U-7,Diodes Incorporated,P-FET SOT-23,,3,-,-,Active,28.0,0.54,M:Taiwan; F:Taiwan; D:China
+QHOLD+32,ORIGINAL,BSS138AKM-QYL,Nexperia,"MOSFET N-Channel 60 V, 350 mA, logic level, AEC-Q101, DFN100",STOCK@1dist; LEAD26wk; VOLUME 100<480000 | China origin at every supplier that reported it,2,-,-,Active,26.0,0.126,M:China; D:China
+QHOLD+32,ALT1,"NX3008NBKMB,315",Nexperia,N-FET low Vth SOT883B (3D only),,2,-,-,BAD: Discontinued at Digi-Key,53.0,,M:China; D:China
+QHOLD+32,ALT2,"2N7002BKMB,315",Nexperia,N-FET SOT883B,,2,-,-,BAD: End of Life Obsolete,8.0,,M:China; D:China
+QHOLD+32,ALT3,RU1J002YNTCL,ROHM,N-FET SOT-723/VMT3 alt (Nexperia lot China),,3,M+F+D,M+F+D,Active,16.0,0.151,M:Thailand; F:Thailand; D:Philippines
+QHOLD+32,ALT4,"SSM3K56MFV,L3F",Toshiba,N-FET VESM alt,,2,M,M,Active,24.0,0.261,M:Thailand; D:Thailand
+D_AON_WAKE+1,ORIGINAL,BAT64-06-TP,Infineon,"Dual Si Schottky diode, common anode, V_R=40 V, I_F=250 mA, ",STOCK@0dist; LEAD22wk; VOLUME 0<40000 | China origin at every supplier that reported it,2,-,-,Active,22.0,,M:China; D:-
+D_AON_WAKE+1,ALT1,BAT6406E6327HTSA1,Infineon,BAT64-06 dual Schottky SOT-23,,3,-,-,Active,30.0,0.37,M:Austria/China/Austria; F:China; D:Austria
+U_XV_BOOST,ORIGINAL,MCP1640DT-I/MC,Microchip,"Synchronous boost regulator, 0.65 V start-up, V_OUT 2.0..5.5",STOCK@0dist; LEAD13wk; VOLUME 0<20000,2,-,-,Active,13.0,0.693,M:Thailand; D:Malaysia
+U_XV_BOOST,ALT1,MCP1640D-I/MC,Microchip,"same chip, tube",,2,M+D,M+D,Active,13.0,0.719,M:Malaysia; D:Malaysia
+Y_CAM_EXTCLK,ORIGINAL,DSC1001CI5-027.0000,Microchip,"27 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2",STOCK@0dist; LEAD16wk; VOLUME 0<20000,2,D,D,Active,16.0,1.17,M:?; D:Thailand
+Y_CAM_EXTCLK,ALT1,SIT8008BI-12-18E-27.000000,SiTime,"27 MHz 1.8 V MEMS 2520 (lib = 33E variant, same footprint)",,1,-,-,Active,26.0,2.4,D:Thailand
+Y_CAM_EXTCLK,ALT2,DSC1001CI1-027.0000,Microchip,"same DSC1001, looser stability",,2,M+D,M+D,Active,16.0,0.693,M:Thailand; D:Thailand
+Y_LR_TCXO,ORIGINAL,TG2016SMN 32.0000M-MCGNNM0,Epson,"Epson TG2016SMN 32 MHz clipped-sine TCXO, 2.0×1.6 mm",STOCK@1dist; LEAD26wk; VOLUME 17<20000,2,M,M,Active,26.0,0.57611,M:Thailand; D:China
+Y_LR_TCXO,ALT1,KT2016K32000BAW28N,Kyocera,32 MHz TCXO 2016,,0,-,-,,,,
+Y_LR_TCXO,ALT2,ATX-13-D-32.000MHZ-F20-T3,Abracon,32 MHz TCXO,,2,-,-,New Product Active,16.0,1.8942,M:Taiwan; D:Taiwan
+Y_WBA_HSE,ORIGINAL,DSC1001CI5-032.0000,Microchip,"32 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2",VOLUME 818<20000,2,M,M,Active,16.0,1.17,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT1,SIT8008BI-12-33E-32.000000,SiTime,32 MHz 3.3 V MEMS 2520,,0,-,-,,,,
+Y_AWR_HSE+1,ORIGINAL,DSC1001CI5-040.0000,Microchip,"40 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2",STOCK@1dist; LEAD16wk; VOLUME 27974<40000,2,-,-,Active,16.0,1.54,M:?; D:Thailand
+Y_AWR_HSE+1,ALT1,SIT8008BI-12-18E-40.000000,SiTime,40 MHz 1.8 V MEMS 2520,,1,-,-,Active,26.0,2.4,D:Thailand
+Y_DEV_HUB,ORIGINAL,DSC1001CI5-024.0000,Microchip,"32 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2",STOCK@1dist; LEAD16wk,3,M+D,M+D,Active,16.0,0.991,M:Thailand/Singapore; F:Thailand; D:Thailand
+Y_DEV_HUB,ALT1,SIT8008BI-12-33E-24.000000,SiTime,24 MHz 3.3 V MEMS 2520,,1,-,-,Active,26.0,2.4,D:Malaysia
+U_DEV_G474,ORIGINAL,STM32G474CEU6,STMicroelectronics,"MCU Cortex-M4F 170 MHz, 512 KB flash, USB FS, 3× FDCAN, UFQF",STOCK@1dist; LEAD52wk,3,-,-,Active,52.0,8.79,M:Taiwan/Philippines; F:China; D:France
+U_DEV_G474,ALT1,STM32G474CEU3,STMicroelectronics,"same chip, ext. temp",,2,-,-,Active,52.0,9.5,M:France/France; D:France
+U_DEV_CAN,ORIGINAL,TCAN1042GVDQ1,Texas Instruments,"Automotive CAN-FD transceiver, ISO 11898-2:2016, 5 Mbps (G),",lifecycle: End of Life Obsolete | LIFECYCLE:End of Life Obsolete,2,M+D,M+D,BAD: End of Life Obsolete,20.0,1.99,M:Mexico; D:United States
+U_DEV_CAN,ALT1,TCAN1042GVDRBRQ1,Texas Instruments,active TCAN1042 variant,,2,M+D,-,Active,26.0,2.33,M:China; D:China
+C_LR_HF_RX+1,ORIGINAL,04025A0R8BAT2A,AVX (KYOCERA AVX),"0402 C0G/NP0 ceramic, 0.8pF — package per the routed wakeup_",VOLUME 29300<40000 | China origin at every supplier that reported it,2,M+D,-,Active,22.0,0.302,M:China; D:China
+C_LR_HF_RX+1,ALT1,GJM1555C1HR80BB01D,Murata,C0G 0.8pF 0402 high-Q (AVX lot China),,3,M+F+D,M+F+D,Active,17.0,0.0499,M:Singapore; F:Singapore; D:Singapore
+C_LR_HF_TX1+1,ORIGINAL,04025A1R2BAT2A,AVX (KYOCERA AVX),"0402 C0G/NP0 ceramic, 1.2pF — package per the routed wakeup_",China origin at every supplier that reported it,3,M+F+D,-,Active,22.0,0.1,M:China; F:China; D:China
+C_LR_HF_TX1+1,ALT1,GJM1555C1H1R2BB01D,Murata,C0G 1.2pF 0402 high-Q,,3,M+F+D,M+F+D,Active,17.0,0.0464,M:Singapore; F:Singapore; D:Singapore
+C_XV_LNA_OUT,ORIGINAL,04025A5R1BAT2A,AVX (KYOCERA AVX),"0402 C0G/NP0 ceramic, 5.1pF — package per the routed wakeup_",China origin at every supplier that reported it,2,M+D,-,Active,22.0,0.1,M:China; D:China
+C_XV_LNA_OUT,ALT1,GJM1555C1H5R1BB01D,Murata,C0G 5.1pF 0402 high-Q,,3,M+F+D,M+F+D,Active,7.0,0.0478,M:Singapore; F:Singapore; D:Singapore
+C_ACTIVATE_SS+1,ORIGINAL,C0402C473K3RACTU,KEMET,"KEMET 0402 X7R ceramic, 47nF (EVB placeholder; ECM-absorbed ",China origin at every supplier that reported it,3,M+F+D,-,Active,14.0,0.0506,M:China; F:China; D:China
+C_ACTIVATE_SS+1,ALT1,GRM155R71E473KA88D,Murata,X7R 47nF 0402,,3,F+D,F+D,Active,17.0,0.0198,M:Philippines; F:Japan; D:Philippines
+C_BAT_BULK1+1,ORIGINAL,T545W477M006ATE035,KEMET,"KEMET T545 polymer tantalum, 470uF, 6.3 V, W case 7343-15 (1",VOLUME 45<40000 | China origin at every supplier that reported it | bulk polymer: shallow stock / not made in W case,3,M+F,-,Active,26.0,2.47,M:China; F:China; D:China
+C_BAT_BULK1+1,ALT1,6TPE470MI,Panasonic,TALLER: POSCAP 470uF 6.3V 7343 (~1.9 mm),,3,M+F+D,M+F+D,Active,38.0,3.22,M:Indonesia; F:Indonesia; D:Indonesia
+C_BAT_BULK1+1,ALT2,6TPF470MAH,Panasonic,TALLER: POSCAP 470uF 6.3V,,3,M+D,M+D,Active,24.0,3.48,M:Indonesia; F: ; D:Indonesia
+C_BAT_BULK1+1,ALT3,T530Y477M006ATE005,KEMET,TALLER: T530 470uF 6.3V Y case,,3,M+F+D,-,Active,26.0,8.6,M:China; F:China; D:China
+C_BAT_BULK1+1,ALT4,GRM31CR60J476ME19L,Murata,CERAMIC bank: 10x 47uF 6.3V 1206 per 470uF,,3,M+F+D,M+F+D,Active,13.0,0.111,M:Japan; F:Japan; D:Japan
+CBAT1+1,ORIGINAL,T520W107M006ATE040,KEMET,"KEMET T520 polymer tantalum, 100uF, 6.3 V, W case 7343-15 (1",VOLUME 6969<40000 | China origin at every supplier that reported it | bulk polymer: shallow stock / not made in W case,3,M,-,Active,26.0,1.21,M:China/China; F:China; D:China
+CBAT1+1,ALT1,6TPE100MAZB,Panasonic,TALLER: POSCAP 100uF 6.3V,,3,M+F,M+F,Active,35.0,1.02,M:Indonesia; F:Indonesia; D:Indonesia
+CBAT1+1,ALT2,T520V107M006ATE045,KEMET,TALLER: T520 100uF V case (1.9 mm),,3,M+D,M+D,Active,26.0,2.96,M:Mexico; F:Mexico; D:Mexico
+CBAT1+1,ALT3,GRM31CR60J476ME19L,Murata,CERAMIC bank: 2x 47uF 6.3V 1206 per 100uF,,3,M+F+D,M+F+D,Active,13.0,0.111,M:Japan; F:Japan; D:Japan
+C_BOOST_OUT1,ORIGINAL,T528W476M016ATE030,KEMET,"KEMET T528 KO-CAP polymer-Al, 47uF, case-X 7343-15 (1.40 mm ",STOCK@1dist; VOLUME 13550<20000 | bulk polymer: shallow stock / not made in W case,0,-,-,,,,
+C_BOOST_OUT1,ALT1,T520D476M016ATE070,KEMET,TALLER: T520 47uF 16V D case,,3,M+F+D,M+F+D,Active,26.0,2.72,M:Mexico; F:Mexico; D:Mexico
+C_BOOST_OUT1,ALT2,T520V476M016ATE070,KEMET,TALLER: T520 47uF 16V V case,,3,M+F,M,Active,26.0,3.5,M:Mexico; F:China; D:Mexico
+C_BOOST_OUT1,ALT3,GRM31CR61C226ME15L,Murata,CERAMIC bank: 3x 22uF 16V 1206 per 47uF,,3,F,F,BAD: Obsolete Obsolete,42.0,0.246,M:Japan; F:Japan; D:Japan
+D_ACTIVATE+2,ORIGINAL,"PMEG6010CEJ,115",Nexperia,"Schottky rectifier, V_R=60 V, I_F=1 A, low V_F, SOD323F (0.8",VOLUME 52290<60000 | China origin at every supplier that reported it,2,-,-,Active,30.0,0.44,M:China; D:China
+D_ACTIVATE+2,ALT1,RB160MM-60TR,ROHM,Schottky 60V 1A PMDU (PMEG lot China),,3,M+F+D,M+F+D,Active,12.0,0.471,M:Malaysia/Malaysia; F:Malaysia; D:Malaysia
+D_ACTIVATE+2,ALT2,RB160VAM-60TR,ROHM,Schottky 60V 1A TUMD2SM,,3,M+F+D,M+F+D,Active,12.0,0.417,M:Thailand; F:Thailand; D:Thailand
+U_AWR_LDO18,ORIGINAL,LDL112PV18R,STMicroelectronics,"LDO 1.2 A, V_OUT=1.8 V fixed, VIN=1.6..5.5 V, dropout 300 mV",VOLUME 9915<20000 | China origin at every supplier that reported it,3,M+F+D,-,Active,30.0,0.391,M:China; F:China; D:China
+U_AWR_LDO18,ALT1,BU18JA2MNVX-CTL,ROHM,1.8V LDO (LDL112 lot China) - check current,,3,D,D,Active,15.0,0.67,M:Thailand; F:Thailand; D:Thailand
+U_AWR_LDO18,ALT2,XC6220B181MR-G,Torex,1.8V 1A LDO SOT-25,,2,M+D,M+D,Active,16.0,0.87,M:Japan; D:Japan
+U_FIN1+3,ORIGINAL,DRV8428ERTER,Texas Instruments,"Integrated dual H-bridge stepper/brushed driver, V_M=4.5..33",VOLUME 60708<80000 | China origin at every supplier that reported it,2,M+D,-,Active,26.0,2.66,M:China; D:China
+U_FIN1+3,ALT1,"TC78H653FTG,EL",Toshiba,dual H-bridge 1.8-7.5V (DIFFERENT pinout/ctrl),,2,M+D,M+D,Active,16.0,1.31,M:Taiwan; D:Taiwan
+U_FIN1+3,ALT2,BD63720AEFV-E2,ROHM,stepper driver (DIFFERENT pinout),,3,-,-,Active,14.0,1.11,M:Philippines; F:Philippines; D:Philippines
+U_TMP1,ORIGINAL,TMP117MAIDRVR,Texas Instruments,"I2C precision temp sensor, ±0.1 °C medical-grade accuracy, 1",China origin at every supplier that reported it,2,-,-,Active,26.0,2.25,M:China/United States; D:China
+U_TMP1,ALT1,MCP9808T-E/MC,Microchip,I2C temp ±0.25C (TMP117 is ±0.1C),,3,M+F+D,M+F+D,Active,4.0,1.24,M:Thailand/United States; F:Thailand; D:Thailand
+U_TMP1,ALT2,STTS22HTR,STMicroelectronics,I2C temp ±0.5C,,3,M+F+D,M+F+D,Active,24.0,1.61,M:France; F:Thailand; D:France
+U_COMP_PZ,ORIGINAL,TLV3691IDPFR,Texas Instruments,"Nanopower single comparator, push-pull output, V_CC=0.9..6.5",China origin at every supplier that reported it,2,D,-,Active,26.0,1.24,M:China/China/Japan; D:China
+U_COMP_PZ,ALT1,MCP6541T-E/OT,Microchip,nanopower comparator SOT-23-5,,3,F+D,F+D,Active,6.0,0.346,M:Thailand/United States; F:United States; D:Thailand
+U_COMP_PZ,ALT2,TS881ICT,STMicroelectronics,nanopower comparator SC70,,3,M+D,M,Active,30.0,1.29,M:Malaysia/Malaysia/France; F:France; D:China
+U_AON_LDO+1,ORIGINAL,TPS7A0233PDQNR,Texas Instruments,"Nanopower LDO 200 mA, IQ 25 nA, V_OUT=3.3 V fixed, VIN=1.5..",China origin at every supplier that reported it,2,M+D,-,Active,26.0,0.844,M:China/China/United States; D:China
+U_AON_LDO+1,ALT1,MCP1811AT-033/OT,Microchip,3.3V ultra-low-Iq LDO SOT-23,,2,-,-,BAD: Obsolete Obsolete,7.0,,M:Thailand; D:Thailand
+U_AON_LDO+1,ALT2,"TCR3RM33A,LF",Toshiba,3.3V low-Iq LDO DFN4,,2,-,-,BAD: Obsolete Obsolete,12.0,,M:Japan; D:Japan
+U_AON_LDO+1,ALT3,XC6504A331MR-G,Torex,3.3V low-Iq LDO SOT-25,,3,M+D,M+D,Active,9.0,0.435,M:Japan; F:Japan; D:Japan
+U_CAN_GW,ORIGINAL,TCAN1042GVDRBRQ1,Texas Instruments,"Automotive CAN-FD transceiver, ISO 11898-2:2016, 5 Mbps (G),",China origin at every supplier that reported it,2,M+D,-,Active,26.0,2.33,M:China; D:China
+U_CAN_GW,ALT1,TJA1462BTK/0Z,NXP,CAN FD transceiver HVSON8,,3,M+F+D,M+F+D,Active,16.0,1.19,M:United States/Thailand/United States; F:Thailand; D:Thailand
+U_CAN_GW,ALT2,TJA1044GT/3Z,NXP,CAN transceiver SO8,,3,M+F+D,M+F+D,Not Recommended for New Designs Active,10.0,1.16,M:Thailand/Thailand/Netherlands; F:Thailand; D:Netherlands
+D_IR_WAKE+3,ORIGINAL,VBPW34FAS,Vishay,"Silicon PIN photodiode, SMD, daylight-blocking filter, 7.5 m",VOLUME 65662<80000 | China origin at every supplier that reported it,3,M+D,-,Active,20.0,1.06,M:China; F:China; D:China
+D_IR_WAKE+3,ALT1,SFH 2701,ams OSRAM,Si photodiode SMD,,2,-,-,BAD: Obsolete Obsolete,12.0,,M:China; D:China
+D_IR_WAKE+3,ALT2,BPW34S,ams OSRAM,Si photodiode SMD,,2,M,M,BAD: Obsolete,5.0,1.65,M:Germany; D:Malaysia
+L_XV_LNA_BIAS,ORIGINAL,744784018A,Würth Elektronik,"Würth WE-MK multilayer RF inductor 0402, 1.8 nH",China origin at every supplier that reported it,3,D,-,Active,13.0,0.139,M:China; F:China; D:China
+L_XV_LNA_BIAS,ALT1,LQG15HS1N8S02D,Murata,1.8nH 0402 (WE-MK lot China),,3,M+F+D,M+F+D,Active,12.0,0.0327,M:Japan; F:Japan; D:Japan
+L_XV_LNA_BIAS,ALT2,LQP15MN1N8B02D,Murata,1.8nH 0402 thin-film,,2,-,-,BAD: Obsolete Obsolete,17.0,,M:Japan; D:Japan
+U_DEV_ESD,ORIGINAL,TPD4E05U06DQAR,Texas Instruments,"4-channel USB ESD protection, USON-10",China origin at every supplier that reported it,3,M,-,Active,26.0,0.808,M:China/China/China; F:China; D:China
+U_DEV_ESD,ALT1,USBLC6-4SC6,STMicroelectronics,4-line USB ESD SOT-23-6,,3,M+F+D,M+F+D,Active,19.0,0.506,M:Singapore/Singapore; F:Singapore; D:Singapore
+J_DEV_USB,ORIGINAL,UJ20-C-H-G-MSMT-1A-P16-TR-67,Same Sky,"USB Type-C 2.0 receptacle, horizontal mid-mount SMT, IP67, 1",China origin at every supplier that reported it,3,M+F+D,-,New Product Active,8.0,2.23,M:China; F:China; D:China
+J_DEV_USB,ALT1,USB4105-GF-A,GCT,USB-C 2.0 receptacle,,3,M+F+D,-,Active,7.0,0.71,M:China/China; F:China; D:China
+J_DEV_USB,ALT2,632723300011,Würth Elektronik,USB-C receptacle,,3,M+F+D,-,Active,13.0,3.88,M:China; F:China; D:China
+J_DEV_USB,ALT3,2171750001,Molex,USB-C receptacle,,1,D,-,Active,16.0,0.82,D:China
+U_DEV_INA,ORIGINAL,INA228AIDGSR,Texas Instruments,"20-bit I2C current/voltage/power/energy/charge monitor, 85 V",China origin at every supplier that reported it,2,-,-,Active,26.0,4.72,M:China/China/United States; D:China
+U_DEV_INA,ALT1,PAC1941T-1E/J6CX,Microchip,power monitor (INA228 lot China),,2,M+D,M+D,Active,8.0,1.03,M:Taiwan; D:Taiwan

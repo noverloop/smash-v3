@@ -44,7 +44,7 @@ BOARD_MID_Z_MM = {
     "aft_end_board": 0.434,
     "activation_interface": 24.502,
     "wakeup_board": 27.67,        # (2026-11-21) activation↔wakeup gap 2.4 → 2.3 mm
-    "power_board": 31.538,
+    "power_board": 31.538,         # (2026-11-22) wakeup↔power gap 3.1 → 3.0 mm (BAT64-06 SOT-23 → BAS40-02L)
     "companion_compute": 34.906,
     "radar_module": 38.774,
 }

@@ -1,0 +1,44 @@
+line,role,mpn,manf,note,why,carried,instock,nonchina,life,lead,price,coo
+U_CAM,ORIGINAL,AR0234CSSM00SUKA0-CP,onsemi,ORIGINAL,,2,D,-,BAD: Factory Special Order Last Time Buy,26.0,33.32,M:Italy/China/Italy; D:China
+U_CAM,ALT1,AR0234CSSM28SUKA0-CP1,onsemi,"same die, 28deg CRA, drop-in",,2,-,-,BAD: End of Life Obsolete,38.0,,M:China; D:-
+U_CAM,ALT2,AR0234CSSM28SUKA0-CP2,onsemi,"same die, 28deg CRA",,2,M,-,BAD: Factory Special Order Last Time Buy,52.0,31.1434,M:China/China/Italy; D:Taiwan
+U_CAM,ALT3,AR0235CSSM00SMKA0-CP2,onsemi,newer onsemi GS,,2,M,-,Active,39.0,33.83,M:Taiwan/China/Taiwan; D:China
+U_CAM,ALT4,AR0144CSSM00SUKA0-CPBR1,onsemi,1MP GS,,3,-,-,BAD: End of Life Obsolete,99.0,,M:Taiwan; F:Taiwan; D:Taiwan
+U_CAM,ALT5,IMX296LLR-C,Sony,1.6MP GS mono,,0,-,-,,,,
+U_CAM,ALT6,VD56G3CC/RW,STMicroelectronics,1.5MP GS mono,,0,-,-,,,,
+U_CAM,ALT7,MIRA220-2QM1WP FT SE,ams OSRAM,2.2MP GS NIR,,1,M,M,,38.0,32.75,M:Taiwan
+U_DDR4,ALT0,MT40A512M16LY-062E IT:E,Micron,"8Gb x16, LY package as vendored 4Gb",,3,-,-,BAD: End of Life Obsolete,4.0,,M:Taiwan; F:Singapore; D:Taiwan
+U_DDR4,ALT1,MT40A512M16TB-062E IT:R,Micron,8Gb x16 newer die,,2,-,-,BAD: Obsolete,24.0,,M:Taiwan/Taiwan/Taiwan; D:Taiwan
+U_DDR4,ALT2,K4A8G165WC-BCWE,Samsung,8Gb x16,,0,-,-,,,,
+U_DDR4,ALT3,H5AN8G6NDJR-XNC,SK hynix,8Gb x16,,0,-,-,,,,
+QMAIN+1,ALT0,IRLML2244TRPBF,Infineon,"P-FET SOT-23, chosen",,3,-,-,BAD: Obsolete Obsolete,26.0,0.51,M:Israel/China/Israel; F:Philippines; D:Israel
+D_AON_WAKE+1,ALT0,BAS40-06-7-F,Diodes Incorporated,"SOT-23 common anode, drop-in",,3,D,-,Active,14.0,0.222,M:United Kingdom; F:China; D:China
+D_AON_WAKE+1,ALT1,BAT64-06W E6327,Infineon,SOT-323,,0,-,-,,,,
+D_AON_WAKE+1,ALT2,BAT6406WH6327XTSA1,Infineon,SOT-323,,3,M+F+D,-,Active,26.0,0.311,M:Austria/China/Austria; F:China; D:China
+Y_WBA_HSE,ORIGINAL,DSC1001CI5-032.0000,Microchip,ORIGINAL,,2,M,M,Active,16.0,1.17,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT1,DSC1001CI2-032.0000,Microchip,same family,,2,-,-,Active,16.0,1.03,M:?; D:Thailand
+Y_WBA_HSE,ALT2,DSC6011CI2A-032.0000,Microchip,DSC6000 family,,0,-,-,,,,
+Y_AWR_HSE+1,ORIGINAL,DSC1001CI5-040.0000,Microchip,ORIGINAL,,2,-,-,Active,16.0,1.54,M:?; D:Thailand
+Y_AWR_HSE+1,ALT1,SIT1602BI-12-18E-40.000000,SiTime,40MHz 1.8V,,1,-,-,Active,12.0,2.4,D:Thailand
+Y_AWR_HSE+1,ALT2,DSC1001CI1-040.0000,Microchip,same family,,2,-,-,Active,16.0,1.03,M:?; D:Thailand
+Y_DEV_HUB,ALT0,ASDMB-24.000MHZ-LC-T,Abracon,24MHz MEMS,,3,F,F,Active,10.0,2.76,M:Thailand; F:Thailand; D:Thailand
+Y_DEV_HUB,ALT1,SIT1602BI-12-33E-24.000000,SiTime,24MHz 3.3V,,1,-,-,Active,12.0,2.4,D:Thailand
+Y_LR_TCXO,ALT0,ECS-TXO-2016MV-320-TR,ECS,32MHz TCXO 2016,,2,M+D,M+D,Active,25.0,2.05,M:Taiwan; D:Taiwan
+D_IR_WAKE+3,ALT0,VBPW34SR,Vishay,PIN photodiode SMD,,3,M+F+D,-,Active,20.0,0.781,M:China; F:China; D:China
+D_IR_WAKE+3,ALT1,VEMD5080X01,Vishay,PIN photodiode,,3,M+F+D,M+F+D,Active,9.0,1.53,M:Malaysia; F:Germany; D:Germany
+D_IR_WAKE+3,ALT2,PD15-22C/TR8,Everlight,IR PIN photodiode,,2,-,-,BAD: Obsolete,18.0,,M:Taiwan; D:Taiwan
+U_DEV_G474,ALT0,STM32G474CET6,STMicroelectronics,LQFP48,,3,-,-,Active,52.0,9.08,M:France; F:China; D:France
+U_DEV_G474,ALT1,STM32G474CBT6,STMicroelectronics,LQFP48 128KB,,3,-,-,Active,32.0,5.96,M:France; F:France; D:-
+J_DEV_USB,ALT0,DX07S016JA1R1500,JAE,USB-C horizontal,,2,M+D,-,Active,19.0,1.55,M:Hong Kong/China; D:China
+J_DEV_USB,ALT1,CX90B-16P,Hirose,USB-C horizontal,,3,M+F+D,M+F+D,Active,14.0,2.65,"M:Korea, Republic of; F:South Korea; D:South Korea"
+J_DEV_USB,ALT2,12401610E4#2A,Amphenol,USB-C horizontal,,3,M+F+D,-,Active,7.0,1.27,M:China; F:China; D:China
+J_DEV_USB,ALT3,USB4085-GF-A,GCT,USB-C horizontal,,3,M+F+D,-,Active,7.0,0.808,M:China/China; F:China; D:China
+J_USB_NOSE,ORIGINAL,UJ20-C-V-G-SMT-23B-P16-TR-X5,Same Sky,ORIGINAL vertical,,2,M+D,-,New Product Active,10.0,2.18,M:China; D:China
+J_USB_NOSE,ALT1,CX90B1-24P,Hirose,USB-C vertical,,2,F,F,,14.0,2.89,M:Japan; F:Japan
+QHOLD+32,ORIGINAL,BSS138AKM-QYL,Nexperia,ORIGINAL DFN1006-3,,2,-,-,Active,26.0,0.126,M:China; D:China
+QHOLD+32,ALT1,RV1C002UNT2CL,ROHM,N-FET ~1.0x0.6 DFN (VML1006),,2,F,F,Not Recommended for New Designs,16.0,0.31,M:Thailand; F:Thailand
+QHOLD+32,ALT2,"SSM3K56ACT,L3F",Toshiba,N-FET ~1.0x0.6 CST3,,1,-,-,,24.0,0.533,M:Thailand/Thailand/Japan
+QHOLD+32,ALT3,"SSM3K35CTC,L3F",Toshiba,N-FET ~0.8x0.6 CST3C,,1,M,M,,24.0,0.266,M:Thailand/Thailand/Japan
+QHOLD+32,ALT4,RUM002N02T2L,ROHM,N-FET ~1.2x0.8 VMT3,,2,M+F,M+F,,16.0,0.307,"M:Korea, Republic of; F:South Korea"
+QHOLD+32,ALT5,"PMZB290UNE,315",Nexperia,N-FET DFN1006B-3,,1,-,-,BAD: End of Life,,,M:China
+QHOLD+32,ALT6,DMN26D0UFB4-7,Diodes Incorporated,N-FET X2-DFN1006-3,,1,-,-,BAD: Obsolete,,,M:China

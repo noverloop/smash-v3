@@ -1,0 +1,43 @@
+line,role,mpn,manf,note,why,carried,instock,nonchina,life,lead,price,coo
+QMAIN+1,ORIGINAL,IRLML6402TRPBF,Infineon,ORIGINAL (obsolete),,2,M,M,BAD: Obsolete Obsolete,48.0,,M:Israel/Philippines/Israel; D:Israel
+QMAIN+1,ALT1,DMP2045U-7,Diodes Incorporated,P-FET -20V SOT-23,,2,M+D,M,Active,32.0,0.391,M:Taiwan; D:China
+QMAIN+1,ALT2,PMV27UPEA,Nexperia,P-FET -20V SOT-23,,1,-,-,Active,20.0,0.17975,D:China
+QMAIN+1,ALT3,NTR4101PT1G,onsemi,P-FET -20V SOT-23,,2,M+D,-,Active,52.0,0.4,M:China/China/Taiwan; D:China
+QMAIN+1,ALT4,FDN340P,onsemi,P-FET -20V SuperSOT-3 (SOT-23 land),,2,M+D,M+D,Active,52.0,0.64,"M:Philippines/Korea, Republic of; D:Malaysia"
+QMAIN+1,ALT5,BSS308PEH6327XTSA1,Infineon,P-FET -30V SOT-23,,2,M+D,-,Active,25.0,0.417,M:Austria/China/Austria; D:China
+QMAIN+1,ALT6,RQ5E035ATTCL,ROHM,P-FET -30V TSMT3,,2,M+D,M+D,Active,16.0,0.515,M:Thailand; D:Thailand
+U_DDR4,ALT1,IS43QR16512A-075VBLI,ISSI,DDR4 8Gb x16 96-FBGA industrial,,2,-,-,Active,52.0,95.88,M:Taiwan/Taiwan/Taiwan; D:Taiwan
+U_DDR4,ALT2,IS43QR16512A-083TBLI,ISSI,DDR4 8Gb x16,,2,M,M,Active,52.0,102.74,M:Taiwan/Taiwan; D:Taiwan
+U_DDR4,ALT3,IS46QR16512A-075VBLA1,ISSI,DDR4 8Gb x16 automotive,,2,-,-,Active,52.0,,M:Taiwan/Taiwan; D:Taiwan
+U_DDR4,ALT4,AS4C512M16D4A-62BIN,Alliance Memory,DDR4 8Gb x16 industrial,,2,-,-,BAD: Obsolete Obsolete,12.0,,M:Taiwan/Taiwan/Taiwan; D:Taiwan
+U_DDR4,ALT5,AS4C512M16D4-75BIN,Alliance Memory,DDR4 8Gb x16 industrial,,2,-,-,BAD: Obsolete Obsolete,8.0,,M:Taiwan; D:Taiwan
+D_AON_WAKE+1,ORIGINAL,BAT64-06-TP,Infineon,ORIGINAL common anode SOT-23,,2,-,-,Active,22.0,,M:China; D:-
+D_AON_WAKE+1,ALT1,BAS4006E6327HTSA1,Infineon,BAS40-06 common anode SOT-23,,2,D,D,Active,30.0,0.346,M:Austria/China/Austria; D:Austria
+D_AON_WAKE+1,ALT2,BAS40-06-E3-08,Vishay,BAS40-06 common anode SOT-23,,2,M+D,-,Active,12.0,0.417,M:China; D:China
+D_AON_WAKE+1,ALT3,BAT54A-E3-08,Vishay,BAT54A common anode SOT-23,,2,M+D,-,Active,21.0,0.444,M:China; D:China
+D_AON_WAKE+1,ALT4,BAT54AWT1G,onsemi,BAT54A common anode SOT-323,,2,D,-,Active,52.0,0.178,M:Malaysia/China/Malaysia; D:China
+D_AON_WAKE+1,ALT5,BAS40-06W E6327,Infineon,BAS40-06 common anode SOT-323,,0,-,-,,,,
+D_AON_WAKE+1,ALT6,RB715WTL,ROHM,dual Schottky SOT-323 (verify config),,2,M+D,M+D,Active,12.0,0.524,M:Thailand; D:South Korea
+U_DEV_G474,ORIGINAL,STM32G474CEU6,STMicroelectronics,ORIGINAL,,2,-,-,Active,52.0,8.79,M:Taiwan/Philippines; D:France
+U_DEV_G474,ALT1,STM32G474CEU6TR,STMicroelectronics,"same chip, reel",,2,-,-,Active,52.0,8.79,M:China; D:-
+U_DEV_G474,ALT2,STM32G474CCU6,STMicroelectronics,"256KB flash, same pinout",,2,-,-,Active,52.0,4.95927,M:Taiwan; D:-
+U_DEV_G474,ALT3,STM32G473CEU6,STMicroelectronics,"G473, same pinout",,2,-,-,Active,52.0,8.37,M:France; D:France
+U_DEV_G474,ALT4,STM32G491CEU6,STMicroelectronics,G491 UFQFPN48,,2,-,-,Active,52.0,7.36,M:Taiwan; D:Taiwan
+U_DEV_G474,ALT5,STM32G431CBU6,STMicroelectronics,G431 UFQFPN48,,2,-,-,Active,52.0,6.3,M:Italy; D:Italy
+Y_WBA_HSE,ORIGINAL,DSC1001CI5-032.0000,Microchip,ORIGINAL MEMS 2520,,2,M,M,Active,16.0,1.17,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT1,DSC1101CI5-032.0000,Microchip,"MEMS 32MHz, DSC1101 family",,2,-,-,Active,12.0,1.63,M:?; D:Thailand
+Y_WBA_HSE,ALT2,SIT8008BI-22-33E-32.000000,SiTime,MEMS 32MHz 3.3V (verify pkg code),,1,-,-,Active,26.0,2.4,D:Malaysia
+Y_WBA_HSE,ALT3,ASEMB-32.000MHZ-XY-T,Abracon,MEMS 32MHz (verify pkg),,2,M,M,Active,26.0,3.17394,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT4,ASFLMB-32.000MHZ-LY-T,Abracon,MEMS 32MHz (verify pkg),,2,-,-,Active,26.0,3.50196,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT5,ASDMB-32.000MHZ-LY-T,Abracon,MEMS 32MHz 2520,,2,M+D,M+D,Active,26.0,3.92,M:Thailand; D:Thailand
+Y_WBA_HSE,ALT6,DSC1001CI1-032.0000,Microchip,"MEMS 32MHz, same family",,2,-,-,Active,16.0,1.03,M:?; D:Thailand
+Y_WBA_HSE,ALT7,DSC1001CI2-032.0000,Microchip,"MEMS 32MHz, same family",,2,-,-,Active,16.0,1.03,M:?; D:Thailand
+Y_AWR_HSE+1,ORIGINAL,DSC1001CI5-040.0000,Microchip,ORIGINAL MEMS 2520,,2,-,-,Active,16.0,1.54,M:?; D:Thailand
+Y_AWR_HSE+1,ALT1,SIT8008BI-12-18E-40.000000,SiTime,MEMS 40MHz 1.8V,,1,-,-,Active,26.0,2.4,D:Thailand
+Y_AWR_HSE+1,ALT2,SIT8008BI-22-18E-40.000000,SiTime,MEMS 40MHz 1.8V (verify pkg code),,1,-,-,Active,26.0,2.4,D:Thailand
+Y_AWR_HSE+1,ALT3,SIT1602BI-22-18E-40.000000,SiTime,MEMS 40MHz 1.8V,,1,-,-,Active,12.0,2.4,D:Thailand
+Y_AWR_HSE+1,ALT4,DSC6001CI2A-040.0000,Microchip,MEMS 40MHz DSC6000 (verify pkg),,2,-,-,BAD: Obsolete Obsolete,6.0,,M:Thailand; D:Thailand
+Y_AWR_HSE+1,ALT5,DSC1001DI1-040.0000,Microchip,MEMS 40MHz (D package),,2,-,-,Active,12.0,0.62,M:?; D:Thailand
+Y_LR_TCXO,ORIGINAL,TG2016SMN 32.0000M-MCGNNM0,Epson,ORIGINAL quartz TCXO,,2,M,M,Active,26.0,0.57611,M:Thailand; D:China
+Y_LR_TCXO,ALT1,SIT5356AI-FQ-33VT-32.000000,SiTime,MEMS Super-TCXO 32MHz 5032 (programmed),,0,-,-,,,,
+Y_LR_TCXO,ALT2,SIT8008BI-22-33E-32.000000,SiTime,MEMS XO 32MHz if LoRa BW allows,,1,-,-,Active,26.0,2.4,D:Malaysia

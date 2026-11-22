@@ -1,0 +1,105 @@
+Line,Role,MPN,Manufacturer,Qty per dev board,Why flagged,Note
+C_WBA_PI2,ORIGINAL,SQCSVA0R5BAT1A,AVX (KYOCERA AVX),1,lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete; STOCK@1dist; LEAD21wk; VOLUME 12300<20000,"AVX SQCS 0603 RF/microwave C0G MLC, 0.5pF, 250 V"
+C_WBA_PI2,ALT1,C0603C508C5GACTU,KEMET,1,,C0G 0.5pF 0603 (SQCS obsolete)
+C_WBA_PI2,ALT2,GRM1885C1HR50CA01D,Murata,1,,C0G 0.5pF 0603
+C_AWR_CLKM,ORIGINAL,SQCSVA101JAT1A,AVX (KYOCERA AVX),1,lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete; STOCK@1dist; LEAD16wk; VOLUME 18540<20000,"AVX SQCS 0603 RF/microwave C0G MLC, 100pF, 250 V"
+C_AWR_CLKM,ALT1,C0603C101J5GACTU,KEMET,1,,C0G 100pF 0603
+C_AWR_CLKM,ALT2,GRM1885C1H101JA01D,Murata,1,,C0G 100pF 0603
+C_WBA_HSE_BOT,ORIGINAL,SQCSVA100JAT1A,AVX (KYOCERA AVX),1,lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete,"AVX SQCS 0603 RF/microwave C0G MLC, 10pF, 250 V"
+C_WBA_HSE_BOT,ALT1,C0603C100J5GACTU,KEMET,1,,C0G 10pF 0603 (lib supplied)
+C_WBA_HSE_BOT,ALT2,GRM1885C1H100JA01D,Murata,1,,C0G 10pF 0603
+C_TIA_A+3,ORIGINAL,SQCSVA8R2BAT1A,AVX (KYOCERA AVX),4,lifecycle: Obsolete | LIFECYCLE:Obsolete; VOLUME 5290<80000,"AVX SQCS 0603 RF/microwave C0G MLC, 8.2pF, 250 V"
+C_TIA_A+3,ALT1,C0603C829C5GACTU,KEMET,4,,C0G 8.2pF 0603 (lib supplied)
+C_TIA_A+3,ALT2,GRM1885C1H8R2CA01D,Murata,4,,C0G 8.2pF 0603
+U_DDR4,ORIGINAL,KTDM4G4B626BGIEAT,SMARTsemi,1,lifecycle: Obsolete | LIFECYCLE:Obsolete; STOCK@1dist,"4 Gbit DDR4 SDRAM (256M × 16), DDR4-2666 (1333 MHz), 1.2 V +"
+U_DDR4,ALT1,MT40A256M16LY-062E IT:F,Micron,1,,DDR4 4Gb x16 96-FBGA (lib supplied)
+U_DDR4,ALT2,K4A4G165WF-BCWE,Samsung,1,,DDR4 4Gb x16
+U_DDR4,ALT3,IS43QR16256B-083RBLI,ISSI,1,,DDR4 4Gb x16
+U_CAM,ORIGINAL,AR0234CSSM00SUKA0-CP,onsemi,1,lifecycle: Factory Special Order Last Time Buy | LIFECYCLE:Factory Special Order Last Time Buy; STOCK@1dist; LEAD26wk; VOLUME 1507<20000 | China origin at every supplier that reported it,"CMOS image sensor, 1/2.6"" 2.3 MP (1920×1200), global shutter"
+U_CAM,ALT1,AR0234CSSM00SUKA0-CR,onsemi,1,,"same sensor, tray w/o film"
+U_CAM,ALT2,AR0234CSSM00SUKA0-CP1,onsemi,1,,"same sensor, low-MOQ tray"
+QMAIN+1,ORIGINAL,IRLML6402TRPBF,Infineon,2,lifecycle: Obsolete Obsolete | LIFECYCLE:Obsolete Obsolete,"HEXFET Power MOSFET, P-Channel, V_DSS=-20 V, R_DS(on)=65 mOh"
+QMAIN+1,ALT1,"PMV48XP,215",Nexperia,2,,P-FET SOT-23 (lib supplied)
+QMAIN+1,ALT2,DMP2035U-7,Diodes Incorporated,2,,P-FET SOT-23
+QHOLD+32,ORIGINAL,BSS138AKM-QYL,Nexperia,33,STOCK@1dist; LEAD26wk; VOLUME 100<480000 | China origin at every supplier that reported it,"MOSFET N-Channel 60 V, 350 mA, logic level, AEC-Q101, DFN100"
+QHOLD+32,ALT1,"NX3008NBKMB,315",Nexperia,33,,N-FET low Vth SOT883B (3D only)
+QHOLD+32,ALT2,"2N7002BKMB,315",Nexperia,33,,N-FET SOT883B
+QHOLD+32,ALT3,RU1J002YNTCL,ROHM,33,,N-FET SOT-723/VMT3 alt (Nexperia lot China)
+QHOLD+32,ALT4,"SSM3K56MFV,L3F",Toshiba,33,,N-FET VESM alt
+D_AON_WAKE+1,ORIGINAL,BAT64-06-TP,Infineon,2,STOCK@0dist; LEAD22wk; VOLUME 0<40000 | China origin at every supplier that reported it,"Dual Si Schottky diode, common anode, V_R=40 V, I_F=250 mA, "
+D_AON_WAKE+1,ALT1,BAT6406E6327HTSA1,Infineon,2,,BAT64-06 dual Schottky SOT-23
+U_XV_BOOST,ORIGINAL,MCP1640DT-I/MC,Microchip,1,STOCK@0dist; LEAD13wk; VOLUME 0<20000,"Synchronous boost regulator, 0.65 V start-up, V_OUT 2.0..5.5"
+U_XV_BOOST,ALT1,MCP1640D-I/MC,Microchip,1,,"same chip, tube"
+Y_CAM_EXTCLK,ORIGINAL,DSC1001CI5-027.0000,Microchip,1,STOCK@0dist; LEAD16wk; VOLUME 0<20000,"27 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2"
+Y_CAM_EXTCLK,ALT1,SIT8008BI-12-18E-27.000000,SiTime,1,,"27 MHz 1.8 V MEMS 2520 (lib = 33E variant, same footprint)"
+Y_CAM_EXTCLK,ALT2,DSC1001CI1-027.0000,Microchip,1,,"same DSC1001, looser stability"
+Y_LR_TCXO,ORIGINAL,TG2016SMN 32.0000M-MCGNNM0,Epson,1,STOCK@1dist; LEAD26wk; VOLUME 17<20000,"Epson TG2016SMN 32 MHz clipped-sine TCXO, 2.0×1.6 mm"
+Y_LR_TCXO,ALT1,KT2016K32000BAW28N,Kyocera,1,,32 MHz TCXO 2016
+Y_LR_TCXO,ALT2,ATX-13-D-32.000MHZ-F20-T3,Abracon,1,,32 MHz TCXO
+Y_WBA_HSE,ORIGINAL,DSC1001CI5-032.0000,Microchip,1,VOLUME 818<20000,"32 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2"
+Y_WBA_HSE,ALT1,SIT8008BI-12-33E-32.000000,SiTime,1,,32 MHz 3.3 V MEMS 2520
+Y_AWR_HSE+1,ORIGINAL,DSC1001CI5-040.0000,Microchip,2,STOCK@1dist; LEAD16wk; VOLUME 27974<40000,"40 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2"
+Y_AWR_HSE+1,ALT1,SIT8008BI-12-18E-40.000000,SiTime,2,,40 MHz 1.8 V MEMS 2520
+Y_DEV_HUB,ORIGINAL,DSC1001CI5-024.0000,Microchip,1,STOCK@1dist; LEAD16wk,"32 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, CDFN 2.5×2"
+Y_DEV_HUB,ALT1,SIT8008BI-12-33E-24.000000,SiTime,1,,24 MHz 3.3 V MEMS 2520
+U_DEV_G474,ORIGINAL,STM32G474CEU6,STMicroelectronics,1,STOCK@1dist; LEAD52wk,"MCU Cortex-M4F 170 MHz, 512 KB flash, USB FS, 3× FDCAN, UFQF"
+U_DEV_G474,ALT1,STM32G474CEU3,STMicroelectronics,1,,"same chip, ext. temp"
+U_DEV_CAN,ORIGINAL,TCAN1042GVDQ1,Texas Instruments,1,lifecycle: End of Life Obsolete | LIFECYCLE:End of Life Obsolete,"Automotive CAN-FD transceiver, ISO 11898-2:2016, 5 Mbps (G),"
+U_DEV_CAN,ALT1,TCAN1042GVDRBRQ1,Texas Instruments,1,,active TCAN1042 variant
+C_LR_HF_RX+1,ORIGINAL,04025A0R8BAT2A,AVX (KYOCERA AVX),2,VOLUME 29300<40000 | China origin at every supplier that reported it,"0402 C0G/NP0 ceramic, 0.8pF — package per the routed wakeup_"
+C_LR_HF_RX+1,ALT1,GJM1555C1HR80BB01D,Murata,2,,C0G 0.8pF 0402 high-Q (AVX lot China)
+C_LR_HF_TX1+1,ORIGINAL,04025A1R2BAT2A,AVX (KYOCERA AVX),2,China origin at every supplier that reported it,"0402 C0G/NP0 ceramic, 1.2pF — package per the routed wakeup_"
+C_LR_HF_TX1+1,ALT1,GJM1555C1H1R2BB01D,Murata,2,,C0G 1.2pF 0402 high-Q
+C_XV_LNA_OUT,ORIGINAL,04025A5R1BAT2A,AVX (KYOCERA AVX),1,China origin at every supplier that reported it,"0402 C0G/NP0 ceramic, 5.1pF — package per the routed wakeup_"
+C_XV_LNA_OUT,ALT1,GJM1555C1H5R1BB01D,Murata,1,,C0G 5.1pF 0402 high-Q
+C_ACTIVATE_SS+1,ORIGINAL,C0402C473K3RACTU,KEMET,2,China origin at every supplier that reported it,"KEMET 0402 X7R ceramic, 47nF (EVB placeholder; ECM-absorbed "
+C_ACTIVATE_SS+1,ALT1,GRM155R71E473KA88D,Murata,2,,X7R 47nF 0402
+C_BAT_BULK1+1,ORIGINAL,T545W477M006ATE035,KEMET,2,VOLUME 45<40000 | China origin at every supplier that reported it | bulk polymer: shallow stock / not made in W case,"KEMET T545 polymer tantalum, 470uF, 6.3 V, W case 7343-15 (1"
+C_BAT_BULK1+1,ALT1,6TPE470MI,Panasonic,2,,TALLER: POSCAP 470uF 6.3V 7343 (~1.9 mm)
+C_BAT_BULK1+1,ALT2,6TPF470MAH,Panasonic,2,,TALLER: POSCAP 470uF 6.3V
+C_BAT_BULK1+1,ALT3,T530Y477M006ATE005,KEMET,2,,TALLER: T530 470uF 6.3V Y case
+C_BAT_BULK1+1,ALT4,GRM31CR60J476ME19L,Murata,20,,CERAMIC bank: 10x 47uF 6.3V 1206 per 470uF
+CBAT1+1,ORIGINAL,T520W107M006ATE040,KEMET,2,VOLUME 6969<40000 | China origin at every supplier that reported it | bulk polymer: shallow stock / not made in W case,"KEMET T520 polymer tantalum, 100uF, 6.3 V, W case 7343-15 (1"
+CBAT1+1,ALT1,6TPE100MAZB,Panasonic,2,,TALLER: POSCAP 100uF 6.3V
+CBAT1+1,ALT2,T520V107M006ATE045,KEMET,2,,TALLER: T520 100uF V case (1.9 mm)
+CBAT1+1,ALT3,GRM31CR60J476ME19L,Murata,4,,CERAMIC bank: 2x 47uF 6.3V 1206 per 100uF
+C_BOOST_OUT1,ORIGINAL,T528W476M016ATE030,KEMET,1,STOCK@1dist; VOLUME 13550<20000 | bulk polymer: shallow stock / not made in W case,"KEMET T528 KO-CAP polymer-Al, 47uF, case-X 7343-15 (1.40 mm "
+C_BOOST_OUT1,ALT1,T520D476M016ATE070,KEMET,1,,TALLER: T520 47uF 16V D case
+C_BOOST_OUT1,ALT2,T520V476M016ATE070,KEMET,1,,TALLER: T520 47uF 16V V case
+C_BOOST_OUT1,ALT3,GRM31CR61C226ME15L,Murata,3,,CERAMIC bank: 3x 22uF 16V 1206 per 47uF
+D_ACTIVATE+2,ORIGINAL,"PMEG6010CEJ,115",Nexperia,3,VOLUME 52290<60000 | China origin at every supplier that reported it,"Schottky rectifier, V_R=60 V, I_F=1 A, low V_F, SOD323F (0.8"
+D_ACTIVATE+2,ALT1,RB160MM-60TR,ROHM,3,,Schottky 60V 1A PMDU (PMEG lot China)
+D_ACTIVATE+2,ALT2,RB160VAM-60TR,ROHM,3,,Schottky 60V 1A TUMD2SM
+U_AWR_LDO18,ORIGINAL,LDL112PV18R,STMicroelectronics,1,VOLUME 9915<20000 | China origin at every supplier that reported it,"LDO 1.2 A, V_OUT=1.8 V fixed, VIN=1.6..5.5 V, dropout 300 mV"
+U_AWR_LDO18,ALT1,BU18JA2MNVX-CTL,ROHM,1,,1.8V LDO (LDL112 lot China) - check current
+U_AWR_LDO18,ALT2,XC6220B181MR-G,Torex,1,,1.8V 1A LDO SOT-25
+U_FIN1+3,ORIGINAL,DRV8428ERTER,Texas Instruments,4,VOLUME 60708<80000 | China origin at every supplier that reported it,"Integrated dual H-bridge stepper/brushed driver, V_M=4.5..33"
+U_FIN1+3,ALT1,"TC78H653FTG,EL",Toshiba,4,,dual H-bridge 1.8-7.5V (DIFFERENT pinout/ctrl)
+U_FIN1+3,ALT2,BD63720AEFV-E2,ROHM,4,,stepper driver (DIFFERENT pinout)
+U_TMP1,ORIGINAL,TMP117MAIDRVR,Texas Instruments,1,China origin at every supplier that reported it,"I2C precision temp sensor, ±0.1 °C medical-grade accuracy, 1"
+U_TMP1,ALT1,MCP9808T-E/MC,Microchip,1,,I2C temp ±0.25C (TMP117 is ±0.1C)
+U_TMP1,ALT2,STTS22HTR,STMicroelectronics,1,,I2C temp ±0.5C
+U_COMP_PZ,ORIGINAL,TLV3691IDPFR,Texas Instruments,1,China origin at every supplier that reported it,"Nanopower single comparator, push-pull output, V_CC=0.9..6.5"
+U_COMP_PZ,ALT1,MCP6541T-E/OT,Microchip,1,,nanopower comparator SOT-23-5
+U_COMP_PZ,ALT2,TS881ICT,STMicroelectronics,1,,nanopower comparator SC70
+U_AON_LDO+1,ORIGINAL,TPS7A0233PDQNR,Texas Instruments,2,China origin at every supplier that reported it,"Nanopower LDO 200 mA, IQ 25 nA, V_OUT=3.3 V fixed, VIN=1.5.."
+U_AON_LDO+1,ALT1,MCP1811AT-033/OT,Microchip,2,,3.3V ultra-low-Iq LDO SOT-23
+U_AON_LDO+1,ALT2,"TCR3RM33A,LF",Toshiba,2,,3.3V low-Iq LDO DFN4
+U_AON_LDO+1,ALT3,XC6504A331MR-G,Torex,2,,3.3V low-Iq LDO SOT-25
+U_CAN_GW,ORIGINAL,TCAN1042GVDRBRQ1,Texas Instruments,1,China origin at every supplier that reported it,"Automotive CAN-FD transceiver, ISO 11898-2:2016, 5 Mbps (G),"
+U_CAN_GW,ALT1,TJA1462BTK/0Z,NXP,1,,CAN FD transceiver HVSON8
+U_CAN_GW,ALT2,TJA1044GT/3Z,NXP,1,,CAN transceiver SO8
+D_IR_WAKE+3,ORIGINAL,VBPW34FAS,Vishay,4,VOLUME 65662<80000 | China origin at every supplier that reported it,"Silicon PIN photodiode, SMD, daylight-blocking filter, 7.5 m"
+D_IR_WAKE+3,ALT1,SFH 2701,ams OSRAM,4,,Si photodiode SMD
+D_IR_WAKE+3,ALT2,BPW34S,ams OSRAM,4,,Si photodiode SMD
+L_XV_LNA_BIAS,ORIGINAL,744784018A,Würth Elektronik,1,China origin at every supplier that reported it,"Würth WE-MK multilayer RF inductor 0402, 1.8 nH"
+L_XV_LNA_BIAS,ALT1,LQG15HS1N8S02D,Murata,1,,1.8nH 0402 (WE-MK lot China)
+L_XV_LNA_BIAS,ALT2,LQP15MN1N8B02D,Murata,1,,1.8nH 0402 thin-film
+U_DEV_ESD,ORIGINAL,TPD4E05U06DQAR,Texas Instruments,1,China origin at every supplier that reported it,"4-channel USB ESD protection, USON-10"
+U_DEV_ESD,ALT1,USBLC6-4SC6,STMicroelectronics,1,,4-line USB ESD SOT-23-6
+J_DEV_USB,ORIGINAL,UJ20-C-H-G-MSMT-1A-P16-TR-67,Same Sky,1,China origin at every supplier that reported it,"USB Type-C 2.0 receptacle, horizontal mid-mount SMT, IP67, 1"
+J_DEV_USB,ALT1,USB4105-GF-A,GCT,1,,USB-C 2.0 receptacle
+J_DEV_USB,ALT2,632723300011,Würth Elektronik,1,,USB-C receptacle
+J_DEV_USB,ALT3,2171750001,Molex,1,,USB-C receptacle
+U_DEV_INA,ORIGINAL,INA228AIDGSR,Texas Instruments,1,China origin at every supplier that reported it,"20-bit I2C current/voltage/power/energy/charge monitor, 85 V"
+U_DEV_INA,ALT1,PAC1941T-1E/J6CX,Microchip,1,,power monitor (INA228 lot China)

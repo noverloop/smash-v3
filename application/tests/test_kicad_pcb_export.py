@@ -964,7 +964,9 @@ def test_full_twin_exports_clean(tmp_path):
     #   the USB ideal-diode OR + VBUS bulk moved power_board → usb_nose (±0).
     # → 691 (2026-11-21): fin_ble_board merged into activation_interface
     #   (every part kept; one per-tile footprint fewer).
-    assert total_fps == 712      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    # → 714 (2026-11-22): both dual BAT64-06 wake ORs (D_JUMP_WAKE,
+    #   D_AON_WAKE) split into two single BAS40-02L each (+2).
+    assert total_fps == 714      # 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
     #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
     #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
     #   BUCK3 terminations in)

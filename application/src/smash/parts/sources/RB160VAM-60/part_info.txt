@@ -1,0 +1,9 @@
+Manufacturer=ROHM Semiconductor
+PartNumber=RB160VAM-60
+PartCategory=Schottky Diode
+PackageCategory=Other
+PinCount=2
+Version=1.2
+Released=2022-02-08 04:33:18
+Downloaded=2026-11-21 22:35:36
+3D=Y

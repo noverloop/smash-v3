@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32U535CBU6
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=49
+Version=3.1
+Released=2023-10-12 03:43:50
+Downloaded=2026-11-22 10:57:58
+3D=Y

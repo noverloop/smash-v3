@@ -1,0 +1,40 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_DDR3L R7           MT41K256M16TW-107 IT:P       |   22388   53w  109.30 Taiwan/Ta |    2359 52.0w   78.58 Singapore |   14055   26w   75.40 Taiwan    | 
+U_DDR3L R7ALT        KTDM4G3C618BGIEAT            |    2234   12w   28.75 Taiwan    |                        - |                        - | 
+U_DEV_MCU R7         STM32U535CBU6                |    1098   30w    5.92 Taiwan    |      26 17.0w    5.37 Taiwan    |     788   30w    6.67 China     | 
+QMAIN+Q_AON_EN R7    SSM3J372R,LF                 |  160165   20w    0.36 Thailand/ |    6486 24.0w    0.36 Thailand  |  221271   20w    0.41 Thailand  | 
+QHOLD+32 R7          RU1J002YNTCL                 |  107066   16w    0.22 Thailand  |    6519 20.0w    0.22 Thailand  | 1699104   16w    0.15 Philippin | 
+D_JUMP_WAKE+3 R7     BAS4002LE6327XTMA1           |   14643   26w    0.44 Austria/M |   11990 28.0w    0.47 Malaysia  |   42216   26w    0.51 Austria   | 
+C_BAT_BULK1 R7       6TPE470MI                    |    1781   48w    3.23 Indonesia |    1420 38.0w    3.22 Indonesia |    2757   48w    3.48 Indonesia | 
+C_BOOST_OUT1 R7      T520V476M016ATE070           |    1049   26w    3.50 Mexico    |     907 41.0w    3.53 China     |       0   39w    4.52 Mexico    | 
+U_FIN1+3 R7          TC78H653FTG,EL               |    5692   16w    1.31 Taiwan    |                        - |    9069   16w    1.48 Taiwan    | 
+U_TMP1 R7            MCP9808T-E/MC                |    7586   14w    1.24 Thailand/ |   20117  6.0w    1.29 Thailand  |   41399    4w    1.40 Thailand  | 
+U_AWR_LDO18 R7       XC6220B181MR-G               |    1528     w    0.87 Japan     |                        - |     782   16w    0.98 Japan     | 
+C_TIA_A+3 R7         C0603C829C5GACTU             |   33044   44w    0.18 Mexico    |    7540 20.0w    0.11 Mexico    |   11183   22w    0.64 Mexico    | 
+C_WBA_HSE_BOT R7     C0603C100J5GACTU             |  259288   41w    0.16 Taiwan    |   38670 14.0w    0.06 Mexico    |  354582   22w    0.18 Taiwan    | 
+C_LR_HF_RX+1 R7      GJM1555C1HR80BB01D           |   98190   53w    0.10 Singapore |   15951 18.0w    0.05 Singapore |  130077   17w    0.11 Singapore | 
+C_LR_HF_TX1+1 R7     GJM1555C1H1R2BB01D           |  409096   53w    0.09 Singapore |   12350 18.0w    0.05 Singapore |  423608   17w    0.10 Singapore | 
+C_XV_LNA_OUT R7      GJM1555C1H5R1BB01D           |  108827   53w    0.09 Singapore |   23237  7.0w    0.05 Singapore |  101870   17w    0.10 Singapore | 
+C_ACTIVATE_SS+1 R7   GRM155R71E473KA88D           |       0   53w    0.10 Philippin |   68991 17.0w    0.02 Japan     |    1176   17w    0.11 Philippin | 
+L_XV_LNA_BIAS R7     LQG15HS1N8S02D               |   56952   12w    0.09 Japan     |    5130 26.0w    0.03 Japan     |   38855   19w    0.10 Japan     | 
+D_ACTIVATE+2 R7      RB160VAM-60TR                |   44191   12w    0.43 Thailand  |    4450 16.0w    0.42 Thailand  |   13681   12w    0.48 Thailand  | 
+Y_CAM_EXTCLK R7      DSC1001CI1-027.0000          |     864   16w    0.69 Thailand  |                        - |     131   34w    1.03 Thailand  | 
+U_XV_BOOST R7        MCP1640D-I/MC                |     638   13w    0.72 Malaysia  |     443 23.0w    0.68 United St |      24   24w    0.81 Malaysia  | 
+U_XV_BOOST R7REF     MCP1640DT-I/MC               |       0   13w    0.72 Thailand  |     443 23.0w    0.68 United St |       0   37w    0.69 Malaysia  | 
+U_AON_LDO+1 R7       XC6504A331MR-G               |    2705    9w    0.43 Japan     |       1 32.0w    0.51 Japan     |       3   16w    0.47 Japan     | 
+U_COMP_PZ R7         MCP6541T-E/OT                |       0   10w    0.35 Thailand/ |   26369  6.0w    0.36 United St |   27775   20w    0.39 Thailand  | 
+U_CAN_GW R7          TJA1462BTK/0Z                |   22842   16w    1.22 United St |    2239 16.0w    1.19 Thailand  |    5843   16w    1.37 Thailand  | 
+U_DEV_ESD R7         USBLC6-4SC6                  |   50287   25w    0.51 Singapore |   15760 19.0w    0.62 Singapore |  276440   25w    0.57 Singapore | 
+U_DEV_INA R7         PAC1941T-1E/J6CX             |    3190   19w    1.03 Taiwan    |                        - |    3281    8w    1.16 Taiwan    | 
+Y_WBA_HSE R7         DSC1001CI5-032.0000          |     717   16w    1.17 Thailand  |                        - |       0   34w    1.54 Thailand  | 
+Y_AWR_HSE+1 R7       DSC1001CI5-040.0000          |       0   16w    0.00           |                        - |       0   34w    1.54 Thailand  | 
+Y_LR_TCXO R7         TG2016SMN 32.0000M-MCGNNM0   |       9   26w    0.83 Thailand  |                        - |       0   26w    0.58 China     | 
+Y_LR_TCXO R7ALT      SiT5356AECFQ-33N0-32.000000T |                        - |                        - |                        - | 
+D_IR_WAKE+3 R7       VBPW34FAS                    |   19837     w    1.08 China     |       0 21.0w    1.06 China     |    5876   20w    1.22 China     | 
+U_CAM R7             VB1943CAJX                   |                        - |      29  6.0w   23.39 Japan     |    1341   30w   51.95 Japan     | 
+U_CAM R7ALT1         VB1943CAJX/1                 |     114   30w   43.52 Japan     |      29  6.0w   23.39 Japan     |    1341   30w   51.95 Japan     | 
+U_CAM R7ALT2         VB5943CAJX                   |                        - |      41  6.0w   34.39 Japan     |     193   30w   51.95 Japan     | 
+J_DEV_USB R7         CX90B-16P                    |   33315     w    2.65 Korea, Re |    1013 14.0w    2.80 South Kor |    2837   16w    2.98 South Kor | 
+J_NOSE_USB R7        CX90B1-24P                   |       0   23w    2.89 Japan     |     930 14.0w    3.04 Japan     |    5426   16w    3.30 Japan     | 
+
+Digi-Key rows not in the upload:

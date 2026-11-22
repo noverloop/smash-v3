@@ -1,0 +1,34 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+QMAIN+1              IRLML6402TRPBF               |     352     w    0.00 Israel/Ph |       0 54.0w    0.78 Malaysia  |       0   48w    0.00 Israel    | Obsolete Obsolete
+QMAIN+1 R4ALT1       RZR040P01TL                  |       0   16w    0.00 Thailand  |    2372 20.0w    1.17 Thailand  |    2608   16w    1.21 Philippin | End of Life Last Time Buy
+QMAIN+1 R4ALT2       RZR025P01TL                  |    1325   16w    0.82 Thailand  |    1065 20.0w    0.83 Thailand  |       6   21w    0.92 Philippin | End of Life Obsolete
+QMAIN+1 R4ALT3       SSM3J372R,LF                 |  160165   20w    0.36 Thailand/ |    6486 24.0w    0.36 Thailand  |  221271   20w    0.41 Thailand  | 
+QMAIN+1 R4ALT4       SSM3J334R,LF                 |   32664   20w    0.38 Thailand  |    3320 24.0w    0.53 Thailand  |   10196   20w    0.45 Thailand  | 
+QMAIN+1 R4ALT5       SSM3J356R,LF                 |       0   20w    0.45 Thailand/ |   20908 24.0w    0.54 Thailand  |   73459   20w    0.51 Thailand  | 
+QMAIN+1 R4ALT6       IRLML2246TRPBF               |       0     w    0.00 Israel    |   16122 54.0w    0.44 China     |       0   14w    0.00 Israel    | Obsolete Obsolete
+QMAIN+1 R4ALT7       SI2343CDS-T1-GE3             |       0   38w    0.89 United St |    1373 27.0w    1.05 Germany   |    1813   55w    1.00 Germany   | 
+QMAIN+1 R4ALT8       PMV33UPE,215                 |       0   53w    1.05 China     |       0 54.0w    1.04 Malaysia  |       0   20w    0.70 China     | 
+QMAIN+1 R4ALT9       RQ5E035ATTCL                 |   10937   16w    0.52 Thailand  |    3410 17.0w    0.22 Thailand  |   27601   16w    0.61 Thailand  | 
+U_LPDDR4 R4ALT1      MT53E512M16D1FW-046 AIT:D    |       0     w    0.00 Taiwan    |    1196 52.0w   96.43 Singapore |       0   24w    0.00 -         | End of Life Obsolete
+U_LPDDR4 R4ALT2      MT53E512M16D1FW-046 WT:D     |       0     w    0.00           |                        - |       0    6w    0.00 -         | End of Life Obsolete
+U_LPDDR4 R4ALT3      IS43LQ16512A-062BLI          |       0     w    0.00 China/Tai |     116 52.0w   64.38 Switzerla |       0   99w    0.00 Taiwan    | Factory Special Order
+U_LPDDR4 R4ALT4      IS43LQ16512B-046BLI          |       0   36w   71.42 China/Tai |     116 52.0w   64.38 Switzerla |       0   99w    0.00 China     | Factory Special Order Not For 
+U_LPDDR4 R4ALT5      W66BQ6NBUAGJ                 |       0     w    0.00 Taiwan    |                        - |       0   52w    0.00 Taiwan    | End of Life Obsolete
+U_LPDDR4 R4ALT6      AS4C512M16MD4VA-046BIN       |       0    8w  121.69 Korea, Re |     100 10.0w  170.91 South Kor |     238    8w  137.04 South Kor | 
+U_LPDDR4 R4ALT7      MT53E256M16D1DS-046 AIT:B    |       0     w    0.00           |    1196 52.0w   96.43 Singapore |       0    7w    0.00 -         | End of Life Obsolete
+U_LPDDR4 R4ALT8      IS43LQ16256BL-062BLI         |       0   52w    0.00 Taiwan/Ta |     116 52.0w   64.38 Switzerla |       0   99w    0.00 Taiwan    | 
+U_LPDDR4 R4ALT9      MT53E1G16D1ZW-046 AIT:C      |       0   63w    0.00 Taiwan/Ta |       0 52.0w  188.33 Taiwan    |       0   39w    0.00 -         | 
+U_DEV_G474           STM32G474CEU6                |       0   52w    8.79 Taiwan/Ph |       0 54.0w   10.13 China     |       0   52w   10.03 France    | 
+U_DEV_G474 R4ALT1    STM32U535CBU6                |    1098   30w    5.92 Taiwan    |      26 17.0w    5.37 Taiwan    |     788   30w    6.67 China     | 
+U_DEV_G474 R4ALT2    STM32U545CEU6                |    2631   30w    7.73 China/Chi |       0 17.0w    6.73 Taiwan    |       2   30w    8.37 China     | 
+U_DEV_G474 R4ALT3    STM32G0B1CBU6                |    2578   52w    4.91 France    |     118 32.0w    5.22 France    |       0   52w    5.42 France    | 
+U_DEV_G474 R4ALT4    STM32G0C1CEU6                |      26   52w    5.42 Taiwan    |       0 32.0w    5.36 France    |     637   52w    6.10 Taiwan    | 
+U_DEV_G474 R4ALT5    STM32H503CBU6                |       0   30w    3.71 France    |       0 17.0w    3.19 France    |       0   30w    3.74 China     | 
+U_DEV_G474 R4ALT6    ATSAME51J19A-MU              |    1554   27w    5.58 Taiwan    |     260 12.0w    5.45 Taiwan    |     262   20w    6.28 Taiwan    | 
+Y_WBA_HSE R4ALT1     SIT1602BI-12-33E-32.000000   |                        - |                        - |                        - | 
+Y_WBA_HSE R4ALT2     SIT8008BI-22-33E-32.000000   |                        - |                        - |       0   26w    2.40 Malaysia  | 
+Y_AWR_HSE+1 R4ALT1   SIT1602BI-22-18E-40.000000   |                        - |                        - |       0   12w    2.40 Thailand  | 
+Y_AWR_HSE+1 R4ALT2   SIT1602BI-12-18E-40.000000   |                        - |                        - |       0   12w    2.40 Thailand  | 
+Y_LR_TCXO R4ALT1     SIT5356AI-FQ-33VT-32.000000  |                        - |                        - |                        - | 
+
+Digi-Key rows not in the upload:

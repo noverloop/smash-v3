@@ -1,0 +1,9 @@
+Manufacturer=SiTime
+PartNumber=SiT5356AECFQ-33N0-20.000000
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=10
+Version=1.1
+Released=2023-03-30 11:58:53
+Downloaded=2026-11-22 10:57:06
+3D=Y

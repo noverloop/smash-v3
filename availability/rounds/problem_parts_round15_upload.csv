@@ -1,0 +1,4 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+74438357082,Wurth Elektronik,1,L_ACTIVATE R15ALT1,"8.2 uH WE-MAPI (replaces Coilcraft XGL5020-822); check Isat/DCR/size"
+MX25V8035FZNI,Macronix,1,U_AWR_FLASH R15ALT1,"8 Mb QSPI NOR WSON 6x5 (TI radar EVM family)"
+MX25V1635FZNI,Macronix,1,U_AWR_FLASH R15ALT2,"16 Mb QSPI NOR WSON 6x5 (TI radar EVM family)"

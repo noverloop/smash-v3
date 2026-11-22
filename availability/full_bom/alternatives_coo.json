@@ -1,0 +1,290 @@
+{
+ "C_LR_HF_RX+1": [
+  [
+   "GJM1555C1HR80BB01D",
+   "Murata",
+   1,
+   "C0G 0.8pF 0402 high-Q (AVX lot China)"
+  ]
+ ],
+ "C_LR_HF_TX1+1": [
+  [
+   "GJM1555C1H1R2BB01D",
+   "Murata",
+   1,
+   "C0G 1.2pF 0402 high-Q"
+  ]
+ ],
+ "C_XV_LNA_OUT": [
+  [
+   "GJM1555C1H5R1BB01D",
+   "Murata",
+   1,
+   "C0G 5.1pF 0402 high-Q"
+  ]
+ ],
+ "C_ACTIVATE_SS+1": [
+  [
+   "GRM155R71E473KA88D",
+   "Murata",
+   1,
+   "X7R 47nF 0402"
+  ]
+ ],
+ "C_BAT_BULK1+1": [
+  [
+   "6TPE470MI",
+   "Panasonic",
+   1,
+   "TALLER: POSCAP 470uF 6.3V 7343 (~1.9 mm)"
+  ],
+  [
+   "6TPF470MAH",
+   "Panasonic",
+   1,
+   "TALLER: POSCAP 470uF 6.3V"
+  ],
+  [
+   "T530Y477M006ATE005",
+   "KEMET",
+   1,
+   "TALLER: T530 470uF 6.3V Y case"
+  ],
+  [
+   "GRM31CR60J476ME19L",
+   "Murata",
+   10,
+   "CERAMIC bank: 10x 47uF 6.3V 1206 per 470uF"
+  ]
+ ],
+ "CBAT1+1": [
+  [
+   "6TPE100MAZB",
+   "Panasonic",
+   1,
+   "TALLER: POSCAP 100uF 6.3V"
+  ],
+  [
+   "T520V107M006ATE045",
+   "KEMET",
+   1,
+   "TALLER: T520 100uF V case (1.9 mm)"
+  ],
+  [
+   "GRM31CR60J476ME19L",
+   "Murata",
+   2,
+   "CERAMIC bank: 2x 47uF 6.3V 1206 per 100uF"
+  ]
+ ],
+ "C_BOOST_OUT1": [
+  [
+   "T520D476M016ATE070",
+   "KEMET",
+   1,
+   "TALLER: T520 47uF 16V D case"
+  ],
+  [
+   "T520V476M016ATE070",
+   "KEMET",
+   1,
+   "TALLER: T520 47uF 16V V case"
+  ],
+  [
+   "GRM31CR61C226ME15L",
+   "Murata",
+   3,
+   "CERAMIC bank: 3x 22uF 16V 1206 per 47uF"
+  ]
+ ],
+ "QHOLD+32": [
+  [
+   "RU1J002YNTCL",
+   "ROHM",
+   1,
+   "N-FET SOT-723/VMT3 alt (Nexperia lot China)"
+  ],
+  [
+   "SSM3K56MFV,L3F",
+   "Toshiba",
+   1,
+   "N-FET VESM alt"
+  ]
+ ],
+ "D_ACTIVATE+2": [
+  [
+   "RB160MM-60TR",
+   "ROHM",
+   1,
+   "Schottky 60V 1A PMDU (PMEG lot China)"
+  ],
+  [
+   "RB160VAM-60TR",
+   "ROHM",
+   1,
+   "Schottky 60V 1A TUMD2SM"
+  ]
+ ],
+ "U_AWR_LDO18": [
+  [
+   "BU18JA2MNVX-CTL",
+   "ROHM",
+   1,
+   "1.8V LDO (LDL112 lot China) - check current"
+  ],
+  [
+   "XC6220B181MR-G",
+   "Torex",
+   1,
+   "1.8V 1A LDO SOT-25"
+  ]
+ ],
+ "U_FIN1+3": [
+  [
+   "TC78H653FTG,EL",
+   "Toshiba",
+   1,
+   "dual H-bridge 1.8-7.5V (DIFFERENT pinout/ctrl)"
+  ],
+  [
+   "BD63720AEFV-E2",
+   "ROHM",
+   1,
+   "stepper driver (DIFFERENT pinout)"
+  ]
+ ],
+ "U_TMP1": [
+  [
+   "MCP9808T-E/MC",
+   "Microchip",
+   1,
+   "I2C temp ±0.25C (TMP117 is ±0.1C)"
+  ],
+  [
+   "STTS22HTR",
+   "STMicroelectronics",
+   1,
+   "I2C temp ±0.5C"
+  ]
+ ],
+ "U_COMP_PZ": [
+  [
+   "MCP6541T-E/OT",
+   "Microchip",
+   1,
+   "nanopower comparator SOT-23-5"
+  ],
+  [
+   "TS881ICT",
+   "STMicroelectronics",
+   1,
+   "nanopower comparator SC70"
+  ]
+ ],
+ "U_AON_LDO+1": [
+  [
+   "MCP1811AT-033/OT",
+   "Microchip",
+   1,
+   "3.3V ultra-low-Iq LDO SOT-23"
+  ],
+  [
+   "TCR3RM33A,LF",
+   "Toshiba",
+   1,
+   "3.3V low-Iq LDO DFN4"
+  ],
+  [
+   "XC6504A331MR-G",
+   "Torex",
+   1,
+   "3.3V low-Iq LDO SOT-25"
+  ]
+ ],
+ "U_CAN_GW": [
+  [
+   "TJA1462BTK/0Z",
+   "NXP",
+   1,
+   "CAN FD transceiver HVSON8"
+  ],
+  [
+   "TJA1044GT/3Z",
+   "NXP",
+   1,
+   "CAN transceiver SO8"
+  ]
+ ],
+ "D_IR_WAKE+3": [
+  [
+   "SFH 2701",
+   "ams OSRAM",
+   1,
+   "Si photodiode SMD"
+  ],
+  [
+   "BPW34S",
+   "ams OSRAM",
+   1,
+   "Si photodiode SMD"
+  ]
+ ],
+ "L_XV_LNA_BIAS": [
+  [
+   "LQG15HS1N8S02D",
+   "Murata",
+   1,
+   "1.8nH 0402 (WE-MK lot China)"
+  ],
+  [
+   "LQP15MN1N8B02D",
+   "Murata",
+   1,
+   "1.8nH 0402 thin-film"
+  ]
+ ],
+ "D_AON_WAKE+1": [
+  [
+   "BAT6406E6327HTSA1",
+   "Infineon",
+   1,
+   "BAT64-06 Infineon (MCC lot China)"
+  ]
+ ],
+ "U_DEV_ESD": [
+  [
+   "USBLC6-4SC6",
+   "STMicroelectronics",
+   1,
+   "4-line USB ESD SOT-23-6"
+  ]
+ ],
+ "J_DEV_USB": [
+  [
+   "USB4105-GF-A",
+   "GCT",
+   1,
+   "USB-C 2.0 receptacle"
+  ],
+  [
+   "632723300011",
+   "Würth Elektronik",
+   1,
+   "USB-C receptacle"
+  ],
+  [
+   "2171750001",
+   "Molex",
+   1,
+   "USB-C receptacle"
+  ]
+ ],
+ "U_DEV_INA": [
+  [
+   "PAC1941T-1E/J6CX",
+   "Microchip",
+   1,
+   "power monitor (INA228 lot China)"
+  ]
+ ]
+}

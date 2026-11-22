@@ -1,0 +1,9 @@
+Manufacturer=SiTime
+PartNumber=SiT8008BI-12-33E-27.000000
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=4
+Version=1.1
+Released=2023-03-31 12:47:54
+Downloaded=2026-11-21 22:15:48
+3D=Y

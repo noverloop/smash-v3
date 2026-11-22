@@ -1,0 +1,31 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_LPDDR4 R5REF       IS43LQ16256B-062BLI          |       0   52w   49.48 Taiwan/Ta |     116 52.0w   64.38 Switzerla |       0   99w    0.00 China     | 
+U_LPDDR4 R5ALT1      IS43LQ16256B-053BLI          |       0   52w   41.66 Taiwan/Ta |                        - |       7   99w   52.28 China     | 
+U_LPDDR4 R5ALT2      IS46LQ16256B-062BLA1         |       0   52w    0.00 China/Tai |                        - |       0   99w    0.00 Taiwan    | 
+U_LPDDR4 R5ALT3      IS43LQ16256A-062BLI          |       0   52w    0.00 Taiwan/Ta |                        - |       0   99w   54.65 Taiwan    | Not Recommended for New Design
+U_LPDDR4 R5ALT4      MT53E256M16D1FW-046 AIT:B    |       0   53w    0.00 Taiwan    |    1196 52.0w   96.43 Singapore |       0   39w    0.00 -         | 
+U_LPDDR4 R5ALT5      MT53E256M16D1FW-046 WT:B     |       0   53w    0.00 Taiwan    |     778 52.0w   79.70 United St |       0   39w    0.00 -         | 
+U_LPDDR4 R5ALT6      MT53D512M16D1DS-046 AIT:D    |       0     w    0.00 Taiwan    |                        - |       0   24w    0.00 Taiwan    | End of Life Obsolete
+U_LPDDR4 R5ALT7      MT53E1G16D1ZW-046 WT:C       |       0   90w    0.00 Taiwan    |    2257 52.0w  161.38 Taiwan    |       0   39w    0.00 -         | 
+U_LPDDR4 R5ALT8      MT53E1G16D1ZW-046 AUT:C      |       0     w    0.00 Taiwan    |                        - |       0   39w    0.00 -         | End of Life Obsolete
+U_LPDDR4 R5ALT9      W66AQ6NBUAGJ                 |       0   53w    0.00 Taiwan    |                        - |       0   52w    0.00 Taiwan    | Not Recommended for New Design
+U_LPDDR4 R5ALT10     W66BP6NBUAFJ                 |     377     w   36.77 Taiwan    |                        - |       0   52w    0.00 Taiwan    | End of Life Obsolete
+U_LPDDR4 R5ALT11     W66BQ6NBUAFJ                 |       0     w    0.00 Taiwan    |                        - |       0   52w    0.00 Taiwan    | End of Life Obsolete
+U_LPDDR4 R5ALT12     NT6AN256M16AV-J1             |                        - |                        - |                        - | 
+U_LPDDR4 R5ALT13     NT6AN256M16AV-J2             |                        - |                        - |                        - | 
+U_LPDDR4 R5ALT14     NT6AN512M16AV-J2             |                        - |                        - |                        - | 
+U_LPDDR4 R5ALT15     AS4C256M16MD4-062BAN         |       0   30w    0.00 Taiwan/Ta |       0 32.0w  145.90 Taiwan    |       0   30w  114.09 China     | 
+U_DDR4 R5ALT1        NT5AD256M16E4-JRI            |                        - |                        - |                        - | 
+U_DDR4 R5ALT2        AS4C256M16D4-83BIN           |       3   40w   82.60 Taiwan/Ta |                        - |     873   40w   90.62 Taiwan    | Not For New Designs
+U_DDR4 R5ALT3        IS43QR16256B-075UBLI         |       5   52w   64.71 Taiwan/Ta |                        - |       0   99w    0.00 Taiwan    | 
+U_DDR3L R5ALT1       IS43TR16256BL-125KBLI        |       0   52w   45.59 Taiwan/Ta |       0 52.0w   54.46 Taiwan    |    2738   99w   47.86 Taiwan    | 
+U_DDR3L R5ALT2       AS4C256M16D3LC-12BIN         |       0   30w   52.19 Taiwan/Ta |                        - |       0   30w   63.79 Taiwan    | 
+U_DDR3L R5ALT3       W634GU6RB11I                 |       0     w    0.00 Taiwan    |                        - |     308   36w   52.10 Taiwan    | Obsolete
+U_DDR3L R5ALT4       KTDM4G3C618BGIEAT            |    2234   12w   28.75 Taiwan    |                        - |                        - | 
+U_DDR3L R5ALT5       KTDM4G3C618BGCEAT            |       0   14w   28.74 Taiwan    |                        - |                        - | 
+U_DDR3L R5ALT6       AS4C512M16D3LC-12BIN         |     153   40w  136.17 Taiwan/Ta |                        - |       0   40w    0.00 Taiwan    | 
+U_DDR3L R5ALT7       MT41K256M16TW-107 IT:P       |   22388   53w  109.30 Taiwan/Ta |    2359 52.0w   78.58 Singapore |   14055   26w   75.40 Taiwan    | 
+U_DDR3L R5ALT8       MT41K256M16TW-107 AIT:P      |    2108   53w   60.30 Taiwan/Ta |       0 52.0w   58.03 United St |    2437   26w   56.32 Taiwan    | 
+U_DDR4 R5ALT4        AS4C512M16D4D-62BIN          |     224   20w  141.33 Taiwan    |                        - |       0   20w    0.00 Taiwan    | 
+
+Digi-Key rows not in the upload:

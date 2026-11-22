@@ -1,0 +1,10 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_G0B1_FIN R12REF    STM32G0B1REI6N               |      39   52w    6.07 Taiwan    |                        - |       0   52w    6.25 -         | 
+U_G0B1_FIN R12ALT1   STM32G0C1REI6N               |       0   52w    6.14           |                        - |       0   52w    6.56 Taiwan    | 
+U_G0B1_FIN R12ALT2   STM32U083RCI6                |     969   52w    4.26 Taiwan    |                        - |       0   52w    4.53 Taiwan    | 
+U_G0B1_FIN R12ALT3   STM32G441RBI6                |       0   52w    0.00 Philippin |                        - |       0   52w    4.22 -         | 
+U_G0B1_FIN R12ALT4   STM32L443RCI6                |     518   52w    7.07 Philippin |     164 54.0w    7.06 Philippin |   10868   52w    8.54 Philippin | 
+U_G0B1_FIN R12ALT5   STM32L462REI6                |       0   52w    0.00 Taiwan    |       0 54.0w    6.84 Philippin |       0   52w    8.92 Philippin | 
+U_G0B1_FIN R12ALT6   STM32U545REI6Q               |    2800   30w    7.97 Taiwan    |       0 32.0w    7.99 Taiwan    |    2802   30w    8.98 Taiwan    | 
+
+Digi-Key rows not in the upload:

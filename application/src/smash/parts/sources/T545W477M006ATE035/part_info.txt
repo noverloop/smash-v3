@@ -1,0 +1,9 @@
+Manufacturer=Yageo Group
+PartNumber=T545W477M006ATE035
+PartCategory=Capacitor Polarised
+PackageCategory=Other
+PinCount=2
+Version=6.1
+Released=2022-05-01 23:42:39
+Downloaded=2026-11-21 21:19:56
+3D=Y

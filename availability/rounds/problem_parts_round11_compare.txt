@@ -1,0 +1,25 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_MAG R11REF         IIS2MDCTR                    |       0   24w    3.45 Italy/Mal |                        - |                        - | 
+U_MAG R11ALT1        LIS3MDLTR                    |       0     w    0.00 Malta     |       0     w    0.00 Malta     |       0   24w    0.00 Malta     | Obsolete Obsolete
+U_MAG R11ALT2        BMM350                       |   30188   16w    1.85 Taiwan    |                        - |  118556   16w    2.26 Taiwan    | 
+U_MAG R11ALT3        BMM150                       |       0     w    0.00 Taiwan    |      38 19.0w    5.95 China     |       0    8w    0.00 Taiwan    | Obsolete Obsolete
+U_MAG R11ALT4        MMC5983MA                    |     658    6w    2.95 China     |      12  6.0w   18.12           |   40076    8w    3.32 China     | 
+U_DTC R11REF         PE64906B-Z                   |       0   31w    1.53 Philippin |                        - |       0   16w    2.04 Philippin | 
+U_DTC R11ALT1        PE64909B-Z                   |       0   36w    1.68 Philippin |                        - |    2369   16w    2.37 Philippin | 
+U_DTC R11ALT2        PE64904D-Z                   |    6629   24w    3.62 Malaysia/ |                        - |    4946   16w    4.83 Malaysia  | 
+U_DTC R11ALT3        PE64904C-Z                   |       0     w    0.00 Malaysia/ |                        - |       0   16w    0.00 Malaysia  | Obsolete Discontinued at Digi-
+U_DTC R11ALT4        PE64102B-Z                   |       8   26w    1.66 Malaysia/ |                        - |   58451   16w    2.34 Malaysia  | 
+U_XV_MIX R11REF      LTC5549IUDB#PBF              |       0     w    0.00 Thailand  |       2 12.0w  276.82 United St |                        - | Restricted Availability
+U_XV_MIX R11ALT1     LTC5548IUDB#PBF              |       0     w    0.00 Thailand  |       0 12.0w  655.95 United St |       0   10w    0.00 Thailand  | Restricted Availability Discon
+U_XV_MIX R11ALT2     LTC5548IUDB#TRMPBF           |       0     w    0.00 Thailand/ |                        - |       0   20w    0.00 Taiwan    | Restricted Availability Discon
+U_XV_MIX R11ALT3     ADL5801ACPZ-R7               |       0     w    0.00 Korea, Re |    7500 26.0w   16.00 South Kor |     991   18w   17.56 South Kor | Restricted Availability
+U_XV_MIX R11ALT4     ADL5802ACPZ-R7               |    1039     w   19.57 Korea, Re |       0 12.0w   13.77 North Kor |    1470   10w   24.93 South Kor | 
+U_DEV_ISENSE R11REF  INA241A2IDGKR                |       0   26w    3.47 Malaysia/ |                        - |       0   26w    2.22 -         | 
+U_DEV_ISENSE R11ALT1 INA240A2PWR                  |       0   26w    3.49 Malaysia/ |       0 19.0w    2.97 Malaysia  |       0   26w    3.92 United St | 
+U_DEV_ISENSE R11ALT2 INA240A2DR                   |       0   26w    2.96 Mexico/Me |                        - |       0   26w    4.21 United St | 
+U_DEV_ISENSE R11ALT3 INA290A2IDCKR                |    3339   26w    3.11 Thailand/ |                        - |    2230   26w    3.50 Thailand  | 
+U_DEV_ISENSE R11ALT4 INA190A2IDDFR                |     118   26w    2.08 Philippin |                        - |     544   26w    2.34 United St | 
+U_IMU R11            ISM330DLCTR                  |   17144   24w    7.60 Italy/Phi |    4078 143.w    8.24 Italy     |    1335   24w    8.56 Italy     | 
+U_MPU R11            STM32MP257FAL3               |       8   30w   22.68 Taiwan    |      50 22.0w   23.32 Taiwan    |       0   30w   25.74 Taiwan    | 
+
+Digi-Key rows not in the upload:

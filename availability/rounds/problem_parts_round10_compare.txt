@@ -1,0 +1,56 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_MPU R10REF         STM32MP255FAL3               |       0   30w    0.00 Taiwan    |                        - |       0   30w   19.32 -         | 
+U_MPU R10ALT1        STM32MP255CAL3               |       0   30w   24.44 Taiwan    |                        - |       0   30w   18.77 -         | 
+U_MPU R10ALT2        STM32MP257FAL3               |       8   30w   22.68 Taiwan    |      50 22.0w   23.32 Taiwan    |       0   30w   25.74 Taiwan    | 
+U_MPU R10ALT3        STM32MP253FAL3               |       0   30w    0.00 Taiwan    |                        - |       0   30w   18.77 -         | 
+U_MPU R10ALT4        STM32MP251FAL3               |       0   30w    0.00 Taiwan    |                        - |       0   30w   18.21 -         | 
+U_PMIC R10REF        STPMIC25APQR                 |     107   30w    6.66 Philippin |       0 24.0w    6.50 Singapore |     639   30w    7.85 Philippin | 
+U_PMIC R10ALT1       STPMIC25BPQR                 |    1940   30w    6.31 Philippin |     107 16.0w    6.18 Philippin |    2847   30w    7.41 Singapore | 
+U_PMIC R10ALT2       STPMIC25DPQR                 |    2686   30w    6.58 Singapore |     374  3.0w    6.37 Singapore |    2348   30w    7.41 Philippin | 
+U_WBA R10REF         STM32WBA55UGI7               |      49   30w    5.90 Taiwan    |       0 17.0w    5.73 Taiwan    |     150   30w    6.67 Taiwan    | 
+U_WBA R10ALT1        STM32WBA55UGI6               |      20   30w    5.05 Taiwan    |      47 32.0w    5.00 Taiwan    |       0   30w    6.28 Taiwan    | 
+U_WBA R10ALT2        STM32WBA55UEI6               |       0   30w    0.00 Taiwan    |                        - |       0   30w    3.83 -         | 
+U_G0B1 R10REF        STM32G0B1REI6N               |      39   52w    6.07 Taiwan    |                        - |       0   52w    6.25 -         | 
+U_G0B1 R10ALT1       STM32G0C1REI6N               |       0   52w    6.14           |                        - |       0   52w    6.56 Taiwan    | 
+U_H3LIS R10REF       H3LIS331DLTR                 |       0   24w   10.79 Italy     |    1873 26.0w   10.66 Malta     |    5677   24w   12.88 Italy     | 
+U_H3LIS R10ALT1      H3LIS100DLTR                 |    4408   24w    6.84 Malta/Mal |    2104 26.0w    6.69 Malta     |    5367   24w    7.70 Malta     | 
+U_MAG R10REF         IIS2MDCTR                    |       0   24w    3.45 Italy/Mal |                        - |       0   24w    3.25 Italy     | 
+U_MAG R10ALT1        LIS2MDLTR                    |       0   24w    2.44 Italy/Mal |       0 26.0w    2.46 Italy     |       0   24w    2.75 Italy     | 
+U_IMU R10REF         ISM330DHCXTR                 |       0   24w    7.86 Italy/Phi |       0 143.w    8.14 Italy     |       0   24w    8.85 Italy     | 
+U_IMU R10ALT1        ISM330BXTR                   |    1279   24w    6.54 Philippin |       0 48.0w    6.65 Philippin |       0   24w    7.36 Philippin | 
+U_IMU R10ALT2        ISM330DLCTR                  |   17144   24w    7.60 Italy/Phi |    4078 143.w    8.24 Italy     |    1335   24w    8.56 Italy     | 
+U_IMU R10ALT3        LSM6DSOXTR                   |    1624   24w    5.43 Italy/Phi |       0 143.w    4.99 Italy     |       0   24w    5.30 Italy     | 
+U_AWR R10REF         AWR1843ARBGALPQ1             |     297   26w   62.10 Korea, Re |                        - |     122   26w   66.58 South Kor | 
+U_NAND R10REF        MT29F4G01ABAFDWB-IT:F        |    3368   53w   30.86 Taiwan    |    1873 52.0w   29.41 Taiwan    |    1920   13w   29.56 Taiwan    | 
+U_NAND R10ALT1       W25N04KVZEIR                 |       0   53w    0.00 Taiwan    |                        - |    3775   36w   30.69 Taiwan    | 
+U_NAND R10ALT2       MX35LF4GE4AD-Z4I             |                        - |                        - |    1720   52w   39.65 Taiwan    | 
+U_NAND R10ALT3       TC58CVG2S0HRAIJ              |       0     w    0.00 Taiwan    |                        - |       0   12w    0.00 Taiwan    | End of Life Discontinued at Di
+Q_ACT_ROW R10REF     BUK6D120-60PX                |      48   53w    0.65 Malaysia/ |    3565 22.0w    0.63 Malaysia  |       0   20w    0.73 Malaysia  | 
+Q_ACT_ROW R10ALT1    DMP6110SVT-7                 |   12945   36w    0.91 Taiwan    |      16 50.0w    1.04 China     |   35995   36w    1.07 China     | 
+U_DTC R10REF         PE64906B-Z                   |       0   31w    1.53 Philippin |                        - |       0   16w    2.04 Philippin | 
+U_DEV_ISENSE R10REF  INA241A2IDGKR                |       0   26w    3.47 Malaysia/ |                        - |       0   26w    2.22 -         | 
+U_DEV_ISENSE R10ALT1 INA241A2IDDFR                |       0   26w    3.34 Philippin |                        - |       0   26w    3.76 Japan     | 
+U_XV_MIX R10REF      LTC5549IUDB#PBF              |       0     w    0.00 Thailand  |       2 12.0w  276.82 United St |                        - | Restricted Availability
+U_XV_MIX R10ALT1     LTC5549IUDB#TRMPBF           |                        - |                        - |       0   52w    0.00 United St | Discontinued at Digi-Key
+U_XV_PLL R10REF      ADF4351BCPZ                  |       0     w    0.00 Korea, Re |      20 45.0w   24.32 South Kor |     144   16w   25.16 South Kor | 
+U_XV_PLL R10ALT1     ADF4351BCPZ-RL7              |    4941     w   19.36 Korea, Re |     700 43.0w   24.23 South Kor |    4122   16w   25.16 South Kor | 
+U_XV_PA R10REF       GRF5126                      |    1466     w    4.99 Malaysia  |                        - |                        - | 
+U_XV_LNA R10REF      GRF2073W                     |    1859   18w    3.01 Malaysia  |                        - |                        - | 
+U_LR R10REF          LR2021IMLTRT                 |   17923   26w    8.73 Taiwan    |                        - |    6711   26w    9.63 Malaysia  | 
+U_QPD R10REF         MT03-092                     |       9   10w  123.47 United St |                        - |      12   10w  139.05 United St | 
+U_BUCK R10REF        LMR10510XMFE/NOPB            |     471   26w    1.47 Malaysia/ |     140     w    1.48 Malaysia  |    1898   26w    1.66 United St | 
+U_SPI_NOR R10REF     SST26VF080A-104I/MF          |     489   15w    1.50 Taiwan/Ch |       0  6.0w    1.20 Thailand  |     167    4w    1.58 Taiwan    | 
+C_W107 R10REF        T520W107M006ATE040           |    1999   26w    2.82 China/Chi |       0 44.0w    1.21 China     |       0   36w    3.49 China     | 
+C_W107 R10ALT1       GRM31CR60J476ME19L           |     949   53w    0.80 Japan     |    4000 13.0w    0.11 Japan     |   68881   17w    0.90 Japan     | 
+C_0402_470P R10REF   04025A471JAT2A               |       0   18w    0.10 Taiwan    |   40125 18.0w    0.03 Taiwan    |   45540   18w    0.12 Taiwan    | 
+C_0402_470P R10ALT1  GRM1555C1H471JA01D           |  800651   53w    0.09 Japan     |  101779 21.0w    0.01 Japan     |       0   17w    0.10 Japan     | 
+R_261K R10REF        CRCW0402261KFKED             |       0   18w    0.10 Taiwan    |     539 20.0w    0.02 Israel    |   15469   21w    0.11 Israel    | 
+R_261K R10ALT1       ERJ-2RKF2613X                |   42393   19w    0.09 China     |   47935 27.0w    0.02 China     |   62194   19w    0.10 China     | 
+R_2K7 R10REF         CRCW04022K70FKED             |       0   18w    0.09 Taiwan/Ta |  281655 52.0w    0.02 Taiwan    |  200854   21w    0.11 Taiwan    | 
+R_2K7 R10ALT1        ERJ-2RKF2701X                |  146414   19w    0.09 China     |       0 22.0w    0.00 China     |   60087   19w    0.10 China     | 
+R_470R R10REF        CRCW0402470RFKED             |       0   18w    0.09 Israel    |   82343 16.0w    0.03 Israel    |  116125   21w    0.10 Taiwan    | 
+R_470R R10ALT1       ERJ-2RKF4700X                |  526439   19w    0.10 China     |   95349 26.0w    0.02 China     |  114204   19w    0.11 China     | 
+R_5K1 R10REF         CRCW04025K10FKED             |       0   18w    0.09 Taiwan    |   63980 16.0w    0.02 Israel    |  367268   21w    0.10 Israel    | 
+R_5K1 R10ALT1        ERJ-2RKF5101X                |       0   19w    0.10 China     |   19388 28.0w    0.02 China     |  681018   19w    0.11 China     | 
+
+Digi-Key rows not in the upload:

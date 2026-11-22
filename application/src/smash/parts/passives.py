@@ -860,3 +860,111 @@ def _tms_sku(value: str) -> str:
     whole = int(uh)
     frac = int(round((uh - whole) * 10))
     return f"{whole}R{frac}"
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# (2026-11-21) Orderable replacements found by the BOM / Mouser pass:
+#   T528W 470 µF only exists at 1.8 V and T528W 100 µF does not exist →
+#   KEMET T545W / T520W polymers in the same W case (7343-15, 1.5 mm);
+#   WE-KI 0402 has no 1.3 / 1.8 nH → Murata LQG15HS 1.3 nH, Würth WE-MK
+#   1.8 nH; the 33 V activation rail needs a 50 V 2.2 µF → 0805.
+# SamacSys libraries vendored in parts/sources/<PN>/ (user, 2026-11-21);
+# C0805C225K5RACTU and 744784018A came with a 3D model only → KiCad stock
+# IPC footprint + the vendor model.
+# ═════════════════════════════════════════════════════════════════════════
+
+def _samacsys_2pin_fp(pn: str, mod: str, package_class: str, size_mm: tuple,
+                      height_mm: float) -> Footprint:
+    fp_mod = src(pn, mod)
+    return Footprint(
+        name=mod.rsplit(".", 1)[0], package_class=package_class,
+        pads=pads_from_kicad_mod(fp_mod),
+        body_outline=outline_polygon(fp_mod, "F.Fab"),
+        courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+        size_mm=size_mm, height_mm=height_mm,
+        model_3d_path=datasheet_ref(pn, f"{pn}.stp"), source="samacsys",
+    ).ensure_courtyard_clearance()
+
+
+def _polymer_w(design, ref, *, pn, value, mod, series, **overrides) -> Chip:
+    fields = dict(
+        manf="KEMET", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description=f"KEMET {series} polymer tantalum, {value}, 6.3 V, W case 7343-15 (1.5 mm)",
+        package="case-W (EIA-7343-15)", dielectric="Ta₂O₅ + conductive polymer",
+        size_mm=(7.3, 4.3), height_mm=1.5, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=6.3, temp_range_c=(-55, 105), weight_g=WEIGHT_G_TANTALUM_7343X,
+        standards=["RoHS", "Pb-Free"], pins=_two_pin("+", "-"),
+        footprint=_samacsys_2pin_fp(pn, mod, "case-W (EIA-7343-15)", (7.3, 4.3), 1.5),
+        note=(f"{series} polymer, W case — replaces a T528W value that is not made "
+              "(2026-11-21). ESR differs from the T528: re-check the buck loops."),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_polymer_t545w477m006ate035(design, ref: str, *, value: str = "470uF", **overrides) -> Chip:
+    """KEMET T545W477M006ATE035 — 470 µF 6.3 V polymer, W case 7343-15."""
+    return _polymer_w(design, ref, pn="T545W477M006ATE035", value=value, mod="T545W.kicad_mod",
+                      series="T545", **overrides)
+
+
+def add_capacitor_polymer_t520w107m006ate040(design, ref: str, *, value: str = "100uF", **overrides) -> Chip:
+    """KEMET T520W107M006ATE040 — 100 µF 6.3 V polymer, W case 7343-15."""
+    return _polymer_w(design, ref, pn="T520W107M006ATE040", value=value, mod="T520W.kicad_mod",
+                      series="T520", **overrides)
+
+
+def add_capacitor_c0805c225k5ractu(design, ref: str, *, value: str = "2.2uF", **overrides) -> Chip:
+    """KEMET C0805C225K5RACTU — 2.2 µF 50 V X7R 0805 (KiCad stock footprint + vendor 3D)."""
+    pn = "C0805C225K5RACTU"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_0805_2012Metric", size_mm=(2.0, 1.25),
+                         height_mm=1.45, pad_size=(1.15, 1.45), pad_pitch_mm=1.95,
+                         package_class="0805")
+    fp.model_3d_path = datasheet_ref(pn, f"{pn}.stp")
+    # vendor STEP hangs below z = 0 with a corner at the origin: flip about X, centre
+    fp.model_rotate_deg = (180.0, 0.0, 0.0)
+    fp.model_offset_mm = (-1.1, 0.725, 0.0)
+    fields = dict(
+        manf="KEMET", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="KEMET 0805 X7R 2.2 µF 50 V", package="0805", dielectric="X7R",
+        size_mm=(2.0, 1.25), height_mm=1.45, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=50.0, temp_range_c=(-55, 125), weight_g=weight_g_for_passive("0805"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="50 V 2.2 µF X7R (0603 tops out at 10 V). DC bias at 33 V leaves well under 2.2 µF.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_inductor_murata_lqg15hs1n3s02d(design, ref: str, *, value: str = "1.3nH", **overrides) -> Chip:
+    """Murata LQG15HS1N3S02D — 1.3 nH multilayer 0402 (no 1.3 nH in Würth WE-KI/WE-MK)."""
+    pn = "LQG15HS1N3S02D"
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Murata LQG15HS multilayer RF inductor 0402, 1.3 nH", package="0402",
+        size_mm=(1.0, 0.5), height_mm=0.55, inductance_h=parse_inductance_h(value),
+        weight_g=weight_g_for_passive("0402"), standards=["RoHS", "Pb-Free"], pins=_two_pin(),
+        footprint=_samacsys_2pin_fp(pn, "LQG15WH0N7B02D.kicad_mod", "0402", (1.0, 0.5), 0.55),
+        note="RF match value (XV PA input). SamacSys LQG15 land pattern.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_inductor_we_mk_744784018a(design, ref: str, *, value: str = "1.8nH", **overrides) -> Chip:
+    """Würth WE-MK 744784018A — 1.8 nH multilayer 0402 (WE-KI has no 1.8 nH)."""
+    pn = "744784018A"
+    fp = _stock_smd_2pad(name="Inductor_SMD:L_0402_1005Metric", size_mm=(1.0, 0.5),
+                         height_mm=0.55, pad_size=(0.6, 0.6), pad_pitch_mm=1.0,
+                         package_class="0402")
+    fp.model_3d_path = datasheet_ref(pn, f"{pn}.stp")
+    fp.model_rotate_deg = (-90.0, 0.0, 0.0)      # vendor STEP is Y-up, centred
+    fields = dict(
+        manf="Würth Elektronik", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Würth WE-MK multilayer RF inductor 0402, 1.8 nH", package="0402",
+        size_mm=(1.0, 0.5), height_mm=0.55, inductance_h=parse_inductance_h(value),
+        weight_g=weight_g_for_passive("0402"), standards=["RoHS", "Pb-Free"], pins=_two_pin(),
+        footprint=fp, note="RF bias / match value (XV LNA). KiCad stock 0402 land + Würth 3D.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

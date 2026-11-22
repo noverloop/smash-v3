@@ -1,0 +1,9 @@
+Manufacturer=Microchip
+PartNumber=MCP9808-E/MS
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=4.1
+Released=2015-10-29 02:04:24
+Downloaded=2026-11-22 12:50:24
+3D=Y

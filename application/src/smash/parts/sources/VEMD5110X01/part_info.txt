@@ -1,0 +1,9 @@
+Manufacturer=Vishay
+PartNumber=VEMD5110X01
+PartCategory=Photodiode
+PackageCategory=Other
+PinCount=4
+Version=1.4
+Released=2023-08-22 04:49:58
+Downloaded=2026-11-22 12:51:17
+3D=Y

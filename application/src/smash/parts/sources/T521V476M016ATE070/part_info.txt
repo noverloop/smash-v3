@@ -1,0 +1,9 @@
+Manufacturer=Yageo Group
+PartNumber=T521V476M016ATE070
+PartCategory=Capacitor Polarised
+PackageCategory=Other
+PinCount=2
+Version=7.1
+Released=2022-04-30 16:23:06
+Downloaded=2026-11-22 13:02:57
+3D=Y

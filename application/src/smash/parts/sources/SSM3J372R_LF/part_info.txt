@@ -1,0 +1,9 @@
+Manufacturer=Toshiba
+PartNumber=SSM3J372R,LF
+PartCategory=MOSFET (P-Channel)
+PackageCategory=Other
+PinCount=3
+Version=1.1
+Released=2022-10-08 05:18:22
+Downloaded=2026-11-22 10:55:56
+3D=Y

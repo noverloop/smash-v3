@@ -1,0 +1,9 @@
+Manufacturer=Murata Electronics
+PartNumber=LQG15HS1N3S02D
+PartCategory=Inductor
+PackageCategory=Other
+PinCount=2
+Version=2.3
+Released=2019-10-01 12:21:36
+Downloaded=2026-11-21 21:19:36
+3D=Y

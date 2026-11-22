@@ -1,0 +1,176 @@
+{
+ "C_WBA_PI2": [
+  [
+   "C0603C508C5GACTU",
+   "KEMET",
+   "C0G 0.5pF 0603 (SQCS obsolete)"
+  ],
+  [
+   "GRM1885C1HR50CA01D",
+   "Murata",
+   "C0G 0.5pF 0603"
+  ]
+ ],
+ "C_AWR_CLKM": [
+  [
+   "C0603C101J5GACTU",
+   "KEMET",
+   "C0G 100pF 0603"
+  ],
+  [
+   "GRM1885C1H101JA01D",
+   "Murata",
+   "C0G 100pF 0603"
+  ]
+ ],
+ "C_WBA_HSE_BOT": [
+  [
+   "C0603C100J5GACTU",
+   "KEMET",
+   "C0G 10pF 0603 (lib supplied)"
+  ],
+  [
+   "GRM1885C1H100JA01D",
+   "Murata",
+   "C0G 10pF 0603"
+  ]
+ ],
+ "C_TIA_A+3": [
+  [
+   "C0603C829C5GACTU",
+   "KEMET",
+   "C0G 8.2pF 0603 (lib supplied)"
+  ],
+  [
+   "GRM1885C1H8R2CA01D",
+   "Murata",
+   "C0G 8.2pF 0603"
+  ]
+ ],
+ "U_DDR4": [
+  [
+   "MT40A256M16LY-062E IT:F",
+   "Micron",
+   "DDR4 4Gb x16 96-FBGA (lib supplied)"
+  ],
+  [
+   "K4A4G165WF-BCWE",
+   "Samsung",
+   "DDR4 4Gb x16"
+  ],
+  [
+   "IS43QR16256B-083RBLI",
+   "ISSI",
+   "DDR4 4Gb x16"
+  ]
+ ],
+ "U_CAM": [
+  [
+   "AR0234CSSM00SUKA0-CR",
+   "onsemi",
+   "same sensor, tray w/o film"
+  ],
+  [
+   "AR0234CSSM00SUKA0-CP1",
+   "onsemi",
+   "same sensor, low-MOQ tray"
+  ]
+ ],
+ "QMAIN+1": [
+  [
+   "PMV48XP,215",
+   "Nexperia",
+   "P-FET SOT-23 (lib supplied)"
+  ],
+  [
+   "DMP2035U-7",
+   "Diodes Incorporated",
+   "P-FET SOT-23"
+  ]
+ ],
+ "QHOLD+32": [
+  [
+   "NX3008NBKMB,315",
+   "Nexperia",
+   "N-FET low Vth SOT883B (3D only)"
+  ],
+  [
+   "2N7002BKMB,315",
+   "Nexperia",
+   "N-FET SOT883B"
+  ]
+ ],
+ "D_AON_WAKE+1": [
+  [
+   "BAT6406E6327HTSA1",
+   "Infineon",
+   "BAT64-06 dual Schottky SOT-23"
+  ]
+ ],
+ "U_XV_BOOST": [
+  [
+   "MCP1640D-I/MC",
+   "Microchip",
+   "same chip, tube"
+  ]
+ ],
+ "Y_CAM_EXTCLK": [
+  [
+   "SIT8008BI-12-18E-27.000000",
+   "SiTime",
+   "27 MHz 1.8 V MEMS 2520 (lib = 33E variant, same footprint)"
+  ],
+  [
+   "DSC1001CI1-027.0000",
+   "Microchip",
+   "same DSC1001, looser stability"
+  ]
+ ],
+ "Y_LR_TCXO": [
+  [
+   "KT2016K32000BAW28N",
+   "Kyocera",
+   "32 MHz TCXO 2016"
+  ],
+  [
+   "ATX-13-D-32.000MHZ-F20-T3",
+   "Abracon",
+   "32 MHz TCXO"
+  ]
+ ],
+ "Y_WBA_HSE": [
+  [
+   "SIT8008BI-12-33E-32.000000",
+   "SiTime",
+   "32 MHz 3.3 V MEMS 2520"
+  ]
+ ],
+ "Y_AWR_HSE+1": [
+  [
+   "SIT8008BI-12-18E-40.000000",
+   "SiTime",
+   "40 MHz 1.8 V MEMS 2520"
+  ]
+ ],
+ "Y_DEV_HUB": [
+  [
+   "SIT8008BI-12-33E-24.000000",
+   "SiTime",
+   "24 MHz 3.3 V MEMS 2520"
+  ]
+ ],
+ "U_DEV_G474": [
+  [
+   "STM32G474CEU3",
+   "STMicroelectronics",
+   "same chip, ext. temp"
+  ]
+ ],
+ "U_DEV_CAN": [
+  [
+   "TCAN1042GVDRBRQ1",
+   "Texas Instruments",
+   "active TCAN1042 variant"
+  ]
+ ]
+}

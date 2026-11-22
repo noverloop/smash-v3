@@ -1,0 +1,11 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+VEMD5110X01,Vishay,4,D_IR_WAKE+3 R8ALT1,"PIN photodiode with daylight blocking filter (confirm)"
+TEMD5110X01,Vishay,4,D_IR_WAKE+3 R8ALT2,"PIN photodiode, daylight filter (confirm)"
+VEMD5160X01,Vishay,4,D_IR_WAKE+3 R8ALT3,"PIN photodiode (filter: confirm)"
+VEMD2520X01,Vishay,4,D_IR_WAKE+3 R8ALT4,"PIN photodiode (filter: confirm)"
+TEMD7100X01,Vishay,4,D_IR_WAKE+3 R8ALT5,"PIN photodiode (filter: confirm)"
+VEMD1160X01,Vishay,4,D_IR_WAKE+3 R8ALT6,"PIN photodiode (filter: confirm)"
+BPW 34 FAS,ams OSRAM,4,D_IR_WAKE+3 R8ALT7,"PIN photodiode SMD, daylight filter"
+SFH 2400 FA,ams OSRAM,4,D_IR_WAKE+3 R8ALT8,"PIN photodiode SMD, daylight filter"
+VEMD5080X01,Vishay,4,D_IR_WAKE+3 R8REF,"unfiltered (for comparison)"
+SiT1602BI-12-18E-40.000000,SiTime,2,Y_AWR_HSE+1 R8,"40 MHz MEMS XO, accepted"

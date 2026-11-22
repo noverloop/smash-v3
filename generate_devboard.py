@@ -71,6 +71,8 @@ def build_design():
     _AFT_CAP_REFS = [c.ref for c in d.chips if getattr(c, "board_tag", None) == G.AFT_CAP]
     removed = [b.ref for b in list(d.batteries) if remove_component(d, b.ref)]
     locks = build_diag(d)
+    from smash.parts.coo import apply_coo
+    apply_coo(d)                          # (2026-11-21) Mouser origin data
     return d, removed, locks
 
 

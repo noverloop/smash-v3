@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=ISM330DLCTR
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=14
+Version=2.2
+Released=2017-07-18 12:28:50
+Downloaded=2026-11-22 12:51:58
+3D=Y

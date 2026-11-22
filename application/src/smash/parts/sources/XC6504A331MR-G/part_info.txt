@@ -1,0 +1,9 @@
+Manufacturer=Torex
+PartNumber=XC6504A331MR-G
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (5-Pin)
+PinCount=5
+Version=3.1
+Released=2019-01-11 05:28:55
+Downloaded=2026-11-22 10:58:10
+3D=Y

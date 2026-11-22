@@ -145,3 +145,9 @@ Unrouted/**/*-backups/
 
 # placement cache (smash.layout.placer.cache)
 /.cache/
+
+# local secrets (API keys)
+.env
+
+# availability tools: Octopart page cache (via the Zyte proxy)
+availability/tools/octo_cache/

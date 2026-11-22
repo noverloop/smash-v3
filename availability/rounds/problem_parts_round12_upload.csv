@@ -1,0 +1,8 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+STM32G0B1REI6N,STMicroelectronics,1,U_G0B1_FIN R12REF,"fin node MCU UFBGA-64 5x5 (Mouser 39, 52 wk); no crypto"
+STM32G0C1REI6N,STMicroelectronics,1,U_G0B1_FIN R12ALT1,"same pinout + AES (0 stock in R10)"
+STM32U083RCI6,STMicroelectronics,1,U_G0B1_FIN R12ALT2,"Cortex-M0+ UFBGA-64 5x5, AES; check DAC + SPI bootloader"
+STM32G441RBI6,STMicroelectronics,1,U_G0B1_FIN R12ALT3,"Cortex-M4 UFBGA-64 5x5, AES, DAC"
+STM32L443RCI6,STMicroelectronics,1,U_G0B1_FIN R12ALT4,"Cortex-M4 low-power UFBGA-64 5x5, AES, DAC"
+STM32L462REI6,STMicroelectronics,1,U_G0B1_FIN R12ALT5,"Cortex-M4 low-power UFBGA-64 5x5, AES; check DAC"
+STM32U545REI6Q,STMicroelectronics,1,U_G0B1_FIN R12ALT6,"Cortex-M33 UFBGA-64 5x5 (SMPS), AES/PKA, DAC"

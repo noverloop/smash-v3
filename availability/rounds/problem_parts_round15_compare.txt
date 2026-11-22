@@ -1,0 +1,7 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+L_ACTIVATE R15ALT1   74438357082                  |    2701   42w    1.50 Korea, Re |     542 42.0w    1.73 South Kor |    7415   42w    0.00 South Kor | 
+U_AWR_FLASH R15ALT1  MX25V8035FZNI                |                        - |       9 35.0w    1.45 Taiwan    |    9678   52w    0.00 Taiwan    | 
+U_AWR_FLASH R15ALT2  MX25V1635FZNI                |                        - |       0 28.0w    1.37 Taiwan    |       0   52w    0.00 Taiwan    | 
+
+Digi-Key rows not in the upload:
+   Mfr Part Number ->        0  N/Aw    0.00 -         

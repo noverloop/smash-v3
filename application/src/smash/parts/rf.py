@@ -1029,29 +1029,41 @@ def _tcxo_2016_footprint() -> Footprint:
 
 
 def add_tcxo_32m_2016(design, ref: str, **overrides) -> Chip:
-    """32 MHz clipped-sine TCXO, 2016 package — GENERIC PLACEHOLDER (no part
-    chosen yet; e.g. a ±0.5 ppm 1.8 V clipped-sine 2016 TCXO). Pin 1 VC/NC,
-    2 GND, 3 OUT, 4 VDD."""
-    pn = "TCXO_32M_2016"
+    """Epson TG2016SMN 32.0000M-MCGNNM0 — 32 MHz clipped-sine TCXO, 2.0 × 1.6
+    mm (2026-11-21, user: orderable at Mouser; replaces the generic
+    placeholder). SnapMagic footprint + symbol vendored in
+    parts/sources/TG2016SMN_32.0000M-MCGNNM0/ (no 3D model supplied).
+    Pin 1 NC, 2 GND, 3 OUT (clipped sine, AC-coupled into XTA), 4 VCC —
+    fed from the LR2021 VTCXO output (firmware SetTcxoMode sets the level:
+    match it to this part's supply-voltage code)."""
+    pn = "TG2016SMN 32.0000M-MCGNNM0"
+    d_ = "TG2016SMN_32.0000M-MCGNNM0"
+    fp_mod = src(d_, "OSC_TG2016SMN_32.0000M-MCGNNM0.kicad_mod")
+    fp = Footprint(
+        name="OSC_TG2016SMN_32.0000M-MCGNNM0", package_class="SMD 2016 TCXO",
+        pads=pads_from_kicad_mod(fp_mod), body_outline=outline_polygon(fp_mod, "F.Fab"),
+        courtyard=outline_polygon(fp_mod, "F.CrtYd"), size_mm=(2.0, 1.6), height_mm=0.8,
+        source="snapmagic").ensure_courtyard_clearance()
     fields = dict(
-        manf="TBD", manf_pn=pn, canonical_id=canonical_id(pn),
+        manf="Epson", manf_pn=pn, canonical_id=canonical_id(pn),
         name=pn, value="32MHz TCXO",
-        description="32 MHz clipped-sine TCXO, 2.0×1.6 mm — PLACEHOLDER part",
+        description="Epson TG2016SMN 32 MHz clipped-sine TCXO, 2.0×1.6 mm",
         datasheet=None,
         fab_country=None, currency=None, price_1pc=None, price_20kpc=None,
-        weight_g=None, standards=[], eccn=None, itar=None,
+        weight_g=None, standards=["RoHS"], eccn=None, itar=None,
         package="SMD 2016", size_mm=(2.0, 1.6), height_mm=0.8,
         temp_range_c=(-40, 85),
         body_material=None, lead_material=None,
         voltage_rating_v=3.6, vcc_nominal_v=1.8,
         i_rms_a=None, power_rating_w=None,
         rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
-        pins=[Pin(num="1", name="VC", type="input", note="NC / control voltage (tie per DS)"),
+        pins=[Pin(num="1", name="NC", type="nc", note="no connect"),
               Pin(num="2", name="GND", type="ground"),
               Pin(num="3", name="OUT", type="output", note="clipped sine, AC-couple"),
-              Pin(num="4", name="VDD", type="power")],
-        footprint=_tcxo_2016_footprint(),
-        note="PLACEHOLDER — choose a real 32 MHz clipped-sine TCXO (LR2021 VTCXO supply).",
+              Pin(num="4", name="VDD", aliases=["VCC"], type="power")],
+        footprint=fp,
+        note=("Epson TG2016SMN 32 MHz (Mouser-orderable). Check the supply-voltage code "
+              "of MCGNNM0 against the LR2021 VTCXO setting (datasheet not vendored yet)."),
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

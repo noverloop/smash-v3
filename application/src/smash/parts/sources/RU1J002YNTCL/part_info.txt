@@ -1,0 +1,9 @@
+Manufacturer=ROHM Semiconductor
+PartNumber=RU1J002YNTCL
+PartCategory=MOSFET (N-Channel)
+PackageCategory=SO Transistor Flat Lead
+PinCount=3
+Version=2.2
+Released=2018-04-27 08:45:20
+Downloaded=2026-11-21 22:35:47
+3D=Y

@@ -209,7 +209,7 @@ class TestCapToGndDispatch:
         ("4.7uF",  "add_capacitor_x7r_0603_kemet_mil", 2),  # 2×2.2 µF
         ("10uF",   "add_capacitor_x7r_0603_kemet_mil", 5),  # 5×2.2 µF parallel
         ("22uF",   "add_capacitor_tantalum_3528_kemet_t491", 1),
-        ("100uF",  "add_capacitor_polymer_7343_kemet_t528",  1),
+        ("100uF",  "add_capacitor_polymer_t520w107m006ate040",  1),   # 2026-11-21: no T528W 100 µF
     ])
     def test_dispatch(self, value, expected_factory, expected_n):
         factory, n = _cap_factory_for_value(value)

@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=VB1943CAJX/1
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=74
+Version=4.1
+Released=2026-04-18 13:08:29
+Downloaded=2026-11-22 10:55:43
+3D=Y

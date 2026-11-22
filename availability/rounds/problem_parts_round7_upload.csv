@@ -1,0 +1,38 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+MT41K256M16TW-107 IT:P,Micron,1,U_DDR3L R7,"DDR3L 4Gb x16, accepted"
+KTDM4G3C618BGIEAT,SMARTsemi,1,U_DDR3L R7ALT,"DDR3L 4Gb x16, alternate"
+STM32U535CBU6,STMicroelectronics,1,U_DEV_MCU R7,"dev MCU, accepted"
+"SSM3J372R,LF",Toshiba,2,QMAIN+Q_AON_EN R7,"P-FET SOT-23F, accepted"
+RU1J002YNTCL,ROHM,33,QHOLD+32 R7,"N-FET 50 V, accepted"
+BAS4002LE6327XTMA1,Infineon,4,D_JUMP_WAKE+3 R7,"Schottky, applied"
+6TPE470MI,Panasonic,1,C_BAT_BULK1 R7,"470 uF polymer, accepted"
+T520V476M016ATE070,KEMET,1,C_BOOST_OUT1 R7,"47 uF polymer, accepted (buy Mouser lot: Farnell lot China)"
+"TC78H653FTG,EL",Toshiba,4,U_FIN1+3 R7,"dual H-bridge, accepted"
+MCP9808T-E/MC,Microchip,1,U_TMP1 R7,"temp sensor, accepted"
+XC6220B181MR-G,Torex,1,U_AWR_LDO18 R7,"1.8 V LDO, accepted"
+C0603C829C5GACTU,KEMET,4,C_TIA_A+3 R7,clear win
+C0603C100J5GACTU,KEMET,1,C_WBA_HSE_BOT R7,clear win
+GJM1555C1HR80BB01D,Murata,2,C_LR_HF_RX+1 R7,clear win
+GJM1555C1H1R2BB01D,Murata,2,C_LR_HF_TX1+1 R7,clear win
+GJM1555C1H5R1BB01D,Murata,1,C_XV_LNA_OUT R7,clear win
+GRM155R71E473KA88D,Murata,2,C_ACTIVATE_SS+1 R7,clear win
+LQG15HS1N8S02D,Murata,1,L_XV_LNA_BIAS R7,clear win
+RB160VAM-60TR,ROHM,3,D_ACTIVATE+2 R7,clear win
+DSC1001CI1-027.0000,Microchip,1,Y_CAM_EXTCLK R7,clear win
+MCP1640D-I/MC,Microchip,1,U_XV_BOOST R7,clear win
+MCP1640DT-I/MC,Microchip,1,U_XV_BOOST R7REF,"original reel part (Thailand)"
+XC6504A331MR-G,Torex,2,U_AON_LDO+1 R7,clear win
+MCP6541T-E/OT,Microchip,1,U_COMP_PZ R7,clear win
+TJA1462BTK/0Z,NXP,1,U_CAN_GW R7,clear win
+USBLC6-4SC6,STMicroelectronics,1,U_DEV_ESD R7,clear win
+PAC1941T-1E/J6CX,Microchip,1,U_DEV_INA R7,clear win
+DSC1001CI5-032.0000,Microchip,1,Y_WBA_HSE R7,"MEMS, keep"
+DSC1001CI5-040.0000,Microchip,2,Y_AWR_HSE+1 R7,"MEMS, keep"
+TG2016SMN 32.0000M-MCGNNM0,Epson,1,Y_LR_TCXO R7,"TCXO, fitted"
+SiT5356AECFQ-33N0-32.000000T,SiTime,1,Y_LR_TCXO R7ALT,"MEMS TCXO footprint (SiTime direct expected)"
+VBPW34FAS,Vishay,4,D_IR_WAKE+3 R7,"photodiode, keep"
+VB1943CAJX,STMicroelectronics,1,U_CAM R7,"RGB-NIR 5.1 MP sensor, evaluating"
+VB1943CAJX/1,STMicroelectronics,1,U_CAM R7ALT1,alternate ordering code
+VB5943CAJX,STMicroelectronics,1,U_CAM R7ALT2,"mono sibling, same footprint"
+CX90B-16P,Hirose,1,J_DEV_USB R7,"USB-C 16P, open"
+CX90B1-24P,Hirose,1,J_NOSE_USB R7,"USB-C 24P, open"

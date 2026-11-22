@@ -1,0 +1,9 @@
+Manufacturer=Panasonic
+PartNumber=6TPE470MI
+PartCategory=Capacitor Polarised
+PackageCategory=Other
+PinCount=2
+Version=10.6
+Released=2021-08-30 11:44:58
+Downloaded=2026-11-22 12:49:27
+3D=Y

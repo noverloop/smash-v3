@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PMV48XP
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=3
+Version=1.2
+Released=2017-01-12 09:39:31
+Downloaded=2026-11-21 22:14:40
+3D=Y

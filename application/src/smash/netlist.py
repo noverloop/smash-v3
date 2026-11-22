@@ -113,6 +113,13 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         return add_capacitor_x7r_0603_kemet_mil, n
     if farads < 47e-6:
         return add_capacitor_tantalum_3528_kemet_t491, 1
+    # (2026-11-21) orderable W-case polymers where the T528 value is not made
+    if abs(farads - 470e-6) < 1e-9:
+        from smash.parts.passives import add_capacitor_polymer_t545w477m006ate035
+        return add_capacitor_polymer_t545w477m006ate035, 1
+    if abs(farads - 100e-6) < 1e-9:
+        from smash.parts.passives import add_capacitor_polymer_t520w107m006ate040
+        return add_capacitor_polymer_t520w107m006ate040, 1
     return add_capacitor_polymer_7343_kemet_t528, 1
 
 
@@ -284,7 +291,11 @@ def ind_between(design: Design,
         add_inductor_tms201210alm_tdk,
     )
     l_h = parse_inductance_h(value)
-    if family == "we-ki" or (family == "auto" and l_h <= 220e-9):
+    if family == "auto" and abs(l_h - 1.3e-9) < 1e-12:      # (2026-11-21) not in WE-KI/WE-MK
+        from smash.parts.passives import add_inductor_murata_lqg15hs1n3s02d as factory
+    elif family == "auto" and abs(l_h - 1.8e-9) < 1e-12:    # (2026-11-21) not in WE-KI
+        from smash.parts.passives import add_inductor_we_mk_744784018a as factory
+    elif family == "we-ki" or (family == "auto" and l_h <= 220e-9):
         factory = add_inductor_we_ki_0402_wurth
     elif family == "tms" or (family == "auto" and l_h <= 2.2e-6):
         factory = add_inductor_tms201210alm_tdk

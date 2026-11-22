@@ -1,0 +1,9 @@
+Manufacturer=STMicroelectronics
+PartNumber=STM32U545REI6Q
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=64
+Version=3.1
+Released=2024-06-14 04:22:38
+Downloaded=2026-11-22 13:02:45
+3D=Y

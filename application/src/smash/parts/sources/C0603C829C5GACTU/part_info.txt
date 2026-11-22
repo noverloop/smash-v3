@@ -1,0 +1,9 @@
+Manufacturer=Yageo Group
+PartNumber=C0603C829C5GACTU
+PartCategory=Capacitor
+PackageCategory=Capacitor Chip Non-polarised
+PinCount=2
+Version=9.2
+Released=2023-03-07 11:16:21
+Downloaded=2026-11-21 22:14:27
+3D=Y

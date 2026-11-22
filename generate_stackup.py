@@ -67,7 +67,7 @@ from smash.parts.regulators import (                                    # noqa: 
 )
 from smash.parts.motor_drivers import add_drv8428epwpr, add_drv8428erter  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
-                                add_pmeg040v050epe_qz, add_bat64_06_tp,
+                                add_pmeg040v050epe_qz,
                                 add_bas40_02l, add_stps1l60zf, add_pmeg6010cej)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
@@ -95,7 +95,8 @@ from smash.parts.oscillators import (                                    # noqa:
     add_sit1630ae_s6_dcc_32_768e, add_sit1533ai_h4_dcc_32_768e, add_dsc1001ci5_008_0000,
     add_dsc1001ci5_032_0000, add_dsc1001ci5_040_0000, add_dsc1001ci5_027_0000,
 )
-from smash.parts.passives import (                                       # noqa: E402
+from smash.parts.passives import (
+    add_capacitor_x7r_0805_kemet_mil,                                       # noqa: E402
     add_capacitor_c0g_0603_avx_sqcs, add_capacitor_x7r_0402_kemet,
     add_we_744043100, add_lps4018_103mrb, add_xgl5020_472mec, add_xgl5020_822mec,
     add_blm18pg221sn1d,
@@ -2514,7 +2515,7 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "COMP_5V")    .connect(boost.pin("EN"))      # 4
     _net(d, "ACTIVATE_COMP")  .connect(boost.pin("COMP"))    # 8
     _net(d, "ACTIVATE_FREQ")  .connect(boost.pin("FREQ"))    # 10
-    res_between(d, "ACTIVATE_FREQ", "GND", "176k", ref="R_ACTIVATE_FREQ", board_tag=BT_BOOST)  # 600 kHz
+    res_between(d, "ACTIVATE_FREQ", "GND", "174k", ref="R_ACTIVATE_FREQ", board_tag=BT_BOOST)  # ≈600 kHz (2026-11-21: 176k is not E96 → 174k, +1 %)
     _net(d, "ACTIVATE_SS")    .connect(boost.pin("SS"))      # 5
     cap_to_gnd(d, "ACTIVATE_SS", "47nF", ref="C_ACTIVATE_SS", board_tag=BT_BOOST, pin=boost.pin("SS"))
     cap_to_gnd(d, "COMP_5V", "10uF", ref="C_ACTIVATE_IN", board_tag=BT_BOOST, pin=boost.pin("VIN"))
@@ -2551,7 +2552,12 @@ def _build_activation_array(d: Design) -> None:
     cap_to_gnd(d, "ACTIVATE_COMP_C", "220nF", ref="C_ACTIVATE_COMP", board_tag=BT_BOOST, pin=(boost.ref, None))
     # Boost output ceramic — loop stability only (DS wants ≥4.7 µF out), NOT
     # an activate reservoir. cap_to_gnd dispatches 4.7 µF → 50 V KEMET 0603.
-    cap_to_gnd(d, "ACTIVATE_HV", "4.7uF", ref="C_ACTIVATE_OUT", board_tag=BT_BOOST, pin=(boost.ref, None))
+    # (2026-11-21, user) on the 33 V rail: 2 × 2.2 µF 0805 X7R 50 V (KEMET
+    # C0805C225K5RACTU) — no 0603 2.2 µF X7R is made above 10 V.
+    for _k in (1, 2):
+        from smash.parts.passives import add_capacitor_c0805c225k5ractu
+        _c = add_capacitor_c0805c225k5ractu(d, ref=f"C_ACTIVATE_OUT_{_k}", board_tag=BT_BOOST)
+        _net(d, "ACTIVATE_HV").connect(_c.pin("1")); _net(d, "GND").connect(_c.pin("2"))
 
     # ── bleed + HV monitor ─────────────────────────────────────────────
     res_between(d, "ACTIVATE_HV", "GND", "100k", ref="R_ACTIVATE_BLEED", board_tag=BT)
@@ -3338,7 +3344,7 @@ def build_power_board(d: Design) -> None:
     # ramp; at 1.2 MHz the same L leaves ~6 % and the DS warns internal-osc
     # pulse-skipping above 1.2 MHz anyway. FREQ must never be left open.
     _net(d, "COMP_5V_FREQ").connect(boost.pin("FREQ"))    # 10
-    res_between(d, "COMP_5V_FREQ", "GND", "176k",
+    res_between(d, "COMP_5V_FREQ", "GND", "174k",          # (2026-11-21) 176k not E96
                 ref="R_BOOST_FREQ", board_tag=BTAG)
     # Soft-start 47 nF (DS §7.3.2: "eliminates the output overshoot ... for
     # most applications") — closes the rail-audit inrush item: the PMIC +
@@ -3920,12 +3926,18 @@ def build_wakeup_board(d: Design) -> None:
                 ref="R_JUMP_PAD", board_tag="aft_end_board")
     res_between(d, "BAT_RAW", "JUMP_WAKE", "22k",
                 ref="R_JUMP_PU", board_tag=BTAG)
-    d_jump = add_bat64_06_tp(d, ref="D_JUMP_WAKE", board_tag=BTAG)
-    _net(d, "MAIN_SW_GATE").connect(d_jump.pin("COM_A"))
-    _net(d, "JUMP_WAKE_K") .connect(d_jump.pin("K_1"))
+    # (2026-11-22, user) the dual common-anode BAT64-06 (shallow stock,
+    # China-origin lots) became two single Infineon BAS40-02L (TSLP-2-1,
+    # 1.0 × 0.6 mm, made in Austria; already in the BOM for the parachute
+    # matrix). Same OR: anodes on the gate, one cathode per wake source.
+    d_jump1 = add_bas40_02l(d, ref="D_JUMP_WAKE", board_tag=BTAG)
+    _net(d, "MAIN_SW_GATE").connect(d_jump1.pin("A"))
+    _net(d, "JUMP_WAKE_K") .connect(d_jump1.pin("K"))
     res_between(d, "JUMP_WAKE_K", "JUMP_WAKE", "3.3k",
                 ref="R_JUMP_WAKE", board_tag=BTAG)
-    _net(d, "MAG_SHELF_K").connect(d_jump.pin("K_2"))   # TMR shelf-wake leg
+    d_jump2 = add_bas40_02l(d, ref="D_JUMP_WAKE2", board_tag=BTAG)
+    _net(d, "MAIN_SW_GATE").connect(d_jump2.pin("A"))
+    _net(d, "MAG_SHELF_K") .connect(d_jump2.pin("K"))   # TMR shelf-wake leg
 
     # (2026-11-20, user) the whole 3V3 chain (MCP1640 boost + LDL112 LDO +
     # their caps, ~86 mm²) moved wakeup → power_board BOTTOM: wakeup's top
@@ -4036,10 +4048,13 @@ def build_wakeup_board(d: Design) -> None:
     # never boots and the round falls back asleep after the ~100 ms gate
     # hold. (Latent bug in the first mag/jumpstart wiring, found and
     # fixed during the NFC removal 2026-07-30.)
-    d_aon = add_bat64_06_tp(d, ref="D_AON_WAKE", board_tag=_ACT_TAG)
-    _net(d, "AON_EN_GATE").connect(d_aon.pin("COM_A"))
-    _net(d, "JUMP_WAKE_K").connect(d_aon.pin("K_1"))   # shared 3.3 k → JUMP_WAKE
-    _net(d, "MAG_SHELF_K").connect(d_aon.pin("K_2"))   # TMR shelf-wake leg (twin-OR rule)
+    # (2026-11-22, user) two single BAS40-02L instead of the dual BAT64-06.
+    d_aon1 = add_bas40_02l(d, ref="D_AON_WAKE", board_tag=_ACT_TAG)
+    _net(d, "AON_EN_GATE").connect(d_aon1.pin("A"))
+    _net(d, "JUMP_WAKE_K").connect(d_aon1.pin("K"))    # shared 3.3 k → JUMP_WAKE
+    d_aon2 = add_bas40_02l(d, ref="D_AON_WAKE2", board_tag=_ACT_TAG)
+    _net(d, "AON_EN_GATE").connect(d_aon2.pin("A"))
+    _net(d, "MAG_SHELF_K").connect(d_aon2.pin("K"))    # TMR shelf-wake leg (twin-OR rule)
     q_usbwk2 = add_bss138akm_qyl(d, ref="Q_USB_WAKE2", board_tag=_ACT_TAG)
     _net(d, "AON_EN_GATE").connect(q_usbwk2.pin("3"))  # Drain
     _net(d, "GND")        .connect(q_usbwk2.pin("2"))  # Source
@@ -6574,6 +6589,8 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         for leaf in _BRANCH_PARENT
         if leaf in board_set and _BRANCH_PARENT[leaf][0] in board_set and leaf not in snake
     ]
+    from smash.parts.coo import apply_coo
+    apply_coo(d)                               # (2026-11-21) Mouser origin data
     _empty_aft_end_top(d)
     panel, boards = build_config_panel(snake, branches=branches,
                                        straight=_STRAIGHT_SNAKE,
@@ -6729,6 +6746,8 @@ def main() -> int:
     # Build the panel first: the fold optimiser picks the snake order and
     # materialises one spacer Board per gap, so the spacer chips can only
     # be created once those Boards exist.
+    from smash.parts.coo import apply_coo
+    print(f"country of origin: {apply_coo(d)} parts from Mouser data (smash/data/coo_mouser.json)")
     _moved = _empty_aft_end_top(d)
     print(f"aft reorder: {_moved} aft_end top-face parts → activation_interface")
     panel, boards = build_panel(straight=_STRAIGHT_SNAKE,
