@@ -1,0 +1,11 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_COMP_BOOST R21A    TPS61022RWUR                 |       0   26w    2.11 Philippin |                        - |       0   26w    2.38 United St | 
+U_COMP_BOOST R21B    LTC3124EDHC#TRPBF            |     677     w    8.62 Thailand  |                        - |    3197   10w   11.44 Thailand  | 
+U_COMP_BOOST R21C    TPS61088RHLR                 |      40   20w    5.31 Philippin |                        - |       0   26w    0.00 China     | 
+U_AWR_BUCK12+U_AWR_B TPS62822DLCR                 |     186   26w    1.74 Philippin |                        - |   11284   26w    1.96 United St | 
+U_AWR_BUCK12+U_AWR_B TPS62823DLCR                 |      10   26w    1.31 Philippin |                        - |       0   26w    1.67 United St | 
+U_AWR_BUCK12+U_AWR_B TPS62088YFPR                 |      51   26w    1.70 Philippin |                        - |    1056   26w    1.83 Philippin | 
+U_AWR_LDO18 R21G     TPS62840DLCR                 |       0   26w    1.95 Philippin |                        - |       0   26w    2.15 Japan     | 
+U_AWR_LDO18 R21H     MAX38640AENT+T               |    4870     w    2.02 Taiwan/Ta |    2500 12.0w    2.54 Taiwan    |    5727   10w    0.00 Taiwan    | 
+
+Digi-Key rows not in the upload:
