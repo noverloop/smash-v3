@@ -1,0 +1,23 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+L_AWR_BUCK12+L_AWR_B TMS201210ALM-R47MTAA         |    4874   20w    0.41 Japan     |    5900 20.0w    0.40 Japan     |    5803   20w    0.46 Japan     | 
+L_AWR_BUCK13 R22     TMS201210ALM-R24MTAA         |    4530   20w    0.41 Japan     |    5945 20.0w    0.40 Japan     |    5682   20w    0.46 Japan     | 
+C_AWR12_FF+C_AWR13_F 04025A121JAT2A               |    3089   12w    0.11 Taiwan    |   10000 26.0w    0.01 Taiwan    |       0   18w    0.10 China     | 
+C_BOOST_COMP R22     C0402C152K3RACTU             |   17348   24w    0.17 Mexico/Me |   18247 16.0w    0.07 Mexico    |   45424   13w    0.16 Mexico    | 
+C_BOOST_PL R22       C0402C470J5GACTU             |  404987   35w    0.09 Taiwan    |   83914 45.0w    0.03 Taiwan    | 1101140   17w    0.10 Taiwan    | 
+C_BOOST_COMP_F R22   C0603C391J5GACTU             |   84417   44w    0.12 Mexico    |   20278 57.0w    0.07 Mexico    |   19348   22w    0.14 Mexico    | 
+R_BOOST_R1 R22       CRCW0402360KFKED             |   26626   18w    0.09 Taiwan    |    6040 20.0w    0.02 Taiwan    |   45736   21w    0.10 Taiwan    | 
+R_BOOST_R2 R22       CRCW0402113KFKED             |     837   18w    0.09 Taiwan    |   40680 20.0w    0.02 Israel    |    9944   21w    0.10 Taiwan    | 
+R_BOOST_FREQ R22     CRCW040228K0FKED             |   61220   18w    0.09 Taiwan    |  140690 20.0w    0.02 Israel    |   88214   21w    0.10 Taiwan    | 
+R_BOOST_COMP R22     CRCW040260K4FKED             |   58483   18w    0.09 Taiwan    |  114512 20.0w    0.03 Israel    |  112487   21w    0.10 Taiwan    | 
+R_BOOST_PL R22       CRCW040268K1FKED             |  146220   18w    0.09 Taiwan    |    8580 20.0w    0.02 Taiwan    |  122165   21w    0.10 Taiwan    | 
+R_AWR18_FB1 R22      CRCW0402200KFKED             |  412267   18w    0.09 Taiwan    |  156652 20.0w    0.02 Taiwan    |  225319   21w    0.10 Taiwan    | 
+
+Digi-Key rows not in the upload:
+   TPS61022RWUR -> TPS61022RWUR       0   26w    2.38 United St Active
+   LTC3124EDHC#TRPBF -> LTC3124EDHC#TRPBF    3197   10w   11.44 Thailand  Active
+   TPS61088RHLR -> TPS61088RHLR       0   26w    6.16 China     Active
+   TPS62822DLCR -> TPS62822DLCR   11284   26w    1.96 United St Active
+   TPS62823DLCR -> TPS62823DLCR       0   26w    1.67 United St Active
+   TPS62088YFPR -> TPS62088YFPR    1056   26w    1.83 Philippin Active
+   TPS62840DLCR -> TPS62840DLCR       0   26w    2.15 Japan     Active
+   MAX38640AENT+T -> MAX38640AENT+T    5727   10w    2.86 Taiwan    Active

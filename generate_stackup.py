@@ -3375,7 +3375,10 @@ def build_power_board(d: Design) -> None:
                ref="C_BOOST_COMP", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_COMP", "390pF",
                ref="C_BOOST_COMP_F", board_tag=BTAG, pin=boost.pin("VC"))
-    c_pl = add_capacitor_x7r_0402_kemet(d, ref="C_BOOST_PL", value="47pF", board_tag=BTAG)
+    # (round 22) pinned to the C0G part — the 0402 factory would auto-pick X7R
+    c_pl = add_capacitor_x7r_0402_kemet(d, ref="C_BOOST_PL", value="47pF", board_tag=BTAG,
+                                        manf_pn="C0402C470J5GACTU", manf="KEMET",
+                                        description="47 pF C0G 0402 50 V")
     _net(d, "COMP_5V_RAW").connect(c_pl.pin("1")); _net(d, "COMP_5V_PL").connect(c_pl.pin("2"))
     res_between(d, "COMP_5V_PL", "COMP_5V_FB", "68.1k", ref="R_BOOST_PL", board_tag=BTAG)
     # LC filter: COMP_5V_RAW (fins, noisy) → COMP_5V (PMIC, clean).
