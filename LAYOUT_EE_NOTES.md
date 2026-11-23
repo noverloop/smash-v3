@@ -29,6 +29,11 @@ next to this file, generated from the design at export time.
   mould, and the full component stack (`stackup_components.step.zip`, zipped
   for GitHub's 100 MB limit).
 - `FOOTPRINT_REVIEW.md` — footprint provenance list (see §5).
+- `dev_board/` — the **dev board** KiCad project (`dev_board.kicad_pro`): the
+  whole tower schematic on one flat 285 × 102 mm 8-layer board + the USB
+  diagnostic section; its footprints, `fab/` (dev + production gerbers),
+  `PANEL_NOTES.md` and the fixture collar STEP. It shares `../datasheets` and
+  `../3dmodels` with the tower project (keep the folder structure when copying).
 - The same folder is also next to it as `<date>.zip`.
 
 Stack (bottom → top): A aft_end_board · B-G battery spacers · H
@@ -120,7 +125,7 @@ are fixed (`test_antenna_sim_stack`):
   SiT5356 20 MHz for 32 MHz, DSC1001 family, H3LIS331 on a LIS3DH LGA-16 land,
   SSM3K35 on SSM3J64, SSM3K7002 on 1SS294, BLM18PG on BLM18SP).
 
-## 6. Dev board (separate project — dist/dev_board)
+## 6. Dev board (`dev_board/` in this package)
 
 - 5 debug parts did not fit under the tower socket and are unplaced
   (U_DEV_INA, U_DEV_ISENSE, U_DEV_LDO, Y_DEV_HUB stacked at one spot;

@@ -154,6 +154,53 @@ NOTES = REPO / "LAYOUT_EE_NOTES.md"      # maintained by hand; copied into each 
 _VENDOR = {"samacsys", "snapmagic", "samesky", "ultralibrarian"}
 
 
+DEVB = DIST / "dev_board"
+DEVB_SKIP = {"datasheets", "3dmodels", ".history", "dev_board.kicad_prl"}
+
+
+def export_devboard(dst: pathlib.Path, warn: list) -> int:
+    """(2026-11-23, user) dist/dev_board/ → <dst>/dev_board/: the dev-board KiCad
+    project, its footprints, fab outputs and fixture collar. Its datasheets/
+    and 3dmodels/ are flattened into the SHARED <dst>/datasheets + 3dmodels
+    (identical files are stored once) and its ${KIPRJMOD} links point at
+    ../datasheets / ../3dmodels. Returns the number of files written."""
+    if not (DEVB / "dev_board.kicad_pcb").exists():
+        warn.append("no dist/dev_board/: run generate_devboard.py first (dev board not exported)")
+        return 0
+    newest_src = max((REPO / f).stat().st_mtime for f in ("generate_stackup.py", "generate_devboard.py"))
+    if (DEVB / "dev_board.kicad_pcb").stat().st_mtime < newest_src:
+        warn.append("dist/dev_board is older than generate_stackup.py / generate_devboard.py — "
+                    "re-run generate_devboard.py")
+    locks = [p.name for p in DEVB.glob("~*.lck")]
+    if locks:
+        warn.append(f"KiCad has the dev board open ({', '.join(locks)}); exported the saved files")
+    dd = dst / "dev_board"
+    dd.mkdir()
+    n = 0
+    for p in sorted(DEVB.iterdir()):
+        if p.name in DEVB_SKIP or p.name.startswith(("~", ".")):
+            continue
+        if p.is_dir():
+            shutil.copytree(p, dd / p.name, ignore=JUNK)
+        else:
+            shutil.copy2(p, dd / p.name)
+    moves: dict[str, str] = {}
+    for d in FLAT_DIRS:
+        if (DEVB / d).exists():
+            moves.update({k: "../" + v for k, v in flatten(DEVB / d, dst / d, d, warn).items()})
+    for p in [*dd.glob("*.kicad_s*"), *dd.glob("*.kicad_pcb"), *(dd / "footprints").rglob("*.kicad_mod")]:
+        text = read(p)
+        new = relink(text, moves)
+        if new != text:
+            write(p, new)
+    broken = sorted({r for p in [*dd.glob("*.kicad_s*"), *dd.glob("*.kicad_pcb"),
+                                 *(dd / "footprints").rglob("*.kicad_mod")]
+                     for r in KIPRJ.findall(read(p)) if not (dd / r).exists()})
+    if broken:
+        warn.append(f"dev_board: {len(broken)} ${{KIPRJMOD}} path(s) not found: " + ", ".join(broken[:8]))
+    return n
+
+
 def footprint_review(stamp_line: str) -> str:
     """FOOTPRINT_REVIEW.md: every footprint of the maximalist tower with its
     provenance. Self-drawn lands (datasheet / authored / custom / project)
@@ -171,7 +218,16 @@ def footprint_review(stamp_line: str) -> str:
         fn(d)
     apply_orderable(d)
     by = collections.OrderedDict()
-    for c in d.chips:
+    tower_refs = {c.ref for c in d.chips}
+    chips = list(d.chips)
+    try:                                   # + the dev board's own (dev-only) parts
+        import generate_devboard as D
+        dd = D.build_design()[0]
+        apply_orderable(dd)
+        chips += [c for c in dd.chips if c.ref not in tower_refs]
+    except Exception as e:                 # never block the review on it
+        print(f"  (footprint review: dev board not included: {e!r})")
+    for c in chips:
         fp = c.footprint
         if fp is None:
             continue
@@ -341,6 +397,9 @@ def main() -> int:
             shutil.copy2(q, step / "rings" / f"{name}{q.suffix}")
         if cams:
             shutil.copy2(cams[0], step / "rings" / f"{stem}_cam.md")
+
+    # (2026-11-23, user) the dev board travels with the tower.
+    export_devboard(dst, warn)
 
     # (2026-11-23, user) Layout-EE notes + the footprint review list.
     head = git("rev-parse", "--short", "HEAD").strip()
