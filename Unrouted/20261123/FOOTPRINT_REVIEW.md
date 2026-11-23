@@ -1,6 +1,6 @@
 # Footprint review
 
-Export 2026-11-23 from commit 3ac55e8 (generate_stackup.py, maximalist).
+Export 2026-11-23 from commit ef9a71d (generate_stackup.py, maximalist).
 
 
 Every footprint in the maximalist tower, by provenance. **Self-drawn** lands were made from datasheet drawings (or project scripts) and have never been built — check pad sizes, pitch, pin 1 and the exposed pad against the datasheet before fab. **Modified vendor** lands are SamacSys/SnapMagic files we changed (land borrowed from a sibling part, 3D model rotated, pins listed from the datasheet). Positions/rotations are not part of this list.

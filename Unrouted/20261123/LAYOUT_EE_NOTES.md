@@ -1,6 +1,6 @@
 # Layout EE notes
 
-Export 2026-11-23 from commit 3ac55e8 (generate_stackup.py, maximalist).
+Export 2026-11-23 from commit ef9a71d (generate_stackup.py, maximalist).
 
 Maintained by hand in the repo root (`LAYOUT_EE_NOTES.md`); `export_unrouted.py`
 copies it into every `Unrouted/<date>/` export with the export date and commit.
@@ -128,8 +128,10 @@ are fixed (`test_antenna_sim_stack`):
 - 5 debug parts did not fit under the tower socket and are unplaced
   (U_DEV_INA, U_DEV_ISENSE, U_DEV_LDO, Y_DEV_HUB stacked at one spot;
   U_DEV_FLATSW2 off to the side) — place by hand.
-- J_DEV_USB (Hirose CX90B-16P): 4 annular-ring DRC errors on the shell slots,
-  and the SnapMagic land is the CX90B-16P1 file — confirm against Hirose's drawing.
+- J_DEV_USB is still the Same Sky UJ20-C-H (China origin); 4 annular-ring DRC
+  errors on its shell slots. It is due to become the Hirose CX90B-16P (accepted,
+  not applied yet: the SnapMagic land is the CX90B-16P1 file and needs checking
+  against Hirose's drawing) — leave room around it.
 - P_DEV_FIX pogo pads: 4 courtyard overlaps (tight fixture pitch) — confirm.
 - ERC "power pin not driven" on 3V3 / GND = missing power flags only.
 
