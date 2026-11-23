@@ -20,7 +20,7 @@ Unrouted/<date>/ gets:
   3dmodels/<part>.stp     component 3D models  flattened from dist's <part>/<file>;
   datasheets/<part>.pdf   datasheets           the project's links follow
   step/         every generated STEP:
-                  stackup_components.step + stackup_<config>_components.step
+                  stackup_components.step(.zip when > 100 MB) + stackup_<config>_components.step
                   (stackup.step / _no_potting / waveguide_stubs only with SMASH_FEA_STEP=1)
                   <board>/<board>.step + <board>_layered.step
                   rings/<board>-<board>_<material>.step + _cam.md, one per gap
@@ -265,11 +265,23 @@ def main() -> int:
     if ignored:
         warn.append(f"{len(ignored)} exported file(s) are git-ignored and won't be checked in: "
                     + ", ".join(ignored[:10]))
-    for p in written:
+    for i, p in enumerate(list(written)):
         size = p.stat().st_size / 1e6
         if size > GITHUB_MAX_MB:
-            warn.append(f"{p.relative_to(REPO)} is {size:.0f} MB: GitHub refuses files over "
-                        f"{GITHUB_MAX_MB} MB (use Git LFS or leave it out)")
+            # (2026-11-23) no Git LFS here: zip it (STEP text shrinks ~7×,
+            # 102 MB stackup_components.step → 14 MB) instead of dropping it
+            import zipfile
+            z = p.with_name(p.name + ".zip")
+            with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+                zf.write(p, arcname=p.name)
+            p.unlink()
+            written[i] = p = z
+            zsize = p.stat().st_size / 1e6
+            print(f"  zipped {p.relative_to(REPO)} ({size:.0f} → {zsize:.0f} MB, GitHub limit "
+                  f"{GITHUB_MAX_MB} MB)")
+            if zsize > GITHUB_MAX_MB:
+                warn.append(f"{p.relative_to(REPO)} is still {zsize:.0f} MB zipped: GitHub "
+                            f"refuses files over {GITHUB_MAX_MB} MB (use Git LFS or leave it out)")
         elif size > WARN_MB:
             warn.append(f"{p.relative_to(REPO)} is {size:.0f} MB (GitHub warns above {WARN_MB} MB)")
     git("add", "-A", "--", rel)
