@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "SmashDevBoard")(type "KiCad")(uri "${KIPRJMOD}/footprints/SmashDevBoard.pretty")(options "")(descr "Editable Smash dev-board footprints"))
+)
