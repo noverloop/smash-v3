@@ -1,6 +1,6 @@
 # Footprint review
 
-Export 2026-11-23 from commit ef9a71d (generate_stackup.py, maximalist).
+Export 2026-11-23 from commit 9def352 + uncommitted changes (generate_stackup.py, maximalist).
 
 
 Every footprint in the maximalist tower, by provenance. **Self-drawn** lands were made from datasheet drawings (or project scripts) and have never been built — check pad sizes, pitch, pin 1 and the exposed pad against the datasheet before fab. **Modified vendor** lands are SamacSys/SnapMagic files we changed (land borrowed from a sibling part, 3D model rotated, pins listed from the datasheet). Positions/rotations are not part of this list.
@@ -35,7 +35,7 @@ Every footprint in the maximalist tower, by provenance. **Self-drawn** lands wer
 | `BUK6D12060PX` | BUK6D120-60PX | Q_PARACHUTE_CUTTER_ACTIVATE, Q_ACT_ROW0, Q_ACT_ROW1, Q_ACT_ROW2, Q_ACT_ROW3, Q_ISO +3 | aft_end_board, dev_diag, power_board, usb_nose | vendor (samacsys) | 3D model rotated (90.0, 0.0, 90.0) by us — check pin 1 in the 3D viewer |
 | `Ceramic_QFN_5032_10pins` | SiT5356AECFQ-33N0-32.000000T | Y_LR_TCXO_MEMS | wakeup_board | vendor (samacsys) | vendor land/model taken from a sibling part (SiT5356AECFQ-33N0-20.000000) — confirm the package is identical |
 | `DSC1001CI50080000` | DSC1001CI1-027.0000, DSC1001CI5-024.0000, DSC1001CI5-032.000 | Y_CAM_EXTCLK, Y_AWR_HSE, Y_MPU_HSE, Y_WBA_HSE, Y_DEV_HUB | camera_module, companion_compute, dev_diag, radar_module, wakeup_board | vendor (samacsys) | vendor land/model taken from a sibling part (DSC1001CI5-008.0000) — confirm the package is identical; CDFN/DFN 2.5×2.0×0.85 mm 4-pad MEMS oscillator footprint. Pin 1 (STANDBY#) at bottom-left, going counter-clockwise. |
-| `HDRV40W64P254X254_2X20_5080X508X869P` | 61304021121 | J_DEV_TWR_IO, J_DEV_FLAT_IO | dev_diag | vendor (samacsys) | land named after another part (HDRV40W64P254X254_2X20_5080X508X869P) — confirm it is the same package |
+| `HDRV40W64P254X254_2X20_5080X508X869P` | 61304021121 | J_DEV_TWR_IO, J_DEV_FLAT_IO | dev_diag | vendor (samacsys) | no 3D model; land named after another part (HDRV40W64P254X254_2X20_5080X508X869P) — confirm it is the same package |
 | `LEDC1608X90N` | LTST-C190GKT, LTST-C190KRKT | D_DEV_SEAT1, D_DEV_SEAT2, D_DEV_SEAT3, D_DEV_LED_VBUS, D_DEV_LED_3V3, D_DEV_LED_TWR +3 | dev_diag | vendor (samacsys) | land named after another part (LEDC1608X90N) — confirm it is the same package; SamacSys 0603 chip-LED footprint. Pin 1 = cathode (silkscreen chamfer at -X,-Y corner of F.Fab marks it). Chip-LED naming: LEDC1608X90N = LED-Chip, 1608 metric size, 0.90 mm height. |
 | `LIS3DHTR (LGA-16)` | H3LIS331DLTR | U_HACC | activation_interface | vendor (samacsys) | land named after another part (LIS3DHTR (LGA-16)) — confirm it is the same package; TFLGA-16L footprint shared with the LIS3DH family — SamacSys supplied as `LIS3DHTR.kicad_mod`. |
 | `LQG15WH0N7B02D` | LQG15HS1N3S02D | L_XV_PA_IN | wakeup_board | vendor (samacsys) | land named after another part (LQG15WH0N7B02D) — confirm it is the same package |
@@ -68,7 +68,7 @@ Every footprint in the maximalist tower, by provenance. **Self-drawn** lands wer
 | `OSC_TG2016SMN_32.0000M-MCGNNM0` | TG2016SMN 32.0000M-MCGNNM0 | Y_LR_TCXO | wakeup_board | vendor (snapmagic) | no 3D model |
 | `PG-TSLP-6-4` | BGS12P2L6E6327XTSA1 | U_LR_SW_HF, U_LR_IFSW, U_ANTSW_S1, U_XV_TR1, U_XV_TR2 | wakeup_board | vendor (samacsys) |  |
 | `QFN40P650X650X90-57N-D` | STPMIC25APQR | U_PMIC | power_board | vendor (samacsys) |  |
-| `QFN50P300X300X90-17N` | TC78H653FTG,EL | U_FIN1, U_FIN2, U_FIN3, U_FIN4 | activation_interface | vendor (samacsys) |  |
+| `QFN50P300X300X90-17N` | TC78H653FTG,EL | U_FIN1, U_FIN2, U_FIN3, U_FIN4 | activation_interface | vendor (samacsys) | no 3D model |
 | `QFN50P300X300X90-17N-D` | PAC1941T-1E/4MX | U_DEV_INA | dev_diag | vendor (samacsys) |  |
 | `QFN50P500X500X100-33N` | ADF4351BCPZ-RL7 | U_XV_LO | wakeup_board | vendor (samacsys) |  |
 | `QFN50P500X500X100-33N-D` | LR2021IMLTRT | U_LR | wakeup_board | vendor (samacsys) |  |

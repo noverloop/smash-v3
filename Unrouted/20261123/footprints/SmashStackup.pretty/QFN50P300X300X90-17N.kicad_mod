@@ -38,9 +38,4 @@
 		(uuid "6831b893-bb62-5785-8a6a-11b87afe97b3")
 	)
 	(embedded_fonts no)
-	(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_EL.stp"
-		(offset (xyz 0 0 0))
-		(scale (xyz 1 1 1))
-		(rotate (xyz 0 0 0))
-	)
 )

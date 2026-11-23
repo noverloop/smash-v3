@@ -132,7 +132,7 @@
 		(uuid "c0bf8aa9-caf9-5fdd-b2e7-f2b09c09434b")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/UJ20-C-H-G-MSMT-1A-P16-TR-67.step"
+	(model "${KIPRJMOD}/3dmodels/UJ20-C-H-G-MSMT-1A-P16-TR-67.step"
 		(offset (xyz 5.565 -6 -0.5))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 180 0))

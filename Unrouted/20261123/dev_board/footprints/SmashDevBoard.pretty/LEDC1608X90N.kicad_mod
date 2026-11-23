@@ -44,7 +44,7 @@
 		(uuid "ebaff960-7cdb-5531-a8f7-385c5c52a1e5")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/LTST-C190GKT.stp"
+	(model "${KIPRJMOD}/3dmodels/LTST-C190GKT.stp"
 		(offset (xyz -0.02 0 0.14))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

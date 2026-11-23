@@ -374,7 +374,7 @@
 		(uuid "93e38cfb-4bac-579c-88e1-0f32bb353433")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/STPMIC25APQR.stp"
+	(model "${KIPRJMOD}/3dmodels/STPMIC25APQR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

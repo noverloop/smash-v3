@@ -254,7 +254,7 @@
 		(uuid "6ae9fd7e-879d-542e-a360-ae2a1f1b4211")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/USB2514B-I_M2.stp"
+	(model "${KIPRJMOD}/3dmodels/USB2514B-I_M2.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

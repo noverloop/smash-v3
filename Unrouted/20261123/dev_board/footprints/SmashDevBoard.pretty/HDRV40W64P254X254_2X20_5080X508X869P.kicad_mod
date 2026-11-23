@@ -312,9 +312,4 @@
 		(uuid "af468118-44c1-5148-98f3-e6ef0f600083")
 	)
 	(embedded_fonts no)
-	(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/61304021121/61304021121.stp"
-		(offset (xyz 0 0 0))
-		(scale (xyz 1 1 1))
-		(rotate (xyz 0 0 0))
-	)
 )

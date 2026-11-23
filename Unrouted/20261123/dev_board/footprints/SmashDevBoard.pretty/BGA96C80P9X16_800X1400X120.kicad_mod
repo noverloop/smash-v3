@@ -608,7 +608,7 @@
 		(uuid "8ec04fc4-3c74-5548-8da2-ba36d7b7222b")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/MT41K256M16TW-107_PTR.stp"
+	(model "${KIPRJMOD}/3dmodels/MT41K256M16TW-107_PTR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

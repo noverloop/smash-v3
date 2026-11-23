@@ -44,7 +44,7 @@
 		(uuid "2da1fa37-795d-5576-a304-4dd10b4866e4")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/RB160VAM-60.stp"
+	(model "${KIPRJMOD}/3dmodels/RB160VAM-60.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

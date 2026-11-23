@@ -80,7 +80,7 @@
 		(uuid "dd74897b-b204-5b6f-ada7-38080c11bd17")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/INA241A2IDGKR.stp"
+	(model "${KIPRJMOD}/3dmodels/INA241A2IDGKR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

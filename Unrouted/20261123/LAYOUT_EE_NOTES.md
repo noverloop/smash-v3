@@ -1,6 +1,6 @@
 # Layout EE notes
 
-Export 2026-11-23 from commit ef9a71d (generate_stackup.py, maximalist).
+Export 2026-11-23 from commit 9def352 + uncommitted changes (generate_stackup.py, maximalist).
 
 Maintained by hand in the repo root (`LAYOUT_EE_NOTES.md`); `export_unrouted.py`
 copies it into every `Unrouted/<date>/` export with the export date and commit.
@@ -30,9 +30,29 @@ next to this file, generated from the design at export time.
 - `dev_board/` — the **dev board** KiCad project (`dev_board.kicad_pro`): the
   whole tower schematic on one flat 285 × 102 mm 8-layer board + the USB
   diagnostic section; its footprints, `fab/` (dev + production gerbers),
-  `PANEL_NOTES.md` and the fixture collar STEP. It shares `../datasheets` and
-  `../3dmodels` with the tower project (keep the folder structure when copying).
+  `PANEL_NOTES.md`, the fixture collar STEP and its own `3dmodels/`. Its datasheet
+  links point at the shared `../datasheets` (keep the folder structure when copying).
 - The same folder is also next to it as `<date>.zip`.
+
+### Importing into Altium (3D models)
+
+The projects are KiCad 8 files; Altium imports them with **File » Import
+Wizard » KiCad Design Files** (supported up to KiCad 8). Altium's documentation
+does not say whether the importer brings footprint STEP models along or how it
+resolves KiCad's `${KIPRJMOD}` paths, so:
+
+1. Import with the folder structure **intact**. Each project carries its own
+   models next to it (`3dmodels/` for the tower, `dev_board/3dmodels/` for the
+   dev board), linked as `${KIPRJMOD}/3dmodels/<part>.step`.
+2. Check a few parts in Altium's 3D view (key 3). If the bodies are there, done.
+3. If they are missing: every STEP is in `3dmodels/`, and **`3D_MODEL_MAP.csv`**
+   lists each footprint (tower and dev board) with its STEP file and the
+   offset / rotation KiCad applies. In the imported PcbLib open the footprint,
+   **Place » 3D Body**, pick the STEP from `3dmodels/`, apply the map's rotation
+   and Z offset, then **Tools » Update PCB With All**. Footprints marked
+   "(no 3D model)" never had a vendor model — get one from the vendor site.
+   Tell us which way it went; if Altium needs plain relative paths we can export
+   them that way.
 
 Stack (bottom → top): A aft_end_board · B-G battery spacers · H
 activation_interface · I spacer · J wakeup_board · K spacer · L power_board ·
@@ -139,7 +159,7 @@ are fixed (`test_antenna_sim_stack`):
 
 - Configuration panels (generator run 2026-11-23): core_radar, core_qpd and
   core_camera clean; core has 2 annular-width errors. Dev board: the items in §6.
-- The combined `Smash.kicad_pcb` panel shows 192 errors (163 copper-to-edge,
-  mostly the castellation escape stubs; 15 zone overlaps; 11 clearance; 2
-  annular; 1 hole clearance). Most are artefacts of showing every tile on one
+- The combined `Smash.kicad_pcb` panel shows 188 errors (163 copper-to-edge,
+  mostly the castellation escape stubs; 15 zone overlaps; 8 clearance; 2
+  annular). Most are artefacts of showing every tile on one
   panel, but they have not been triaged one by one — run DRC per board as you go.

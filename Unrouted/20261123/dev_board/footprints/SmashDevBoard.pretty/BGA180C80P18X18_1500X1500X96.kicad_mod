@@ -1112,7 +1112,7 @@
 		(uuid "4c63103b-f566-5b12-b3c9-5b57acdeea81")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/AWR1843ARBGALPQ1.stp"
+	(model "${KIPRJMOD}/3dmodels/AWR1843ARBGALPQ1.stp"
 		(offset (xyz 0.37 -0.37 1.4))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -180 0 0))

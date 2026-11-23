@@ -56,7 +56,7 @@
 		(uuid "a60abe66-a36f-5a9d-aaa6-37064fa59a49")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/VEMD5110X01.stp"
+	(model "${KIPRJMOD}/3dmodels/VEMD5110X01.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

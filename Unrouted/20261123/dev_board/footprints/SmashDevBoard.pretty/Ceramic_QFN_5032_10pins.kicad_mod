@@ -92,7 +92,7 @@
 		(uuid "5c6f1fa8-2c6c-5c61-b07b-0038144f8dd8")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/SiT5356AECFQ-33N0-20.000000.stp"
+	(model "${KIPRJMOD}/3dmodels/SiT5356AECFQ-33N0-20.000000.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

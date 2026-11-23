@@ -44,7 +44,7 @@
 		(uuid "5d725ad2-02d4-505c-b5d6-7a20ae5342f8")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/IHLP2020BZER100M01.stp"
+	(model "${KIPRJMOD}/3dmodels/IHLP2020BZER100M01.stp"
 		(offset (xyz -0.72 6.09 -2.43))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

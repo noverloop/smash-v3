@@ -62,7 +62,7 @@
 		(uuid "a0fd8db9-be70-5566-b3ab-ec28608ba78a")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/LP5907MFX-2.8_NOPB.stp"
+	(model "${KIPRJMOD}/3dmodels/LP5907MFX-2.8_NOPB.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

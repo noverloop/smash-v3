@@ -476,7 +476,7 @@
 		(uuid "809224b1-0fb0-57fc-9f49-4a2518413a2a")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/VB1943CAJX_1.stp"
+	(model "${KIPRJMOD}/3dmodels/VB1943CAJX_1.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

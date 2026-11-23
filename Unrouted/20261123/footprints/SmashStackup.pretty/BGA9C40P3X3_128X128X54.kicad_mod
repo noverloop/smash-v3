@@ -86,7 +86,7 @@
 		(uuid "3b2c3f4e-8275-56a6-92bf-196c21b4038d")
 	)
 	(embedded_fonts no)
-	(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/BMM350/BMM350.stp"
+	(model "${KIPRJMOD}/3dmodels/BMM350.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

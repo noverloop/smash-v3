@@ -86,7 +86,7 @@
 		(uuid "f83510d5-cedb-5564-8869-f34819ed84e1")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/SST26VF080A-104I_MF.stp"
+	(model "${KIPRJMOD}/3dmodels/SST26VF080A-104I_MF.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

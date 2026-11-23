@@ -185,9 +185,16 @@ def export_devboard(dst: pathlib.Path, warn: list) -> int:
         else:
             shutil.copy2(p, dd / p.name)
     moves: dict[str, str] = {}
-    for d in FLAT_DIRS:
-        if (DEVB / d).exists():
-            moves.update({k: "../" + v for k, v in flatten(DEVB / d, dst / d, d, warn).items()})
+    # (2026-11-23, user: the dev board came into Altium without 3D models) 3D
+    # models stay INSIDE the dev-board project (dev_board/3dmodels/, linked
+    # ${KIPRJMOD}/3dmodels/…) like the tower's — an importer resolving model
+    # paths from the project folder can't follow ${KIPRJMOD}/../. Datasheets
+    # are only links for humans: they stay shared (../datasheets).
+    if (DEVB / "3dmodels").exists():
+        moves.update(flatten(DEVB / "3dmodels", dd / "3dmodels", "3dmodels", warn))
+    if (DEVB / "datasheets").exists():
+        moves.update({k: "../" + v for k, v in
+                      flatten(DEVB / "datasheets", dst / "datasheets", "datasheets", warn).items()})
     for p in [*dd.glob("*.kicad_s*"), *dd.glob("*.kicad_pcb"), *(dd / "footprints").rglob("*.kicad_mod")]:
         text = read(p)
         new = relink(text, moves)
@@ -199,6 +206,35 @@ def export_devboard(dst: pathlib.Path, warn: list) -> int:
     if broken:
         warn.append(f"dev_board: {len(broken)} ${{KIPRJMOD}} path(s) not found: " + ", ".join(broken[:8]))
     return n
+
+
+_MODEL_RX = re.compile(r'\(model\s+"([^"]+)"(.*?)\n\s*\)', re.S)
+_XYZ = lambda key, body: (re.search(rf'\({key}\s*\(xyz\s+([-\d.e]+)\s+([-\d.e]+)\s+([-\d.e]+)\)', body)
+                          or [None, "0", "0", "0"])
+
+
+def model_map(dst: pathlib.Path) -> str:
+    """(2026-11-23, user: Altium) 3D_MODEL_MAP.csv: every footprint of both
+    projects with its STEP file (relative to the export root) and the offset /
+    rotation KiCad applies — to attach the models by hand (Altium PcbLib:
+    Place » 3D Body) if an importer drops them."""
+    rows = ["project,footprint,step_file,offset_x_mm,offset_y_mm,offset_z_mm,rot_x_deg,rot_y_deg,rot_z_deg"]
+    for proj, root in (("Smash (tower)", dst), ("dev_board", dst / "dev_board")):
+        for mod in sorted((root / "footprints").rglob("*.kicad_mod")):
+            text = read(mod)
+            m = _MODEL_RX.search(text)
+            if not m:
+                rows.append(f'"{proj}","{mod.stem}","(no 3D model)",,,,,,')
+                continue
+            path, body = m.group(1), m.group(2)
+            rel = path.replace("${KIPRJMOD}/", "")
+            if proj == "dev_board":
+                rel = rel[3:] if rel.startswith("../") else "dev_board/" + rel
+            off, rot = _XYZ("offset", body), _XYZ("rotate", body)
+            ok = (dst / rel).exists()
+            rows.append(f'"{proj}","{mod.stem}","{rel if ok else "MISSING " + path}",'
+                        f'{off[1]},{off[2]},{off[3]},{rot[1]},{rot[2]},{rot[3]}')
+    return "\n".join(rows) + "\n"
 
 
 def footprint_review(stamp_line: str) -> str:
@@ -412,6 +448,7 @@ def main() -> int:
               + read(NOTES).split("\n", 1)[1].lstrip("\n"))
     else:
         warn.append(f"no {NOTES.name}: layout notes not exported")
+    write(dst / "3D_MODEL_MAP.csv", model_map(dst))
     try:
         write(dst / "FOOTPRINT_REVIEW.md", footprint_review(stamp_line))
     except Exception as e:                       # never block the export on it

@@ -50,7 +50,7 @@
 		(uuid "ae3de899-a8a6-53f6-aff2-e3c623a9471a")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/U.FL-R-SMT-1_10_.stp"
+	(model "${KIPRJMOD}/3dmodels/U.FL-R-SMT-1_10_.stp"
 		(offset (xyz 0 0.05 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

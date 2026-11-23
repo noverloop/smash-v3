@@ -21,6 +21,20 @@ def _sym(part_dir: str) -> str:
     return str(next(pathlib.Path(src(part_dir, "")).glob("*.kicad_sym")))
 
 
+def _step(part_dir: str) -> str | None:
+    """(2026-11-23) The vendored STEP in sources/<part_dir>/: <part_dir>.stp if
+    present, else the folder's only .stp/.step (SamacSys often names it after
+    the package, e.g. SON50P200X300X100-9N.step). None when the download had
+    no 3D model — an absolute path to a missing file leaked into the exports."""
+    import pathlib
+    d = pathlib.Path(src(part_dir, ""))
+    own = d / f"{part_dir}.stp"
+    if own.exists():
+        return datasheet_ref(part_dir, own.name)
+    cands = sorted(p for p in d.iterdir() if p.suffix.lower() in (".stp", ".step")) if d.exists() else []
+    return datasheet_ref(part_dir, cands[0].name) if len(cands) == 1 else None
+
+
 def _sam(design, ref, *, pn, part_dir, mod, package, height_mm, size_mm, description,
          manf, pins=None, ring_courtyard=False, note="", **overrides) -> Chip:
     fp_mod = src(part_dir, mod)
@@ -30,7 +44,7 @@ def _sam(design, ref, *, pn, part_dir, mod, package, height_mm, size_mm, descrip
         body_outline=outline_polygon(fp_mod, "F.Fab"),
         courtyard=[] if ring_courtyard else outline_polygon(fp_mod, "F.CrtYd"),
         size_mm=size_mm, height_mm=height_mm,
-        model_3d_path=datasheet_ref(part_dir, f"{part_dir}.stp"),
+        model_3d_path=_step(part_dir),
         source="samacsys",
     ).ensure_courtyard_clearance()
     fields = dict(

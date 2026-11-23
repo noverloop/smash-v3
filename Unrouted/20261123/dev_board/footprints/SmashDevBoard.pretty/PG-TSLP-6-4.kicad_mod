@@ -68,7 +68,7 @@
 		(uuid "d607deab-1b24-5558-a762-524da70ac318")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/BGS12P2L6E6327XTSA1.stp"
+	(model "${KIPRJMOD}/3dmodels/BGS12P2L6E6327XTSA1.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

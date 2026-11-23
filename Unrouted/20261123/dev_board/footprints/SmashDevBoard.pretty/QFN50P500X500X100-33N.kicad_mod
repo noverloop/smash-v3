@@ -230,7 +230,7 @@
 		(uuid "e9fee4f7-640b-5fcf-b0e8-9e861148780e")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/ADF4351BCPZ.stp"
+	(model "${KIPRJMOD}/3dmodels/ADF4351BCPZ.stp"
 		(offset (xyz 0 0 0.05))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

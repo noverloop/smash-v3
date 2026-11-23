@@ -128,7 +128,7 @@
 		(uuid "c846bfae-a1b9-51ce-9b88-0b82f004a632")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/../3dmodels/H3LIS331DLTR.stp"
+	(model "${KIPRJMOD}/3dmodels/H3LIS331DLTR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 90 -180 0))

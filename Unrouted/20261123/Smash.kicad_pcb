@@ -18045,7 +18045,7 @@
 			(uuid "3b2c3f4e-8275-56a6-92bf-196c21b4038d")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/BMM350/BMM350.stp"
+		(model "${KIPRJMOD}/3dmodels/BMM350.step"
 			(offset (xyz 0 0 0))
 			(scale (xyz 1 1 1))
 			(rotate (xyz 0 0 0))
@@ -18646,11 +18646,6 @@
 			(uuid "6831b893-bb62-5785-8a6a-11b87afe97b3")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_EL.stp"
-			(offset (xyz 0 0 0))
-			(scale (xyz 1 1 1))
-			(rotate (xyz 0 0 0))
-		)
 	)
 	(footprint "SmashStackup:QFN50P300X300X90-17N"
 		(layer "F.Cu")
@@ -18728,11 +18723,6 @@
 			(uuid "b4241567-33d3-5296-b4c3-8e7dc17c8ee9")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_EL.stp"
-			(offset (xyz 0 0 0))
-			(scale (xyz 1 1 1))
-			(rotate (xyz 0 0 0))
-		)
 	)
 	(footprint "SmashStackup:QFN50P300X300X90-17N"
 		(layer "F.Cu")
@@ -18810,11 +18800,6 @@
 			(uuid "28aa82e9-892d-5dae-904d-dcff6ffa246e")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_EL.stp"
-			(offset (xyz 0 0 0))
-			(scale (xyz 1 1 1))
-			(rotate (xyz 0 0 0))
-		)
 	)
 	(footprint "SmashStackup:QFN50P300X300X90-17N"
 		(layer "F.Cu")
@@ -18892,11 +18877,6 @@
 			(uuid "5ed15012-b7cc-5cb0-89cc-aa1c74cdf80b")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_EL.stp"
-			(offset (xyz 0 0 0))
-			(scale (xyz 1 1 1))
-			(rotate (xyz 0 0 0))
-		)
 	)
 	(footprint "SmashStackup:Capacitor_SMD_C_0603_1608Metric"
 		(layer "F.Cu")
@@ -68686,7 +68666,7 @@
 			(uuid "6b4b413c-a95a-5d76-8b9f-ef532dfbd932")
 		)
 		(embedded_fonts no)
-		(model "/Users/nicolas/Developer/202610Smash/application/src/smash/parts/sources/MCP9808T-E_MC/MCP9808T-E_MC.stp"
+		(model "${KIPRJMOD}/3dmodels/MCP9808T-E_MC.step"
 			(offset (xyz 0 0 0))
 			(scale (xyz 1 1 1))
 			(rotate (xyz 0 0 0))
