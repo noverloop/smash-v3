@@ -9,10 +9,6 @@ next to this file, generated from the design at export time.
 
 ## 0. Before you start — open design decisions
 
-- **Radar host interface is 3.3 V** (settled): the AWR1843's VIOIN I/O domain,
-  its SPI boot flash (MX25V8035F) and all its strap/pull-up resistors are on
-  COMP_3V3 (TI EVM style), matching the MP25's 3.3 V banks. Only the
-  VIOIN_18* balls are on AWR_1V8. Route the AWR ↔ MP25 SPI as 3.3 V signals.
 - **Nose USB-C (usb_nose, J_USB_C)** will change from the Same Sky UJ20
   (China origin) to **Hirose CX80B2-24P** (vertical, 24-pin, ~6.5 mm) once the
   Hirose drawing is in. Route the USB nose last / keep the connector area flexible.
