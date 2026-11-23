@@ -8,7 +8,7 @@ as the payload allows, but with no corners (aerodynamics, all configs):
   core         plain flat end over companion_compute (no payload)
   core_radar   very flat: the flat face IS the λ/2 radome (`nose_radome`)
   core_qpd     plano-convex lens flush in the flat face over the MT03-092
-  core_camera  plano-convex lens flush in the flat face over the AR0234
+  core_camera  plano-convex lens flush in the flat face over the VB1943
                (optical cups: one variant per wavelength band — the lens
                height above the sensor is its focal length at λ, `nose_optics`)
 

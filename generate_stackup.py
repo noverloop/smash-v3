@@ -177,7 +177,6 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "VCAP1":        1.2,    # legacy / unused (orphaned — H562 retired)
     "VCAP2":        1.2,
     "WBA_VDD11":    1.1,    # WBA55 SMPS output → core supply
-    "CAM_PHY_REG":  1.2,    # AR0234CS internal LDO output (MIPI PHY)
     "XV_5V":        5.0,    # S4 transverter PA rail (MCP1640D boost off REG_IN_MAIN, on only for TX)
     "XV_LO_3V3":    3.3,    # S4 transverter LO (ADF4351) supply, ferrite-isolated from 3V3
     "COMP_BST_VCC": 4.25,   # LTC3124 internal gate-drive LDO (U_COMP_BOOST VCC, 2026-11-23)
@@ -2589,142 +2588,131 @@ def _build_activation_array(d: Design) -> None:
 
 
 def build_camera_module(d: Design) -> None:
-    """AR0234CS 2.3-MP monochrome global-shutter image sensor (83-ball
-    ODCSP) + power-rail decoupling caps + RSVD pulldown. 2-lane MIPI
-    CSI-2 + I²C + EXTCLK + RESET_BAR control. On a Ø34 tile (was Ø15,
-    grown 2026-11-18 to carry the IR service-link pair and seat on the cup's
-    stop bosses) behind the nose lens. It steers the drop onto the
-    illuminated aim point and, once down, looks for people."""
-    cam = add_ar0234cssm00suka0_cp(d, ref="U_CAM", board_tag="camera_module")
-    _add_ir_service_link(d, "camera_module", "_C")
+    """ST VB1943 5.1-MP RGB-NIR global/rolling-shutter image sensor (74-ball
+    OBGA) + its rails, charge-pump / reference caps and control. 2-lane MIPI
+    CSI-2 + I²C + EXTCLK + RESETN. On a Ø34 tile (was Ø15, grown 2026-11-18
+    to carry the IR service-link pair and seat on the cup's stop bosses)
+    behind the nose lens. It steers the drop onto the illuminated aim point
+    and, once down, looks for people.
 
-    # ── Power rails (per datasheet Table 3) ─────────────────────────
-    # (2026-11-20, user) LOCAL camera rails, each with two sources: a FITTED
-    # 0 Ω from the PMIC rail (COMP_1V2 / COMP_2V8) or a DNP LP5907 low-noise
-    # LDO from BAT_PROT (already on the crown) — fit the LDO + lift the 0 Ω
-    # if the PMIC rails prove too noisy for the sensor; never both.
-    # 1.2V (VDD, VDD_PHY, VDD_DATA)
-    for ball in ["A4", "A8", "A12", "B10", "D7", "E1", "G8"]:
-        _net(d, "CAM_VDD_1V2", kind="power", voltage_v=1.2).connect(cam.pin(ball))
-    _net(d, "CAM_VDD_1V2").connect(cam.pin("C8"))       # VDD_PHY
-    _net(d, "CAM_VDD_1V2").connect(cam.pin("F11"))      # VDD_DATA
-
-    # 1.8V (VDD_IO, VDDIO_PHY): logic level for MP25 SDIO/CSI
-    for ball in ["A7", "B4", "B5", "B11", "D3", "D6", "F1", "G12"]:
-        _net(d, "COMP_1V8", kind="power", voltage_v=1.8).connect(cam.pin(ball))
-    _net(d, "COMP_1V8").connect(cam.pin("D10"))      # VDDIO_PHY
-
-    # 2.8V (VAA, VAA_PIX, VAA_PHY): analog supply for image sensor
-    for ball in ["A10", "B1", "G2", "G7"]:
-        _net(d, "CAM_VAA_2V8", kind="power", voltage_v=2.8).connect(cam.pin(ball))  # VAA
-    for ball in ["B8", "C2", "G1", "G9"]:
-        _net(d, "CAM_VAA_2V8").connect(cam.pin(ball))   # VAA_PIX
-    _net(d, "CAM_VAA_2V8").connect(cam.pin("F8"))       # VAA_PHY
+    (2026-11-23, user) AR0234 (EOL) → VB1943CAJX/1: +0.75 mm (2.2 mm OBGA)
+    and a dedicated 1.15 V core buck accepted. 1/2.5" vs the AR0234's 1/2.6":
+    re-check the nose lens image circle + back focus (sensor plane moves)."""
+    from smash.parts.swaps_2026_11 import add_vb1943cajx_1, add_tps62822dlcr
     CT = "camera_module"
-    # (2026-11-22) DDR3L moved the PMIC DDR rail to 1.35 V, so the camera's
-    # 1.2 V core can no longer share it: U_CAM_LDO_VDD (LP5907 1.2 V from
-    # BAT_PROT) is now FITTED, enabled by the camera IO rail COMP_1V8 (camera
-    # off whenever the compute is off). The 2.8 V keeps its 0 Ω + DNP LDO pair.
+    cam = add_vb1943cajx_1(d, ref="U_CAM", board_tag=CT)
+    _add_ir_service_link(d, CT, "_C")
+
+    # ── Power rails (DS14880 Table 20; any power-up order, DS §4.2.1) ───────
+    # VANA 2.8 V (2.70-2.90): PMIC COMP_2V8 through a FITTED 0 Ω, with a DNP
+    # LP5907 2.8 V from BAT_PROT as the low-noise fallback (never both).
+    for ball in ("C4", "C5", "C6", "C7", "C8", "D7", "D8", "H5"):
+        _net(d, "CAM_VAA_2V8", kind="power", voltage_v=2.8).connect(cam.pin(ball))
+    # VCORE 1.15 V (1.05-1.26; ~100-210 mA streaming, DS Tables 22/23): own
+    # TPS62822 buck from BAT_PROT (same part / inductor as the radar rails).
+    # An LDO from the pack would burn ~(3.3 − 1.15) × 0.2 A ≈ 0.4 W.
+    for ball in ("F8", "G2", "G3", "H7", "H8", "H9"):
+        _net(d, "CAM_VCORE_1V15", kind="power", voltage_v=1.15).connect(cam.pin(ball))
+    # VDDIO 1.8 V: the MP25 CSI/I²C-side IO rail (camera off whenever the
+    # compute is off).
+    for ball in ("G7", "G8"):
+        _net(d, "COMP_1V8", kind="power", voltage_v=1.8).connect(cam.pin(ball))
+
     res_between(d, "COMP_2V8", "CAM_VAA_2V8", "0", ref="R_CAM_VAA_SRC", board_tag=CT)
-    for ref, factory, out, cin, cout, en, fitted in (
-            ("U_CAM_LDO_VDD", add_lp5907mfx_1_2_nopb, "CAM_VDD_1V2", "1uF", "2.2uF", "COMP_1V8", True),
-            ("U_CAM_LDO_VAA", add_lp5907mfx_2_8_nopb, "CAM_VAA_2V8", "1uF", "4.7uF", "BAT_PROT", False)):
-        ldo = factory(d, ref=ref, board_tag=CT)
-        _net(d, "BAT_PROT").connect(ldo.pin("1"))   # IN
-        _net(d, "GND")     .connect(ldo.pin("2"))
-        _net(d, en)        .connect(ldo.pin("3"))   # EN
-        _net(d, out)       .connect(ldo.pin("5"))   # OUT
-        ldo.dnp = not fitted
-        for c in (cap_to_gnd(d, "BAT_PROT", cin, ref=f"C_{ref[2:]}_IN", board_tag=CT, pin=ldo.pin("1"))
-                  + cap_to_gnd(d, out, cout, ref=f"C_{ref[2:]}_OUT", board_tag=CT, pin=ldo.pin("5"))):
-            c.dnp = not fitted
+    ldo = add_lp5907mfx_2_8_nopb(d, ref="U_CAM_LDO_VAA", board_tag=CT)
+    _net(d, "BAT_PROT")   .connect(ldo.pin("1"))   # IN
+    _net(d, "GND")        .connect(ldo.pin("2"))
+    _net(d, "BAT_PROT")   .connect(ldo.pin("3"))   # EN
+    _net(d, "CAM_VAA_2V8").connect(ldo.pin("5"))   # OUT
+    ldo.dnp = True
+    for c in (cap_to_gnd(d, "BAT_PROT", "1uF", ref="C_CAM_LDO_VAA_IN", board_tag=CT, pin=ldo.pin("1"))
+              + cap_to_gnd(d, "CAM_VAA_2V8", "4.7uF", ref="C_CAM_LDO_VAA_OUT", board_tag=CT,
+                           pin=ldo.pin("5"))):
+        c.dnp = True
 
-    # ── Grounds ─────────────────────────────────────────────────────
-    for ball in ["A2", "A3", "A6", "B2", "C1", "C5", "D8", "D9",
-                 "E2", "E8", "F2", "F9", "G10"]:
-        _net(d, "GND", kind="ground").connect(cam.pin(ball))    # DGND
-    for ball in ["A9", "C3", "G3", "G6"]:
-        _net(d, "GND").connect(cam.pin(ball))                   # AGND
-    for ball in ["B12", "E7"]:
-        _net(d, "GND").connect(cam.pin(ball))                   # GNDIO_PHY
+    # 1.15 V core buck: 91k/100k → 0.6 × 1.91 = 1.146 V; 0.47 µH (TMS 0805
+    # R47) + 120 pF feed-forward as on the radar's TPS62822s. EN = COMP_1V8.
+    buck = add_tps62822dlcr(d, ref="U_CAM_BUCK_VCORE", board_tag=CT)
+    _net(d, "BAT_PROT")         .connect(buck.pin("VIN"))
+    _net(d, "GND")              .connect(buck.pin("PGND"))
+    _net(d, "GND")              .connect(buck.pin("AGND"))
+    _net(d, "CAM_VCORE_SW")     .connect(buck.pin("SW"))
+    _net(d, "COMP_1V8")         .connect(buck.pin("EN"))
+    _net(d, "CAM_VCORE_FB")     .connect(buck.pin("FB"))
+    cap_to_gnd(d, "BAT_PROT", "10uF/LV", ref="C_CAM_BUCK_IN", board_tag=CT, pin=buck.pin("VIN"))
+    ind_between(d, "CAM_VCORE_SW", "CAM_VCORE_1V15", "0.47uH", ref="L_CAM_BUCK_VCORE", board_tag=CT)
+    res_between(d, "CAM_VCORE_1V15", "CAM_VCORE_FB", "91k", ref="R_CAM_VCORE_FB1", board_tag=CT)
+    res_between(d, "CAM_VCORE_FB", "GND", "100k", ref="R_CAM_VCORE_FB2", board_tag=CT)
+    cff = add_capacitor_c0g_0603_avx_sqcs(d, ref="C_CAM_VCORE_FF", value="120pF", board_tag=CT,
+                                          **_as_built_0402("120pF", "C0G/NP0"))
+    _net(d, "CAM_VCORE_1V15").connect(cff.pin("1")); _net(d, "CAM_VCORE_FB").connect(cff.pin("2"))
+    cap_to_gnd(d, "CAM_VCORE_1V15", "22uF/LV", ref="C_CAM_BUCK_OUT", board_tag=CT, pin=buck.pin("SW"))
 
-    # ── MIPI CSI-2 (2-lane: D0+D1 used; D2+D3 NC) ──────────────────
-    _net(d, "CAM_CSI_D0_P") .connect(cam.pin("C9"))
-    _net(d, "CAM_CSI_D0_N") .connect(cam.pin("C10"))
-    _net(d, "CAM_CSI_D1_P") .connect(cam.pin("C12"))
-    _net(d, "CAM_CSI_D1_N") .connect(cam.pin("C11"))
-    _net(d, "CAM_CSI_CLK_P").connect(cam.pin("D11"))
-    _net(d, "CAM_CSI_CLK_N").connect(cam.pin("D12"))
+    # ── Grounds (AGND / DGND both to the tile GND) ───────────────────────────
+    for ball in ("A1", "A6", "A7", "A8", "A9", "B5", "B6", "B7", "B8", "D9", "H6"):
+        _net(d, "GND", kind="ground").connect(cam.pin(ball))        # AGND
+    for ball in ("E8", "H2", "H3", "J1", "J4", "J5", "J8", "K1", "K8", "K9"):
+        _net(d, "GND").connect(cam.pin(ball))                       # DGND
+    _net(d, "GND").connect(cam.pin("B2"))                           # PORTEST → DGND (DS)
+    for ball in ("B4", "C2", "C3", "F2"):
+        _net(d, "GND").connect(cam.pin(ball))                       # NCG → AGND (allowed)
+    # NC balls B3, D2, D3, E2, F9, G9 stay floating (DS: must not connect).
 
-    # ── I²C + control ───────────────────────────────────────────────
-    _net(d, "CAM_SCL")   .connect(cam.pin("F6"))     # SCLK
-    _net(d, "CAM_SDA")   .connect(cam.pin("E6"))     # SDATA
-    _net(d, "CAM_NRST")  .connect(cam.pin("F7"))     # RESET_BAR
-    _net(d, "CAM_EXTCLK").connect(cam.pin("G11"))    # 27 MHz, local oscillator
-    # (2026-11-21) local 27 MHz DSC1001 at the sensor's 1.8 V IO rail: the MP25
-    # PA8 clock was 3.3 V into EXTCLK (abs max VDD_IO + 0.3 = 2.1 V); also
-    # frees a sleeve lane and keeps a 27 MHz clock off the LDS.
-    ycam = add_dsc1001ci1_027_0000(d, ref="Y_CAM_EXTCLK", board_tag="camera_module")
+    # ── Charge pumps + internal references (DS Table 7 / app diagram) ────────
+    _net(d, "CAM_CPNEG").connect(cam.pin("A4")); _net(d, "CAM_CPNEG").connect(cam.pin("A5"))
+    _net(d, "CAM_CPPOS").connect(cam.pin("B9")); _net(d, "CAM_CPPOS").connect(cam.pin("C9"))
+    _net(d, "CAM_VRT")   .connect(cam.pin("E9"))
+    _net(d, "CAM_LDO2V4").connect(cam.pin("H4"))
+    cap_to_gnd(d, "CAM_CPNEG", "10uF/LV", ref="C_CAM_CPNEG", board_tag=CT, pin=cam.pin("A4"))   # 4-12 µF at −2 V
+    cap_to_gnd(d, "CAM_CPPOS", "1uF", ref="C_CAM_CPPOS", board_tag=CT, pin=cam.pin("B9"))    # 0.47-1 µF at 3.55 V
+    cap_to_gnd(d, "CAM_VRT", "4.7uF", ref="C_CAM_VRT", board_tag=CT, pin=cam.pin("E9"))      # 2.4-5 µF at 2.5 V
+    cap_to_gnd(d, "CAM_LDO2V4", "470nF", ref="C_CAM_LDO2V4", board_tag=CT, pin=cam.pin("H4"))  # 0.1-1 µF
+
+    # ── MIPI CSI-2, 2 lanes (DATA1 + DATA2; DATA3/4 unused) ──────────────────
+    _net(d, "CAM_CSI_D0_P") .connect(cam.pin("J7"))    # DATA1P
+    _net(d, "CAM_CSI_D0_N") .connect(cam.pin("J6"))    # DATA1N
+    _net(d, "CAM_CSI_D1_P") .connect(cam.pin("J3"))    # DATA2P
+    _net(d, "CAM_CSI_D1_N") .connect(cam.pin("J2"))    # DATA2N
+    _net(d, "CAM_CSI_CLK_P").connect(cam.pin("K5"))
+    _net(d, "CAM_CSI_CLK_N").connect(cam.pin("K4"))
+
+    # ── I²C + control ────────────────────────────────────────────────────────
+    _net(d, "CAM_SCL")   .connect(cam.pin("B1"))
+    _net(d, "CAM_SDA")   .connect(cam.pin("C1"))
+    _net(d, "CAM_NRST")  .connect(cam.pin("H1"))     # RESETN
+    _net(d, "CAM_EXTCLK").connect(cam.pin("J9"))
+    # 27 MHz → CLK_RANGE0 low / CLK_RANGE1 high (24.01-36 MHz, DS Table 10)
+    _net(d, "GND")       .connect(cam.pin("A2"))
+    _net(d, "COMP_1V8")  .connect(cam.pin("A3"))
+    # GPIO0-3 (G1, F1, E1, D1): fail-safe inputs at reset, unused → NC.
+    # (2026-11-21) local 27 MHz DSC1001 at the sensor's 1.8 V IO rail (the
+    # MP25 clock was 3.3 V); keeps a 27 MHz clock off the LDS.
+    ycam = add_dsc1001ci1_027_0000(d, ref="Y_CAM_EXTCLK", board_tag=CT)
     _net(d, "COMP_1V8")  .connect(ycam.pin("1"))     # STANDBY# tied high
     _net(d, "GND")       .connect(ycam.pin("2"))
     _net(d, "CAM_EXTCLK").connect(ycam.pin("3"))
     _net(d, "COMP_1V8")  .connect(ycam.pin("4"))
-    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_EXTCLK_VDD", board_tag="camera_module",
-               pin=ycam.pin("4"))
+    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_EXTCLK_VDD", board_tag=CT, pin=ycam.pin("4"))
 
-    # (2026-11-21) CONTROL WAS UNCONNECTED (CAM_SCL / CAM_SDA / CAM_NRST were
-    # one-pin nets — ERC). The sensor's I/O is 1.8 V (COMP_1V8); SYS_I2C (I2C1,
-    # nothing else on it, AR0234 at 0x10) is 3.3 V → a two-MOSFET bidirectional
-    # shifter per line (NXP AN10441: gate on the low rail, source low side,
-    # drain bus side; pull-ups both sides — the bus side's are RPU_*_EXT on
-    # wakeup). BSS138AKM: already in the library, 0.37 mm tall.
+    # Sensor IO is 1.8 V; SYS_I2C (I2C1, sensor alone at 0x10) is 3.3 V → a
+    # two-MOSFET bidirectional shifter per line (NXP AN10441), pull-ups both
+    # sides (bus side = RPU_*_EXT on wakeup).
     for line in ("SCL", "SDA"):
-        q = add_ssm3k35ctc_l3f(d, ref=f"Q_CAM_{line}", board_tag="camera_module")
+        q = add_ssm3k35ctc_l3f(d, ref=f"Q_CAM_{line}", board_tag=CT)
         _net(d, "COMP_1V8")         .connect(q.pin("1"))   # gate
         _net(d, f"CAM_{line}")      .connect(q.pin("2"))   # source (1.8 V side)
         _net(d, f"SYS_I2C_{line}")  .connect(q.pin("3"))   # drain (3.3 V bus)
-        res_between(d, "COMP_1V8", f"CAM_{line}", "4.7k", ref=f"R_CAM_{line}_PU",
-                    board_tag="camera_module")
-    # RESET_BAR: MP25 PA9 as OPEN-DRAIN (only ever pulls low) + pull-up to the
-    # sensor's own 1.8 V, so no 3.3 V reaches it
-    res_between(d, "COMP_1V8", "CAM_NRST", "10k", ref="R_CAM_NRST_PU",
-                board_tag="camera_module")
+        res_between(d, "COMP_1V8", f"CAM_{line}", "4.7k", ref=f"R_CAM_{line}_PU", board_tag=CT)
+    # RESETN: MP25 PA9 open-drain + pull-up to the sensor's own 1.8 V. Firmware
+    # holds it low ≥ 100 µs after the rails (DS Table 8 t1).
+    res_between(d, "COMP_1V8", "CAM_NRST", "10k", ref="R_CAM_NRST_PU", board_tag=CT)
 
-    # ── Strap pins to GND (defaults per datasheet) ──────────────────
-    _net(d, "GND").connect(cam.pin("A5"))   # SADDR — I²C addr 0x20/0x21
-    _net(d, "GND").connect(cam.pin("B6"))   # OE_BAR — MIPI mode
-    _net(d, "GND").connect(cam.pin("F5"))   # TEST — normal operation
-    _net(d, "GND").connect(cam.pin("D5"))   # TRIGGER — not used
-
-    # ── Required passives per datasheet ─────────────────────────────
-    # RSVD (F10): 1.5kΩ to DGND. res_between needs net names — use
-    # an explicit named net (system.py emits the anon N$XX, but the
-    # alias mechanism will resolve the merge if we add an explicit
-    # name on either side).
-    _net(d, "CAM_RSVD").connect(cam.pin("F10"))
-    res_between(d, "CAM_RSVD", "GND", "1.5k", ref="R_CAM_RSVD",
-                board_tag="camera_module")
-
-    # CAP_1UF_PHY (F12): 1 µF decoupling for MIPI regulator
-    _net(d, "CAM_PHY_REG").connect(cam.pin("F12"))
-    cap_to_gnd(d, "CAM_PHY_REG", "1uF", ref="C_CAM_PHY_REG",
-               board_tag="camera_module", pin=cam.pin("F12"))
-
-    # ── Power-rail decoupling ───────────────────────────────────────
-    # 100 nF HF caps absorbed by the ECM laminate; 1 µF bulk stays
-    # discrete for frame-rate current swings.
-    cap_to_gnd(d, "CAM_VDD_1V2", "100nF", ref="C_CAM_VDD_1",
-               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "CAM_VDD_1V2", "1uF",   ref="C_CAM_VDD_BULK",
-               board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_CAM_VDDIO_1",
-               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "COMP_1V8", "1uF",   ref="C_CAM_VDDIO_BULK",
-               board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "CAM_VAA_2V8", "100nF", ref="C_CAM_VAA_1",
-               embedded_cap_absorbs=True, board_tag="camera_module", pin=(cam.ref, None))
-    cap_to_gnd(d, "CAM_VAA_2V8", "1uF",   ref="C_CAM_VAA_BULK",
-               board_tag="camera_module", pin=(cam.ref, None))
+    # ── Supply decoupling (DS Table 7) ──────────────────────────────────────
+    cap_to_gnd(d, "CAM_VAA_2V8", "100nF", ref="C_CAM_VAA_1", board_tag=CT, pin=(cam.ref, None))
+    cap_to_gnd(d, "CAM_VAA_2V8", "10uF/LV", ref="C_CAM_VAA_BULK", board_tag=CT, pin=(cam.ref, None))
+    cap_to_gnd(d, "CAM_VCORE_1V15", "470nF", ref="C_CAM_VCORE_1", board_tag=CT, pin=(cam.ref, None))
+    cap_to_gnd(d, "CAM_VCORE_1V15", "10uF/LV", ref="C_CAM_VCORE_BULK", board_tag=CT, pin=(cam.ref, None))
+    cap_to_gnd(d, "COMP_1V8", "1uF", ref="C_CAM_VDDIO_1", board_tag=CT, pin=(cam.ref, None))
 
 
 def _add_ir_service_link(d: Design, board_tag: str, sfx: str = "",

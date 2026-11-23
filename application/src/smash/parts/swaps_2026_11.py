@@ -482,6 +482,13 @@ def add_s1318d33_a4t2u4(design, ref: str, **overrides) -> Chip:
             Pad(num="5", position_mm=(0.0, 0.0), size_mm=(1.02, 0.12))]
     fp = _land_fp("ABLIC_HSNT-4-1010", pads, (1.0, 1.0), 0.4,
                   note="ABLIC HSNT-4(1010) land PL004-A-L-SD-2.0 (S-1318 DS p.41)")
+    # (2026-11-23) package STEP from SnapMagic's S-1318A33-A4T2U4 (same
+    # HSNT-4(1010) body; the A/D suffix is only the ON/OFF logic). It is Y-up:
+    # −90° about X seats it (z 0-0.4). The land stays the ABLIC datasheet one
+    # (SnapMagic's is rotated 90° with placeholder custom pads). ⚠ Pin-1 corner
+    # of the model not verified against the land — check in the 3D viewer.
+    fp.model_3d_path = datasheet_ref("S-1318D33-A4T2U4", "HSNT-4-1010_S-1318A33.step")
+    fp.model_rotate_deg = (-90.0, 0.0, 0.0)
     pins = [Pin(num="1", name="VOUT", aliases=["OUT"], type="power"),
             Pin(num="2", name="VSS", aliases=["GND"], type="power"),
             Pin(num="3", name="ON/OFF", aliases=["EN"], type="input"),
@@ -603,3 +610,27 @@ def add_tps62088yfpr(design, ref: str, **overrides) -> Chip:
                 datasheet=datasheet_ref("TPS62088YFPR", "tps62088.pdf"),
                 note=f"Replaces LMR10510 on the AWR 1.3 V RF rail (up to 2.0 A) — {_WHY_R21}.",
                 **overrides)
+
+
+# ── camera: AR0234 (EOL) → ST VB1943 (2026-11-23, user: height + rail OK) ───
+def add_vb1943cajx_1(design, ref: str, **overrides) -> Chip:
+    """ST VB1943CAJX/1 — 5.1 MP (2560 × 1984) RGB-NIR global + rolling shutter
+    sensor, 2.25 µm 3D-stacked BSI, 1/2.5", MIPI CSI-2 dual/quad lane (lane
+    order + polarity remappable), I²C ≤ 1 MHz at 0x20 (8-bit, = 0x10 7-bit).
+    OBGA 10 × 9 at 0.8 mm (74 balls, centre depopulated), 8.9 × 10.3 × 2.2 mm
+    (DS14880 Rev 3). Supplies: VANA 2.8 V (2.70-2.90), VCORE 1.15 V
+    (1.05-1.26), VDDIO 1.8 V (1.70-1.90), any order; RESETN ≥ 100 µs after.
+    EXTCLK 12-50 MHz, sub-range on CLK_RANGE0/1 (DS Table 10).
+    SamacSys BGA74C80P9X10_890X1030X220 land + symbol (pins by ball ID)."""
+    c = _sam(design, ref, pn="VB1943CAJX/1", part_dir="VB1943CAJX_1",
+             mod="BGA74C80P9X10_890X1030X220.kicad_mod", package="OBGA-74 (8.9×10.3, 0.8 mm)",
+             height_mm=2.2, size_mm=(8.9, 10.3), manf="STMicroelectronics",
+             description="Image sensor 5.1 MP RGB-NIR GS/RS, MIPI CSI-2 2/4-lane, OBGA-74",
+             datasheet=datasheet_ref("VB1943CAJX_1", "DS_vd1943.pdf"),
+             note="Replaces AR0234CSSM00SUKA0-CP (EOL) — user 2026-11-23 accepted +0.75 mm "
+                  "and the 1.15 V core rail. SamacSys land/symbol/STEP.", **overrides)
+    # SamacSys STEP is Y-up (x ±4.45, y 0-1.44, z ±5.15): seat it like the
+    # LTC3124's. ⚠ The STEP body is 1.44 mm vs the DS 2.2 mm max — the stack
+    # uses height_mm (2.2). Pin-1 corner not verified in the 3D viewer.
+    c.footprint.model_rotate_deg = (-90.0, 0.0, 0.0)
+    return c

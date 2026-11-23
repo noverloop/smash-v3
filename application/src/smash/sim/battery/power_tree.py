@@ -76,7 +76,12 @@ _PRE_R21: tuple[Converter, ...] = (   # the tree before the 2026-11-23 swaps
 )
 # fmt: on
 
-RAIL_V_NOM = {c.out: c.v_out for c in _PRE_R21}
+# (2026-11-23) camera VB1943 core: own TPS62822 buck at 1.15 V from BAT_PROT
+_CAM_BUCK = Converter("U_CAM_BUCK_VCORE", "BAT", "CAM_VCORE", "buck", 1.15, eta=0.85, iq_a=4e-6,
+                      vin_min=2.4, vin_uvlo=2.2, i_out_max_a=2.0,
+                      basis="TPS62822DLC at 1.15 V (VB1943 VCORE, ~0.12-0.21 A)")
+
+RAIL_V_NOM = {c.out: c.v_out for c in _PRE_R21 + (_CAM_BUCK,)}
 
 
 @dataclass(frozen=True)
@@ -262,6 +267,7 @@ def converters(radar_from: str = "BAT", radar_bucks_low_v: bool = False,
         if c.ref == "U_COMP_BOOST" and COMP_BOOSTS[comp_boost]:
             c = replace(c, **COMP_BOOSTS[comp_boost])
         out.append(c)
+    out.append(_CAM_BUCK)
     return tuple(out)
 
 

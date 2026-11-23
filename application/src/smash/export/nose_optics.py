@@ -84,7 +84,7 @@ OPTICS = {
         "bands": {"ir": 850.0, "laser": 1064.0},
         "lens": Lens(),
         "defocus_mm": 0.0,
-        "sensor_half_diag_mm": 3.40,                # AR0234 1920×1200 × 3 µm
+        "sensor_half_diag_mm": 3.67,                # VB1943 5.8 × 4.5 mm array (2560×1984 × 2.25 µm), 2026-11-23
     },
 }
 LENS_COLLAR_WALL_MM = 1.0       # moulded collar round the lens bore

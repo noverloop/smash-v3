@@ -978,10 +978,11 @@ def add_inductor_murata_lqg15hs1n8s02d(design, ref: str, *, value: str = "1.8nH"
     """Murata LQG15HS1N8S02D — 1.8 nH multilayer 0402 (replaces Würth WE-MK
     744784018A, China lots). Same LQG15 land as the 1.3 nH part."""
     pn = "LQG15HS1N8S02D"
-    fp_mod = src("LQG15HS1N3S02D", "LQG15WH0N7B02D.kicad_mod")
+    fp_mod = src(pn, "LQG15WH0N7B02D.kicad_mod")     # (2026-11-23) own SamacSys LIB + STEP
     fp = Footprint(name="LQG15HS1N8S02D", package_class="0402", pads=pads_from_kicad_mod(fp_mod),
                    body_outline=outline_polygon(fp_mod, "F.Fab"), courtyard=outline_polygon(fp_mod, "F.CrtYd"),
-                   size_mm=(1.0, 0.5), height_mm=0.55, source="samacsys").ensure_courtyard_clearance()
+                   size_mm=(1.0, 0.5), height_mm=0.55, model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+                   source="samacsys").ensure_courtyard_clearance()
     fields = dict(
         manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
         description="Murata LQG15HS multilayer RF inductor 0402, 1.8 nH", package="0402",
@@ -1052,10 +1053,13 @@ def add_inductor_we_mapi_74438356047(design, ref: str, **overrides) -> Chip:
     Land = Würth's recommended 0.98 × 3.7 mm pads at 2.37 mm pitch, identical
     to the vendored WE-MAPI 4030 land (parts/sources/74438357047)."""
     pn = "74438356047"
-    fp_mod = src("74438357047", "WE-MAPI_4030.kicad_mod")
+    # (2026-11-23) SamacSys LIB_74438356047 vendored: same 0.98 × 3.7 land at
+    # 2.37 mm pitch, now with the 4.1 × 4.1 × 2.1 STEP (seated, z 0-2.1).
+    fp_mod = src(pn, f"{pn}.kicad_mod")
     fp = Footprint(name="WE-MAPI_4020", package_class="WE-MAPI 4020", pads=pads_from_kicad_mod(fp_mod),
                    body_outline=[(-2.05, -2.05), (2.05, -2.05), (2.05, 2.05), (-2.05, 2.05), (-2.05, -2.05)],
-                   size_mm=(4.1, 4.1), height_mm=2.1, source="wurth-ds").ensure_courtyard_clearance()
+                   size_mm=(4.1, 4.1), height_mm=2.1, model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
+                   source="samacsys").ensure_courtyard_clearance()
     fields = dict(
         manf="Würth Elektronik", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value="4.7uH",
         description="Würth WE-MAPI 4020 4.7 µH power inductor, Isat(30 %) 5.75 A, 63 mΩ",

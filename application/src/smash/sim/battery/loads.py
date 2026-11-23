@@ -50,7 +50,11 @@ DESCENT = [
     Load("XV PA GRF5126 (TX keyed)", "XV_5V", 110e-3, "user / DS"),
     Load("MP25 dual A35 + NPU + M33 run [W]", "PMIC_OUT", 1.60, "old (~420 mA SoC) est"),
     Load("DDR3L active [W]", "PMIC_OUT", 0.30, "est"),
-    Load("camera AR0234 1080p30 [W]", "PMIC_OUT", 0.11, "old"),
+    # (2026-11-23) VB1943 replaces the AR0234: DS14880 Table 23, GS NIR 30 fps
+    # 1920x1080 2-lane — VANA 26 mA @ 2.8 V + VDDIO 0.5 mA (PMIC), VCORE
+    # 124 mA @ 1.15 V on its own buck
+    Load("camera VB1943 VANA + VDDIO [W]", "PMIC_OUT", 0.026 * 2.8 + 0.001, "DS14880 T23"),
+    Load("camera VB1943 VCORE", "CAM_VCORE", 0.124, "DS14880 T23"),
     Load("QPD + NAND + misc COMP_3V3 [W]", "PMIC_OUT", 0.05, "old"),
     # SWRS236C Table 6-4: 2TX/4RX, 25 % duty = 1.36 W average at the device
     # terminals (split across the rails est: 0.54 + 0.52 + 0.32 W)
