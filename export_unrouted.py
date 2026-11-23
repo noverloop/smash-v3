@@ -27,6 +27,12 @@ Unrouted/<date>/ gets:
                   battery_holder/, sleeve/, potting_mould/ with their _cam.md
                 (a part's material and finish are only in its _cam.md)
 
+  LAYOUT_EE_NOTES.md   the hand-maintained repo-root notes, stamped with date + commit
+  FOOTPRINT_REVIEW.md  every footprint's provenance (self-drawn / modified vendor
+                       lands first, marked CHECK), generated from the design
+and Unrouted/<date>.zip next to the folder (the whole snapshot, for the layout EE).
+Files over GitHub's 100 MB limit are zipped in place.
+
 Refuses to run if Unrouted/ has uncommitted changes (--force discards them) or
 if the last generator run had STEP export off. The result is staged.
 """
@@ -144,6 +150,93 @@ def kind_material(cam: str) -> tuple[str, str]:
     return kind, re.sub(r"[^A-Za-z0-9]+", "-", head).strip("-") or "unknown-material"
 
 
+NOTES = REPO / "LAYOUT_EE_NOTES.md"      # maintained by hand; copied into each export
+_VENDOR = {"samacsys", "snapmagic", "samesky", "ultralibrarian"}
+
+
+def footprint_review(stamp_line: str) -> str:
+    """FOOTPRINT_REVIEW.md: every footprint of the maximalist tower with its
+    provenance. Self-drawn lands (datasheet / authored / custom / project)
+    and vendor lands we changed (borrowed from a sibling part, 3D model
+    rotated, pins renamed) come first and are marked CHECK."""
+    sys.path[:0] = [str(REPO), str(REPO / "application" / "src")]
+    import collections
+    import generate_stackup as g
+    from smash.parts.orderable import apply_orderable
+    d = g.Design(); g._set_battery_mode("maximalist"); g._prime_power_rails(d)
+    for fn in (g.build_qpd_module, g.build_radar_nose_io, g.build_usb_nose, g.build_camera_module,
+               g.build_aft_end_board, g.build_activation_interface,
+               g.build_radar_module_awr1843aop, g.build_companion_compute,
+               g.build_power_board, g.build_wakeup_board, g.build_fins_module):
+        fn(d)
+    apply_orderable(d)
+    by = collections.OrderedDict()
+    for c in d.chips:
+        fp = c.footprint
+        if fp is None:
+            continue
+        e = by.setdefault(fp.name, dict(fp=fp, refs=[], mpns=set(), boards=set()))
+        e["refs"].append(c.ref); e["mpns"].add(str(c.manf_pn or "")); e["boards"].add(str(c.board_tag))
+
+    def kind(fp) -> tuple[int, str, list[str]]:
+        src = (fp.source or "").strip()
+        why = []
+        rot = tuple(getattr(fp, "model_rotate_deg", None) or ())
+        if any(abs(r) > 1e-9 for r in rot):
+            why.append(f"3D model rotated {rot} by us — check pin 1 in the 3D viewer")
+        if not fp.model_3d_path:
+            why.append("no 3D model")
+        if src.lower() in _VENDOR:
+            norm = lambda x: re.sub(r"[^A-Z0-9]", "", x.upper())
+            mp = str(fp.model_3d_path or "")
+            src_dir = norm(pathlib.Path(mp).parent.name) if mp else ""
+            same = lambda m: m and src_dir and (norm(m).startswith(src_dir) or src_dir.startswith(norm(m)))
+            if src_dir and not any(same(m) for m in by[fp.name]["mpns"]):
+                why.append(f"vendor land/model taken from a sibling part ({pathlib.Path(mp).parent.name}) "
+                           "— confirm the package is identical")
+            # a land NAMED after a different part (IPC-7351 names like QFN../SON.. are generic)
+            ipc = re.match(r"(BGA|QFN|SON|SOT|SOP|SOIC|LGA|DFN|PG-|INDPM|Ceramic|DSC|SIT|SAMESKY|OSC_|WE-)",
+                           fp.name, re.I)
+            fn_ = norm(fp.name)
+            if not ipc and not any(m and (fn_[:6] == norm(m)[:6]) for m in by[fp.name]["mpns"]):
+                why.append(f"land named after another part ({fp.name}) — confirm it is the same package")
+            return (1 if any("rotated" in w or "sibling" in w or "named after" in w for w in why) else 3,
+                    f"vendor ({src})", why)
+        if src.startswith("kicad") or str(fp.name).startswith(("Resistor_SMD:", "Capacitor_SMD:", "Inductor_SMD:")):
+            return 4, "KiCad stock", why
+        return 0, f"SELF-DRAWN ({src or 'unknown'})", why
+
+    rows = []
+    for name, e in by.items():
+        pri, k, why = kind(e["fp"])
+        rows.append((pri, name, k, e, why))
+    rows.sort(key=lambda r: (r[0], r[1].lower()))
+    label = {0: "CHECK — self-drawn", 1: "CHECK — vendor land modified by us",
+             3: "vendor, unchanged", 4: "KiCad stock (standard chip passives)"}
+    out = ["# Footprint review\n", stamp_line,
+           "Every footprint in the maximalist tower, by provenance. **Self-drawn** lands were "
+           "made from datasheet drawings (or project scripts) and have never been built — check "
+           "pad sizes, pitch, pin 1 and the exposed pad against the datasheet before fab. "
+           "**Modified vendor** lands are SamacSys/SnapMagic files we changed (land borrowed "
+           "from a sibling part, 3D model rotated, pins listed from the datasheet). "
+           "Positions/rotations are not part of this list.\n"]
+    cur = None
+    for pri, name, k, e, why in rows:
+        if pri != cur:
+            cur = pri
+            n = sum(1 for r in rows if r[0] == pri)
+            out.append(f"\n## {label[pri]} ({n})\n\n| Footprint | Part (MPN) | Refs | Board(s) | Source | Notes |\n|---|---|---|---|---|---|")
+        fp = e["fp"]
+        refs = ", ".join(e["refs"][:6]) + (f" +{len(e['refs']) - 6}" if len(e["refs"]) > 6 else "")
+        note = " ".join(str(fp.note or "").split())
+        if len(note) > 260:
+            note = note[:257] + "…"
+        notes = "; ".join(why + ([note] if note else [])).replace("|", "/")
+        out.append(f"| `{name}` | {', '.join(sorted(m for m in e['mpns'] if m))[:60]} | {refs} | "
+                   f"{', '.join(sorted(e['boards']))} | {k} | {notes} |")
+    return "\n".join(out) + "\n"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Export dist/'s stackup into Unrouted/<date>/.")
     ap.add_argument("--date", default=dt.date.today().strftime("%Y%m%d"),
@@ -249,6 +342,22 @@ def main() -> int:
         if cams:
             shutil.copy2(cams[0], step / "rings" / f"{stem}_cam.md")
 
+    # (2026-11-23, user) Layout-EE notes + the footprint review list.
+    head = git("rev-parse", "--short", "HEAD").strip()
+    dirty_src = bool(git("status", "--porcelain", "--", "generate_stackup.py", "application",
+                         check=False).strip())
+    stamp_line = (f"Export {iso} from commit {head}{' + uncommitted changes' if dirty_src else ''} "
+                  f"(generate_stackup.py, maximalist).\n\n")
+    if NOTES.exists():
+        write(dst / "LAYOUT_EE_NOTES.md", "# Layout EE notes\n\n" + stamp_line
+              + read(NOTES).split("\n", 1)[1].lstrip("\n"))
+    else:
+        warn.append(f"no {NOTES.name}: layout notes not exported")
+    try:
+        write(dst / "FOOTPRINT_REVIEW.md", footprint_review(stamp_line))
+    except Exception as e:                       # never block the export on it
+        warn.append(f"footprint review not written: {e!r}")
+
     # Checks: ${KIPRJMOD} paths resolve inside the export, nothing exported is
     # git-ignored, no file over GitHub's limit.
     written = sorted(files(dst))
@@ -284,6 +393,20 @@ def main() -> int:
                             f"refuses files over {GITHUB_MAX_MB} MB (use Git LFS or leave it out)")
         elif size > WARN_MB:
             warn.append(f"{p.relative_to(REPO)} is {size:.0f} MB (GitHub warns above {WARN_MB} MB)")
+
+    # (2026-11-23, user) One zip of the whole snapshot next to the folder —
+    # easier to hand to the layout EE.
+    import zipfile
+    zpath = OUT / f"{stamp}.zip"
+    with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+        for p in sorted(files(dst)):
+            zf.write(p, arcname=p.relative_to(OUT).as_posix())
+    zmb = zpath.stat().st_size / 1e6
+    if zmb > GITHUB_MAX_MB:
+        warn.append(f"{zpath.relative_to(REPO)} is {zmb:.0f} MB: GitHub refuses files over "
+                    f"{GITHUB_MAX_MB} MB (split it or leave it out)")
+    elif zmb > WARN_MB:
+        warn.append(f"{zpath.relative_to(REPO)} is {zmb:.0f} MB (GitHub warns above {WARN_MB} MB)")
     git("add", "-A", "--", rel)
 
     groups: dict[str, list[pathlib.Path]] = {}
@@ -297,6 +420,7 @@ def main() -> int:
         print(f"  {g:<20} {len(ps):4d} files {sum(p.stat().st_size for p in ps) / 1e6:8.1f} MB")
     print(f"  {'total':<20} {len(written):4d} files "
           f"{sum(p.stat().st_size for p in written) / 1e6:8.1f} MB")
+    print(f"  + {zpath.relative_to(REPO)} ({zmb:.0f} MB), LAYOUT_EE_NOTES.md, FOOTPRINT_REVIEW.md")
     if n_left:
         print(f"  deleted {n_left} untracked local file(s) that were left in {rel}/ "
               "(KiCad .history/, .DS_Store, ...)")
