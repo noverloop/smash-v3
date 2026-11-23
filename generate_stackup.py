@@ -2312,9 +2312,11 @@ def build_activation_interface(d: Design) -> None:
                 board_tag="aft_end_board")   # DC return + charge bleed
     res_between(d, "PIEZO_P",  "COMP_INP", "100k", ref="R_COMP_SER",
                 board_tag="aft_end_board")
-    res_between(d, "3V3_AON",  "COMP_INM", "1M",   ref="R_THR1",
-                board_tag="aft_end_board")
-    res_between(d, "COMP_INM", "GND",      "100k", ref="R_THR2",
+    # (2026-11-23, R23) MAX9064: ONE input against its internal 0.2 V, so the
+    # 3V3_AON → 1M/100k threshold divider (R_THR1/R_THR2, ~3 µA always-on
+    # drain) is gone. 100k series + 200k to GND attenuate PIEZO_P by 2/3 → the
+    # comparator trips at PIEZO_P ≈ 0.2 × 1.5 = 0.30 V, same as before.
+    res_between(d, "COMP_INP", "GND",      "200k", ref="R_COMP_DIV",
                 board_tag="aft_end_board")
     # TLV3691 nanopower comparator (~0.15 µA Iq) — replaces the LMV331 so the
     # launch detector can stay on the always-on 3V3 without being an ~80 µA shelf
@@ -2326,12 +2328,15 @@ def build_activation_interface(d: Design) -> None:
     # pocket, the floor is 1.2 mm and the slot lies under a cell (no
     # through-cut). Needs a ≤ 0.6 mm comparator (TLV7031 X2SON: Digi-Key US lot).
     # (2026-11-22) → TLV7031DPWR (X2SON-5 0.4 mm, 335 nA, push-pull; Digi-Key US lot)
-    comp = add_tlv7031dpwr(d, ref="U_COMP_PZ", board_tag="aft_end_board")
-    _net(d, "COMP_INP").connect(comp.pin("IN+"))
-    _net(d, "GND")     .connect(comp.pin("V-"))
-    _net(d, "COMP_INM").connect(comp.pin("IN-"))
+    # (2026-11-23) → MAX9064EBS+TG45 (round 23: TLV7031's only non-China stock
+    # was one 480 pcs lot). UCSP-4, 0.69 mm: sits under its own 0.9 mm-deep
+    # sub-pocket in the floor plate (spacer_step.BATT_PZ_COMP_POCKET).
+    from smash.parts.swaps_2026_11 import add_max9064ebs_tg45
+    comp = add_max9064ebs_tg45(d, ref="U_COMP_PZ", board_tag="aft_end_board")
+    _net(d, "COMP_INP").connect(comp.pin("IN"))
+    _net(d, "GND")     .connect(comp.pin("GND"))
     _net(d, "COMP_OUT").connect(comp.pin("OUT"))  # push-pull → M33 PD5 EXTI
-    _net(d, "3V3_AON") .connect(comp.pin("V+"))   # launch detector active from Standby on
+    _net(d, "3V3_AON") .connect(comp.pin("VCC"))  # launch detector active from Standby on
     cap_to_gnd(d, "3V3_AON", "100nF", ref="C_COMP_PZ",
                board_tag="aft_end_board", pin=comp.pin("V+"))   # local comparator decoupling
 
@@ -6026,8 +6031,8 @@ _AFT_SILK_MARGIN_MM = 0.15   # box clearance beyond the pad edge
 
 # (2026-11-15) The launch piezo + comparator column live on aft_end's TOP,
 # in the battery holder floor's underside pocket (spacer_step.piezo_pocket).
-_PIEZO_POCKET_REFS = ("P_PIEZO", "R_PIEZO_BLEED", "R_COMP_SER", "R_THR1",
-                      "R_THR2", "U_COMP_PZ", "C_COMP_PZ",
+_PIEZO_POCKET_REFS = ("P_PIEZO", "R_PIEZO_BLEED", "R_COMP_SER", "R_COMP_DIV",
+                      "U_COMP_PZ", "C_COMP_PZ",
                       "R_PZ_TX", "C_PZ_TX",      # vibration-beacon coupling (2026-11-18)
                       "L_HEALTH_COIL")            # embedded coil (copper only)
 

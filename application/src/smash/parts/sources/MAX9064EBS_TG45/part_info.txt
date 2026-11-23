@@ -1,0 +1,9 @@
+Manufacturer=Analog Devices
+PartNumber=MAX9064EBS+TG45
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=4
+Version=3.1
+Released=2020-10-14 16:45:02
+Downloaded=2026-11-23 09:10:20
+3D=Y

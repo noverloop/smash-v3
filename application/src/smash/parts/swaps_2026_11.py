@@ -634,3 +634,25 @@ def add_vb1943cajx_1(design, ref: str, **overrides) -> Chip:
     # uses height_mm (2.2). Pin-1 corner not verified in the 3D viewer.
     c.footprint.model_rotate_deg = (-90.0, 0.0, 0.0)
     return c
+
+
+# ── piezo comparator: TLV7031 (one 480 pcs non-China lot) → MAX9064 (R23) ─────
+def add_max9064ebs_tg45(design, ref: str, **overrides) -> Chip:
+    """ADI (Maxim) MAX9064EBS+TG45 — ultra-low-power single comparator with an
+    INTERNAL 0.2 V threshold (one input), push-pull output, ~0.4 µA, 1.0-5.5 V.
+    UCSP-4 2 × 2 bumps at 0.5 mm, 1.0 × 1.0 × 0.69 mm max (SamacSys
+    BGA4C50P2X2_100X100X69). Bumps (SamacSys symbol): A1 OUT, A2 IN, B1 VCC,
+    B2 GND. Sourcing round 23 (2026-11-23): Farnell 5,300 + Digi-Key 9,626
+    Taiwan, Mouser 211 US. ⚠ Output polarity and threshold tolerance are from
+    the R23 search, not yet the datasheet — firmware picks the EXTI edge."""
+    pins = [Pin(num="A1", name="OUT", type="output"),
+            Pin(num="A2", name="IN", aliases=["IN+"], type="input"),
+            Pin(num="B1", name="VCC", aliases=["V+"], type="power"),
+            Pin(num="B2", name="GND", aliases=["V-"], type="power")]
+    return _sam(design, ref, pn="MAX9064EBS+TG45", part_dir="MAX9064EBS_TG45",
+                mod="BGA4C50P2X2_100X100X69.kicad_mod", package="UCSP-4 (1.0×1.0, 0.5 mm)",
+                height_mm=0.69, size_mm=(1.0, 1.0), manf="Analog Devices", pins=pins,
+                ring_courtyard=True,
+                description="Comparator, internal 0.2 V threshold, push-pull, ~0.4 µA, UCSP-4",
+                note="Replaces TLV7031DPWR (only non-China stock was one 480 pcs lot) — "
+                     "sourcing round 23 (2026-11-23). SamacSys land/symbol/STEP.", **overrides)

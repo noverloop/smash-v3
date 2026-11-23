@@ -671,6 +671,11 @@ BATT_FLOOR_MM = 1.2
 BATT_PZ_POCKET_DEPTH_MM = 0.6
 BATT_PZ_DISC_POCKET_R_MM = 5.4                  # Ø10 disc + 0.4 radial clearance
 BATT_PZ_SLOT_MM = (4.6, -2.4, 10.4, 2.4)        # comparator column slot (x0, y0, x1, y1)
+# (2026-11-23) MAX9064 UCSP-4 is 0.69 mm (> the 0.6 mm pocket): a local 1.8 mm □
+# sub-pocket over U_COMP_PZ (7.8, 0) to 0.69 + 0.2 → 0.9 mm, leaving a 0.3 mm
+# 7075 web over that 1.8 mm span only.
+BATT_PZ_COMP_POCKET_MM = (6.9, -0.9, 8.7, 0.9)
+BATT_PZ_COMP_POCKET_DEPTH_MM = 0.9
 BATT_HEADROOM_MM = 0.4           # (2026-11-23) flat AWG 30 + joint over the trimmed + pin (was 1.0 for pin→wire joints, 2.0 for tabs)
 # (2026-11-20, user) Tadiran /P cells (axial pins), no tabs: each − pin goes
 # straight down through a floor hole into a PTH on aft_end_board.
@@ -820,6 +825,8 @@ def _battery_floor_plate(cq):
     f = BATT_FLOOR_MM
     plate = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(f)
     plate = plate.cut(_poly_extrude(cq, piezo_pocket(), BATT_PZ_POCKET_DEPTH_MM))
+    from shapely.geometry import box as _box
+    plate = plate.cut(_poly_extrude(cq, _box(*BATT_PZ_COMP_POCKET_MM), BATT_PZ_COMP_POCKET_DEPTH_MM))
     plate = plate.cut(_poly_extrude(cq, wire_fan_pocket(), WIRE_FAN_POCKET_DEPTH_MM))
     for x, y in cell_centres_xy():                 # − pins
         plate = plate.cut(cq.Workplane("XY").center(x, y).circle(CELL_PIN_HOLE_D_MM / 2.0).extrude(f))
@@ -891,7 +898,7 @@ def _write_floor_plate(cq, out_dir, res) -> None:
         "# battery_floor_plate — gap hardware (generated)\n\n"
         "Kind: battery_holder floor. Material: 7075-T6 aluminium, hard anodised.\n"
         f"Geometry: Ø{2*BATT_HOLDER_R_OUT_MM:.0f} × {BATT_FLOOR_MM:g} mm plate under the open holder; "
-        f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (piezo disc + comparator column + "
+        f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (comparator sub-pocket {BATT_PZ_COMP_POCKET_DEPTH_MM:g} mm; piezo disc + comparator column + "
         f"steering-diode annulus + potting groove to the channel exit); Ø{CELL_PIN_HOLE_D_MM:g} − pin "
         f"holes on the cell axes; Ø{WIRE_HOLE_D_MM:g} + wire holes under the bore grooves; Ø"
         f"{BATT_CHANNEL_D_MM:g} potting channel; Ø2.2 clearance holes for the aft cap's M2 screws.\n"

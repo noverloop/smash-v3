@@ -320,7 +320,7 @@ def test_piezo_cluster_sits_in_the_holder_floor_pocket():
     assert L["P_PIEZO"]["position_mm"] == [0.0, 0.0] and L["P_PIEZO"]["face"] == "top"
     disc = add_piezo_disc_smd10t04r111(Design(), ref="P")
     assert disc.height_mm < BATT_PZ_POCKET_DEPTH_MM
-    for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_THR1", "R_THR2", "U_COMP_PZ", "C_COMP_PZ"):
+    for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_COMP_DIV", "U_COMP_PZ", "C_COMP_PZ"):
         x, y = L[ref]["position_mm"]
         assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref
 
@@ -333,3 +333,31 @@ def test_floor_pocket_is_potted_through_the_channel():
     pk = SS.piezo_pocket()
     assert pk.geom_type == "Polygon"                     # one connected cavity
     assert pk.intersects(SS.wire_fan_pocket())           # reaches the channel exit
+
+
+def test_piezo_pocket_parts_fit_under_the_floor_plate():
+    """(2026-11-23) every top-face part in the floor plate's underside pocket
+    clears its pocket depth by the part clearance; the 0.69 mm MAX9064 gets
+    its own deeper sub-pocket."""
+    from shapely.geometry import box
+    from smash.export import spacer_step as SS
+    import generate_stackup as g
+    d = g.Design(); g._set_battery_mode("maximalist"); g._prime_power_rails(d)
+    for fn in (g.build_aft_end_board, g.build_activation_interface, g.build_wakeup_board,
+               g.build_power_board, g.build_fins_module):
+        fn(d)
+    import json, pathlib
+    L = json.loads((pathlib.Path(__file__).parents[1] / "src/smash/data/locked_placements.json").read_text())
+    sub = box(*SS.BATT_PZ_COMP_POCKET_MM)
+    chips = {c.ref: c for c in d.chips}
+    for ref in g._PIEZO_POCKET_REFS:
+        if ref not in chips or ref not in L:
+            continue                                   # copper-only (L_HEALTH_COIL) / unlocked
+        c = chips[ref]; x, y = L[ref]["position_mm"]
+        w, h = c.footprint.size_mm
+        deep = sub.contains(box(x - w / 2, y - h / 2, x + w / 2, y + h / 2))
+        depth = SS.BATT_PZ_COMP_POCKET_DEPTH_MM if deep else SS.BATT_PZ_POCKET_DEPTH_MM
+        # potted cavity, nothing stacked on these parts: 0.1 mm (not the 0.2 mm
+        # cell-ceiling clearance) — the 0402s are 0.45-0.5 mm in the 0.6 mm pocket
+        clear = 0.0 if ref == "P_PIEZO" else 0.1
+        assert c.height_mm + clear <= depth + 1e-9, (ref, c.height_mm, depth)
