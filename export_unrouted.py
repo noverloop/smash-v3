@@ -237,6 +237,32 @@ def model_map(dst: pathlib.Path) -> str:
     return "\n".join(rows) + "\n"
 
 
+ALTIUM_SCRIPT = REPO / "application" / "src" / "smash" / "export" / "altium" / "Attach3DModels.pas"
+
+
+def altium_model_map(root: pathlib.Path) -> tuple[str, int]:
+    """(2026-11-23, user) <project>/3D_MODEL_MAP_altium.txt for Attach3DModels.pas:
+    TAB-separated footprint name, STEP path relative to the project folder
+    (Windows separators), KiCad offset x/y/z (mm) and rotation x/y/z (deg) as
+    KiCad stores them — the script converts the rotation sign."""
+    lines = ["# Smash 3D model map for Altium (Attach3DModels.pas) - paths relative to this file",
+             "# footprint\tstep_file\toffset_x_mm\toffset_y_mm\toffset_z_mm\trot_x_deg\trot_y_deg\trot_z_deg"]
+    n = 0
+    for mod in sorted((root / "footprints").rglob("*.kicad_mod")):
+        text = read(mod)
+        m = _MODEL_RX.search(text)
+        if not m:
+            continue
+        name = re.search(r'\(footprint\s+"([^"]+)"', text).group(1).split(":")[-1]
+        rel = m.group(1).replace("${KIPRJMOD}/", "")
+        if not (root / rel).exists():
+            continue
+        off, rot = _XYZ("offset", m.group(2)), _XYZ("rotate", m.group(2))
+        lines.append("\t".join([name, rel.replace("/", "\\"), off[1], off[2], off[3], rot[1], rot[2], rot[3]]))
+        n += 1
+    return "\n".join(lines) + "\n", n
+
+
 def footprint_review(stamp_line: str) -> str:
     """FOOTPRINT_REVIEW.md: every footprint of the maximalist tower with its
     provenance. Self-drawn lands (datasheet / authored / custom / project)
@@ -461,6 +487,12 @@ def main() -> int:
     else:
         warn.append(f"no {NOTES.name}: layout notes not exported")
     write(dst / "3D_MODEL_MAP.csv", model_map(dst))
+    # (2026-11-23, user) Altium drops KiCad 3D models: script + per-project map
+    for root in (dst, dst / "dev_board"):
+        if (root / "footprints").exists():
+            text, n = altium_model_map(root)
+            write(root / "3D_MODEL_MAP_altium.txt", text.replace("\n", "\r\n"))
+            shutil.copy2(ALTIUM_SCRIPT, root / ALTIUM_SCRIPT.name)
     try:
         write(dst / "FOOTPRINT_REVIEW.md", footprint_review(stamp_line))
     except Exception as e:                       # never block the export on it

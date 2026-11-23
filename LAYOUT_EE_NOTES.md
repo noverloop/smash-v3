@@ -34,24 +34,28 @@ next to this file, generated from the design at export time.
 
 ### Importing into Altium (3D models)
 
-The projects are KiCad 8 files; Altium imports them with **File » Import
-Wizard » KiCad Design Files** (supported up to KiCad 8). Altium's documentation
-does not say whether the importer brings footprint STEP models along or how it
-resolves KiCad's `${KIPRJMOD}` paths, so:
+Altium imports the KiCad files with **File » Import Wizard » KiCad Design
+Files**, but its KiCad importer **does not bring footprint 3D models along** (two
+dev-board imports, `${KIPRJMOD}` and plain relative paths: no models, and the
+import log never mentions them). Add them with the script in this package:
 
-1. Import with the folder structure **intact**. Each project carries its own
-   models next to it (`3dmodels/` for the tower, `dev_board/3dmodels/` for the
-   dev board), linked as plain relative paths `3dmodels/<part>.step` (no KiCad
-   `${KIPRJMOD}` variable — the earlier `${KIPRJMOD}` links did not come through).
-2. Check a few parts in Altium's 3D view (key 3). If the bodies are there, done.
-3. If they are missing: every STEP is in `3dmodels/`, and **`3D_MODEL_MAP.csv`**
-   lists each footprint (tower and dev board) with its STEP file and the
-   offset / rotation KiCad applies. In the imported PcbLib open the footprint,
-   **Place » 3D Body**, pick the STEP from `3dmodels/`, apply the map's rotation
-   and Z offset, then **Tools » Update PCB With All**. Footprints marked
-   "(no 3D model)" never had a vendor model — get one from the vendor site.
-   Tell us which way it went; if Altium needs plain relative paths we can export
-   them that way.
+1. Import the project, open the imported PcbDoc and **Design » Make PCB Library**.
+2. With that PcbLib active: **File » Run Script… » `Attach3DModels.pas` »
+   `RunAttach3DModels`** (the .pas is next to each project: export root for the
+   tower, `dev_board/` for the dev board).
+3. Pick that project's **`3D_MODEL_MAP_altium.txt`** — footprint → STEP in
+   `3dmodels/` + KiCad's offset and rotation. The script embeds each STEP as a
+   3D body (skips footprints that already have one) and reports attached /
+   missing / unmatched (details in `Attach3DModels_log.txt`).
+4. Save the PcbLib, then **Tools » Update PCB With All**.
+
+⚠ First run is the test: check a few parts in 3D (key 3). If parts lie on their
+side or upside down, flip `ROT_SIGN` at the top of the script (KiCad stores
+model rotations with negated angles; the script assumes that), delete the added
+bodies and run again. Footprints rotated about two axes are listed in the
+summary — check those. Footprints with no STEP never had a vendor model
+(FOOTPRINT_REVIEW.md); `3D_MODEL_MAP.csv` has the same data for manual
+**Place » 3D Body**.
 
 Stack (bottom → top): A aft_end_board · B-G battery spacers · H
 activation_interface · I spacer · J wakeup_board · K spacer · L power_board ·
