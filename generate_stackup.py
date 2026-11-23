@@ -2651,7 +2651,7 @@ def build_camera_module(d: Design) -> None:
     cff = add_capacitor_c0g_0603_avx_sqcs(d, ref="C_CAM_VCORE_FF", value="120pF", board_tag=CT,
                                           **_as_built_0402("120pF", "C0G/NP0"))
     _net(d, "CAM_VCORE_1V15").connect(cff.pin("1")); _net(d, "CAM_VCORE_FB").connect(cff.pin("2"))
-    cap_to_gnd(d, "CAM_VCORE_1V15", "22uF/LV", ref="C_CAM_BUCK_OUT", board_tag=CT, pin=buck.pin("SW"))
+    cap_to_gnd(d, "CAM_VCORE_1V15", "22uF/LV", ref="C_CAM_BUCK_OUT", board_tag=CT, pin=(buck.ref, None))
 
     # ── Grounds (AGND / DGND both to the tile GND) ───────────────────────────
     for ball in ("A1", "A6", "A7", "A8", "A9", "B5", "B6", "B7", "B8", "D9", "H6"):
