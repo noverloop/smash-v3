@@ -242,7 +242,6 @@ def footprint_review(stamp_line: str) -> str:
     provenance. Self-drawn lands (datasheet / authored / custom / project)
     and vendor lands we changed (borrowed from a sibling part, 3D model
     rotated, pins renamed) come first and are marked CHECK."""
-    sys.path[:0] = [str(REPO), str(REPO / "application" / "src")]
     import collections
     import generate_stackup as g
     from smash.parts.orderable import apply_orderable
@@ -330,6 +329,7 @@ def footprint_review(stamp_line: str) -> str:
 
 
 def main() -> int:
+    sys.path[:0] = [str(REPO), str(REPO / "application" / "src")]
     ap = argparse.ArgumentParser(description="Export dist/'s stackup into Unrouted/<date>/.")
     ap.add_argument("--date", default=dt.date.today().strftime("%Y%m%d"),
                     help="export folder date, YYYYMMDD (default: today)")
@@ -502,13 +502,27 @@ def main() -> int:
         elif size > WARN_MB:
             warn.append(f"{p.relative_to(REPO)} is {size:.0f} MB (GitHub warns above {WARN_MB} MB)")
 
+    # (2026-11-23, user) Altium import test kit, next to the dated folder.
+    from smash.export import altium_import_test as AIT
+    model = next((p for p in (dst / "dev_board" / "3dmodels" / "Resistor_SMD.3dshapes.step",
+                              dst / "3dmodels" / "Resistor_SMD.3dshapes.step") if p.exists()), None)
+    if model:
+        AIT.write(OUT / "altium_import_test", model)
+    else:
+        warn.append("altium_import_test not written: no resistor STEP in the export")
+
     # (2026-11-23, user) One zip of the whole snapshot next to the folder —
     # easier to hand to the layout EE.
     import zipfile
     zpath = OUT / f"{stamp}.zip"
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         for p in sorted(files(dst)):
-            zf.write(p, arcname=p.relative_to(OUT).as_posix())
+            # fixed timestamp (the export date) → identical exports give a
+            # byte-identical zip, so git stores no new 90 MB copy
+            zi = zipfile.ZipInfo(p.relative_to(OUT).as_posix(), date_time=(int(iso[:4]), int(iso[5:7]), int(iso[8:10]), 0, 0, 0))
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            zi.external_attr = 0o644 << 16
+            zf.writestr(zi, p.read_bytes(), compresslevel=9)
     zmb = zpath.stat().st_size / 1e6
     if zmb > GITHUB_MAX_MB:
         warn.append(f"{zpath.relative_to(REPO)} is {zmb:.0f} MB: GitHub refuses files over "
