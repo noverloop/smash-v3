@@ -1,6 +1,6 @@
 # Layout EE notes
 
-Export 2026-11-23 from commit 29ea1a7 (generate_stackup.py, maximalist).
+Export 2026-11-23 from commit 3ac55e8 (generate_stackup.py, maximalist).
 
 Maintained by hand in the repo root (`LAYOUT_EE_NOTES.md`); `export_unrouted.py`
 copies it into every `Unrouted/<date>/` export with the export date and commit.
