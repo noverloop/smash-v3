@@ -446,13 +446,12 @@ def build_companion_compute(d: Design) -> None:
         elif re.fullmatch(r"VDDIO[1234](_\d+)?", p.name):
             # VDDIO2 = the NAND OSPI bank (PE8..15 — 3.3 V parts);
             # VDDIO4 = the PB bank (SYS_SPI / WBA HCI / I2C2, all 3.3 V).
-            # ⚠ VDDIO1 (PE2/3/4) + VDDIO3 (PD0..11) carry the AWR SPI,
-            # whose VIOIN runs 1.8 V — at 3.3 V this bank mismatches the
-            # radar interface (open decision: re-pin the radar SPI into a
-            # dedicated 1.8 V bank, or flip the AWR VIOIN+QSPI flash to
-            # 3.3 V per the TI EVM). 3.3 V chosen meanwhile because the
-            # PD bank's OTHER tenants (PWR_HOLD, COMP_OUT, SYS_SPI_CS,
-            # IMU3_INT) are all 3.3 V signals.
+            # VDDIO1 (PE2/3/4) + VDDIO3 (PD0..11) carry the AWR SPI. RESOLVED
+            # (AWR1843AOP build): the AWR's VIOIN domain + its QSPI flash
+            # (MX25V8035F, 2.3-3.6 V) run on COMP_3V3 like the TI EVM, so
+            # these banks stay 3.3 V with their other tenants (PWR_HOLD,
+            # COMP_OUT, SYS_SPI_CS, IMU3_INT). Consequence: the radar I/O
+            # domain needs COMP_3V3 up — raise RADAR_EN only after it.
             _net(d, "COMP_3V3").connect(mpu.pin(p.num))
         elif re.fullmatch(r"VSS_\d+", p.name) or p.name in ("VSSA", "VSSAON"):
             _net(d, "GND").connect(mpu.pin(p.num))
