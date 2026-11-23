@@ -40,13 +40,15 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 # the merge 2.2 / 2.3 / 3.0 / 2.5 / 6.0, earlier 2.4 / 2.7 / 3.0 / 3.1 / 6.0)
 # and the 6 × 3.867 mm battery column; test_antenna_sim_stack.py fails if
 # these drift again.
+# (2026-11-23) battery headroom 1.0 → 0.4 mm (floor plate + pre-wired cells): every board
+# above the compartment −0.6 mm.
 BOARD_MID_Z_MM = {
     "aft_end_board": 0.434,
-    "activation_interface": 24.502,
-    "wakeup_board": 27.67,   # (2026-11-22 r17-19) activation↔wakeup 2.6 → 2.3 mm (S-1318 HSNT-4, low FETs)
-    "power_board": 31.138,   # (2026-11-22 r17-19) wakeup↔power 2.9 → 2.6 mm
-    "companion_compute": 34.506,   # (2026-11-22) follows the stack (power↔compute 2.5 unchanged)
-    "radar_module": 38.374,   # (2026-11-22) follows the stack (compute↔radar 3.0 unchanged)
+    "activation_interface": 23.902,
+    "wakeup_board": 27.07,   # (2026-11-22 r17-19) activation↔wakeup 2.6 → 2.3 mm (S-1318 HSNT-4, low FETs)
+    "power_board": 30.538,   # (2026-11-22 r17-19) wakeup↔power 2.9 → 2.6 mm
+    "companion_compute": 33.906,   # (2026-11-22) follows the stack (power↔compute 2.5 unchanged)
+    "radar_module": 37.774,   # (2026-11-22) follows the stack (compute↔radar 3.0 unchanged)
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

@@ -663,20 +663,30 @@ BATT_CELL_LENGTH_MM = 21.0
 # (2026-11-15) CLOSED FLOOR under the cells: they stand on it, and its
 # underside carries a shallow POCKET for the launch piezo (Ø10 × 0.4 disc on
 # aft_end's top, on the spin axis) + its comparator column (0402s + X2SON).
+# (2026-11-23, user) The floor is a SEPARATE 7075 PLATE: the holder is open at
+# the aft end, the pre-wired cells slide in from below into the built tower,
+# the plate closes it, then aft_end + the aft cap go on and the cap's M2 screws
+# clamp cap / aft_end / plate into the holder's taps. Same 1.2 mm, same pockets.
 BATT_FLOOR_MM = 1.2
 BATT_PZ_POCKET_DEPTH_MM = 0.6
 BATT_PZ_DISC_POCKET_R_MM = 5.4                  # Ø10 disc + 0.4 radial clearance
 BATT_PZ_SLOT_MM = (4.6, -2.4, 10.4, 2.4)        # comparator column slot (x0, y0, x1, y1)
-BATT_HEADROOM_MM = 1.0           # (2026-11-20) + pin→wire joints + wires (was 2.0 for tabs)
+BATT_HEADROOM_MM = 0.4           # (2026-11-23) flat AWG 30 + joint over the trimmed + pin (was 1.0 for pin→wire joints, 2.0 for tabs)
 # (2026-11-20, user) Tadiran /P cells (axial pins), no tabs: each − pin goes
-# straight down through a floor hole into a PTH on aft_end_board; each + pin
-# gets a short AWG 28 wire that runs across the cell tops, DOWN THE POTTING
-# CHANNEL (potted → locked) and through a fan-out pocket in the floor's
-# underside to a PTH on aft_end_board. Everything solders on aft_end from below.
+# straight down through a floor hole into a PTH on aft_end_board.
+# (2026-11-23, user) Each cell is PRE-WIRED before it slides in: the + pin is
+# trimmed, an AWG 30 wire is soldered flat across the cell's + end and laid
+# down a GROOVE in that cell's own bore wall, so it rides in with the cell and
+# exits through a floor-plate hole straight into its PTH on aft_end_board (no
+# more trip across the cell tops to the potting channel → headroom 1.0 → 0.4).
+# Groove at the cell angle −90° (bore wall): clears the 0.8 mm skin, the
+# potting channel, the cap screws / counterbores, the fixture dowel holes and
+# the diode ring (aft_cap / test_battery_compartment check it).
+WIRE_GROOVE_OFFSET_DEG = -90.0
+WIRE_GROOVE_D_MM = 0.9           # AWG 30 PTFE (Ø ~0.5) + clearance
+WIRE_HOLE_D_MM = 1.2             # floor-plate hole at the groove exit
 CELL_PIN_HOLE_D_MM = 1.2         # floor hole round the Ø0.8 − pin (placeholder)
-WIRE_FAN_R_MM = 2.4              # + wire PTHs: this far from the channel centre …
-WIRE_FAN_DIRS_DEG = (285.0, 330.0, 15.0)    # … in these directions (clear of the cap screw)
-WIRE_FAN_POCKET_DEPTH_MM = 0.6
+WIRE_FAN_POCKET_DEPTH_MM = 0.6   # (2026-11-23) now just the channel-exit pocket (potting path)
 BATT_TOP_RING_R_IN_MM = 16.0
 BATT_PART_CLEARANCE_MM = 0.2
 
@@ -738,22 +748,24 @@ def cell_centres_xy() -> list:
 
 
 def cell_wire_pads_xy() -> list:
-    """+ wire PTHs on aft_end_board round the potting-channel exit."""
+    """+ wire exits = the bore-wall grooves (2026-11-23): the floor-plate hole
+    and the PTH on aft_end_board sit straight below each groove."""
     import math
-    cx, cy = _batt_channel_xy()
-    return [(round(cx + WIRE_FAN_R_MM * math.cos(math.radians(d)), 3),
-             round(cy + WIRE_FAN_R_MM * math.sin(math.radians(d)), 3)) for d in WIRE_FAN_DIRS_DEG]
+    out = []
+    for (cx, cy), th in zip(cell_centres_xy(), BATT_CELL_ANGLES_DEG):
+        a = math.radians(th + WIRE_GROOVE_OFFSET_DEG)
+        out.append((round(cx + (BATT_BORE_R_MM + 0.05) * math.cos(a), 3),
+                    round(cy + (BATT_BORE_R_MM + 0.05) * math.sin(a), 3)))
+    return out
 
 
 def wire_fan_pocket():
-    """Shapely outline of the floor-underside pocket that leads the + wires
-    from the channel exit to their PTHs."""
-    from shapely.geometry import MultiPoint, Point
+    """Shapely outline of the plate-underside pocket at the potting-channel
+    exit (the + wires no longer use it since 2026-11-23; the potting groove
+    still joins it to the piezo pocket)."""
+    from shapely.geometry import Point
     cx, cy = _batt_channel_xy()
-    pts = [Point(cx, cy).buffer(BATT_CHANNEL_D_MM / 2.0, 48)] + \
-          [Point(x, y).buffer(0.9, 32) for x, y in cell_wire_pads_xy()]
-    from shapely.ops import unary_union
-    return unary_union(pts).convex_hull
+    return Point(cx, cy).buffer(BATT_CHANNEL_D_MM / 2.0 + 0.6, 48)
 
 
 def _poly_extrude(cq, poly, h, z0=0.0):
@@ -798,51 +810,97 @@ def piezo_pocket():
             .union(ring).union(groove))
 
 
-def _battery_holder_body(cq, h):
-    """Closed FLOOR (with the piezo pocket in its underside) + cell-locating
-    block above it + a 1 mm EDGE RING up to h. Potting: the axial channel +
-    its link slot into the cell cavity (no edge notches since 2026-11-21)."""
+def _battery_floor_plate(cq):
+    """(2026-11-23) The separate 7075 floor plate (z 0 … BATT_FLOOR_MM): piezo /
+    comparator / diode pocket + channel-exit pocket in its underside, − pin
+    holes, + wire holes under the bore grooves, the potting channel, and
+    clearance holes for the aft cap's M2 screws (they clamp it to the holder)."""
+    import math
+    from smash.export.aft_cap import CAP_SCREW_ANGLES_DEG, CAP_SCREW_R_MM, CAP_SCREW_CLEAR_D_MM
+    f = BATT_FLOOR_MM
+    plate = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(f)
+    plate = plate.cut(_poly_extrude(cq, piezo_pocket(), BATT_PZ_POCKET_DEPTH_MM))
+    plate = plate.cut(_poly_extrude(cq, wire_fan_pocket(), WIRE_FAN_POCKET_DEPTH_MM))
+    for x, y in cell_centres_xy():                 # − pins
+        plate = plate.cut(cq.Workplane("XY").center(x, y).circle(CELL_PIN_HOLE_D_MM / 2.0).extrude(f))
+    for x, y in cell_wire_pads_xy():               # + wires out of the grooves
+        plate = plate.cut(cq.Workplane("XY").center(x, y).circle(WIRE_HOLE_D_MM / 2.0).extrude(f))
+    cx, cy = _batt_channel_xy()
+    plate = plate.cut(cq.Workplane("XY").center(cx, cy).circle(BATT_CHANNEL_D_MM / 2.0).extrude(f))
+    for ang in CAP_SCREW_ANGLES_DEG:
+        a = math.radians(ang)
+        plate = plate.cut(cq.Workplane("XY").center(CAP_SCREW_R_MM * math.cos(a), CAP_SCREW_R_MM * math.sin(a))
+                          .circle(CAP_SCREW_CLEAR_D_MM / 2.0).extrude(f))
+    return plate
+
+
+def _battery_holder_body(cq, h, with_plate: bool = True):
+    """Cell-locating block (OPEN at the aft end since 2026-11-23) on top of the
+    separate floor plate, + a 1 mm EDGE RING up to h. Potting: the axial
+    channel + its link slot into the cell cavity. Per-cell + wire grooves in
+    the bore walls. with_plate=True returns holder ∪ plate (stack views);
+    False = the holder alone (machining STEP)."""
     import math
     f = BATT_FLOOR_MM
     hc = min(BATT_CELL_LENGTH_MM, h - f)
-    floor = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(f)
-    floor = floor.cut(_poly_extrude(cq, piezo_pocket(), BATT_PZ_POCKET_DEPTH_MM))
-    floor = floor.cut(_poly_extrude(cq, wire_fan_pocket(), WIRE_FAN_POCKET_DEPTH_MM))
-    for x, y in cell_centres_xy():                 # − pins through the floor
-        floor = floor.cut(cq.Workplane("XY").center(x, y)
-                          .circle(CELL_PIN_HOLE_D_MM / 2.0).extrude(f))
     block = cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM).extrude(hc).translate((0, 0, f))
     block = block.cut(_poly_extrude(cq, battery_holder_cavity(), hc, z0=f))
-    body = floor.union(block)
+    body = block
     cx, cy = _batt_channel_xy()
     body = body.cut(cq.Workplane("XY").center(cx, cy)
-                    .circle(BATT_CHANNEL_D_MM / 2.0).extrude(f + hc))
-    # channel → cell-cavity link slot (above the floor, full block height)
+                    .circle(BATT_CHANNEL_D_MM / 2.0).extrude(hc).translate((0, 0, f)))
+    # channel → cell-cavity link slot (full block height)
     la = math.radians(BATT_CHANNEL_LINK_CELL_DEG)
     bx, by = BATT_CLUSTER_R_MM * math.cos(la), BATT_CLUSTER_R_MM * math.sin(la)
     ln = math.hypot(bx - cx, by - cy)
     body = body.cut(cq.Workplane("XY").center((cx + bx) / 2, (cy + by) / 2)
                     .transformed(rotate=(0, 0, math.degrees(math.atan2(by - cy, bx - cx))))
                     .rect(ln, BATT_CHANNEL_LINK_W_MM).extrude(hc).translate((0, 0, f)))
+    # (2026-11-23) + wire grooves, full bore height, one per cell
+    for x, y in cell_wire_pads_xy():
+        body = body.cut(cq.Workplane("XY").center(x, y).circle(WIRE_GROOVE_D_MM / 2.0)
+                        .extrude(hc).translate((0, 0, f)))
     if h > f + hc + 1e-6:
         ring = (cq.Workplane("XY").circle(BATT_HOLDER_R_OUT_MM)
                 .circle(BATT_TOP_RING_R_IN_MM).extrude(h - f - hc)
                 .translate((0, 0, f + hc)))
         body = body.union(ring)
-    # (2026-11-21, user) NO edge feed / vent notches any more: the potting
-    # enters through the axial channel and its link slot into the cell cavity
-    # and vents up through the headroom into activation's potting hole.
-    # (2026-11-19, user) TAPPED M2 holes for the aft_end_cap screws, from the
-    # holder's bottom face, in the solid webs BETWEEN the cells (never into a
-    # cell bore): aft_cap.CAP_SCREW_ANGLES_DEG at CAP_SCREW_R_MM.
+    # TAPPED M2 holes for the aft_end_cap screws, from the holder's bottom face
+    # (z = f, on top of the plate), in the solid webs BETWEEN the cells.
     from smash.export.aft_cap import (CAP_SCREW_ANGLES_DEG, CAP_SCREW_R_MM,
                                       HOLDER_TAP_DRILL_MM, HOLDER_TAP_DEPTH_MM)
     for ang in CAP_SCREW_ANGLES_DEG:
         a = math.radians(ang)
         body = body.cut(cq.Workplane("XY").center(CAP_SCREW_R_MM * math.cos(a),
                                                   CAP_SCREW_R_MM * math.sin(a))
-                        .circle(HOLDER_TAP_DRILL_MM / 2.0).extrude(HOLDER_TAP_DEPTH_MM))
+                        .circle(HOLDER_TAP_DRILL_MM / 2.0).extrude(HOLDER_TAP_DEPTH_MM)
+                        .translate((0, 0, f)))
+    if with_plate:
+        body = body.union(_battery_floor_plate(cq))
     return body
+
+def _write_floor_plate(cq, out_dir, res) -> None:
+    """(2026-11-23) <out_dir>/battery_floor_plate/{.step,.stl,_cam.md}."""
+    d = pathlib.Path(out_dir) / "battery_floor_plate"
+    d.mkdir(parents=True, exist_ok=True)
+    plate = _battery_floor_plate(cq)
+    step = d / "battery_floor_plate.step"
+    cq.exporters.export(plate, str(step))
+    cq.exporters.export(plate, str(d / "battery_floor_plate.stl"))
+    (d / "battery_floor_plate_cam.md").write_text(
+        "# battery_floor_plate — gap hardware (generated)\n\n"
+        "Kind: battery_holder floor. Material: 7075-T6 aluminium, hard anodised.\n"
+        f"Geometry: Ø{2*BATT_HOLDER_R_OUT_MM:.0f} × {BATT_FLOOR_MM:g} mm plate under the open holder; "
+        f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (piezo disc + comparator column + "
+        f"steering-diode annulus + potting groove to the channel exit); Ø{CELL_PIN_HOLE_D_MM:g} − pin "
+        f"holes on the cell axes; Ø{WIRE_HOLE_D_MM:g} + wire holes under the bore grooves; Ø"
+        f"{BATT_CHANNEL_D_MM:g} potting channel; Ø2.2 clearance holes for the aft cap's M2 screws.\n"
+        "Assembly: cells (pre-wired) slide into the holder from the aft end → this plate → "
+        "aft_end_board (solder − pins + + wires from below) → aft cap; the cap screws clamp "
+        "cap / aft_end / plate into the holder's M2 taps.\n")
+    res.append({"name": "battery_floor_plate", "kind": "battery_holder", "step": step,
+                "height_mm": BATT_FLOOR_MM})
+
 
 def gap_kind(name: str) -> str:
     if name.startswith("spacer_battery_"):
@@ -935,8 +993,9 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
             if name != (batt[0] if batt else None):
                 continue
             h = sum(boards[n].thickness_mm for n in batt)
-            body = _battery_holder_body(cq, h)
+            body = _battery_holder_body(cq, h, with_plate=False)
             label, mat = "battery_holder", "7075-T6 aluminium, hard anodised (insulates the live cell cans)"
+            _write_floor_plate(cq, out_dir, res)
             dims = (f"Ø{2*BATT_HOLDER_R_OUT_MM:.0f} × {h:.2f} mm block, 3 cell bores "
                     f"Ø{2*BATT_BORE_R_MM:.2f} (location fit on the cell flanks), tip "
                     f"reliefs ±{BATT_TIP_RELIEF_HALF_DEG:g}° to r {BATT_TIP_RELIEF_R_MM} → "
@@ -948,9 +1007,12 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{BATT_CELL_LENGTH_MM:g} mm cell block only a 1 mm EDGE RING (r "
                     f"{BATT_TOP_RING_R_IN_MM:g}–{BATT_HOLDER_R_OUT_MM:g}) over the "
                     f"{BATT_HEADROOM_MM:g} mm headroom under activation_interface (its bottom "
-                    "face EMPTY); Tadiran /P cells: − pins through Ø"
-                    f"{CELL_PIN_HOLE_D_MM:g} floor holes into aft_end PTHs, + pins → AWG 28 wires "
-                    "down the potting channel + a floor-underside fan-out pocket → aft_end PTHs")
+                    "face EMPTY); OPEN at the aft end (separate battery_floor_plate): the "
+                    "pre-wired Tadiran /P cells slide in from below — − pins through the plate "
+                    f"into aft_end PTHs, + pins trimmed with an AWG 30 wire soldered flat and laid in a "
+                    f"Ø{WIRE_GROOVE_D_MM:g} groove in each bore wall (cell angle "
+                    f"{WIRE_GROOVE_OFFSET_DEG:+g}°) → plate hole → aft_end PTH; M2 taps "
+                    "from the holder's bottom face")
         elif kind == "ring" and is_anchor_gap(name):
             continue             # (2026-11-20) the SNAP RING is built with the nose set (sleeve_step)
         elif kind == "ring":

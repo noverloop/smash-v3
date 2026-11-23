@@ -3179,7 +3179,11 @@ def build_power_board(d: Design) -> None:
     # land on aft_end_board, soldered from below before the aft cap goes on:
     # − pins straight through the holder floor (P_CELL_PIN_NEG*, at the cell
     # axes); + pins via AWG 28 wires down the holder's potting channel
-    # (P_CELL_WIRE_POS*, round the channel exit). activation_interface's
+    # (P_CELL_WIRE_POS*, round the channel exit).
+    # (2026-11-23, user) Floor = a separate plate; cells slide in PRE-WIRED from
+    # the aft end. The + wire (AWG 30, flat on the trimmed pin) rides in a
+    # groove in its bore wall, so P_CELL_WIRE_POS* now sit straight below the
+    # grooves (spacer_step.cell_wire_pads_xy, locked_placements.json). activation_interface's
     # bottom face is EMPTY (it mates flat over the 1 mm headroom).
     for _k in (1, 2, 3):
         pw = add_cell_lead_pth(d, ref=f"P_CELL_WIRE_POS{_k}", role="wire",
@@ -4613,6 +4617,8 @@ from smash.export.spacer_step import (BATT_FLOOR_MM as _BATT_FLOOR,          # n
 _BATTERY_MODES = {
     # (2026-11-20) derived from the holder: 1.2 mm closed floor + 21 mm cells
     # + 1 mm headroom (Tadiran /P + pin → wire joints; was 2 mm for tabs) = 23.2
+    # (2026-11-23) 1.2 mm floor PLATE + 21 + 0.4 mm headroom (flat pre-wired
+    # + joints, wire in a bore groove) = 22.6
     "triple": {"compartment_mm": round(_BATT_FLOOR + _BATT_CELLS + _BATT_HEAD, 3)},
 }
 _BATTERY_BY_CONFIG: dict = {}   # every config = triple (core_1cell dropped 2026-11-16: always 3 cells)

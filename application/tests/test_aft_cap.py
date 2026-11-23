@@ -176,9 +176,18 @@ def test_cells_are_wired_to_aft_end_board(built):
         pl = refs[f"P_CELL_WIRE_POS{k}"]
         assert chips[f"P_CELL_WIRE_POS{k}"].board_tag == "aft_end_board"
         assert pl.position_mm == pytest.approx((x, y), abs=1e-3)
-        # every wire PTH lies inside the floor-underside fan-out pocket
-        from shapely.geometry import Point
-        assert SS.wire_fan_pocket().contains(Point(x, y).buffer(0.65))
+        # (2026-11-23) every wire PTH sits straight below its cell's bore-wall
+        # groove (pre-wired cells slide in from the aft end; the wire rides in it)
+        cx, cy = SS.cell_centres_xy()[k - 1]
+        assert math.dist((x, y), (cx, cy)) == pytest.approx(SS.BATT_BORE_R_MM + 0.05, abs=1e-3)
+        # and clears the cap's screw counterbores and fixture dowel holes
+        from smash.export import aft_cap as AC
+        for ang in AC.CAP_SCREW_ANGLES_DEG:
+            sx, sy = AC.CAP_SCREW_R_MM * math.cos(math.radians(ang)), AC.CAP_SCREW_R_MM * math.sin(math.radians(ang))
+            assert math.dist((x, y), (sx, sy)) >= AC.CAP_SCREW_HEAD_D_MM / 2 + AC.CAP_LEAD_POCKET_D_MM / 2 + 0.25
+        for ang in AC.CAP_LOCATE_ANGLES_DEG:
+            lx, ly = AC.CAP_LOCATE_R_MM * math.cos(math.radians(ang)), AC.CAP_LOCATE_R_MM * math.sin(math.radians(ang))
+            assert math.dist((x, y), (lx, ly)) >= AC.CAP_LOCATE_D_MM / 2 + AC.CAP_LEAD_POCKET_D_MM / 2 + 0.3
     # the lead PTHs clear the clamp-tab ring and the cap screw holes
     for k in range(1, 4):
         for ref in (f"P_CELL_PIN_NEG{k}", f"P_CELL_WIRE_POS{k}"):

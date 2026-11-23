@@ -34,15 +34,15 @@ from smash.parts.castellations import (AFT_CAP_N_TEETH, AFT_CAP_SCREW_TEETH as C
                                       aft_tooth_angle)
 CAP_SCREW_ANGLES_DEG = tuple(aft_tooth_angle(k) for k in CAP_SCREW_TEETH)   # between the cells
 CAP_GROOVE_HALF_DEG = (360.0 / AFT_CAP_N_TEETH) / 4.0 + math.degrees(0.05 / 13.9)
-CAP_SCREW = "M2 × 6 low-head (ISO 14580 / Ø3.5, A2) into tapped M2 holes in the Al holder floor"
+CAP_SCREW = "M2 × 6 low-head (ISO 14580 / Ø3.5, A2) through the floor plate into tapped M2 holes in the Al holder (≈3.3 mm engaged)"
 CAP_SCREW_CLEAR_D_MM = 2.2
 # (2026-11-21, user) LOCATING holes for the dev board's fixture dowels (Mill-Max
-# 5849, Ø1.5, 6.5 mm above its flange) in the flat plate, the screw angles + 30°
+# 5849, Ø1.5, 6.5 mm above its flange) in the flat plate, the screw angles + 36°
 # (uneven = the same key). THROUGH the 1.6 mm plate: the dowels stand 1.2 mm above
 # the spring-pin tips, so at rest the tower sits on the pins (contact) with the
 # dowels 1.2 mm in; pressed by hand, the dowel tips stop on aft_end's bottom face.
 CAP_LOCATE_R_MM = 12.2
-CAP_LOCATE_ANGLES_DEG = (57.0, 183.0, 303.0)
+CAP_LOCATE_ANGLES_DEG = (63.0, 189.0, 309.0)   # (2026-11-23) screw angles + 36° (was +30°: hit the new + wire pocket at 48.9°)
 CAP_LOCATE_D_MM, CAP_LOCATE_DEPTH_MM = 1.6, CAP_PLATE_T_MM
 CAP_SCREW_HEAD_D_MM = 3.5
 LABEL_SCREW_CLEAR_DEG = 10.5   # a label beside a screw head is nudged at least this far from it

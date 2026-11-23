@@ -450,7 +450,7 @@
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 1 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 90°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+  "reason": "2026-11-20 (user): cell 1 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 90°) through the separate floor plate (2026-11-23) into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
  },
  "P_CELL_PIN_NEG2": {
   "position_mm": [
@@ -459,7 +459,7 @@
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 2 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 210°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+  "reason": "2026-11-20 (user): cell 2 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 210°) through the separate floor plate (2026-11-23) into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
  },
  "P_CELL_PIN_NEG3": {
   "position_mm": [
@@ -468,34 +468,34 @@
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 3 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 330°) through the holder floor into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
+  "reason": "2026-11-20 (user): cell 3 (−) AXIAL PIN (Tadiran /P) — straight down from the cell axis (r 8.6, 330°) through the separate floor plate (2026-11-23) into this PTH on aft_end_board; soldered from below before the aft cap. → GND."
  },
  "P_CELL_WIRE_POS1": {
   "position_mm": [
-   -8.571,
-   6.874
+   7.5,
+   8.6
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 1 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL1_POS."
+  "reason": "2026-11-23 (user): cell 1 (+) WIRE PTH — the cell is pre-wired (AWG 30 soldered flat on the trimmed + pin) and the wire rides in a groove in its bore wall (cell angle -90°) as the cell slides in from the aft end, then through the floor plate straight into this PTH; soldered from below. → BAT_CELL1_POS."
  },
  "P_CELL_WIRE_POS2": {
   "position_mm": [
-   -7.114,
-   7.992
+   -11.198,
+   2.195
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 2 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL2_POS."
+  "reason": "2026-11-23 (user): cell 2 (+) WIRE PTH — the cell is pre-wired (AWG 30 soldered flat on the trimmed + pin) and the wire rides in a groove in its bore wall (cell angle -90°) as the cell slides in from the aft end, then through the floor plate straight into this PTH; soldered from below. → BAT_CELL2_POS."
  },
  "P_CELL_WIRE_POS3": {
   "position_mm": [
-   -6.874,
-   9.814
+   3.698,
+   -10.795
   ],
   "rotation_deg": 0,
   "face": "top",
-  "reason": "2026-11-20 (user): cell 3 (+) WIRE PTH — the AWG 28 wire from the cell's top + pin runs down the holder's potting channel (r 13.0, 135°) and through the floor-underside fan-out pocket to here; soldered from below. → BAT_CELL3_POS."
+  "reason": "2026-11-23 (user): cell 3 (+) WIRE PTH — the cell is pre-wired (AWG 30 soldered flat on the trimmed + pin) and the wire rides in a groove in its bore wall (cell angle -90°) as the cell slides in from the aft end, then through the floor plate straight into this PTH; soldered from below. → BAT_CELL3_POS."
  },
  "P_ACT_COL_0": {
   "position_mm": [

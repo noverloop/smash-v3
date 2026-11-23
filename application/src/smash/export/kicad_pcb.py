@@ -1139,7 +1139,7 @@ def _emit_gap_hardware_drawing(name: str, board, boards: dict, chain: list, *,
         pk = S.piezo_pocket().simplify(0.02)
         poly(list(pk.exterior.coords)[:-1], 0.2)
         text("ALUMINIUM BATTERY HOLDER (not a PCB)", -S.BATT_HOLDER_R_OUT_MM - 2.0)
-        text(f"closed {S.BATT_FLOOR_MM:g} mm floor; piezo pocket {S.BATT_PZ_POCKET_DEPTH_MM:g} mm deep underneath",
+        text(f"{S.BATT_FLOOR_MM:g} mm floor plate (separate); piezo pocket {S.BATT_PZ_POCKET_DEPTH_MM:g} mm deep underneath",
              S.BATT_HOLDER_R_OUT_MM + 3.5)
         text(f"{h:.1f} mm tall - spans {len(run)} gaps", S.BATT_HOLDER_R_OUT_MM + 2.0)
     elif kind == "ring":
