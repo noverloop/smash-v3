@@ -1,0 +1,39 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+J_USB_C R23 c1       2171820001                   |                        - |    4826 11.0w    1.24 China     |   30050   14w    1.20 China     | 
+J_USB_C R23 c2       10168207-00011LF             |   13539    9w    0.73 China     |   11286 21.0w    0.62 China     |    5754   13w    0.85 China     | 
+J_USB_C R23 c3       CX80B1-24P                   |    1738   17w    3.66 China     |       5 14.0w    4.01 China     |   10371   16w    4.12 China     | 
+J_USB_C R23 c4       CX80B2-24P                   |    2074   11w    2.64 Korea, Re |       0     w    0.00 South Kor |   13449   20w    3.01 South Kor | 
+J_USB_C R23 c5       GSB1CA11101DSHR              |    8900    8w    0.74 China     |    3544 13.0w    0.94 China     |    5750   14w    0.83 China     | 
+J_USB_C R23 c6       629722010114                 |                        - |     190 11.0w    0.88 China     |                        - | 
+J_USB_C R23 c7       USB4145-03-0070-C            |   21218    7w    0.93 China     |    4063  7.0w    1.04 China     |    9163    7w    1.05 China     | 
+U_COMP_PZ R23 c1     TLV3691IDPFR                 |       0   26w    1.24 China/Chi |    2680 22.0w    1.06 China     |    9566   26w    1.48 China     | 
+U_COMP_PZ R23 c2     MAX40000ANT12+T              |       0     w    0.00 Taiwan    |       0 13.0w    0.83 Taiwan    |       0   11w    1.97 Taiwan    | 
+U_COMP_PZ R23 c3     MAX40004ANS02+T              |       0     w    0.00 Taiwan    |       0 13.0w    0.83 Taiwan    |       0   11w    1.08 -         | Restricted Availability
+U_COMP_PZ R23 c4     MAX40002ANS02+T              |                        - |       0 12.0w    0.83 Taiwan    |       0   10w    1.08 -         | 
+U_COMP_PZ R23 c5     MAX9064EBS+TG45              |     211     w    1.18 United St |    5300 12.0w    1.56 Taiwan    |    9626   10w    1.72 Taiwan    | 
+U_COMP_PZ R23 c6     MAX40001ANT12+T              |                        - |       0 12.0w    0.83 Taiwan    |    1085   10w    1.97 United St | 
+U_COMP_PZ R23 c7     TLV4041R2YKAR                |    5774   26w    1.42 China     |                        - |    1468   26w    1.60 China     | 
+U_COMP_PZ R23 c8     TLV7041DPWR                  |    5225   26w    0.78 China/Chi |                        - |    5838   26w    0.88 China     | 
+R_CAM_VCORE_FB1 R23  CRCW040291K0FKED             |   99232   18w    0.09 Taiwan    |   67478 16.0w    0.02 Taiwan    |   42585   21w    0.10 Taiwan    | 
+
+Digi-Key rows not in the upload:
+   TPS61022RWUR -> TPS61022RWUR       0   26w    2.38 United St Active
+   LTC3124EDHC#TRPBF -> LTC3124EDHC#TRPBF    3197   10w   11.44 Thailand  Active
+   TPS61088RHLR -> TPS61088RHLR       0   26w    6.16 China     Active
+   TPS62822DLCR -> TPS62822DLCR   11284   26w    1.96 United St Active
+   TPS62823DLCR -> TPS62823DLCR       0   26w    1.67 United St Active
+   TPS62088YFPR ->        0  N/Aw    0.00 -         
+   TPS62840DLCR -> TPS62840DLCR       0   26w    2.15 Japan     Active
+   MAX38640AENT+T -> MAX38640AENT+T    5727   10w    2.86 Taiwan    Active
+   TMS201210ALM-R47MTAA -> TMS201210ALM-R47MTAA    5803   20w    0.46 Japan     Active
+   TMS201210ALM-R24MTAA -> TMS201210ALM-R24MTAA    5682   20w    0.46 Japan     Active
+   04025A121JAT2A -> KGM05ACG1H121JH       0   18w    0.10 China     Active
+   C0402C152K3RACTU -> C0402C152K3RACTU   45424   13w    0.16 Mexico    Active
+   C0402C470J5GACTU -> C0402C470J5GACTU 1096140   17w    0.10 Taiwan    Active
+   C0603C391J5GACTU -> C0603C391J5GACTU   19348   22w    0.14 Mexico    Active
+   CRCW0402360KFKED -> CRCW0402360KFKED   45726   21w    0.10 Taiwan    Active
+   CRCW0402113KFKED -> CRCW0402113KFKED    9944   21w    0.10 Taiwan    Active
+   CRCW040228K0FKED -> CRCW040228K0FKED   88214   21w    0.10 Taiwan    Active
+   CRCW040260K4FKED -> CRCW040260K4FKED  112437   21w    0.10 Taiwan    Active
+   CRCW040268K1FKED -> CRCW040268K1FKED  122165   21w    0.10 Taiwan    Active
+   CRCW0402200KFKED -> CRCW0402200KFKED  225319   21w    0.10 Taiwan    Active
