@@ -62,7 +62,7 @@
 		(uuid "9b6aa346-bdf7-5d68-8d73-e53026becaed")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/AD8603AUJZ-R2.stp"
+	(model "3dmodels/AD8603AUJZ-R2.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

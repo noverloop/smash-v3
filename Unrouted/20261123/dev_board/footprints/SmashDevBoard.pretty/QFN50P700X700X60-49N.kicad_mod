@@ -326,7 +326,7 @@
 		(uuid "c678d779-2910-57db-a969-2bd23cfcd683")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/STM32U535CBU6.stp"
+	(model "3dmodels/STM32U535CBU6.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

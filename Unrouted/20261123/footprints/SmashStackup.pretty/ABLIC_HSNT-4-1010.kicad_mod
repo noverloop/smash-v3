@@ -68,7 +68,7 @@
 		(uuid "0fad9096-dc1e-56c2-80ca-7ff1e467070e")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/S-1318D33-A4T2U4.step"
+	(model "3dmodels/S-1318D33-A4T2U4.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

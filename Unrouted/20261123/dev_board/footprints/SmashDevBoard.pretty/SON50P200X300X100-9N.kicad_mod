@@ -38,7 +38,7 @@
 		(uuid "1baf8e33-0768-57ee-9935-73f3f1cd3570")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/MCP9808T-E_MC.step"
+	(model "3dmodels/MCP9808T-E_MC.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

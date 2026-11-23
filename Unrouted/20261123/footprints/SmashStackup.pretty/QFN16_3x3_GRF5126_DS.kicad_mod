@@ -134,7 +134,7 @@
 		(uuid "8b6b1ff5-aa73-5b3c-af10-9b393d4d7b37")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/GRF5126.stp"
+	(model "3dmodels/GRF5126.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

@@ -80,7 +80,7 @@
 		(uuid "0801fc97-caba-59b9-becf-0d7c52ca10d5")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/BUK6D120-60PX.stp"
+	(model "3dmodels/BUK6D120-60PX.stp"
 		(offset (xyz -1.52 0.86 1.28))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 90 0 90))

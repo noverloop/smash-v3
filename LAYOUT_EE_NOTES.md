@@ -41,7 +41,8 @@ resolves KiCad's `${KIPRJMOD}` paths, so:
 
 1. Import with the folder structure **intact**. Each project carries its own
    models next to it (`3dmodels/` for the tower, `dev_board/3dmodels/` for the
-   dev board), linked as `${KIPRJMOD}/3dmodels/<part>.step`.
+   dev board), linked as plain relative paths `3dmodels/<part>.step` (no KiCad
+   `${KIPRJMOD}` variable — the earlier `${KIPRJMOD}` links did not come through).
 2. Check a few parts in Altium's 3D view (key 3). If the bodies are there, done.
 3. If they are missing: every STEP is in `3dmodels/`, and **`3D_MODEL_MAP.csv`**
    lists each footprint (tower and dev board) with its STEP file and the

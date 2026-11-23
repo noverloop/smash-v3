@@ -44,7 +44,7 @@
 		(uuid "f101375a-f48f-5e00-beb4-e277ed5f71b1")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/Resistor_SMD.3dshapes.step"
+	(model "3dmodels/Resistor_SMD.3dshapes.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

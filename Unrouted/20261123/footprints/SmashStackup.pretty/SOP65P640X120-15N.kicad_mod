@@ -122,7 +122,7 @@
 		(uuid "330418b6-23c7-507b-a1ea-cd4edbe1844a")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/TPS61175PWPR.stp"
+	(model "3dmodels/TPS61175PWPR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

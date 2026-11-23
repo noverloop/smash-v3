@@ -166,7 +166,7 @@
 		(uuid "402bfc1b-05c3-5d25-8f73-e333efabcff8")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/UJ20-C-V-G-SMT-23B-P16-TR-X5.step"
+	(model "3dmodels/UJ20-C-V-G-SMT-23B-P16-TR-X5.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

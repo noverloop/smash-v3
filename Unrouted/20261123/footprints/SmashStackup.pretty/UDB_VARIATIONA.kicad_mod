@@ -110,7 +110,7 @@
 		(uuid "34153122-03ef-5d2a-ae09-bf396e09b101")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/LTC5549IUDB.stp"
+	(model "3dmodels/LTC5549IUDB.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

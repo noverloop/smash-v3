@@ -50,7 +50,7 @@
 		(uuid "26cb35c2-7afd-5095-ad75-e13d293e0cd8")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/SSM3K35CTC_L3F.stp"
+	(model "3dmodels/SSM3K35CTC_L3F.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 -90))

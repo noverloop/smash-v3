@@ -56,7 +56,7 @@
 		(uuid "a7ad66fc-1f48-5bfb-a291-13ef04297a23")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/DSC1001CI5-008.0000.stp"
+	(model "3dmodels/DSC1001CI5-008.0000.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

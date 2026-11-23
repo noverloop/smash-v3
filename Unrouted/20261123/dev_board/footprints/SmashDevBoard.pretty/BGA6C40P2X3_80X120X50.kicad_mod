@@ -68,7 +68,7 @@
 		(uuid "07f2d38b-adfb-5cc8-b089-17968baacb6c")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/TPS62088YFPR.stp"
+	(model "3dmodels/TPS62088YFPR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

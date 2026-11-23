@@ -80,7 +80,7 @@
 		(uuid "48b185d4-8a42-571c-ab7c-c948de590b53")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/TPS62822DLCR.stp"
+	(model "3dmodels/TPS62822DLCR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

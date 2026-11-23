@@ -62,7 +62,7 @@
 		(uuid "42b2d9f2-11b9-56cc-b788-f8492b23075a")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/DRV5032AJDMRR.stp"
+	(model "3dmodels/DRV5032AJDMRR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

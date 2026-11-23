@@ -116,7 +116,7 @@
 		(uuid "9705fb53-a97d-5bff-a45c-3da2eb2fbb94")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/ISM330DLCTR.stp"
+	(model "3dmodels/ISM330DLCTR.stp"
 		(offset (xyz 0 0 0.43))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

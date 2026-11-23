@@ -74,7 +74,7 @@
 		(uuid "e8c93baa-af0f-5fa7-b678-7ab4ca0c8b7f")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/LDL112PV33R.stp"
+	(model "3dmodels/LDL112PV33R.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

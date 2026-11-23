@@ -44,7 +44,7 @@
 		(uuid "f47bb483-4b55-5a4d-b0ff-05b92db67fc4")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/L_0805_2012Metric.step"
+	(model "3dmodels/L_0805_2012Metric.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

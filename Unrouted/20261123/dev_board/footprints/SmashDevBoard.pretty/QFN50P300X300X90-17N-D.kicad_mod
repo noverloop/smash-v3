@@ -134,7 +134,7 @@
 		(uuid "fdc85b12-3cd5-52d1-9f00-e6c2b2adad07")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/PAC1941T-1E_4MX.stp"
+	(model "3dmodels/PAC1941T-1E_4MX.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

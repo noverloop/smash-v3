@@ -230,7 +230,7 @@
 		(uuid "c78fc006-e028-5de1-bf23-8a572a55cc1c")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/LR2021IMLTRT.stp"
+	(model "3dmodels/LR2021IMLTRT.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

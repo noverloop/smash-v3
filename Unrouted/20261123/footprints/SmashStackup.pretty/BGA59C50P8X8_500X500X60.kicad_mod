@@ -386,7 +386,7 @@
 		(uuid "ffc62715-8627-5832-a29d-ee7263c0f60c")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/STM32WBA55UGI7.stp"
+	(model "3dmodels/STM32WBA55UGI7.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

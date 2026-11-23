@@ -134,7 +134,7 @@
 		(uuid "268b2ccc-3f7e-571c-a48f-f7b1e8457d07")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/LTC3124EDHC_TRPBF.stp"
+	(model "3dmodels/LTC3124EDHC_TRPBF.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 90))

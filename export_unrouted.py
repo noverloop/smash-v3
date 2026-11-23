@@ -437,6 +437,18 @@ def main() -> int:
     # (2026-11-23, user) the dev board travels with the tower.
     export_devboard(dst, warn)
 
+    # (2026-11-23, user: Altium's KiCad import dropped every 3D model) footprint
+    # model links become PLAIN RELATIVE paths ("3dmodels/<part>.step", resolved
+    # from each project's folder — KiCad accepts that too) instead of
+    # ${KIPRJMOD}/3dmodels/…, which Altium apparently does not expand.
+    # Datasheet links keep ${KIPRJMOD} (humans click those, in KiCad).
+    for root in (dst, dst / "dev_board"):
+        for p in [*root.glob("*.kicad_pcb"), *(root / "footprints").rglob("*.kicad_mod")]:
+            text = read(p)
+            new = text.replace('(model "${KIPRJMOD}/', '(model "')
+            if new != text:
+                write(p, new)
+
     # (2026-11-23, user) Layout-EE notes + the footprint review list.
     head = git("rev-parse", "--short", "HEAD").strip()
     dirty_src = bool(git("status", "--porcelain", "--", "generate_stackup.py", "application",

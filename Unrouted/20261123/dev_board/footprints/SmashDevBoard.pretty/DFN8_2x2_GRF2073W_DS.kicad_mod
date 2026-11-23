@@ -86,7 +86,7 @@
 		(uuid "7b8471a8-2302-57dc-a141-b0171c6c11d0")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/GRF2073W.stp"
+	(model "3dmodels/GRF2073W.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

@@ -86,7 +86,7 @@
 		(uuid "dd9ceead-15ae-5565-8c63-b3cefbe54b73")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/TJA1462BTK_0Z.stp"
+	(model "3dmodels/TJA1462BTK_0Z.stp"
 		(offset (xyz 0 0 0.03))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

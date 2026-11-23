@@ -44,7 +44,7 @@
 		(uuid "4073b0ca-356c-5cca-a889-a1dc67adb2a7")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/BLM18PG221SN1D.stp"
+	(model "3dmodels/BLM18PG221SN1D.stp"
 		(offset (xyz 0.8 0 0.4))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 -90))

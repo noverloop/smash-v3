@@ -44,7 +44,7 @@
 		(uuid "e8d31953-0c05-584d-9ebe-3031c189cb27")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/B3U-1000P.stp"
+	(model "3dmodels/B3U-1000P.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

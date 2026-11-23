@@ -44,7 +44,7 @@
 		(uuid "a4059e67-c675-520c-9505-b744e5082dfd")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/LQG15HS1N3S02D.stp"
+	(model "3dmodels/LQG15HS1N3S02D.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

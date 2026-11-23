@@ -116,7 +116,7 @@
 		(uuid "bb853440-7b5f-53af-90e4-f0ae049fcb19")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/SN74CB3T3125PWR.stp"
+	(model "3dmodels/SN74CB3T3125PWR.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

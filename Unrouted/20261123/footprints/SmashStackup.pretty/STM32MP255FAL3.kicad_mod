@@ -2198,7 +2198,7 @@
 		(uuid "2dab2447-bf0f-5003-98be-bc35f3358430")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/STM32MP255FAL3.stp"
+	(model "3dmodels/STM32MP255FAL3.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

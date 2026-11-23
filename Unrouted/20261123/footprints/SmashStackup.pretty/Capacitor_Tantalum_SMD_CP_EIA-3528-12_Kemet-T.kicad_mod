@@ -44,7 +44,7 @@
 		(uuid "ab4ba145-1670-5c54-9228-54ea5404c3ae")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/Capacitor_Tantalum_SMD.3dshapes.step"
+	(model "3dmodels/Capacitor_Tantalum_SMD.3dshapes.step"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

@@ -92,7 +92,7 @@
 		(uuid "a62490ff-9a6e-59b2-af4d-323a092ca97d")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/PE64904C-Z.stp"
+	(model "3dmodels/PE64904C-Z.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

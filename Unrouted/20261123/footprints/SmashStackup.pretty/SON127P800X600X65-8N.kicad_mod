@@ -80,7 +80,7 @@
 		(uuid "dbd8878e-df7a-565f-8191-b757e7c81fbb")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/MT29F4G01ABAFDWB-IT_F.stp"
+	(model "3dmodels/MT29F4G01ABAFDWB-IT_F.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz -90 0 0))

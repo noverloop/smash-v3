@@ -56,7 +56,7 @@
 		(uuid "31d582ab-503f-57b4-a7ee-a2df3e8d7dc4")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/MAX9064EBS_TG45.stp"
+	(model "3dmodels/MAX9064EBS_TG45.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))

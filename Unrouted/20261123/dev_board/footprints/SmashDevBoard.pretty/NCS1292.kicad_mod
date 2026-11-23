@@ -68,7 +68,7 @@
 		(uuid "80e65942-5e92-5373-b722-8a547d691084")
 	)
 	(embedded_fonts no)
-	(model "${KIPRJMOD}/3dmodels/NCS1-292P.stp"
+	(model "3dmodels/NCS1-292P.stp"
 		(offset (xyz 0 0 0))
 		(scale (xyz 1 1 1))
 		(rotate (xyz 0 0 0))
