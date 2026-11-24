@@ -24,7 +24,7 @@ next to this file, generated from the design at export time.
   `_cam.md` (material / finish), battery holder + floor plate, sleeve, potting
   mould, and the full component stack (`stackup_components.step.zip`, zipped
   for GitHub's 100 MB limit).
-- `FOOTPRINT_REVIEW.md` — footprint provenance list (see §5).
+- `FOOTPRINT_REVIEW.md` — footprint provenance list (see §4).
 - `dev_board/` — the **dev board** KiCad project (`dev_board.kicad_pro`): the
   whole tower schematic on one flat 285 × 102 mm 8-layer board + the USB
   diagnostic section; its footprints, `fab/` (dev + production gerbers),
@@ -95,21 +95,14 @@ radar / QPD), 39.7 mm with the camera nose.
   10×10 DDR3L template verbatim; route with ST's length template (CLK ±3.55 mm
   A/C window, DQS ±1.42 mm) — `Research/STM32MP25xxAx/STM32MP25xxAL/`.
 
-## 3. Layout actions on the tower (stack height)
+## 3. Board-specific notes
 
-The generated stack is **0.9 + 0.1 mm taller than the antenna model** until these
-are fixed (`test_antenna_sim_stack`):
-
-1. **L_BOOST_COMP_B** (power_board, WE-MAPI 4020, 2.1 mm — 2nd phase of the
-   LTC3124 COMP boost): the packer put it on the companion-facing face under
-   companion_compute's 0.95 mm bottom caps → power↔companion gap 2.5 → 3.4 mm.
-   Place it off those parts (next to L_BOOST_COMP) to restore 2.5 mm.
-2. **C_XV_BST_OUT** (wakeup_board) lands over **C_FIN_VM_BULK_1**
-   (activation_interface): activation↔wakeup gap 2.4 instead of 2.3 mm. Move
-   one of them sideways.
-
-## 4. Board-specific notes
-
+- **wakeup_board — antenna matches**: S1 (shared BLE / LR2021) has a fixed
+  match between the owner switch U_ANTSW_S1 and the ANT_HF_S1 castellation:
+  C_ANT_S1_DCBLK 0.8 pF in series right at the castellation, C_ANT_S1_SHUNT
+  0.5 pF to GND on the switch side. S4: C_ANT_S4_MATCH 0.8 pF in series at
+  the ANT_HF_S4 castellation. All C0G 0402; keep them on the feed line with
+  short GND vias (sub-pF values: pad parasitics matter).
 - **power_board — LTC3124 (U_COMP_BOOST)**: 2-phase boost; keep both phase loops
   (SWA/L_BOOST_COMP, SWB/L_BOOST_COMP_B) symmetric and tight, VOUTA/VOUTB and
   PGNDA/PGNDB joined at the part; pin 14 (NC) tied to VOUT for copper. The
@@ -136,7 +129,7 @@ are fixed (`test_antenna_sim_stack`):
   fitted; the quartz Y_LR_TCXO (TG2016) footprint is unfitted (shock rule) —
   keep both, overlapping as drawn.
 
-## 5. Footprints to check (summary — full list in FOOTPRINT_REVIEW.md)
+## 4. Footprints to check (summary — full list in FOOTPRINT_REVIEW.md)
 
 - **Self-drawn from datasheets / project scripts** (never built): MCP1640 DFN-8
   (U_BOOST, U_XV_BOOST), ABLIC HSNT-4 (S-1318, U_AON_LDO / U_TMR_LDO), Infineon
@@ -150,7 +143,7 @@ are fixed (`test_antenna_sim_stack`):
   SiT5356 20 MHz for 32 MHz, DSC1001 family, H3LIS331 on a LIS3DH LGA-16 land,
   SSM3K35 on SSM3J64, SSM3K7002 on 1SS294, BLM18PG on BLM18SP).
 
-## 6. Dev board (`dev_board/` in this package)
+## 5. Dev board (`dev_board/` in this package)
 
 - 5 debug parts did not fit under the tower socket and are unplaced
   (U_DEV_INA, U_DEV_ISENSE, U_DEV_LDO, Y_DEV_HUB stacked at one spot;
@@ -162,10 +155,10 @@ are fixed (`test_antenna_sim_stack`):
 - P_DEV_FIX pogo pads: 4 courtyard overlaps (tight fixture pitch) — confirm.
 - ERC "power pin not driven" on 3V3 / GND = missing power flags only.
 
-## 7. Known DRC state
+## 6. Known DRC state
 
 - Configuration panels (generator run 2026-11-23): core_radar, core_qpd and
-  core_camera clean; core has 2 annular-width errors. Dev board: the items in §6.
+  core_camera clean; core has 2 annular-width errors. Dev board: the items in §5.
 - The combined `Smash.kicad_pcb` panel shows 188 errors (163 copper-to-edge,
   mostly the castellation escape stubs; 15 zone overlaps; 8 clearance; 2
   annular). Most are artefacts of showing every tile on one

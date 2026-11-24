@@ -1744,7 +1744,17 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     series_cap("BLE_RF", "BLE_ANT", "100pF", "C_BLE_DCBLK")
     _net(d, "BLE_ANT").connect(swa.pin("RF1"))
     _net(d, "ANT_S1_COM").connect(swa.pin("RFIN"))
-    series_cap("ANT_S1_COM", "ANT_HF_S1", "100pF", "C_ANT_S1_DCBLK")
+    # S1 fixed match, shared by BLE and the LR2021 (2026-11-24): the slot
+    # resonates ~2.77 GHz with Stycast 1090 SI and sits at 44+113j Ω at
+    # 2.44 GHz (sim C2_P_S1_p28_base, radiation 74-75 %). Series 0.8 pF at
+    # the slot (also the DC block — the slot feed is a DC short) + shunt
+    # 0.5 pF on the switch side: S11 -10.7/-15.9/-9.5 dB, total efficiency
+    # 66/70/65 % at 2.40/2.44/2.48 GHz (C0G Q 100; 64-71 % over ±0.05 pF).
+    # The LR2021's DTC π then sits near 50 Ω in ISM and only trims / moves
+    # the match to the authorised 2.1-2.4 GHz band.
+    series_cap("ANT_S1_COM", "ANT_HF_S1", "0.8pF", "C_ANT_S1_DCBLK")
+    cap_to_gnd(d, "ANT_S1_COM", "0.5pF", ref="C_ANT_S1_SHUNT",
+               board_tag=BTAG, feature="rf", **_as_built_0402("0.5pF", "C0G/NP0"))
 
     # ── Antenna feeds: ANT_HF_S1 leaves the board through its dedicated
     # castellation in the sleeve's ANTENNA sector
@@ -1975,10 +1985,11 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     series_cap("XV_BPF_M", "XV_BPF_O", "0.5pF", "C_XV_BPF_SER")
     L("XV_BPF_O", "GND", "1nH", "L_XV_BPF_SH")
     C0G("XV_BPF_O", "1.1pF", "C_XV_BPF_SH")
-    # S4 match: the retuned slot (antenna_slots S4, sim C2_P_S4_p17_sc90_f20_w2)
-    # sits at R 41-69 Ω with +54…+95 Ω inductive reactance over 4.6-5.0 GHz —
-    # one series 0.5 pF cancels it (S11 ≈ -12…-25 dB, calc) and DC-blocks.
-    series_cap("XV_BPF_O", "ANT_HF_S4", "0.5pF", "C_ANT_S4_MATCH")
+    # S4 match: with Stycast 1090 SI (sim C2_P_S4_p28_base) the slot sits at
+    # 102+3j … 26+46j Ω over 4.6-5.0 GHz — one series 0.8 pF gives S11
+    # -7.6/-7.2/-6.0/-7.1/-9.8 dB, total efficiency 50/47/44/46/59 % at
+    # 4.6…5.0 GHz (calc; 0.5 pF: 45/42/33/39/56 %) and DC-blocks.
+    series_cap("XV_BPF_O", "ANT_HF_S4", "0.8pF", "C_ANT_S4_MATCH")
 
 
 def build_fins_module(d: Design) -> None:

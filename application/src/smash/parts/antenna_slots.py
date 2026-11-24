@@ -8,16 +8,19 @@ CPW grounds are GND, bonded to the boards through the flanking GND
 castellations. NO copper on the sleeve's inner face in the antenna sector:
 metal ~0.4 mm behind a slot shorts it (sim: S1 0–3.5 % radiated).
 
-Simulated (C2 tower, Stycast 2651MM + Cat 11, castellation feed):
-  S1  LR2021 native, ISM 2.40-2.48 GHz default + ~2.1-2.4 GHz authorised
-      (DTC-tuned π): radiation 66/72/63 % at 2.15/2.30/2.44 GHz.
-  (S3, BLE, merged into S1 2026-11-17: with GF30 PEEK gap rings S1 peaks at
-  2.44-2.48 GHz — 50-59 % radiated — and the LR2021 + BLE share it.)
+Simulated (C2 tower, Stycast 1090 SI potting, castellation feed, sim
+C2_P_S1_p28_base / C2_P_S4_p28_base):
+  S1  LR2021 + BLE (shared), ISM 2.40-2.48 GHz default + ~2.1-2.4 GHz
+      authorised (LR2021's DTC π). The slot resonates ~2.77 GHz but radiates
+      74-75 % of the accepted power in ISM; a fixed C0G match at the feed
+      (series 0.8 pF + shunt 0.5 pF, generate_stackup) gives 66/70/65 % total
+      at 2.40/2.44/2.48 GHz. (End-loading bars that pull it onto 2.45 GHz
+      were studied — sim C2_P_S1_p28_end* — and not adopted.)
   S4  4.4-5.0 GHz transverter (2026-11-18, generate_stackup._build_transverter).
       Final rings (PEEK in S1/S4 gaps, Al from wakeup↔power down), slot ×0.9
       of the 4.4 GHz half-wave, 2 mm wide, feed 2 mm (sim C2_P_S4_p17_sc90_f20_w2):
       radiation 59/62/72/66/74 % at 4.6/4.7/4.8/4.9/5.0 GHz (50 % at 4.4);
-      Zin 41+63j … 69+95j → one series ~0.5 pF gives S11 ≈ -12…-25 dB over
+      With 1090 SI: radiation 58-65 %, one series 0.8 pF → total 44-59 % at
       4.6-5.0 GHz. Usable band 4.6-5.0 GHz (4.4-4.6 poorly matched).
 
 Frame: PHYSICAL angles (castellations.py), z = stack height (sleeve unroll).
@@ -98,8 +101,8 @@ SLOTS = (
     # (2026-11-21, user) fin_ble merged into activation; the p21 layout: S1
     # moves to wakeup↔power (above its radio board, clear of S4's structure
     # that put an anti-resonance in S1's band), S4 sits in activation↔wakeup
-    # (centred since the 0.868 mm boards, 2026-11-21). ⚠ S1 resonates ~2.5 GHz there and the
-    # sector is full at scale 0.95 — needs end-loading to come down to LoRa.
+    # (centred since the 0.868 mm boards, 2026-11-21). S1 resonates above the band
+    # there (sector full at scale 0.95); the fixed feed match covers ISM.
     SlotAntenna("S1", "ANT_HF_S1", "wakeup_board", "power_board",
                 start_deg=110.0, direction=+1, f_design_ghz=2.15, scale=0.95,
                 width_mm=1.5, feed_mm=6.0,

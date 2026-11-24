@@ -154,3 +154,6 @@ availability/tools/octo_cache/
 
 # generated manufacturing packages (shared via share_export.py, too large for git)
 /Manufacturing/
+
+# Unrouted export archives (too big for GitHub; shared via Scaleway)
+/Unrouted/*.zip

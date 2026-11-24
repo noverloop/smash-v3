@@ -46,10 +46,10 @@ def _folded(name, f_ghz, angle, axial_mm, arc_dir, *, eps=EPS_EFF, width=1.5):
 
 
 def _arc(name, f_ghz, angle, z, arc_dir, *, eps=EPS_EFF, width=1.5, scale=1.0,
-         feed=6.0):
+         feed=6.0, end_len=0.0, end_dz=0.0):
     L = half_wave_slot_mm(f_ghz, eps) * scale
     return Slot(name, "arc", angle, z, arc_dir * L, width=width, feed_offset=feed,
-                f_design_ghz=f_ghz)
+                f_design_ghz=f_ghz, end_len=end_len, end_dz=end_dz)
 
 
 # Per-slot overrides (2026-11-17), passed as --set S3_scale=0.89 etc.:
@@ -66,7 +66,11 @@ def _arc(name, f_ghz, angle, z, arc_dir, *, eps=EPS_EFF, width=1.5, scale=1.0,
 #   S<n>_off    1 removes the slot (2026-11-17: S3 merged into S1)
 #   S<n>_dz     axial offset [mm] from the gap mid-height, negative = down
 #               (2026-11-21, user: move the slots down within / past the gap)
-SLOT_OVERRIDE_KEYS = ("scale", "feed", "dir", "gap", "f", "width", "angle", "off", "dz")
+#   S<n>_endlen axial end bars across both ends of an arc slot, total length
+#               [mm] (H / dog-bone): lowers the resonance without more angle
+#   S<n>_enddz  end-bar centre offset from the slot centre [mm], + = up
+#               (enddz = (endlen - width) / 2 gives bars running up only)
+SLOT_OVERRIDE_KEYS = ("scale", "feed", "dir", "gap", "f", "width", "angle", "off", "dz", "endlen", "enddz")
 EXTRA_SLOTS = ("S4", "S5")
 
 
@@ -96,7 +100,8 @@ def _c_arc(name, f_ghz, z, ov):
     angle = ANTENNA_SECTOR_FREE[0] + 2.0 if d > 0 else ANTENNA_SECTOR_FREE[1] - 2.0
     angle = float(o.get("angle", angle))
     return _arc(name, f_ghz, angle, z, d, scale=float(o.get("scale", 1.0)),
-                feed=float(o.get("feed", 6.0)), width=float(o.get("width", 1.5)))
+                feed=float(o.get("feed", 6.0)), width=float(o.get("width", 1.5)),
+                end_len=float(o.get("endlen", 0.0)), end_dz=float(o.get("enddz", 0.0)))
 
 
 def _gap_mid(lo, hi):

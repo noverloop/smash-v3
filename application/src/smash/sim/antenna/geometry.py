@@ -42,13 +42,13 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 # these drift again.
 # (2026-11-23) battery headroom 1.0 → 0.4 mm (floor plate + pre-wired cells): every board
 # above the compartment −0.6 mm.
-BOARD_MID_Z_MM = {
+BOARD_MID_Z_MM = {          # = the generated stack (test_antenna_sim_stack)
     "aft_end_board": 0.434,
     "activation_interface": 23.902,
-    "wakeup_board": 27.07,   # (2026-11-22 r17-19) activation↔wakeup 2.6 → 2.3 mm (S-1318 HSNT-4, low FETs)
-    "power_board": 30.538,   # (2026-11-22 r17-19) wakeup↔power 2.9 → 2.6 mm
-    "companion_compute": 33.906,   # (2026-11-22) follows the stack (power↔compute 2.5 unchanged)
-    "radar_module": 37.774,   # (2026-11-22) follows the stack (compute↔radar 3.0 unchanged)
+    "wakeup_board": 27.17,   # activation↔wakeup 2.4 mm
+    "power_board": 30.638,   # wakeup↔power 2.6 mm
+    "companion_compute": 34.906,   # power↔compute 3.4 mm
+    "radar_module": 38.774,   # compute↔radar 3.0 mm
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")
@@ -114,6 +114,8 @@ class Slot:
     feed_offset: float = 4.0
     arc_length: float = 0.0
     f_design_ghz: float = 0.0
+    end_len: float = 0.0      # arc only: axial END BARS (H / dog-bone), total length [mm]
+    end_dz: float = 0.0       # end-bar centre offset from the slot centre [mm] (+ = up)
 
     def sectors(self, r_in: float, r_out: float, material: str, prio: int) -> list:
         out = []
@@ -128,6 +130,13 @@ class Slot:
             out.append(Sector(f"{self.name}_arc", material, r_in, r_out,
                               self.z_start - self.width / 2, self.z_start + self.width / 2,
                               a0, a1, prio))
+            if self.end_len > self.width:              # end bars lower the resonance
+                for k, ae in enumerate((a0, a1)):
+                    ac = ae + (dth / 2 if k == 0 else -dth / 2)
+                    out.append(Sector(f"{self.name}_end{k}", material, r_in, r_out,
+                                      self.z_start + self.end_dz - self.end_len / 2,
+                                      self.z_start + self.end_dz + self.end_len / 2,
+                                      ac - dth / 2, ac + dth / 2, prio))
         if self.kind == "L" and self.arc_length:
             z_end = self.z_start + self.length
             a = math.degrees(self.arc_length / r_out)
@@ -180,6 +189,7 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 keepout_halfwidth_mm: float = 4.0,
                 keepout_slots: tuple | None = None, sleeve_inner_gnd: bool = False,
                 skin: str = "sector", skin_margin_mm: float = 4.0,
+                skin_bar_margin_mm: float | None = None,
                 skin_clip_deg: tuple | None = None,
                 coating_mm: float = 0.0, coating_mat: str = "coating_ptfe",
                 housing=None, feed: str = "ideal",
@@ -325,13 +335,16 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         S.append(Sector("skin", "pec", skin_r_in, SLEEVE_R_OUT_MM, *skin_z,
                         *ANTENNA_SECTOR_DEG, priority=9))
     elif skin == "local":
-        dm = math.degrees(skin_margin_mm / SLEEVE_R_OUT_MM)
         for sl in slots:
             for sec in sl.sectors(skin_r_in, SLEEVE_R_OUT_MM, "pec", 9):
+                # skin_bar_margin_mm: a narrower patch round the end bars
+                mg = (skin_bar_margin_mm if skin_bar_margin_mm is not None
+                      and "_end" in sec.name else skin_margin_mm)
+                dm = math.degrees(mg / SLEEVE_R_OUT_MM)
                 S.append(dataclasses.replace(
                     sec, name=f"skin_{sec.name}",
-                    z0=max(sec.z0 - skin_margin_mm, skin_z[0]),
-                    z1=min(sec.z1 + skin_margin_mm, skin_z[1]),
+                    z0=max(sec.z0 - mg, skin_z[0]),
+                    z1=min(sec.z1 + mg, skin_z[1]),
                     a0=max(sec.a0 - dm, skin_clip_deg[0]) if skin_clip_deg else sec.a0 - dm,
                     a1=min(sec.a1 + dm, skin_clip_deg[1]) if skin_clip_deg else sec.a1 + dm))
     else:
