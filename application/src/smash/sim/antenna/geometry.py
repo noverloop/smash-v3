@@ -181,7 +181,8 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
                 keepout_slots: tuple | None = None, sleeve_inner_gnd: bool = False,
                 skin: str = "sector", skin_margin_mm: float = 4.0,
                 skin_clip_deg: tuple | None = None,
-                coating_mm: float = 0.0, housing=None, feed: str = "ideal",
+                coating_mm: float = 0.0, coating_mat: str = "coating_ptfe",
+                housing=None, feed: str = "ideal",
                 feed_board: str = "wakeup_board", cpw_w_mm: float = 1.0,
                 cpw_gap_mm: float = 0.5, cpw_gnd_mm: float = 2.0,
                 lanes: str | None = None, lanes_tie: str = "power") -> TowerModel:
@@ -351,7 +352,9 @@ def build_tower(*, boards=CORE_BOARDS, slots=(), potting="potting_black",
         else:
             raise ValueError(f"feed={feed!r}")
     if coating_mm > 0:
-        S.append(Sector("coating", "coating_ptfe", SLEEVE_R_OUT_MM, SLEEVE_R_OUT_MM + coating_mm,
+        # (2026-11-23) coating_mat: e.g. the potting itself as an outer skin
+        # (sealing folded into the potting shot) or a low-loss alternative
+        S.append(Sector("coating", coating_mat, SLEEVE_R_OUT_MM, SLEEVE_R_OUT_MM + coating_mm,
                         z_lo, z_hi, priority=3))
     if housing:
         r0 = SLEEVE_R_OUT_MM + coating_mm

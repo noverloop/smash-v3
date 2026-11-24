@@ -34,6 +34,8 @@ SLEEVE_GAP_MM = 0.1            # board edge → sleeve inner wall (solder gap)
 SLEEVE_WALL_MM = 0.8           # PEEK-LDS wall (vias need ≤ 0.6 mm local wall: double-cone spot-face, not modelled)
 SLEEVE_VIA_D_MM = 0.5
 GROOVE_W_MM, GROOVE_D_MM = 2.0, 0.4      # inner feed (0°) / vent (180°) grooves
+ALIGN_RIB_CLEAR_MM = 0.3                 # rib tip ↔ board-notch floor (radial)
+ALIGN_RIB_SIDE_CLEAR_MM = 0.1            # rib ↔ notch / ring-gap walls, each side
 GROOVE_ANGLES_DEG = (105.0, 285.0)   # feed / vent; lane-free stripes (castellations.SEAM_ANGLES_DEG)
 INNER_FACE_LASERABLE = False   # one-piece cup: the deep bore can't be lasered
 # (2026-11-17, user) PEEK-LDS: tougher / more isotropic than LCP (which was
@@ -92,6 +94,29 @@ def _tube(cq, r_in, r_out, z0, z1):
 def _box(cq, x, y, w, h, z0, z1):
     return (cq.Workplane("XY").center(x, y).rect(w, h)
             .extrude(z1 - z0).translate((0, 0, z0)))
+
+
+def _dam_anchor(cq, zb: float, zt: float):
+    """C-ring round the payload tile's potting hole (the stacking pin runs
+    through ring + hole) + the arm joining it to the AoP dam, underside
+    relieved so it bridges the parts in between. Tower frame."""
+    from smash.export.nose_radome import (DAM_ANCHOR_ID_MM, DAM_ANCHOR_OD_MM,
+                                          DAM_ANCHOR_OPEN_DEG, DAM_ARM_W_MM, DAM_ARM_RELIEF_MM)
+    from smash.export.spacer_step import _batt_channel_xy
+    hx, hy = _batt_channel_xy()                    # the boards' potting-hole axis (r 13, 135°)
+    ang = math.degrees(math.atan2(hy, hx))
+    rh = math.hypot(hx, hy)
+    ring = (cq.Workplane("XY").center(hx, hy).circle(DAM_ANCHOR_OD_MM / 2).circle(DAM_ANCHOR_ID_MM / 2)
+            .extrude(zt - zb).translate((0, 0, zb)))
+    h = DAM_ANCHOR_OPEN_DEG / 2
+    R = DAM_ANCHOR_OD_MM
+    wedge = (cq.Workplane("XY").polyline([(hx, hy)] + [
+        (hx + R * math.cos(math.radians(ang + a)), hy + R * math.sin(math.radians(ang + a)))
+        for a in (-h, -h / 2, 0.0, h / 2, h)]).close().extrude(zt - zb + 0.2).translate((0, 0, zb - 0.1)))
+    ring = ring.cut(wedge)                          # open outward, toward the sleeve
+    arm = _radial_box(cq, ang, rh - 4.7, rh - DAM_ANCHOR_ID_MM / 2 - 0.05, DAM_ARM_W_MM,
+                      zb + DAM_ARM_RELIEF_MM, zt)
+    return ring.union(arm)
 
 
 def _radial_box(cq, ang, r0, r1, w, z0, z1):
@@ -247,8 +272,16 @@ def _core_body_fixed(cq, segs, zc0, zc1, r_out):
         core = core.cut(cq.Workplane("XY").center(rc * math.cos(a), rc * math.sin(a))
                         .transformed(rotate=(0, 0, ang))
                         .rect(GROOVE_D_MM, GROOVE_W_MM).extrude(segs[-1][1]))
-    core = core.union(_radial_box(cq, NI.KEY_ANGLE_DEG, NI.KEY_RIB_R_MM, r_in + 0.05,
-                                  NI.KEY_RIB_W_MM, zc0 - 0.3, zc1))
+    # (2026-11-23, user) ALIGNMENT RIB, full length at 285°: engages every
+    # board's rim notch, every ring gap, the holder groove and the floor-plate
+    # notch, so each part is keyed as it drops into the sleeve (the tower is
+    # stacked nose down inside it). It sits in the middle of the 285° vent
+    # groove, leaving a slot either side.
+    from smash.layout import cavities as CAV
+    rib_r0 = 17.0 - CAV.ALIGN_NOTCH_DEPTH_MM + ALIGN_RIB_CLEAR_MM
+    core = core.union(_radial_box(cq, CAV.ALIGN_NOTCH_ANGLE_DEG, rib_r0, r_in + GROOVE_D_MM,
+                                  CAV.ALIGN_NOTCH_W_MM - 2 * ALIGN_RIB_SIDE_CLEAR_MM,
+                                  segs[0][0], segs[-1][1]))
     return core, None
 
 
@@ -570,16 +603,19 @@ def build_cup(boards: dict, chain: list, contract: dict | None, config: str,
         from smash.export.nose_radome import DAM_RIB_W_MM
         x0, y0, x1, y1 = nose.dam
         if prof.open:
-            # (2026-11-19, user) no radome (the OD-40 container has it): an AoP
-            # DAM collar insert, board → ridge, keeps the potting off the AoP
+            # no radome (the OD-40 nose cap has it): an AoP DAM collar insert,
+            # DAM_H_MM tall, keeps the potting off the AoP; anchored to the
+            # payload tile's potting hole (see _dam_anchor)
+            from smash.export.nose_radome import DAM_H_MM
+            zt = zb + DAM_H_MM
             rib = _box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0 + 2 * DAM_RIB_W_MM,
-                       y1 - y0 + 2 * DAM_RIB_W_MM, zb, prof.z_top)
+                       y1 - y0 + 2 * DAM_RIB_W_MM, zb, zt)
             rib = rib.cut(_box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0,
-                               zb - 0.01, prof.z_top + 0.01))
-            if getattr(nose, "dam_rot_deg", 0.0):  # (2026-11-21) AoP turned 45°
+                               zb - 0.01, zt + 0.01))
+            if getattr(nose, "dam_rot_deg", 0.0):  # AoP turned 45°
                 c_ = ((x0 + x1) / 2, (y0 + y1) / 2, 0)
                 rib = rib.rotate(c_, (c_[0], c_[1], 1), nose.dam_rot_deg)
-            aop_dam = rib
+            aop_dam = rib.union(_dam_anchor(cq, zb, zt))
         else:
             rib = _box(cq, (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0 + 2 * DAM_RIB_W_MM,
                        y1 - y0 + 2 * DAM_RIB_W_MM, zb, zb + h_all)
@@ -829,7 +865,7 @@ def _fixed_cam_md(config: str, cup: dict) -> str:
              f"face under it), the skirt's inward lip snaps under it — PERMANENT")
     return (
         f"# PEEK-LDS sleeve + nose cap — {config}{' / ' + nose.band if nose.band else ''} (generated)\n\n"
-        f"Material: {SLEEVE_MATERIAL}. FIXED nose (2026-11-21, user): one sleeve per config "
+        f"Material: {SLEEVE_MATERIAL}. One sleeve per configuration "
         f"over the whole tower INCLUDING the payload board ({nose.payload or 'none'}); lanes and "
         f"vias stay on the Ø{2 * cup['r_out']:.1f} skin (signals ≤ Ø36.5). Above the payload "
         f"board (z {sn['z_shoulder']:.2f}) the sleeve thickens outward into a Ø{2 * sn['neck_r']:.2f} "
@@ -984,16 +1020,17 @@ def write_sleeve_and_mould(boards: dict, chain: list, contract: dict | None,
         fasm.export(str(fd / "potting_fixture.step"))
         (fd / "potting_fixture_cam.md").write_text(
             f"# Potting fixture — {key} (generated)\n\n"
-            "Core sleeve and nose cone are potted SEPARATELY (each is its own container "
-            "and outer skin). Nose cone: nose DOWN in the cradle (its bore follows the "
-            "aerodynamic nose), fill bottom-up, the crown face masked (no potting on the "
-            "groove / land contacts). Core: aft cap with the fill / vent ports "
-            f"({', '.join(f'{g:.0f}°' for g in GROOVE_ANGLES_DEG)} grooves), crown masked. "
-            "Vacuum, then pressure cure ≤ 85 °C (cells).\n\n"
+            "ONE potting shot, NOSE UP: the board stack inside the sleeve, fed from the top down "
+            "the Ø3 potting channel (the boards' potting holes) so it fills from the aft end up; "
+            f"the sleeve grooves at {', '.join(f'{g:.0f}°' for g in GROOVE_ANGLES_DEG)} vent to the top. "
+            "The fill stops when the potting comes up through the payload tile's potting hole "
+            "and spreads ≈ 0.5 mm over the payload tile. The nose cap is NOT potted: it is a "
+            "cover, pressed on afterwards. Aft-cap contact crown masked. Vacuum, then "
+            "pressure cure ≤ 85 °C (cells).\n\n"
             f"- Cradle: OD Ø{2*MOULD_R_OUT_MM:.0f}, bore = envelope + {MOULD_CLEARANCE_MM} mm. "
             "PTFE (proto) / hard-anodised Al + PTFE-type coat; no release agent.\n"
-            "- Before the pour: plug the USB-C receptacle and the IR light pipes; the radome "
-            "pocket (dam rib) and the lens light tube stay air.\n")
+            "- Before the pour: plug the IR light pipes; the radome pocket (dam rib) and "
+            "the lens light tube stay air.\n")
         res[key] = {"n_vias": cup["n_vias"], "height_mm": cup["z_end_out"],
                     "dir": cd, "fixture_dir": fd, "warnings": cup["warnings"],
                     "n_active_lanes": len(cup["active"]),

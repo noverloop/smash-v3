@@ -93,8 +93,8 @@ def write_blank_drawing_sheet(pcb_path) -> None:
         "board": {"design_settings": {"rules": {
             "min_clearance": 0.075,
             "min_track_width": 0.1,
-            "min_through_hole_diameter": 0.15,
-            "min_via_diameter": 0.3,
+            "min_through_hole_diameter": 0.2,     # NCAB: mechanical 200 µm, resin filled
+            "min_via_diameter": 0.45,
             "min_microvia_diameter": 0.25,
             "min_microvia_drill": 0.15,
         }}},
@@ -104,8 +104,8 @@ def write_blank_drawing_sheet(pcb_path) -> None:
                 "name": "Default",
                 "clearance": 0.075,
                 "track_width": 0.1,
-                "via_diameter": 0.3,
-                "via_drill": 0.15,
+                "via_diameter": 0.45,
+                "via_drill": 0.2,
                 "microvia_diameter": 0.25,
                 "microvia_drill": 0.15,
                 "diff_pair_gap": 0.15,
@@ -1798,6 +1798,17 @@ def _cutouts_for_tile(
                 cuts.append(make_cutout(math.degrees(math.atan2(_ly, _lx)) % 360.0,
                                         _NI.HOOK_NOTCH_W_MM,
                                         depth_mm=17.0 - _NI.HOOK_NOTCH_R_MM, kind="notch"))
+    # (2026-11-23, user / assembler) ALIGNMENT NOTCH on every stack board: the
+    # stacking fixture's 2nd pin (the 1st runs up the Ø3 potting holes). At the
+    # lane-free 285° seam stripe; the rings carry a matching 1 mm gap there.
+    from smash.layout import cavities as _CAV
+    if name in (panel.snake_chain or []) and not name.startswith("spacer_"):
+        from smash.parts.castellations import board_fold_transforms, _local_xy
+        _M = board_fold_transforms(panel, list(panel.snake_chain)).get(name, ((1, 0), (0, 1)))
+        _lx, _ly = _local_xy(_M, _CAV.ALIGN_NOTCH_ANGLE_DEG, 17.0)
+        cuts.append(make_cutout(math.degrees(math.atan2(_ly, _lx)) % 360.0,
+                                _CAV.ALIGN_NOTCH_W_MM, depth_mm=_CAV.ALIGN_NOTCH_DEPTH_MM,
+                                kind="notch"))
     if False:   # (2026-11-18) USB-C is VERTICAL at the nose tip now — no chord / notch
         # The connector MOUNTS on the USB nose (moved off the radar 2026-11-18). Its notch is 10.2 mm (+/-5.1) ->
         # wide enough to clear the ~8.3 mm mouth while the flat segments beside

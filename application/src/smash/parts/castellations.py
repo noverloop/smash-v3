@@ -610,6 +610,9 @@ AFT_CAP_TAG = "aft_end_cap"         # virtual board of the aft public-interface 
 AFT_CAP_N_TEETH = 60
 AFT_CAP_PHASE_DEG = 3.0
 AFT_CAP_SCREW_TEETH = (4, 25, 45)   # 27 / 153 / 273° — between the cells; uneven = the key
+# (2026-11-23, user) the stacking fixture's rim pin passes the cap: the tooth at
+# the pin angle (285°) carries no contact (a Ø1.2 hole at r 16.5 instead)
+AFT_CAP_PIN_TEETH: tuple = ()     # (2026-11-23, user) the sleeve's rib keys the stack: no pin through the cap
 
 
 def aft_tooth_angle(k: int) -> float:
@@ -659,7 +662,8 @@ def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
     pitch = 360.0 / AFT_CAP_N_TEETH
     start = aft_tooth_angle(AFT_CAP_SCREW_TEETH[0])
     unwrap = lambda a: (a - start) % 360.0
-    teeth = [k for k in range(AFT_CAP_N_TEETH) if k not in AFT_CAP_SCREW_TEETH]
+    teeth = [k for k in range(AFT_CAP_N_TEETH)
+             if k not in AFT_CAP_SCREW_TEETH and k not in AFT_CAP_PIN_TEETH]
     fixed = [float(a) for a in GND_CAST_ANGLES_DEG] + [float(a) for a in ANTENNA_FEED_ANGLES_DEG.values()]
     step = math.degrees(CAST_PITCH_MM / r)
     # Bottom positions on a FINE grid (0.25°): cap lanes exactly on a usable
@@ -767,6 +771,9 @@ def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
         if k in AFT_CAP_SCREW_TEETH:
             out.append({"tooth": k, "angle_deg": aft_tooth_angle(k), "net": None,
                         "role": "screw", "label": ""})
+        elif k in AFT_CAP_PIN_TEETH:                       # alignment-pin hole, no contact
+            out.append({"tooth": k, "angle_deg": aft_tooth_angle(k), "net": None,
+                        "role": "key", "label": ""})
         elif k in used:
             out.append(used[k])
         else:

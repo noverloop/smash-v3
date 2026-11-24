@@ -45,7 +45,7 @@ def test_usb_nose_wiring():
             if ref == "J_USB_C":
                 net_of[pin] = n.name
     for pin in ("A4", "A9", "B4", "B9"):
-        assert net_of[pin] == "USB_VBUS"
+        assert net_of[pin] == "EXT_VIN"          # (2026-11-23) external supply net
     for pin in ("A1", "A12", "B1", "B12", "MP1", "MP4"):
         assert net_of[pin] in ("GND", "FLEX_GND")         # GND is aliased to FLEX_GND
     assert net_of["A6"] == net_of["B6"] == "USB_D_P"

@@ -312,6 +312,22 @@ BOARD_POTTING_HOLE_ANGLES_DEG = (POTTING_HOLE_ANGLE_DEG_A,)
 BOARD_POTTING_HOLE_RADIUS_MM = 13.0
 
 
+# (2026-11-23, user) ALIGNMENT: the tower is stacked NOSE DOWN into its
+# sleeve on a fixture. The sleeve's internal axial RIB at 285° (the lane-free
+# seam stripe — no castellation within ±4° on any board) engages a RIM NOTCH
+# on every board, a gap in every ring, the battery holder's groove and the
+# floor plate's notch (rotation); a Ø2.9 pin standing in the fixture runs up
+# the Ø3.0 potting holes (r 13, 135°) (centring). The vias are drilled and
+# soldered on the fixture; lifting the tower off withdraws the pin, then it is
+# potted nose up from the top down that channel.
+ALIGN_NOTCH_ANGLE_DEG = 285.0
+ALIGN_NOTCH_W_MM = 1.2             # tangential (the 1.0 mm sleeve rib + 0.1 each side)
+ALIGN_NOTCH_DEPTH_MM = 1.0         # radial: floor at r 16.0
+ALIGN_RING_GAP_MM = 1.2            # ring / holder-edge-ring gap at the notch angle
+POTTING_PIN_D_MM = 2.9             # fixture pin in the Ø3.0 potting holes (centring while stacking
+                                   # nose down and while the vias are drilled / soldered)
+
+
 def board_potting_hole_positions() -> list[tuple[float, float]]:
     """Potting holes actually drilled in each rigid board (see above)."""
     return [(BOARD_POTTING_HOLE_RADIUS_MM * math.cos(math.radians(a)),

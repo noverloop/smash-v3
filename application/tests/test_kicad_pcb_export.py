@@ -384,7 +384,7 @@ def test_panel_export_includes_all_tiles(tmp_path):
     # → 21: + the usb_nose module tile.
     # → 19 (2026-11-21): fin_ble_board merged into activation_interface —
     #   one board + its spacer gone.
-    assert r["n_tiles"] == 19
+    assert r["n_tiles"] == 18      # 2026-11-23: −usb_nose
     assert r["n_footprints"] >= 1
     # Snake flex is removed (panel.snake_flex False) — the snake tiles are
     # joined by the board-to-board LGA lands through the spacers, so the
@@ -977,7 +977,7 @@ def test_full_twin_exports_clean(tmp_path):
     # → 725 (2026-11-22, height round 16): C_BAT_BULK 2 × 470 µF polymer →
     #   6 × 22 µF 0805; CBAT1/2 100 µF → 4 × 22 µF 0805 each; C_BOOST_OUT1
     #   47 µF → 2 × 22 µF 25 V 0805 (net +11).
-    assert total_fps == 749      # 2026-11-23: −1 piezo comparator MAX9064 (R_THR1/R_THR2 → R_COMP_DIV); 2026-11-23: +7 camera VB1943 (TPS62822 1.15 V buck + L + divider + CFF + IN/OUT caps, CP/VRT/LDO2V4 caps; −LP5907 1.2 V + caps, −RSVD R, −PHY cap; 10 µF/LV singles); 2026-11-23: +3 BAT_SENSE divider + cap (WBA PA3, firmware pack UV cutoff); 2026-11-23: +11 (LTC3124 COMP boost: 2nd phase L, VCC/CAP/IN caps, SD pull-up, CF + phase-lead R/C; −D_BOOST_COMP, −C_BOOST_SS; radar TPS6282x/62088: 3 CFF, 1.8 V buck L + divider + IN cap; −2 catch diodes); 2026-11-22: +4 (22 µF tantalum -> 2 × 10 µF 0603 on 4 PMIC rails); 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
+    assert total_fps == 728      # 2026-11-23: +1 D_EXT_IN aft-end external power diode (−OR block); −24 usb_nose tile (21 parts + castellations / scaffold), +2 radar SOP2 series R + RS232 pull-up (MP25 flashes the radar); 2026-11-23: −1 piezo comparator MAX9064 (R_THR1/R_THR2 → R_COMP_DIV); 2026-11-23: +7 camera VB1943 (TPS62822 1.15 V buck + L + divider + CFF + IN/OUT caps, CP/VRT/LDO2V4 caps; −LP5907 1.2 V + caps, −RSVD R, −PHY cap; 10 µF/LV singles); 2026-11-23: +3 BAT_SENSE divider + cap (WBA PA3, firmware pack UV cutoff); 2026-11-23: +11 (LTC3124 COMP boost: 2nd phase L, VCC/CAP/IN caps, SD pull-up, CF + phase-lead R/C; −D_BOOST_COMP, −C_BOOST_SS; radar TPS6282x/62088: 3 CFF, 1.8 V buck L + divider + IN cap; −2 catch diodes); 2026-11-22: +4 (22 µF tantalum -> 2 × 10 µF 0603 on 4 PMIC rails); 2026-11-21: +5 camera I2C shifter + pull-ups; +16 datasheet
     #   fixes (WBA HSE compensated divider + coupling, PE64906 dividers, camera
     #   27 MHz oscillator + cap, PMIC buck re-map: L_PMIC_BUCK3 / LDO6 cap out,
     #   BUCK3 terminations in)

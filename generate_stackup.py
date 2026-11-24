@@ -171,7 +171,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "BAT_RAW":      4.0,
     "BAT_PROT":     4.0,
     "ACTIVATE_HV":      33.0,   # aft activation rail (TPS61175 boost off COMP_5V); cap-free, boost sources the wire directly
-    "USB_VBUS":     5.0,    # depot USB-C input; the Q_USB_OR ideal diode sits ON the USB nose (2026-11-20), so the 3 A comes up as BAT_PROT and VBUS crosses only as a presence signal
+    "EXT_VIN":     5.6,    # (2026-11-23) external supply at the aft end (programmer fixture) → D_EXT_IN → BAT_PROT
     "REG_IN_MAIN":  4.0,
     "BOOST_OUT":    3.87,
     "VCAP1":        1.2,    # legacy / unused (orphaned — H562 retired)
@@ -590,6 +590,13 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "AWR_FAULT") .connect(mpu.pin("PI7"))
     _net(d, "RADAR_EN")  .connect(mpu.pin("PE10"))
     _net(d, "AWR_DRDY")  .connect(mpu.pin("PF1"))     # radar detections-ready IRQ (EXTI)
+    # (2026-11-23, user) radar flash programmable + updatable THROUGH THE MP25:
+    # the MP25 drives SOP2 (via 1 k on the radar tile) and NRESET (PI6), so it
+    # can reset the AWR1843 into SOP mode 101 (serial-flash programming) and
+    # load the MX25V8035F over the AWR's RS232 UART (= UART-A) on UART4.
+    _net(d, "AWR_SOP2_CTL")  .connect(mpu.pin("PI8"))   # GPIO → 1 k → AWR SOP2
+    _net(d, "AWR_RS232_RX")  .connect(mpu.pin("PH7"))   # UART4_TX → AWR RS232_RX
+    _net(d, "AWR_RS232_TX")  .connect(mpu.pin("PH8"))   # UART4_RX ← AWR RS232_TX
 
     # No gigabit RGMII to the radar: the AWR1843AOP streams *detections*, not
     # raw range-Doppler frames, over the SPI link above. The former MP25 GMAC
@@ -692,7 +699,7 @@ def build_companion_compute(d: Design) -> None:
     # — HS (480 Mbps) can't survive the ~4 LGA joints from companion to nose;
     # FS (12 Mbps) is robust over that and ample for SSH + a depot rootfs push.
     # Depot power DOES come in over USB VBUS (USB_VBUS → Q_USB_OR ideal diode on the
-    # USB nose since 2026-11-20 + Q_USB_WAKE/Q_USB_WAKE2 wake; Q_ISO's reverse-block keeps the
+    # USB nose since 2026-11-20 + Q_EXT_WAKE/Q_USB_WAKE2 wake; Q_ISO's reverse-block keeps the
     # cells at zero load during the session) — the old "power on the nose BAT_PROT
     # pad" note predated the USB-C wake work.
     _net(d, "USB_D_P").connect(mpu.pin("USB3DR_DP"))
@@ -1414,6 +1421,13 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "AWR_SOP0").connect(awr.pin("TDO"))          # U10
     _net(d, "AWR_SOP1").connect(awr.pin("SYNC_OUT"))     # M3
     _net(d, "AWR_SOP2").connect(awr.pin("PMIC_CLKOUT"))  # V10
+    # (2026-11-23, user) SOP2 under MP25 control (default 0 by the 10 k below =
+    # boot from flash; MP25 drives 1 + resets = SOP 101, flash programming over
+    # the RS232 UART). 1 k series: PMIC_CLKOUT is an output after boot.
+    res_between(d, "AWR_SOP2_CTL", "AWR_SOP2", "1k", ref="R_AWR_SOP2_SER", board_tag=BTAG)
+    _net(d, "AWR_RS232_TX").connect(awr.pin("RS232_TX"))   # U16 → MP25 UART4_RX
+    _net(d, "AWR_RS232_RX").connect(awr.pin("RS232_RX"))   # V16 ← MP25 UART4_TX
+    res_between(d, "COMP_3V3", "AWR_RS232_RX", "10k", ref="R_AWR_RS232_PU", board_tag=BTAG)  # idle high
     res_between(d, "COMP_3V3", "AWR_SOP0", "10k", ref="R_AWR_SOP0", board_tag=BTAG)  # SOP0=1 (VIOIN domain)
     res_between(d, "AWR_SOP1", "GND",     "10k", ref="R_AWR_SOP1", board_tag=BTAG)  # SOP1=0
     res_between(d, "AWR_SOP2", "GND",     "10k", ref="R_AWR_SOP2", board_tag=BTAG)  # SOP2=0
@@ -2182,6 +2196,11 @@ def build_activation_interface(d: Design) -> None:
         # ── BAT ── power monitor / shunt insertion
         "TP_BAT_RAW":     "BAT_RAW",
         "TP_BAT_PROT":    "BAT_PROT",
+        # ── EXT POWER ── (2026-11-23, user) external / depot supply in at the
+        # aft end (≈ 5.6 V from the programmer) → D_EXT_IN (aft_end) into BAT_PROT + wake;
+        # two contacts to share the current
+        "TP_EXT_VIN1":    "EXT_VIN",
+        "TP_EXT_VIN2":    "EXT_VIN",
         # ── parachute cutter ── PARACHUTE_CUTTER_SET arms the high side;
         # ACTIVATE_CONFIRM is the 33 V rail monitor. Driving the set pad
         # on the bench connects ACTIVATE_HV to the restraint wires.
@@ -2240,6 +2259,7 @@ def build_activation_interface(d: Design) -> None:
         "TP_FIN1_A1", "TP_FIN2_A1", "TP_FIN3_A1", "TP_FIN4_A1",   # FIN 1..4
         "TP_CAN_N",                                        # CAN
         "TP_BAT_RAW",                                      # BAT
+        "TP_EXT_VIN1",                                     # EXT POWER
         "TP_ACT_CONFIRM",                                  # parachute cutter
         "TP_FIN_HALL",                                     # HALL
         "TP_I2C_SDA",                                      # I2C
@@ -2835,7 +2855,7 @@ def build_usb_nose(d: Design) -> None:
     # separate A/B pads (no combined A4_B9 etc.), MP1–4 shell tabs.
     usb = add_uj20_c_v_g_smt_23b_p16_tr_x5(d, ref="J_USB_C", board_tag="usb_nose")
     for nm in ("A4", "A9", "B4", "B9"):                           # VBUS
-        _net(d, "USB_VBUS").connect(usb.pin(nm))
+        _net(d, "EXT_VIN").connect(usb.pin(nm))
     for nm in ("A1", "A12", "B1", "B12", "MP1", "MP2", "MP3", "MP4"):   # GND + shell
         _net(d, "GND").connect(usb.pin(nm))
     # CC1/CC2: 5.1 kΩ Rd to GND each → UFP sink presentation (source enables 5 V).
@@ -3231,7 +3251,7 @@ def build_power_board(d: Design) -> None:
     # Default OFF (gate≈source via R_ISO_H, V_GS≈0) → body-diode-only,
     # ~nA reverse leakage → NANOPOWER shelf, no IQ on the cell. Firmware
     # pulls it fully ON in flight (BAT_ISO_EN) for a low-drop forward
-    # path; depot-USB force-OFF is a HARDWARE interlock (Q_ISO_USB),
+    # path; depot-USB force-OFF is a HARDWARE interlock (Q_ISO_EXT),
     # independent of firmware. DMP6110: -60 V, 6.5 A cont — carries the
     # whole pack (the radar taps BAT_PROT downstream of this, ahead of
     # QMAIN). Same high-side P-FET + NFET gate-pull idiom as Q_PARACHUTE_CUTTER_ACTIVATE.
@@ -3255,22 +3275,22 @@ def build_power_board(d: Design) -> None:
     _net(d, "BAT_ISO_EN").connect(q_iso_drv.pin("1"))   # gate (driven via R_ISO_EN_S)
     res_between(d, "BAT_ISO_EN", "GND", "100k", ref="R_ISO_EN_PD", board_tag=BTAG)
     # SAFETY: BAT_ISO_EN is driven from the MP25 GPIO through a 10k SERIES R so
-    # the hardware USB interlock below ALWAYS wins — Q_ISO_USB (RDS ~Ω) sinks
+    # the hardware USB interlock below ALWAYS wins — Q_ISO_EXT (RDS ~Ω) sinks
     # BAT_ISO_EN to GND even against a push-pull GPIO driving high through 10k
     # (contention bounded to ~0.33 mA). A primary cell must never be back-fed,
     # so firmware MUST NOT be able to override the interlock.
     res_between(d, "BAT_ISO_DRIVE", "BAT_ISO_EN", "10k", ref="R_ISO_EN_S", board_tag=BTAG)
-    # Depot-USB hardware interlock: VBUS present → Q_ISO_USB pulls BAT_ISO_EN
+    # Depot-USB hardware interlock: VBUS present → Q_ISO_EXT pulls BAT_ISO_EN
     # low → Q_ISO OFF → body diode reverse-blocks → cell isolated, regardless
     # of (and overriding) firmware. The body diode is the unconditional backstop;
     # this interlock only matters in the one window where firmware has turned the
     # channel ON (low-drop forward) and USB is then plugged.
-    q_iso_usb = add_ssm3k35ctc_l3f(d, ref="Q_ISO_USB", board_tag=BTAG)
+    q_iso_usb = add_ssm3k35ctc_l3f(d, ref="Q_ISO_EXT", board_tag=BTAG)
     _net(d, "BAT_ISO_EN")  .connect(q_iso_usb.pin("3"))   # drain → force EN low
     _net(d, "GND")         .connect(q_iso_usb.pin("2"))   # source
-    _net(d, "BAT_ISO_USBG").connect(q_iso_usb.pin("1"))   # gate
-    res_between(d, "USB_VBUS",      "BAT_ISO_USBG", "100k", ref="R_ISO_USB_H", board_tag=BTAG)
-    res_between(d, "BAT_ISO_USBG",  "GND",          "100k", ref="R_ISO_USB_L", board_tag=BTAG)
+    _net(d, "BAT_ISO_EXTG").connect(q_iso_usb.pin("1"))   # gate
+    res_between(d, "EXT_VIN",      "BAT_ISO_EXTG", "100k", ref="R_ISO_EXT_H", board_tag=BTAG)
+    res_between(d, "BAT_ISO_EXTG",  "GND",          "100k", ref="R_ISO_EXT_L", board_tag=BTAG)
 
     cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT1", board_tag=BTAG, feature="bottom")
     cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT2", board_tag=BTAG, feature="bottom")
@@ -3623,8 +3643,8 @@ def build_power_board(d: Design) -> None:
     # tied to ground by the wake divider. MBRS540T3G Fig 3 (typical)
     # reads ~3 µA at 3 V / 25 °C, doubling every ~9 °C — against a ~1 µA
     # TOTAL shelf budget, i.e. >the whole pack over the 15 y claim, and
-    # enough return current through R_USBWK_G/R_USBWK_PD to walk
-    # USBWK_GATE up to a BSS138 threshold and self-wake a warm round.
+    # enough return current through R_EXTWK_G/R_EXTWK_PD to walk
+    # EXTWK_GATE up to a BSS138 threshold and self-wake a warm round.
     # Schottky low-V_F and high I_R are the same physics; a silicon PN
     # diode fixes the leak but its ~0.8 V drop puts BAT_PROT BELOW the
     # cells at the low end of USB tolerance, which breaks the isolation.
@@ -3645,35 +3665,24 @@ def build_power_board(d: Design) -> None:
     # VBUS-presence driver + VBUS bulk only exist where the connector does
     # (`core`), not in every config. The 3 A now comes up the crown as
     # BAT_PROT (3 teeth); VBUS crosses only as a presence signal (1 tooth)
-    # for Q_ISO_USB / the USB wake / the MP25 VBUS detect, which stay put.
+    # for Q_ISO_EXT / the USB wake / the MP25 VBUS detect, which stay put.
     # NOTE: like Q_ISO, the forward drop and the gate-drive timing want
     # bench confirmation before fab (analog behaviour, not modelled by
     # the connectivity build).
-    UT = "usb_nose"
-    q_usb_or = add_buk6d120_60px(d, ref="Q_USB_OR", board_tag=UT)   # (2026-11-22) sourcing swap, availability/decisions.csv: DMP6110 → BUK6D120
-    for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
-        _net(d, "USB_VBUS").connect(q_usb_or.pin(dp))   # drains → VBUS side
-    for sp in ("S_1", "S_2"):
-        _net(d, "BAT_PROT").connect(q_usb_or.pin(sp))   # source → load side
-    _net(d, "USB_OR_G")   .connect(q_usb_or.pin("G"))
-    # Gate divider, mirroring Q_ISO: BAT_PROT ─100k─ G ─10k─ DRV drain.
-    # DRV off → G≈BAT_PROT (V_GS≈0, OFF, nanopower, body-diode-only).
-    # DRV on → G≈BAT_PROT·10/110 ≈ 0.45 V → V_GS≈-4.5 V (fully enhanced,
-    # R_DS(on) 130 mΩ, inside the ±20 V V_GSS). The 110k chain draws
-    # ~45 µA ONLY while USB is live — i.e. off the depot supply, never
-    # off the cells.
-    res_between(d, "BAT_PROT",  "USB_OR_G",  "100k", ref="R_USBOR_H", board_tag=UT)
-    res_between(d, "USB_OR_G",  "USB_OR_GD", "10k",  ref="R_USBOR_L", board_tag=UT)
-    q_usbor_drv = add_ssm3k35ctc_l3f(d, ref="Q_USBOR_DRV", board_tag=UT)
-    _net(d, "USB_OR_GD").connect(q_usbor_drv.pin("3"))   # drain → gate divider
-    _net(d, "GND")      .connect(q_usbor_drv.pin("2"))   # source
-    _net(d, "USB_OR_EN").connect(q_usbor_drv.pin("1"))   # gate ← VBUS presence
-    # VBUS-presence divider (same idiom as R_ISO_USB_H/L on the interlock):
-    # VBUS 5 V → USB_OR_EN 2.5 V, well above the BSS138 V_GS(th) 0.8-1.5 V;
-    # VBUS absent → 0 V through R_USBOR_USB_L, so the P-FET defaults OFF.
-    res_between(d, "USB_VBUS",   "USB_OR_EN", "100k", ref="R_USBOR_USB_H", board_tag=UT)
-    res_between(d, "USB_OR_EN",  "GND",       "100k", ref="R_USBOR_USB_L", board_tag=UT)
-    cap_to_gnd(d, "USB_VBUS", "10uF", ref="C_USB_VBUS", board_tag=UT)
+    # (2026-11-23, user) NO USB power path any more: external power comes in
+    # at the AFT END (the development fixture's pins on the aft-cap EXT POWER
+    # contacts) through ONE low-leakage SILICON diode into BAT_PROT, on
+    # aft_end_board. The ideal-diode OR block (Q_USB_OR + driver + dividers +
+    # bulk) is gone. Silicon, not Schottky: the shelf-leak argument above;
+    # its ~0.8 V drop no longer matters because the fixture sets its own
+    # supply (≈ 5.6 V → BAT_PROT ≈ 4.8 V, above the cells, inside the
+    # rail's limits). Q_ISO_EXT (interlock: cells isolated) and Q_EXT_WAKE
+    # (wake) still sense EXT_VIN. PNS40010AER: 1 A — bench / fixture loads
+    # only; firing actuators from the fixture needs the cells.
+    from smash.parts.swaps_2026_11 import add_pns40010aerx
+    d_ext = add_pns40010aerx(d, ref="D_EXT_IN", board_tag="aft_end_board", feature="bottom")
+    _net(d, "EXT_VIN") .connect(d_ext.pin("2"))       # anode  ← fixture supply
+    _net(d, "BAT_PROT").connect(d_ext.pin("1"))       # cathode → protected rail
 
     # ── Depot-USB WAKE: VBUS presence joins the MAIN_SW_GATE open-drain
     # OR (4th member after the NFC GPO diode, QHOLD/MP25, QHOLD2/WBA) —
@@ -3683,18 +3692,18 @@ def build_power_board(d: Design) -> None:
     # above the 4 V cells, so Q_ISO (force-OFF by the USB interlock, body
     # diode reverse-biased) keeps the pack at zero load-current — only the
     # 3V3_AON trinkets draw from the cells during a depot session (no eFuse
-    # IQ any more). Unplug: VBUS falls → Q_USB_WAKE and the Q_ISO interlock
+    # IQ any more). Unplug: VBUS falls → Q_EXT_WAKE and the Q_ISO interlock
     # release; if no firmware hold is up the round drops cleanly back to
     # shelf, else Q_ISO's body diode hands the load back to the cells.
-    q_usbwk = add_ssm3k35ctc_l3f(d, ref="Q_USB_WAKE", board_tag=BTAG,
+    q_usbwk = add_ssm3k35ctc_l3f(d, ref="Q_EXT_WAKE", board_tag=BTAG,
                           feature="bottom")  # keep the saturated companion joint face clear
     _net(d, "MAIN_SW_GATE").connect(q_usbwk.pin("3"))   # Drain → the latch OR
     _net(d, "GND")         .connect(q_usbwk.pin("2"))   # Source
-    _net(d, "USBWK_GATE")  .connect(q_usbwk.pin("1"))   # Gate ← VBUS divider
-    res_between(d, "USB_VBUS",   "USBWK_GATE", "10k",
-                ref="R_USBWK_G",  board_tag=BTAG)
-    res_between(d, "USBWK_GATE", "GND",        "100k",
-                ref="R_USBWK_PD", board_tag=BTAG)
+    _net(d, "EXTWK_GATE")  .connect(q_usbwk.pin("1"))   # Gate ← VBUS divider
+    res_between(d, "EXT_VIN",   "EXTWK_GATE", "10k",
+                ref="R_EXTWK_G",  board_tag=BTAG)
+    res_between(d, "EXTWK_GATE", "GND",        "100k",
+                ref="R_EXTWK_PD", board_tag=BTAG)
 
     # P_AFT_LGA removed: activation_interface is now flex-connected to
     # power_board (snake), so the rigid-mate LGA harness no longer
@@ -3773,7 +3782,7 @@ def build_wakeup_board(d: Design) -> None:
     # through Q_ISO's body diode (≈ cell − 0.7 V), so the NFC GPO pull-up
     # to BAT_PROT still works and QMAIN gates REG_IN_MAIN directly — no
     # eFuse-enable step. Depot-USB plug-in wakes the round EXPLICITLY via
-    # Q_USB_WAKE (power_board), which joins this gate's open-drain OR.
+    # Q_EXT_WAKE (power_board), which joins this gate's open-drain OR.
     res_between(d, "BAT_RAW", "MAIN_SW_GATE", "1M",
                 ref="RMAIN_PU",     board_tag=BTAG)
     cap_to_gnd(d, "MAIN_SW_GATE", "100nF", ref="CMAIN_HOLD", board_tag=BTAG, pin=qmain.pin("1"))
@@ -4046,7 +4055,7 @@ def build_wakeup_board(d: Design) -> None:
     q_usbwk2 = add_ssm3k35ctc_l3f(d, ref="Q_USB_WAKE2", board_tag=_ACT_TAG)
     _net(d, "AON_EN_GATE").connect(q_usbwk2.pin("3"))  # Drain
     _net(d, "GND")        .connect(q_usbwk2.pin("2"))  # Source
-    _net(d, "USBWK_GATE") .connect(q_usbwk2.pin("1"))  # Gate ← shared VBUS divider
+    _net(d, "EXTWK_GATE") .connect(q_usbwk2.pin("1"))  # Gate ← shared VBUS divider
 
     # WLE5 + dedicated nano-LDO + 12-ball bypass network removed.
     # WBA55 replaces the wake orchestrator + 2.4 GHz radio role (added
@@ -4467,7 +4476,6 @@ _BOARD_BUILDERS = {
     "wakeup_board":         lambda d: build_wakeup_board(d),  # IMU/mag sensors folded in
     "radar_module":         lambda d: (build_radar_module_awr1843aop(d),
                                        build_radar_nose_io(d)),
-    "usb_nose":             lambda d: build_usb_nose(d),
     "companion_compute":    lambda d: build_companion_compute(d),
     "aft_end_board":        lambda d: build_aft_end_board(d),
     "cell_floor_board":     lambda d: build_cell_floor_board(d),
@@ -4509,9 +4517,6 @@ _BRANCH_PARENT = {
     # per-config side flip would move the strip and fork the layout.
     "qpd_module":       ("companion_compute", 70.0, "N", False),
     "camera_module":    ("companion_compute", 70.0, "S", False),  # mutually excl.
-    # (2026-11-18) USB nose: a nose module like qpd / camera. In a config its
-    # parent compute is the snake's tail, so its EAST edge is free.
-    "usb_nose":         ("companion_compute", 70.0, "E", False),
 }
 
 # Branch-flex launch CONTRACT — the fixed companion-side interface
@@ -4538,8 +4543,6 @@ _FLEX_LAUNCH_CATALOG = [
      ["CAM_CSI_CLK_N", "CAM_CSI_CLK_P", "CAM_CSI_D0_N", "CAM_CSI_D0_P",
       "CAM_CSI_D1_N", "CAM_CSI_D1_P", "CAM_EXTCLK",
       "COMP_1V8", "COMP_2V8", "FLEX_GND", "BAT_PROT", "IR_TX", "IR_WAKE"]),
-    ("companion_compute", "usb_nose", "E",
-     ["USB_VBUS", "USB_D_P", "USB_D_N", "BAT_PROT", "IR_TX", "IR_WAKE"]),
 ]
 
 _CONE_EXITS = _cone_exits()
@@ -4645,7 +4648,6 @@ def _compartment_mm() -> float:
 # stays, on wakeup_board, so the full power_states.md ladder works in every
 # config).
 CONFIGS: dict[str, set[str]] = {
-    "core":         _CORE | {"usb_nose"},           # no seeker; USB nose = the cap
     "core_radar":   _CORE | _RADAR,   # RF-dark = firmware/DNP (no RF leaves since 2026-11-14)
     "core_qpd":     _CORE | {"qpd_module"},
     "core_camera":  _CORE | {"camera_module"},
@@ -5346,8 +5348,6 @@ _ACCEPTED_LOCKED_OVERLAPS = (
     ("power_board", "U_COMP_BOOST", "D_BOOST_COMP"),
     ("power_board", "L_BOOST_COMP", "D_BOOST_COMP"),
     ("power_board", "D_BOOST_COMP", "C_BOOST_OUT2_4"),
-    ("power_board", "C_USB_VBUS_1", "Q_USB_WAKE"),
-    ("power_board", "C_USB_VBUS_2", "Q_USB_WAKE"),
     # (Francesco's wakeup_board entries dropped 2026-11-16: every wakeup
     # lock was released for the re-route, so nothing there is locked.)
 )
@@ -5998,6 +5998,7 @@ _AFT_SILK_GROUPS_ALL = [
     ("FIN 4",         ["TP_FIN4_A1", "TP_FIN4_A2", "TP_FIN4_B1", "TP_FIN4_B2"]),
     ("CAN",           ["TP_CAN_N", "TP_CAN_P"]),
     ("BAT",           ["TP_BAT_RAW", "TP_BAT_PROT"]),
+    ("EXT POWER",     ["TP_EXT_VIN1", "TP_EXT_VIN2"]),
     ("PARACHUTE WIRES", [f"P_ACT_COL_{c}" for c in range(4)]),
     ("GROUND",        ["TP_GND_ACT"]),
     ("PARACHUTE CUTTER", ["TP_ACT_CONFIRM", "TP_PARACHUTE_CUTTER_SET"]),  # set + rail monitor
@@ -6628,7 +6629,7 @@ def _generate_config(name: str, board_set: set[str]) -> None:
     # Castellations replay the maximalist lane contract (economies of scale:
     # identical board edges in every config; absent nets keep a bare pad).
     _cfgM = board_fold_transforms(panel, list(panel.snake_chain))
-    _, _cast = place_castellations(
+    _cfg_contract, _cast = place_castellations(
         d, panel, boards, connect=lambda net, pin: _net(d, net).connect(pin),
         contract=ref.get("castellations"))
     # (2026-11-15) No branch-flex launch strips: the QPD / camera links run on
@@ -6684,6 +6685,22 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         d, panel, boards, cfg_dir,
         cutouts_ref={bn: c for bn, c in (ref.get("cutouts") or {}).items()
                      if bn in _conform})
+    # (2026-11-23, user) this config's OWN unrolled LDS sleeve (2-layer KiCad
+    # board: lanes / vias / antennas of this stack) + its copper STEP, for the
+    # manufacturing package (Manufacturing/<date>/Configurations/<config>/).
+    try:
+        from smash.export.sleeve_layout import write_unrolled_sleeve, write_sleeve_copper_step
+        _sd = cfg_dir / "sleeve"
+        _sd.mkdir(parents=True, exist_ok=True)
+        _ul = write_unrolled_sleeve(boards, list(panel.snake_chain), _cfg_contract,
+                                    _sd / f"{name}_sleeve_unrolled.kicad_pcb")
+        tiles_msg += (f"; sleeve unroll {_ul['width_mm']:.1f} × {_ul['height_mm']:.1f} mm, "
+                      f"{_ul['n_lanes']} lanes, {_ul['n_vias']} vias")
+        if _STEP_ENABLED:
+            write_sleeve_copper_step(boards, list(panel.snake_chain), _cfg_contract,
+                                     _sd / f"{name}_sleeve_copper.step")
+    except Exception as _e:                      # never block the config build
+        print(f"  WARN {name}: unrolled sleeve: {type(_e).__name__}: {_e}")
     if _STEP_ENABLED:
         from smash.export.spacer_step import write_gap_hardware
         sp = write_gap_hardware(boards, list(panel.snake_chain), cfg_dir)
@@ -6737,8 +6754,7 @@ def main() -> int:
     # Boards (ordered smallest → largest)
     build_qpd_module(d)
     build_radar_nose_io(d)
-    build_usb_nose(d)
-    build_camera_module(d)
+    build_camera_module(d)                 # (2026-11-23, user) no USB nose any more
     build_aft_end_board(d)
     # (2026-11-15) cell_floor_board dropped in every mode (aft reorder).
     build_activation_interface(d)
@@ -7002,10 +7018,15 @@ def main() -> int:
                                      _cast_contract, _MAXIMALIST_DIR)
         # (2026-11-19) aft public interface: the aft_end_cap crown
         from smash.export.aft_cap import write_aft_cap
+        # the cap's disc gets an access hole over each bottom-face clamp tab / pad
+        if _cast_contract.get("aft_cap") and "aft_end_board" in boards:
+            _cast_contract["aft_cap"]["access_xy"] = [
+                tuple(pl.position_mm) for pl in boards["aft_end_board"].chip_placements
+                if pl.face == "bottom" and pl.item.ref.startswith(("P_ACT_",) + _AFT_CUTTER_PADS)]
         _ac = write_aft_cap(_cast_contract, _MAXIMALIST_DIR / "sleeve" / "aft_end_cap")
         if _ac:
             print(f"  aft_end_cap: {_ac['n_signal']} crown contacts, solid "
-                  f"{'ok' if _ac['valid'] and _ac['solids'] == 1 else 'INVALID'} → "
+                  f"{'ok' if _ac['valid'] and _ac['solids'] == 1 else 'INVALID'} (7075 disc + PEEK-LDS crown) → "
                   f"{_ac['dir'].relative_to(REPO)}/ (+ contact map, face drawing)"
                   + (f"; ⚠ no tooth for {', '.join(_ac['missing'])}" if _ac["missing"] else ""))
         from smash.export.sleeve_layout import (write_unrolled_sleeve,

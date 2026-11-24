@@ -216,18 +216,6 @@ def test_radar_nose_is_open_without_radome(built):
     stops = [h for h in boards["radar_module"].geometry.holes if h.tag == "nose_stop"]
     assert not stops
 
-def test_usb_nose_vertical_usb_c(built):
-    _g, _d, panel, boards, _c = built
-    chain = list(panel.snake_chain)
-    n = CN.nose_spec("core", boards, chain)
-    assert n.payload == "usb_nose" and n.profile.open
-    assert n.radial_windows == [] and n.holes == [] and n.pipes == []   # open front
-    # uniform ridge (set by the radar): the vertical USB-C rises through the
-    # open end into the finishing container
-    assert n.profile.z_top == pytest.approx(
-        n.z_payload[1] + CN._ridge_height(boards, chain), abs=1e-3)
-    assert n.hoods == []
-
 
 def test_open_nose_ridge_is_uniform_and_clears_the_radar(built):
     """(2026-11-19, user) every nose cone ends at the SAME height above its
@@ -235,7 +223,7 @@ def test_open_nose_ridge_is_uniform_and_clears_the_radar(built):
     _g, _d, panel, boards, _c = built
     chain = list(panel.snake_chain)
     ridges = set()
-    for cfg in ("core", "core_radar", "core_qpd", "core_camera"):
+    for cfg in ("core_radar", "core_qpd", "core_camera"):   # (2026-11-23) USB nose removed
         n = CN.nose_spec(cfg, boards, chain)
         assert n.profile.open and n.profile.z_s == n.profile.z_top, cfg   # no shoulder
         ridges.add(round(n.profile.z_top - n.z_payload[1], 3))
@@ -525,7 +513,7 @@ def test_fixed_nose_payload_nets_ride_sleeve_lanes(built):
     lanes = contract["lanes"]
     assert not any(v.get("kind", "").startswith("crown") for v in lanes.values())
     assert not contract.get("crown")
-    for net in ("AWR_SPI_CLK", "QPD_TIA_A", "CAM_CSI_CLK_P", "USB_D_P"):
+    for net in ("AWR_SPI_CLK", "QPD_TIA_A", "CAM_CSI_CLK_P"):
         ln = lanes[net]
         assert "companion_compute" in ln["boards"] and "radar_module" in ln["boards"], net
     assert not contract.get("overflow")
@@ -568,5 +556,5 @@ def test_fixed_write_noses(built, tmp_path):
         assert (cd / f).exists(), f
     for f in ("snap_ring.step", "nose_cone.step", "retaining_ring.step"):
         assert not (cd / f).exists(), f
-    assert "FIXED nose" in (cd / "nose_cam.md").read_text()
+    assert "One sleeve per configuration" in (cd / "nose_cam.md").read_text()
     assert res["cups"]["core"]["n_vias"] > 0

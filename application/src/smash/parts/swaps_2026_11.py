@@ -287,7 +287,8 @@ def add_mcp9808t_e_mc(design, ref: str, **overrides) -> Chip:
     return _sam(design, ref, pn="MCP9808T-E/MC", part_dir="MCP9808T-E_MC",
                 mod="SON50P200X300X100-9N.kicad_mod", package="DFN-8 (2×3)", height_mm=1.0,
                 size_mm=(2.0, 3.0), manf="Microchip", description="I²C digital temperature sensor ±0.25 °C, DFN-8",
-                pins=pins, ring_courtyard=True, note=f"Replaces TMP117 (China lots) — {_WHY}.", **overrides)
+                pins=pins, ring_courtyard=True, note=f"Replaces TMP117 (China lots) — {_WHY}.",
+                model_rotate=(-90.0, 0.0, 0.0), **overrides)   # vendor STEP is Y-up
 
 
 def add_bmm350(design, ref: str, **overrides) -> Chip:
@@ -303,6 +304,7 @@ def add_bmm350(design, ref: str, **overrides) -> Chip:
              package="WLCSP-9 (1.28×1.28)", height_mm=0.54, size_mm=(1.28, 1.28),
              manf="Bosch Sensortec", description="3-axis TMR magnetometer, I²C/I3C, WLCSP-9",
              pins=build_pins(_sym("BMM350")), ring_courtyard=True,
+             model_rotate=(-90.0, 0.0, 0.0),                    # vendor STEP is Y-up
              note=f"Replaces IIS2MDCTR (0 stock) — {_WHY}; new driver; check noise vs the mag-link sim.",
              **overrides)
     return c
@@ -656,3 +658,23 @@ def add_max9064ebs_tg45(design, ref: str, **overrides) -> Chip:
                 description="Comparator, internal 0.2 V threshold, push-pull, ~0.4 µA, UCSP-4",
                 note="Replaces TLV7031DPWR (only non-China stock was one 480 pcs lot) — "
                      "sourcing round 23 (2026-11-23). SamacSys land/symbol/STEP.", **overrides)
+
+
+def add_pns40010aerx(design, ref: str, **overrides) -> Chip:
+    """Nexperia PNS40010AERX (AEC-Q101) — 400 V / 1 A low-leakage planar silicon
+    rectifier, SOD123W (SamacSys SODFL3517X110N: 3.5 × 1.7 × 1.1 mm). Pin 1 =
+    K (cathode, band), pin 2 = A. Used as the aft-end external-power diode
+    (EXT_VIN → BAT_PROT): silicon, not Schottky — in storage the cells hold
+    BAT_PROT up and the interlock / wake dividers give EXT_VIN a path to
+    ground, so a Schottky's µA reverse leakage would drain the cells; a
+    planar silicon junction leaks nA at 3-4 V. Its ~0.7 V drop is irrelevant
+    (the fixture sets its own supply voltage)."""
+    pins = [Pin(num="1", name="K", aliases=["CATHODE"], type="passive"),
+            Pin(num="2", name="A", aliases=["ANODE"], type="passive")]
+    return _sam(design, ref, pn="PNS40010AERX", part_dir="PNS40010AERX",
+                mod="SODFL3517X110N.kicad_mod", package="SOD123W",
+                height_mm=1.1, size_mm=(3.5, 1.7), manf="Nexperia", pins=pins,
+                description="Rectifier 400 V 1 A, low leakage, planar silicon, SOD123W",
+                note="Aft-end external power diode (2026-11-23, user; PNS40010ER,115 is obsolete). "
+                     "SamacSys land/symbol/STEP.",
+                **overrides)

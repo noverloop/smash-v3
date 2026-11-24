@@ -129,6 +129,46 @@ def test_cap_solid_and_drawings(built, tmp_path):
     assert "Contact map" in (tmp_path / "aft_end_cap.md").read_text()
 
 
+def test_cap_disc_backs_aft_end_with_access_holes(built, tmp_path):
+    """The cap's 7075 disc backs aft_end_board over its whole face (tower FEA:
+    the setback load must not span a soft opening) with one access hole over
+    each bottom-face clamp tab / centre pad; the PEEK-LDS crown is the rim."""
+    cq = pytest.importorskip("cadquery")
+    from smash.export import aft_cap as AC
+    _g, _d, boards, contract, _c = built
+    cap = dict(contract["aft_cap"])
+    cap["access_xy"] = [tuple(pl.position_mm) for pl in boards["aft_end_board"].chip_placements
+                        if pl.face == "bottom" and pl.item.ref.startswith(("P_ACT_", "TP_ACT", "TP_PARACHUTE"))]
+    assert len(cap["access_xy"]) == 22
+    disc, crown = AC.build_aft_cap_parts(cq, cap, 17.9)
+    z = -AC.CAP_PLATE_T_MM / 2
+    ins = lambda body, x, y: body.val().isInside(cq.Vector(x, y, z))
+    for x, y in cap["access_xy"]:
+        assert not ins(disc, x, y)                                   # hole over every tab / pad
+    assert ins(disc, 5.0, 0.0) and ins(disc, -5.0, -6.0)              # solid between the features
+    from smash.export import nose_interface as NI0
+    assert disc.val().BoundingBox().xmax <= NI0.CROWN_R_IN_MM + 1e-3          # + the ledge
+    assert crown.val().BoundingBox().xmax == pytest.approx(17.9, abs=1e-3)
+    assert not ins(crown, 5.0, 0.0)
+    # the disc is the bearing face: its boss stands proud of the crown's teeth
+    from smash.export import nose_interface as NI
+    zt = AC.tip_z(17.5, -AC.CAP_PLATE_T_MM, 17.9)
+    assert disc.val().BoundingBox().zmin == pytest.approx(zt - AC.CAP_BOSS_PROUD_MM, abs=1e-3)
+    assert crown.val().BoundingBox().zmin >= zt - 1e-3
+    P = lambda body, r, a, zz: body.val().isInside(cq.Vector(r * math.cos(math.radians(a)),
+                                                             r * math.sin(math.radians(a)), zz))
+    # ledge under the crown's inner edge; flats key the rotation (PEEK in the flat)
+    assert P(disc, 13.75, 0.0, -AC.CAP_PLATE_T_MM - 0.3)
+    assert P(crown, 13.75, 0.0, -AC.CAP_PLATE_T_MM / 2)
+    for a in AC.CAP_FLAT_ANGLES_DEG:
+        assert P(crown, AC.CAP_DISC_R_MM - 0.1, a, -AC.CAP_PLATE_T_MM / 2)
+        assert not P(disc, AC.CAP_DISC_R_MM - 0.1, a, -AC.CAP_PLATE_T_MM / 2)
+    assert disc.solids().size() == 1 and crown.solids().size() == 1
+    r = AC.write_aft_cap(contract, tmp_path)
+    for n in ("aft_end_cap_disc.step", "aft_end_cap_crown.step", "aft_end_cap.step"):
+        assert (tmp_path / n).exists()
+
+
 def test_cap_crown_is_slanted_tallest_inside(built):
     """(2026-11-20, user) the aft crown is a cone — compliant, self-centring
     contacts under acceleration. (2026-11-21, user) TALLEST (aft-most) at the

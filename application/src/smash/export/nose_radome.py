@@ -42,6 +42,15 @@ PART_CLEARANCE_MM = 0.3         # end wall / hood → part top
 HOOD_MARGIN_MM = 0.4            # hood bore → part body (each side)
 DAM_RIB_W_MM = 0.8
 DAM_MARGIN_MM = 0.6             # dam rib inner edge → AoP body
+DAM_H_MM = 1.5                  # dam height over the board: the fill stops ≈0.5 mm over the
+                                # payload tile, + 1 mm margin
+# Anchor: a C-ring round the payload tile's potting hole (the stacking pin
+# passes through ring + hole → deterministic position), joined to the dam by
+# an arm whose underside is relieved to bridge parts. The C opens outward so
+# the potting coming up through the hole flows out sideways.
+DAM_ANCHOR_ID_MM, DAM_ANCHOR_OD_MM = 3.1, 4.0
+DAM_ANCHOR_OPEN_DEG = 100.0
+DAM_ARM_W_MM, DAM_ARM_RELIEF_MM = 1.2, 0.8
 IR_HOLE_MIN_D_MM = 2.0
 IR_HOLE_MARGIN_MM = 0.3
 USB_WINDOW_MARGIN_MM = 0.5      # around the UJ20 mouth (8.94 × 3.26 mm)

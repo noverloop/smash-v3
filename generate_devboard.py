@@ -28,7 +28,7 @@ import generate_stackup as G                                    # noqa: E402
 DEV = "dev_board"
 OUT = REPO / "dist" / DEV
 # Tower builders that make up the maximalist schematic (all payloads).
-_BUILDERS = (G.build_qpd_module, G.build_radar_nose_io, G.build_usb_nose,
+_BUILDERS = (G.build_qpd_module, G.build_radar_nose_io, 
              G.build_camera_module, G.build_aft_end_board, G.build_activation_interface,
              G.build_radar_module_awr1843aop, G.build_companion_compute,
              G.build_power_board, G.build_wakeup_board, G.build_fins_module)
@@ -161,7 +161,7 @@ def build_diag(d) -> dict:
     remove_component(d, "J_USB_C")
     usb = add_uj20_c_h_g_msmt_1a_p16_tr_67(d, ref="J_DEV_USB", **T)
     for pn in ("VBUS", "VBUS__1"):
-        N("USB_VBUS").connect(usb.pin(pn))                 # → Q_USB_OR → BAT_PROT (tower path)
+        N("DEV_VBUS").connect(usb.pin(pn))                 # programmer supply only (2026-11-23)
     for pn in ("GND", "GND__1", "SHIELD", "SHIELD__1", "SHIELD__2", "SHIELD__3"):
         N("GND").connect(usb.pin(pn))
     N("USB_CC1").connect(usb.pin("CC1")); N("USB_CC2").connect(usb.pin("CC2"))   # Rd 5.1 k exist
@@ -171,15 +171,15 @@ def build_diag(d) -> dict:
     esd = add_usblc6_4sc6(d, ref="U_DEV_ESD", **T)   # (2026-11-22) TPD4E05U06 (China lots) → USBLC6-4SC6
     N("DEV_USB_UP_P").connect(esd.pin("I/O1")); N("DEV_USB_UP_N").connect(esd.pin("I/O2"))
     N("DEV_MCU_USB_P").connect(esd.pin("I/O3")); N("DEV_MCU_USB_N").connect(esd.pin("I/O4"))
-    N("GND").connect(esd.pin("GND")); N("USB_VBUS").connect(esd.pin("VBUS"))
+    N("GND").connect(esd.pin("GND")); N("DEV_VBUS").connect(esd.pin("VBUS"))
 
     # ── dev 3.3 V (from USB VBUS: the diag section lives without the DUT) ──
     ldo = add_ldl112pv33r(d, ref="U_DEV_LDO", **T)
-    N("USB_VBUS").connect(ldo.pin("VIN")); N(V3).connect(ldo.pin("VOUT"))
+    N("DEV_VBUS").connect(ldo.pin("VIN")); N(V3).connect(ldo.pin("VOUT"))
     next(n for n in d.nets if n.name == V3).voltage_v = 3.3   # (2026-11-21) for the electrical rules
-    N("USB_VBUS").connect(ldo.pin("EN")); N("GND").connect(ldo.pin("GND"))
+    N("DEV_VBUS").connect(ldo.pin("EN")); N("GND").connect(ldo.pin("GND"))
     N("GND").connect(ldo.pin("EP"))                                  # thermal pad
-    cap_to_gnd(d, "USB_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
+    cap_to_gnd(d, "DEV_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
     cap_to_gnd(d, V3, "10uF", ref="C_DEV_LDO_OUT", **T)
 
     # ── USB2514B hub ───────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ def build_diag(d) -> dict:
     res_between(d, V3, "DEV_HUB_RESET_N", "10k", ref="R_DEV_HUB_RST", **T)
     cap_to_gnd(d, "DEV_HUB_RESET_N", "100nF", ref="C_DEV_HUB_RST", **T)
     N("DEV_HUB_VBUS_DET").connect(hub.pin("VBUS_DET"))
-    res_between(d, "USB_VBUS", "DEV_HUB_VBUS_DET", "47k", ref="R_DEV_HUB_VB1", **T)
+    res_between(d, "DEV_VBUS", "DEV_HUB_VBUS_DET", "47k", ref="R_DEV_HUB_VB1", **T)
     res_between(d, "DEV_HUB_VBUS_DET", "GND", "100k", ref="R_DEV_HUB_VB2", **T)
     osc = add_dsc1001ci5_032_0000(d, ref="Y_DEV_HUB", manf_pn="DSC1001CI5-024.0000",
                                   value="24MHz", name="DSC1001CI5-024.0000", **T)
@@ -300,11 +300,11 @@ def build_diag(d) -> dict:
     # ── CAN-FD to the tower (gs_usb) ───────────────────────────────────────
     can = add_tja1462btk_0z(d, ref="U_DEV_CAN", **T)   # (2026-11-22) TCAN1042GVDQ1 (EOL) → TJA1462
     N("DEV_CAN_TX").connect(can.pin("TXD")); N("DEV_CAN_RX").connect(can.pin("RXD"))
-    N("USB_VBUS").connect(can.pin("VCC")); N(V3).connect(can.pin("VIO"))
+    N("DEV_VBUS").connect(can.pin("VCC")); N(V3).connect(can.pin("VIO"))
     N("GND").connect(can.pin("GND")); N("GND").connect(can.pin("STB"))
     N("GND").connect(can.pin("EP"))                                  # HVSON exposed pad
     N("TWR_CAN_P").connect(can.pin("CANH")); N("TWR_CAN_N").connect(can.pin("CANL"))
-    cap_to_gnd(d, "USB_VBUS", "100nF", ref="C_DEV_CAN_VCC", **T)
+    cap_to_gnd(d, "DEV_VBUS", "100nF", ref="C_DEV_CAN_VCC", **T)
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_CAN_VIO", **T)
     res_between(d, "TWR_CAN_P", "TWR_CAN_N", "120", ref="R_DEV_CAN_TERM", **T)
 
@@ -336,7 +336,12 @@ def build_diag(d) -> dict:
     N("GND").connect(fast.pin("REF1")); N("GND").connect(fast.pin("REF2"))
     N("DEV_ISENSE").connect(fast.pin("OUT"))
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_ISENSE", **T)
-    for tag, out_net, en in (("TWR", "TWR_BAT_RAW", "DEV_TWR_PWR_EN"),
+    # (2026-11-23, user) a REAL tower (cells inside) is fed through its aft
+    # EXT POWER contact (→ D_EXT_IN on aft_end → BAT_PROT; its interlock
+    # isolates the cells), switched by the probe MCU (DEV_TWR_PWR_EN). Set the
+    # bench supply to ≈ 5.6 V for a real tower, 3.0-4.0 V (cell emulation on
+    # BAT_RAW) for the flat tower — the two outputs are never on together.
+    for tag, out_net, en in (("TWR", "TWR_EXT_VIN", "DEV_TWR_PWR_EN"),
                              ("FLAT", "BAT_RAW", "DEV_FLAT_PWR_EN")):
         qp = add_buk6d120_60px(d, ref=f"Q_DEV_{tag}_PWR", **T)   # (2026-11-22) DMP6110 → BUK6D120
         for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
@@ -388,7 +393,8 @@ def build_diag(d) -> dict:
 
     # ── aft fixture: one spring pin per tower aft contact (same contact map) ──
     fx, fy = FIXTURE_CENTRE
-    to_twr = {"3V3_AON": "TWR_VDD", "BAT_RAW": "TWR_BAT_RAW", "EXT_CAN_P": "TWR_CAN_P",
+    to_twr = {"3V3_AON": "TWR_VDD", "BAT_RAW": "TWR_BAT_RAW", "EXT_VIN": "TWR_EXT_VIN",
+              "EXT_CAN_P": "TWR_CAN_P",
               "EXT_CAN_N": "TWR_CAN_N", "FLEX_GND": "GND"}
     seats = seat_teeth()
     for tooth, ang, net, label, role in aft_contacts():
@@ -454,9 +460,9 @@ def build_diag(d) -> dict:
     res_between(d, V3, "DEV_BTN_METER", "10k", ref="R_DEV_BTN_METER", **T)
 
     # ── LEDs ───────────────────────────────────────────────────────────────
-    leds = (("D_DEV_LED_VBUS", "USB_VBUS", "1.5k", add_ltst_c190gkt),
+    leds = (("D_DEV_LED_VBUS", "DEV_VBUS", "1.5k", add_ltst_c190gkt),
             ("D_DEV_LED_3V3", V3, "1k", add_ltst_c190gkt),
-            ("D_DEV_LED_TWR", "TWR_BAT_RAW", "1k", add_ltst_c190gkt),     # socket powered
+            ("D_DEV_LED_TWR", "TWR_EXT_VIN", "1k", add_ltst_c190gkt),     # socket powered (never on the cells)
             ("D_DEV_LED_FLAT", "BAT_RAW", "1k", add_ltst_c190gkt),        # flat tower powered
             ("D_DEV_LED_HV", "ACTIVATE_HV", "33k", add_ltst_c190krkt))   # 33 V: 29 mW in the 0402 (10k was 96 mW)
     for ref, net, rv, fn in leds:
@@ -566,12 +572,12 @@ def block_layout(d, section: dict, fixed: set) -> dict:
 # LEDs on the TOP beside the socket; the USB-C at the board edge.
 _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
              ("power_board", "companion_compute", "radar_module"),
-             ("camera_module", "qpd_module", "usb_nose"))
+             ("camera_module", "qpd_module"))
 # (2026-11-21, user) tiles in STACK ORDER along a straight channel = the LDS
 # sleeve unrolled (lanes in sleeve-angle order), alternating above / below it;
 # the programming board (socket + debug) is a strip at the channel's aft end
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
-              "companion_compute", "radar_module", "qpd_module", "camera_module", "usb_nose")
+              "companion_compute", "radar_module", "qpd_module", "camera_module")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
 PROG_W_MM = 70.0               # programming-board strip (left edge = board edge: USB-C); (2026-11-22) +14 mm for the 2×20 breakout headers (right of the USB-C, clear of the strip fiducial)
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
@@ -642,6 +648,10 @@ def tower_placements(d) -> dict:
             key_local = math.degrees(math.atan2(ly, lx)) % 360
         if name == NI.HOST and NI.KEY_NOTCH:                     # compute's sleeve-key notch
             key = (key_local, NI.KEY_W_MM, NI.KEY_DEPTH_MM)
+        else:                                                    # (2026-11-23) stacking-fixture rim notch
+            from smash.layout import cavities as CAV             # (every board; joins the rout slot)
+            ax, ay = _local_xy(fold.get(name, ((1, 0), (0, 1))), CAV.ALIGN_NOTCH_ANGLE_DEG, 17.0)
+            key = (math.degrees(math.atan2(ay, ax)) % 360, CAV.ALIGN_NOTCH_W_MM, CAV.ALIGN_NOTCH_DEPTH_MM)
         silk = [(o[0], list(o[1]), o[2] if len(o) > 2 else None)
                 for o in (getattr(b, "silk_overlays", None) or [])]
         mech[name] = {"holes": holes, "cast_deg": cast_deg, "key": key, "key_local": key_local,
@@ -917,7 +927,7 @@ def write_fixture_collar(out_dir) -> pathlib.Path:
         f"({', '.join(f'{a:g}°' for a in FIXTURE_COLLAR_ANGLES_DEG)}) into the board's collar "
         "holes. Guide only: the aft cap's 3 blind Ø1.6 locating holes on the board's Ø1.5 "
         "dowels set the position and rotation.\n\n"
-        "Hold-down (user, 2026-11-21): BY HAND while flashing / testing — the 57 spring pins "
+        "Hold-down: BY HAND while flashing / testing — the 57 spring pins "
         "push back ~25-45 N (a firm 3-5 kg press); the three SEAT LEDs (D_DEV_SEAT1-3) all lit "
         "= seated flat, and the firmware waits for all three before powering the tower.\n")
     return out
@@ -1126,7 +1136,7 @@ def write_panel_variant(pcb, lay) -> dict:
         mm = lay["mech"].get(name, {})
         key = mm.get("key")
         ring = Point(0, 0).buffer(ROUT_MM[1], 180).difference(Point(0, 0).buffer(ROUT_MM[0], 180))
-        if key:                                           # compute's key notch joins the slot
+        if key:                                           # the rim notch (stacking fixture) joins the slot
             ka, kw, kd = key
             notch = affinity.rotate(box(ROUT_MM[0] - kd, -kw / 2, ROUT_MM[0] + 0.1, kw / 2), ka,
                                     origin=(0, 0))
@@ -1191,7 +1201,7 @@ def write_panel_variant(pcb, lay) -> dict:
         "(castellation process: plate, then rout).\\n"
         f"- {ntab} break tabs ({TAB_W_MM:g} mm) at the widest castellation-free gaps, "
         f"{MOUSE_BITES} × Ø{MOUSE_BITE_D_MM:g} mouse bites each, on the cut line.\\n"
-        "- companion_compute: the sleeve-key notch is part of its slot.\\n"
+        "- Every tile: the 1.2 × 1.0 mm stacking-fixture notch at 285° (tower frame) is part of its slot.\\n"
         "- PROGRAMMER strip (socket + debug, USB-C on the panel edge): 2 mm slot on its "
         f"channel side, {len(PROG_SLOT_TABS_Y)} tabs; with its corner holes it is a stand-alone "
         "tower programmer.\\n"

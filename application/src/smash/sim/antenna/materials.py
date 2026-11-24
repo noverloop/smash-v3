@@ -44,6 +44,14 @@ POTTING_23LV = Dielectric("potting_23lv", 4.8, 0.03,
                           "0.03 assumed at 2 GHz (see the potting-rf search)")
 POTTING_CAT11 = Dielectric("potting_cat11", 3.7, 0.02,
                            "Stycast 2651MM + Catalyst 11, TDS 1 MHz εr 3.7 / DF 0.02")
+# 2026-11-23: low-loss pourable candidates (≤ 85 °C cure) for an outer potting
+# skin / full potting — research report; GHz values where the maker gives them.
+POTTING_UR5528 = Dielectric("potting_ur5528", 2.9, 0.007,
+                            "Electrolube UR5528 polyurethane, maker TDS εr 2.9 / tanδ 0.007 @ 3 GHz")
+POTTING_1090SI = Dielectric("potting_1090si", 2.2, 0.02,
+                            "Henkel Stycast 1090 SI + Cat 23LV syntactic epoxy, TDS 2.16 / 0.018 @ 5 GHz")
+SILICONE_184 = Dielectric("silicone_184", 2.7, 0.03,
+                          "Dow SYLGARD 184, GHz loss not published — papers 0.01-0.05; 0.03 assumed")
 FR4 = Dielectric("fr4", 4.3, 0.017, "standard FR-4 laminate")
 PEEK = Dielectric("peek", 3.2, 0.004, "unfilled PEEK")
 COMPOSITE = Dielectric("composite", 4.0, 0.01,
@@ -57,5 +65,5 @@ COATING_PTFE = Dielectric("coating_ptfe", 2.1, 0.0005,
 LDS_COPPER_SIGMA = 3.0e7
 
 ALL = {m.name: m for m in (AIR, LDS_LCP, LDS_PEEK, POTTING_BLACK, POTTING_RF, POTTING_23LV,
-                           POTTING_CAT11, FR4, PEEK,
+                           POTTING_CAT11, POTTING_UR5528, POTTING_1090SI, SILICONE_184, FR4, PEEK,
                            COMPOSITE, COATING_PTFE)}

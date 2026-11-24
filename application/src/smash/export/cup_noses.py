@@ -39,9 +39,9 @@ from smash.export import nose_radome as NR
 # Config → nose payload board (None = plain closed end).
 # (2026-11-18) `core` wears the USB nose (doubles as the cap); every nose plugs
 # into the same crown (nose_interface).
-PAYLOADS = {"core": "usb_nose", "core_radar": "radar_module",
+PAYLOADS = {"core_radar": "radar_module",
             "core_qpd": "qpd_module", "core_camera": "camera_module"}
-PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
+PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module")
 CORE_TOP = "companion_compute"
 SLEEVE_SPLIT = "unified"        # "unified" (one moulding) | "nose_cup" (fallback)
 
@@ -169,10 +169,9 @@ class NoseProfile:
     def aero_md(self) -> str:
         R = self.r_out
         if self.open:
-            return (f"- Nose: OPEN straight shell (user 2026-11-19), Ø{2 * R:.1f}, wall "
-                    f"{self.wall:g} mm, ending in a FLAT RIDGE at {self.z_top:.2f} mm — no "
-                    "shoulder, no closed face; the potted payload is the front. Radome / lens "
-                    "are separate inserts.\n")
+            return (f"- Nose: open straight shell Ø{2 * R:.1f}, wall {self.wall:g} mm, ending "
+                    f"in a flat ridge at z {self.z_top:.2f} mm; the potted payload is the front. "
+                    "Radome / lens are separate inserts.\n")
         return (f"- Nose: flat face Ø{2 * self.meplat_r:.1f} (meplat ratio "
                 f"{self.meplat_r / R:.2f}, area {100 * (self.meplat_r / R) ** 2:.0f} % of the "
                 f"calibre) + elliptical shoulder {self.L:.2f} mm long ({self.L / (2 * R):.2f} "
@@ -344,7 +343,7 @@ def _ir_pipes(parts, z_board: float) -> list:
 
 def _pipes_md(pipes) -> str:
     if not pipes:
-        return "- ⚠ No IR diodes found under this nose.\n"
+        return ""
     return ("- IR light pipes (moulded tubes, potting kept out; seal the nose end with a "
             "clear IR window plug, e.g. PC / sapphire disc): "
             + ", ".join(f"{q['ref']} Ø{2 * q['r_in']:.1f}" for q in pipes) + ".\n")
@@ -533,8 +532,8 @@ def _nose_spec(config: str, boards: dict, chain: list, band: str | None = None,
         if gap is None:          # open nose, no radome: FoV is the capsule's concern
             return NoseSpec(config, payload, None, (z0, z1), prof, [], [], rn.dam, None,
                             {"radome": None}, [], stops, notes + [prof.aero_md(),
-                            "- Radar: NO radome in the nose cone — the final capsule (OD 40) "
-                            "carries it. An AoP DAM collar (insert, board → ridge) keeps the "
+                            "- Radar: the radome is in the Ø40 nose cap, not in the cone. "
+                            "An AoP DAM collar (insert, board → ridge) keeps the "
                             "black potting off the antennas; the space above the AoP stays air.\n"],
                             warnings + rn.warnings, [], dam_rot_deg=rn.dam_rot_deg)
         reach = (gap + wall) * math.tan(math.radians(NR.RADOME_FOV_HALF_DEG))

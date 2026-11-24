@@ -147,7 +147,7 @@ CROWN_PHASE_DEG = 3.75           # tooth centres off the 0° lane centre
 MULTIPLICITY = {"USB_VBUS": 1, "BAT_PROT": 3, "COMP_3V3": 2, "3V3": 1}
 DIFF_PAIRS = (("CAM_CSI_CLK_P", "CAM_CSI_CLK_N"), ("CAM_CSI_D0_P", "CAM_CSI_D0_N"),
               ("CAM_CSI_D1_P", "CAM_CSI_D1_N"), ("USB_D_P", "USB_D_N"))
-PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module", "usb_nose")
+PAYLOAD_BOARDS = ("radar_module", "qpd_module", "camera_module")
 HOST = "companion_compute"
 # (2026-11-21, user) MODULAR = False: height beats swappable noses. No crown,
 # no anchor/snap ring: the payload board is an ordinary stack tile above

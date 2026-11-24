@@ -28,7 +28,7 @@ NEW = {  # ref-prefix -> (new part, max height mm, source)
  "U_XV_BOOST": ("MCP1640D-I/MC", 1.0, "same chip"),
 }
 BSS = ("QHOLD", "Q_HEALTH_COIL", "Q_PARACHUTE_CUTTER_ACTIVATE_LS", "Q_ACT_ROW", "Q_ACT_COL", "Q_CAM_", "Q_IR_TX",
-       "Q_ISO_DRV", "Q_ISO_USB", "Q_USBOR_DRV", "Q_USB_WAKE", "Q_WBA_RST")
+       "Q_ISO_DRV", "Q_ISO_EXT", "Q_EXTOR_DRV", "Q_EXT_WAKE", "Q_WBA_RST")
 d, _, _ = GD.build_design()
 H = {c.ref: (getattr(c, "height_mm", None) or getattr(getattr(c, "footprint", None), "height_mm", None) or 0.0, c.manf_pn) for c in d.chips}
 face = {}   # ref -> (tile, F/B)

@@ -306,7 +306,7 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
     camera_module     = Board("camera_module", al_backing_mm=0.5)
     qpd_module        = Board("qpd_module")   # rigid sensor tile (QPD + 4 TIAs + PLL)
     # (2026-11-18) USB nose module (USB-C + IR pair) — the core's default cap.
-    usb_nose          = Board("usb_nose")
+    # (2026-11-23, user) the USB nose is gone: no usb_nose tile
     # Two 2.4 GHz meandered-Yagi flex tiles on body meridians (90° apart,
     # 12 o'clock and 3 o'clock) for backward CP telemetry off the WBA52.
     # The metal sonde body acts as the Yagi's back-reflector — feature,
@@ -383,11 +383,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
             Flex(length_mm=70.0, branch_side="N")),
         (companion_compute, camera_module,
             Flex(length_mm=70.0, branch_side="S")),
-        # USB nose: compute's N/S/E/W are all taken in this superset, so it
-        # hangs off the snake TAIL (radar, free east edge) here. Electrically
-        # it is a compute leaf (castellation cone exits re-host it there).
-        (radar_module, usb_nose,
-            Flex(length_mm=70.0, branch_side="E")),
     ]
 
     if straight:
@@ -420,7 +415,6 @@ def build_panel(*, straight=True, battery_length_mm: float = BATTERY_LENGTH_MM):
         "companion_compute":    companion_compute,
         "camera_module":        camera_module,
         "qpd_module":           qpd_module,
-        "usb_nose":             usb_nose,
         "activation_interface": activation_interface,
         _AFT_END:               aft_end_board,
     }

@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PNS40010AERX
+PartCategory=Diode
+PackageCategory=Small Outline Diode Flat Lead
+PinCount=2
+Version=2.1
+Released=2024-10-07 05:23:39
+Downloaded=2026-11-23 17:10:45
+3D=Y

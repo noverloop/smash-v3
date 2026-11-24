@@ -362,7 +362,8 @@ def write_stackup_step(
         # this chain picks the nose (radar → radome, else a plain end).
         from smash.export.sleeve_step import build_cup
         live = [n for n in snake_chain if n in boards]
-        cfg = "core_radar" if "radar_module" in live else "core"
+        from smash.export.cup_noses import PAYLOADS as _PL
+        cfg = next((c for c, pb in _PL.items() if pb in live), "core_radar")
         cup = build_cup(boards, live, sleeve_contract, cfg)
         segs = cup["segs"]
         asm.add(cup["body"], name=f"cup_{cfg}", color=cq.Color(0.85, 0.8, 0.6, 0.6))
@@ -463,6 +464,12 @@ def write_stackup_components_step(
                         name=step_path.stem)
                 added.add(name)
                 n_tiles += 1
+                # the holder STEP leaves its floor (z 0 – BATT_FLOOR_MM) to the
+                # separate battery_floor_plate part: add it in the same frame
+                fp = tile_step_dir / "battery_floor_plate" / "battery_floor_plate.step"
+                if step_path.stem == "battery_holder" and fp.exists():
+                    asm.add(cq.importers.importStep(str(fp)).translate((0, 0, z)),
+                            name="battery_floor_plate")
             z += t
             prev = name
             continue

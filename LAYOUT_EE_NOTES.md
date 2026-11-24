@@ -73,7 +73,7 @@ radar / QPD), 39.7 mm with the camera nose.
   no re-mill. Gap heights are set by the tallest part pair across each gap.
 - **Pre-routed copper is a starting point**: castellation escape stubs, the LDS
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
-  routing (imported from the earlier EE layout). ⚠ That imported routing came
+  routing (an imported reference layout). ⚠ That reference routing came
   from Freerouting with ONE rule (100 µm / 75 µm, 0.45/0.20 via) — all nets at
   4 mil including ACTIVATE_HV (33 V) and BAT_RAW: **re-derive power widths per
   net class before fab.**
@@ -83,6 +83,10 @@ radar / QPD), 39.7 mm with the camera nose.
   floor plate's underside pocket), the cell − pin PTHs and + wire pads
   (P_CELL_PIN_NEG1-3, P_CELL_WIRE_POS1-3, under the bore grooves), radar AoP,
   MP25 reference placement on companion_compute.
+- **Assembly datums:** every board has a 1.2 × 1.0 mm **rim notch at 285°**
+  (Edge.Cuts; the sleeve's internal rib keys it) and the Ø3.0 potting hole at
+  135°, r 13 (the assembly fixture's pin runs through it) — keep copper, parts
+  and silk clear of the notch, and don't move either feature.
 - **Missing 3D models** are deliberately not faked (see FOOTPRINT_REVIEW.md):
   please pull them from the vendor site where needed.
 - The aft_end **health-coil spiral** (In2.Cu / In3.Cu, r 13-15.5 mm) is

@@ -834,6 +834,8 @@ def _battery_floor_plate(cq):
         plate = plate.cut(cq.Workplane("XY").center(x, y).circle(WIRE_HOLE_D_MM / 2.0).extrude(f))
     cx, cy = _batt_channel_xy()
     plate = plate.cut(cq.Workplane("XY").center(cx, cy).circle(BATT_CHANNEL_D_MM / 2.0).extrude(f))
+    from smash.layout import cavities as _CAV            # (2026-11-23) fixture rim-pin notch
+    plate = plate.cut(_align_slot(cq, 17.0 - _CAV.ALIGN_NOTCH_DEPTH_MM, f))
     for ang in CAP_SCREW_ANGLES_DEG:
         a = math.radians(ang)
         plate = plate.cut(cq.Workplane("XY").center(CAP_SCREW_R_MM * math.cos(a), CAP_SCREW_R_MM * math.sin(a))
@@ -872,6 +874,9 @@ def _battery_holder_body(cq, h, with_plate: bool = True):
                 .circle(BATT_TOP_RING_R_IN_MM).extrude(h - f - hc)
                 .translate((0, 0, f + hc)))
         body = body.union(ring)
+    # (2026-11-23) axial groove for the sleeve's alignment rib, full height
+    from smash.layout import cavities as _CAV
+    body = body.cut(_align_slot(cq, 17.0 - _CAV.ALIGN_NOTCH_DEPTH_MM - 0.1, h - f, z0=f))
     # TAPPED M2 holes for the aft_end_cap screws, from the holder's bottom face
     # (z = f, on top of the plate), in the solid webs BETWEEN the cells.
     from smash.export.aft_cap import (CAP_SCREW_ANGLES_DEG, CAP_SCREW_R_MM,
@@ -901,7 +906,8 @@ def _write_floor_plate(cq, out_dir, res) -> None:
         f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (comparator sub-pocket {BATT_PZ_COMP_POCKET_DEPTH_MM:g} mm; piezo disc + comparator column + "
         f"steering-diode annulus + potting groove to the channel exit); Ø{CELL_PIN_HOLE_D_MM:g} − pin "
         f"holes on the cell axes; Ø{WIRE_HOLE_D_MM:g} + wire holes under the bore grooves; Ø"
-        f"{BATT_CHANNEL_D_MM:g} potting channel; Ø2.2 clearance holes for the aft cap's M2 screws.\n"
+        f"{BATT_CHANNEL_D_MM:g} potting channel; Ø2.2 clearance holes for the aft cap's M2 screws; "
+        "1.2 × 1.0 mm rim notch at 285° (the sleeve's alignment rib, as on the boards).\n"
         "Assembly: cells (pre-wired) slide into the holder from the aft end → this plate → "
         "aft_end_board (solder − pins + + wires from below) → aft cap; the cap screws clamp "
         "cap / aft_end / plate into the holder's M2 taps.\n")
@@ -919,6 +925,20 @@ def gap_kind(name: str) -> str:
     return "ring"
 
 
+def _align_slot(cq, r_floor, h, z0=0.0):
+    """(2026-11-23) Radial slot for the sleeve's alignment rib at
+    cavities.ALIGN_NOTCH_ANGLE_DEG: ALIGN_RING_GAP_MM wide, from r_floor out
+    through the OD, height h from z0."""
+    import math
+    from smash.layout import cavities as CAV
+    a = CAV.ALIGN_NOTCH_ANGLE_DEG
+    L = BATT_HOLDER_R_OUT_MM + 1.0 - r_floor
+    rc = r_floor + L / 2.0
+    return (cq.Workplane("XY").center(rc * math.cos(math.radians(a)), rc * math.sin(math.radians(a)))
+            .transformed(rotate=(0, 0, a)).rect(L, CAV.ALIGN_RING_GAP_MM).extrude(h)
+            .translate((0, 0, z0)))
+
+
 def _ring_body(cq, r_in, r_out, h, open_sector=None):
     """C-ring: OPEN over `open_sector` (the antenna sector, 2026-11-17).
     (2026-11-20, user) NO potting notches any more — the potting runs up the
@@ -932,6 +952,9 @@ def _ring_body(cq, r_in, r_out, h, open_sector=None):
                                R * math.sin(math.radians(a0 + (a1 - a0) * k / 16)))
                               for k in range(17)]
         body = body.cut(cq.Workplane("XY").polyline(pts).close().extrude(h))
+    # (2026-11-23) gap for the sleeve's alignment rib (fixes the
+    # ring's orientation too)
+    body = body.cut(_align_slot(cq, r_in - 0.5, h))
     return body
 
 
@@ -1011,15 +1034,16 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{BATT_CHANNEL_D_MM} channel at {BATT_CHANNEL_ANGLE_DEG:g}°, linked to the cell cavity by a "
                     f"{BATT_CHANNEL_LINK_W_MM:g} mm full-height slot (the compartment is potted round "
                     "the cells); above the "
-                    f"{BATT_CELL_LENGTH_MM:g} mm cell block only a 1 mm EDGE RING (r "
+                    f"{BATT_CELL_LENGTH_MM:g} mm cell block a 1 mm edge ring (r "
                     f"{BATT_TOP_RING_R_IN_MM:g}–{BATT_HOLDER_R_OUT_MM:g}) over the "
                     f"{BATT_HEADROOM_MM:g} mm headroom under activation_interface (its bottom "
-                    "face EMPTY); OPEN at the aft end (separate battery_floor_plate): the "
+                    "face carries no parts); open at the aft end (closed by the battery_floor_plate): the "
                     "pre-wired Tadiran /P cells slide in from below — − pins through the plate "
                     f"into aft_end PTHs, + pins trimmed with an AWG 30 wire soldered flat and laid in a "
                     f"Ø{WIRE_GROOVE_D_MM:g} groove in each bore wall (cell angle "
                     f"{WIRE_GROOVE_OFFSET_DEG:+g}°) → plate hole → aft_end PTH; M2 taps "
-                    "from the holder's bottom face")
+                    "from the holder's bottom face; 1.2 mm axial groove at 285° to r 15.9 "
+                    "for the sleeve's alignment rib")
         elif kind == "ring" and is_anchor_gap(name):
             continue             # (2026-11-20) the SNAP RING is built with the nose set (sleeve_step)
         elif kind == "ring":
@@ -1030,8 +1054,11 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
             label, mat = name, rs.material
             opening = (f", OPEN {osec[0]:g}–{osec[1]:g}° (slot antenna in this gap: no "
                        "metal behind it; potting fills the opening)" if osec else "")
+            from smash.layout import cavities as _CAV
             dims = (f"{'C-' if osec else ''}ring ID Ø{2*rs.r_in:.1f} / OD Ø{2*rs.r_out:.1f}"
-                    f" × {h:.2f} mm{opening} — no standoffs: the ring is the spacer")
+                    f" × {h:.2f} mm{opening}; {_CAV.ALIGN_RING_GAP_MM:g} mm radial GAP at "
+                    f"{_CAV.ALIGN_NOTCH_ANGLE_DEG:g}° for the "
+                    "sleeve's alignment rib (it also sets the ring's orientation); the ring spaces its two boards")
         else:
             h = b.thickness_mm
             body = _standoffs_body(cq, h)
@@ -1043,15 +1070,16 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
         step, stl = d / f"{label}.step", d / f"{label}.stl"
         cq.exporters.export(body, str(step))
         cq.exporters.export(body, str(stl))
-        slots = ("- No potting notches (potting rises through the boards' potting holes); "
-                 "break all edges — GF30 is notch-sensitive.\n"
-                 if kind == "ring" else "")
+        if kind == "ring":
+            slots = ("- Break all edges (GF30 is notch-sensitive).\n" if "GF30" in mat
+                     else "- Break all edges; hard anodise after machining.\n")
+        else:
+            slots = ""
         (d / f"{label}_cam.md").write_text(
             f"# {label} — gap hardware (generated)\n\n"
             f"Kind: {kind}. Material: {mat}.\n"
             f"Geometry: {dims}.\n{slots}"
-            "Frame: physical stack frame (aft_end_board), +Z toward the nose.\n"
-            "Not a PCB: the gap is potted inside the LDS sleeve; signals cross "
-            "on the sleeve via board-edge castellations.\n")
+            "Frame: tower frame (aft_end_board top view, 0° = +X, CCW), +Z toward the nose.\n"
+            "Potted in place inside the LDS sleeve.\n")
         res.append({"name": label, "kind": kind, "step": step, "height_mm": h})
     return res

@@ -151,3 +151,6 @@ Unrouted/**/*-backups/
 
 # availability tools: Octopart page cache (via the Zyte proxy)
 availability/tools/octo_cache/
+
+# generated manufacturing packages (shared via share_export.py, too large for git)
+/Manufacturing/

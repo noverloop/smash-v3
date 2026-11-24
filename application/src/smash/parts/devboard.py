@@ -36,7 +36,7 @@ def _step(part_dir: str) -> str | None:
 
 
 def _sam(design, ref, *, pn, part_dir, mod, package, height_mm, size_mm, description,
-         manf, pins=None, ring_courtyard=False, note="", **overrides) -> Chip:
+         manf, pins=None, ring_courtyard=False, note="", model_rotate=None, **overrides) -> Chip:
     fp_mod = src(part_dir, mod)
     fp = Footprint(
         name=mod.rsplit(".", 1)[0], package_class=package,
@@ -45,6 +45,8 @@ def _sam(design, ref, *, pn, part_dir, mod, package, height_mm, size_mm, descrip
         courtyard=[] if ring_courtyard else outline_polygon(fp_mod, "F.CrtYd"),
         size_mm=size_mm, height_mm=height_mm,
         model_3d_path=_step(part_dir),
+        # (2026-11-23) Y-up vendor STEPs (BMM350, SON-8) need (−90, 0, 0)
+        **({"model_rotate_deg": model_rotate} if model_rotate else {}),
         source="samacsys",
     ).ensure_courtyard_clearance()
     fields = dict(
