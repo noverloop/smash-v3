@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "manf_pn": "PNS40010AERX",
+    "datasheet": "Nexperia PNS40010AER data sheet (2024)",
+    "datasheet_section": "Table 2 Pinning information (CFP3/SOD123W)",
+    "package": "SOD123W (CFP3) per Nexperia product listing",
+    "verified_by": "library check 2026-11-24 (datasheet supplied by user)",
+    "verified_from_pdf": "application/src/smash/parts/sources/PNS40010AERX/PNS40010AER.pdf",
+    "notes": "Pin numbering here is from the SamacSys symbol only (1=K, 2=A). Must be confirmed against Nexperia Table 'Pinning information' + SOD123W outline + soldering footprint."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "aliases": [
+        "CATHODE"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "A",
+      "type": "passive",
+      "aliases": [
+        "ANODE"
+      ]
+    }
+  ]
+}

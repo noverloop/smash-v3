@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "manf_pn": "BMM350",
+    "datasheet": "Bosch Sensortec BST-BMM350-DS002-29, rev 1.29",
+    "datasheet_section": "§6 Fig. 3/Fig. 4 (view from laser-marking side) + pin table; §6.2/6.3; Table 4 abs max",
+    "package": "WLCSP-9 1.28x1.28x0.54, 0.4 mm pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmm350-ds001.pdf",
+    "notes": "Top view (laser side): column A left, B middle, C right; row 1 bottom, 3 top; A1 bottom-left at the pin-1 dot. VDD abs max 2.0 V."
+  },
+  "pins": [
+    {
+      "num": "A1",
+      "name": "INT",
+      "type": "output",
+      "note": "Interrupt output"
+    },
+    {
+      "num": "A2",
+      "name": "SDA",
+      "type": "io",
+      "note": "I2C/I3C data"
+    },
+    {
+      "num": "A3",
+      "name": "SCK",
+      "type": "input",
+      "aliases": [
+        "SCL"
+      ],
+      "note": "I2C/I3C clock"
+    },
+    {
+      "num": "B1",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "B2",
+      "name": "ADSEL",
+      "type": "input",
+      "note": "Connect to GND (0x14) or VDDIO (0x15); must not float"
+    },
+    {
+      "num": "B3",
+      "name": "VDDIO",
+      "type": "power",
+      "voltage_range_v": [
+        1.72,
+        3.6
+      ],
+      "note": "100 nF decoupling"
+    },
+    {
+      "num": "C1",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.72,
+        1.98
+      ],
+      "note": "Abs max 2.0 V; 100 nF decoupling"
+    },
+    {
+      "num": "C2",
+      "name": "CRST",
+      "type": "passive",
+      "note": "External 2.2 uF low-ESL cap to GND (5 mA peak), see DS ch. 13"
+    },
+    {
+      "num": "C3",
+      "name": "BYPASS",
+      "type": "ground",
+      "note": "Connect to ground"
+    }
+  ]
+}

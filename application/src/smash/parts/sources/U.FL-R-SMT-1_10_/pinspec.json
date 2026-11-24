@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "manf_pn": "U.FL-R-SMT-1(10)",
+    "datasheet": "Hirose U.FL series catalog",
+    "datasheet_section": "p3 Recommended PCB mounting pattern",
+    "package": "U.FL receptacle 3x2.6 mm",
+    "verified_from_pdf": "application/src/smash/parts/sources/U.FL-R-SMT-1_10_/U.FL_catalog_Hirose.pdf",
+    "notes": "Footprint pad 3 = SIG (1.0x1.05 centre pad); pads 1, 2 = GND (1.0x2.2 shell tabs, 1.9 mm apart).",
+    "verified_by": "library check 2026-11-24"
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "GND",
+      "type": "ground",
+      "note": "shell tab"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "note": "shell tab"
+    },
+    {
+      "num": "3",
+      "name": "SIG",
+      "type": "io",
+      "note": "centre contact"
+    }
+  ]
+}

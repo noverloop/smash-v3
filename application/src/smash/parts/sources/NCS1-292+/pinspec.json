@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "manf_pn": "NCS1-292+",
+    "datasheet": "Mini-Circuits NCS1-292+ Rev D (ECO-010109)",
+    "datasheet_section": "p2 Pad connections + outline/land (case GE0805C-1)",
+    "package": "GE0805C-1 LTCC 2.01x1.24x0.84 mm, 6 pads 0.66 pitch",
+    "verified_from_pdf": "application/src/smash/parts/sources/NCS1-292P/NCS1-292+.pdf",
+    "notes": "Top view: 1-2-3 bottom row L->R, 6-5-4 top row. Pads 2, 3, 4 are DC-connected internally (secondary centre-tapped to pad 2).",
+    "verified_by": "library check 2026-11-24"
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "UNBAL",
+      "type": "io",
+      "aliases": [
+        "PRIMARY DOT"
+      ],
+      "note": "Primary dot, unbalanced port"
+    },
+    {
+      "num": "2",
+      "name": "GND_DC",
+      "type": "ground",
+      "aliases": [
+        "GND",
+        "DC FEED"
+      ],
+      "note": "GND or DC feed + RF GND; DC-connected to pads 3/4"
+    },
+    {
+      "num": "3",
+      "name": "BAL_N",
+      "type": "io",
+      "aliases": [
+        "SECONDARY"
+      ],
+      "note": "Balanced"
+    },
+    {
+      "num": "4",
+      "name": "BAL_P",
+      "type": "io",
+      "aliases": [
+        "SECONDARY DOT"
+      ],
+      "note": "Balanced, dot"
+    },
+    {
+      "num": "5",
+      "name": "NU_GND",
+      "type": "ground",
+      "aliases": [
+        "NOT USED"
+      ],
+      "note": "Not used: GND externally"
+    },
+    {
+      "num": "6",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connection (internal open circuit)"
+    }
+  ]
+}

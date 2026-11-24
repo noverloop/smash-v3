@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "manf_pn": "DRV5032AJDMRR",
+    "datasheet": "TI SLVSDC7H (Apr 2017, rev. Dec 2024)",
+    "datasheet_section": "Fig. 5-3 (FA/FB/AJ DMR, top view) + Table 5-1; §6.3; DMR0004A outline/land",
+    "package": "X2SON-4 DMR 1.1x1.4x0.4, EP",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "Unrouted/20261124/datasheets/DRV5032FCDBZT.pdf (family DS, includes AJ/DMR)",
+    "notes": "AJ: omnipolar, open-drain, 20 Hz; BOP ±4/±7/±9.5 mT min/typ/max."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VCC",
+      "type": "power",
+      "voltage_range_v": [
+        1.65,
+        5.5
+      ],
+      "note": ">=0.1 uF ceramic to GND"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "NC",
+      "type": "nc",
+      "note": "Not connected to silicon; float or GND; solder for mechanical support"
+    },
+    {
+      "num": "4",
+      "name": "OUT",
+      "type": "output",
+      "note": "Open-drain (AJ): needs pull-up; VO 0-5.5 V"
+    },
+    {
+      "num": "5",
+      "name": "EP",
+      "type": "nc",
+      "aliases": [
+        "Thermal Pad"
+      ],
+      "note": "No-connect; float or GND; solder it"
+    }
+  ]
+}

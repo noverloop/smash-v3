@@ -8,7 +8,7 @@ flashes and diagnoses a TOWER through its aft interface:
 
   phase 1 (this file so far): the tower schematic retagged onto `dev_board`,
           tower-only parts removed (aft-cap pads, cells), placed + exported.
-  phase 2: USB-C → hub (USB2514B) → MP25 USB + STM32U535 (CMSIS-DAP probe,
+  phase 2: USB-C → STM32U535 (CMSIS-DAP probe,
           consoles, gs_usb CAN, INA228 / INA241 power meter), bus switches
           to the on-board aft fixture, printed slot antennas + u.FL ports.
 
@@ -137,7 +137,7 @@ def aft_contacts() -> list:
 
 
 def build_diag(d) -> dict:
-    """USB-C → ESD → USB2514B hub → (1) MP25 USB, (2) STM32U535 [CMSIS-DAP for
+    """USB-C → ESD → STM32U535 [CMSIS-DAP for
     6 SWD targets, consoles, gs_usb CAN-FD, INA228 / INA241 power meter];
     bus-switched link to a tower through the on-board aft fixture."""
     import math
@@ -164,13 +164,14 @@ def build_diag(d) -> dict:
         N("DEV_VBUS").connect(usb.pin(pn))                 # programmer supply only (2026-11-23)
     for pn in ("GND", "GND__1", "SHIELD", "SHIELD__1", "SHIELD__2", "SHIELD__3"):
         N("GND").connect(usb.pin(pn))
-    N("USB_CC1").connect(usb.pin("CC1")); N("USB_CC2").connect(usb.pin("CC2"))   # Rd 5.1 k exist
+    N("USB_CC1").connect(usb.pin("CC1")); N("USB_CC2").connect(usb.pin("CC2"))
+    for k in (1, 2):                                   # Rd: UFP (sink) → the host turns VBUS on
+        res_between(d, f"USB_CC{k}", "GND", "5.1k", ref=f"R_DEV_USB_CC{k}", **T)
     for pn, net in (("DP1", "DEV_USB_UP_P"), ("DP2", "DEV_USB_UP_P"),
                     ("DN1", "DEV_USB_UP_N"), ("DN2", "DEV_USB_UP_N")):
         N(net).connect(usb.pin(pn))
     esd = add_usblc6_4sc6(d, ref="U_DEV_ESD", **T)   # (2026-11-22) TPD4E05U06 (China lots) → USBLC6-4SC6
     N("DEV_USB_UP_P").connect(esd.pin("I/O1")); N("DEV_USB_UP_N").connect(esd.pin("I/O2"))
-    N("DEV_MCU_USB_P").connect(esd.pin("I/O3")); N("DEV_MCU_USB_N").connect(esd.pin("I/O4"))
     N("GND").connect(esd.pin("GND")); N("DEV_VBUS").connect(esd.pin("VBUS"))
 
     # ── dev 3.3 V (from USB VBUS: the diag section lives without the DUT) ──
@@ -181,49 +182,6 @@ def build_diag(d) -> dict:
     N("GND").connect(ldo.pin("EP"))                                  # thermal pad
     cap_to_gnd(d, "DEV_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
     cap_to_gnd(d, V3, "10uF", ref="C_DEV_LDO_OUT", **T)
-
-    # ── USB2514B hub ───────────────────────────────────────────────────────
-    hub = DB.add_usb2514b_i_m2(d, ref="U_DEV_HUB", **T)
-    for pn in ("VDD33_1", "VDD33_2", "VDDA33_1", "VDDA33_2", "VDDA33_3", "VDDA33_4"):
-        N(V3).connect(hub.pin(pn))
-    for k in range(4):
-        cap_to_gnd(d, V3, "100nF", ref=f"C_DEV_HUB_{k}", **T)
-    N("GND").connect(hub.pin("EP")); N("GND").connect(hub.pin("TEST"))
-    N("DEV_USB_UP_P").connect(hub.pin("USBDP_UP")); N("DEV_USB_UP_N").connect(hub.pin("USBDM_UP"))
-    N("USB_D_P").connect(hub.pin("USBDP_DN1")); N("USB_D_N").connect(hub.pin("USBDM_DN1"))   # → MP25
-    N("DEV_MCU_USB_P").connect(hub.pin("USBDP_DN2")); N("DEV_MCU_USB_N").connect(hub.pin("USBDM_DN2"))
-    for pn in ("USBDP_DN3", "USBDM_DN3", "USBDP_DN4", "USBDM_DN4"):   # DS: both D± high = port off
-        N(V3).connect(hub.pin(pn))
-    for pn in ("OCS1_N", "OCS2_N", "OCS3_N", "OCS4_N"):
-        res_between(d, V3, f"DEV_HUB_{pn}", "10k", ref=f"R_DEV_HUB_{pn}", **T)
-        N(f"DEV_HUB_{pn}").connect(hub.pin(pn))
-    for pn in ("SDA", "SCL", "HS_IND", "SUSP_IND"):     # default config, bus-powered
-        res_between(d, f"DEV_HUB_{pn}", "GND", "10k", ref=f"R_DEV_HUB_{pn}", **T)
-        N(f"DEV_HUB_{pn}").connect(hub.pin(pn))
-    N("DEV_HUB_CRFILT").connect(hub.pin("CRFILT"))
-    cap_to_gnd(d, "DEV_HUB_CRFILT", "1uF", ref="C_DEV_HUB_CRFILT", **T)
-    N("DEV_HUB_PLLFILT").connect(hub.pin("PLLFILT"))
-    cap_to_gnd(d, "DEV_HUB_PLLFILT", "1uF", ref="C_DEV_HUB_PLLFILT", **T)
-    N("DEV_HUB_RBIAS").connect(hub.pin("RBIAS"))
-    res_between(d, "DEV_HUB_RBIAS", "GND", "12k", ref="R_DEV_HUB_RBIAS", **T)
-    N("DEV_HUB_RESET_N").connect(hub.pin("RESET_N"))
-    res_between(d, V3, "DEV_HUB_RESET_N", "10k", ref="R_DEV_HUB_RST", **T)
-    cap_to_gnd(d, "DEV_HUB_RESET_N", "100nF", ref="C_DEV_HUB_RST", **T)
-    N("DEV_HUB_VBUS_DET").connect(hub.pin("VBUS_DET"))
-    res_between(d, "DEV_VBUS", "DEV_HUB_VBUS_DET", "47k", ref="R_DEV_HUB_VB1", **T)
-    res_between(d, "DEV_HUB_VBUS_DET", "GND", "100k", ref="R_DEV_HUB_VB2", **T)
-    osc = add_dsc1001ci5_032_0000(d, ref="Y_DEV_HUB", manf_pn="DSC1001CI5-024.0000",
-                                  value="24MHz", name="DSC1001CI5-024.0000", **T)
-    for p in osc.pins:
-        nm = p.name.upper()
-        if "OUT" in nm or "CLK" in nm:
-            N("DEV_HUB_CLK").connect(p)
-        elif "GND" in nm:
-            N("GND").connect(p)
-        else:
-            N(V3).connect(p)                                # VDD + STDBY/EN
-    cap_to_gnd(d, V3, "100nF", ref="C_DEV_HUB_OSC", **T)
-    N("DEV_HUB_CLK").connect(hub.pin("XTALIN"))
 
     # ── STM32U535: probe + consoles + CAN + meter ──────────────────────────
     # (2026-11-22) replaces the STM32G474CEU6 (0 stock, 52 wk; availability/
@@ -244,14 +202,14 @@ def build_diag(d) -> dict:
     cap_to_gnd(d, "DEV_MCU_NRST", "100nF", ref="C_DEV_MCU_NRST", **T)
     N("DEV_MCU_BOOT0").connect(g.pin("PH3-BOOT0"))                  # ROM DFU over the same USB
     res_between(d, "DEV_MCU_BOOT0", "GND", "10k", ref="R_DEV_MCU_BOOT0", **T)
-    N("DEV_MCU_USB_P").connect(g.pin("PA12")); N("DEV_MCU_USB_N").connect(g.pin("PA11"))
+    N("DEV_USB_UP_P").connect(g.pin("PA12")); N("DEV_USB_UP_N").connect(g.pin("PA11"))   # USB FS, straight from the USB-C
     pinmap = {
         "PA0": "DEV_ISENSE",          # INA241 → ADC1_IN5 (fast current)
         "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC1_IN6)
         "PA2": "DEV_BTN_METER",       # meter-reset button
         "PB6": "DEV_I2C_SCL", "PB7": "DEV_I2C_SDA",          # I2C1
         "PB8": "DEV_CAN_RX", "PB9": "DEV_CAN_TX",            # FDCAN1
-        "PA10": "DEV_TWR_CONS_RX_G", "PA9": "DEV_TWR_CONS_TX_G",   # USART1 ↔ tower console
+        "PA10": "DEV_TWR_CONS_TX_G", "PA9": "DEV_TWR_CONS_RX_G",   # USART1: RX ← MP25 TX (CONS_TX), TX → MP25 RX (CONS_RX)
         "PA3": "DEV_TWR_SWO_G",       # LPUART1_RX ← tower SWO
         "PA4": "DEV_FLAT_EN",         # bank B (flat tower) request — gated by the seat interlock
         "PA5": "DEV_FLAT_PWR_EN",     # flat-tower supply switch
@@ -335,6 +293,7 @@ def build_diag(d) -> dict:
     N(V3).connect(fast.pin("VS")); N("GND").connect(fast.pin("GND"))
     N("GND").connect(fast.pin("REF1")); N("GND").connect(fast.pin("REF2"))
     N("DEV_ISENSE").connect(fast.pin("OUT"))
+    N("GND").connect(fast.pin("4"))                                 # DS Table 5-1: reserved, connect to GND
     cap_to_gnd(d, V3, "100nF", ref="C_DEV_ISENSE", **T)
     # (2026-11-23, user) a REAL tower (cells inside) is fed through its aft
     # EXT POWER contact (→ D_EXT_IN on aft_end → BAT_PROT; its interlock
@@ -388,6 +347,23 @@ def build_diag(d) -> dict:
         N(f"DEV_TWR_{gname}_G").connect(bb.pin(f"{c}A"))
         N(flat[gname]).connect(bb.pin(f"{c}B"))
         N("DEV_FLAT_OE_N").connect(bb.pin(f"{c}~{{OE}}"))
+    # MP25 BOOT0 (the tower pulls BOOT0/BOOT2 HIGH = serial-NAND boot; pulling
+    # them LOW = UART/USB serial boot of a blank NAND): probe PB13 (through 1 k,
+    # driven low) or the BOOT button (to GND) does it, through a 4th switch per bank (isolated until the
+    # tower is powered, so an unpowered MP25 is never back-fed). Channels 2-4 spare.
+    res_between(d, "DEV_MCU_MP25_BOOT0", "DEV_TWR_MP25_BOOT0_G", "1k", ref="R_DEV_MP25_BOOT0", **T)
+    N("DEV_MCU_MP25_BOOT0").connect(g.pin("PB13"))
+    for ref, oe, b_net in (("U_DEV_BUSSW3", "DEV_TWR_OE_N", "TWR_BOOT0"),
+                           ("U_DEV_FLATSW3", "DEV_FLAT_OE_N", "BOOT0")):
+        bs = DB.add_sn74cb3t3125pwr(d, ref=ref, **T)
+        N(V3).connect(bs.pin("VCC")); N("GND").connect(bs.pin("GND"))
+        cap_to_gnd(d, V3, "100nF", ref=f"C_{ref[2:]}", **T)
+        N("DEV_TWR_MP25_BOOT0_G").connect(bs.pin("1A"))
+        N(b_net).connect(bs.pin("1B"))
+        N(oe).connect(bs.pin("1~{OE}"))
+        for c in (2, 3, 4):                                  # spare: off, both sides grounded
+            N(V3).connect(bs.pin(f"{c}~{{OE}}"))
+            N("GND").connect(bs.pin(f"{c}A")); N("GND").connect(bs.pin(f"{c}B"))
     res_between(d, "TWR_VDD", "DEV_TWR_VDD_SENSE", "10k", ref="R_DEV_TWR_VDD1", **T)
     res_between(d, "DEV_TWR_VDD_SENSE", "GND", "20k", ref="R_DEV_TWR_VDD2", **T)
 
@@ -426,7 +402,7 @@ def build_diag(d) -> dict:
         for k in range(1, 41):
             if k <= len(brk):
                 label, net = brk[k - 1]
-                N(f"TWR_{label}" if side == "twr" else net).connect(h.pin(str(k)))
+                N(to_twr.get(net, f"TWR_{label}") if side == "twr" else net).connect(h.pin(str(k)))
             else:
                 N("GND").connect(h.pin(str(k)))
 
@@ -452,7 +428,8 @@ def build_diag(d) -> dict:
     btns = (("S_DEV_MP25_RST", "NRST", "GND"), ("S_DEV_WBA_RST", "WBA_NRST", "GND"),
             ("S_DEV_WAKE", "MAG_WAKE_N", "GND"), ("S_DEV_JUMP", "JUMP_PAD", "GND"),
             ("S_DEV_LAUNCH", "DEV_LAUNCH_SW", "3V3"), ("S_DEV_METER", "DEV_BTN_METER", "GND"),
-            ("S_DEV_MCU_BOOT", "DEV_MCU_BOOT0", V3))
+            ("S_DEV_MCU_BOOT", "DEV_MCU_BOOT0", V3),
+            ("S_DEV_MP25_BOOT", "DEV_TWR_MP25_BOOT0_G", "GND"))
     for ref, a_, b_ in btns:
         sw = DB.add_b3u_1000p(d, ref=ref, **T)
         N(a_).connect(sw.pin("K")); N(b_).connect(sw.pin("A"))
@@ -473,10 +450,36 @@ def build_diag(d) -> dict:
     res_between(d, V3, "D_DEV_LED_ACT_A", "1k", ref="R_DEV_LED_ACT", **T)
     N("D_DEV_LED_ACT_A").connect(act.pin("A")); N("DEV_LED_ACT").connect(act.pin("K"))
 
+    # ── debug castellations (board-local debug nets): a test point at the end
+    # of each escape stub, just outside the tile (positions: tile_layout) ──
+    from smash.parts.castellations import DEBUG_CASTELLATIONS
+    for _b, nets in DEBUG_CASTELLATIONS.items():
+        for net in nets:
+            if any(n.name == net for n in d.nets):
+                tp = add_pogo_pad(d, ref=f"TP_DEV_DBG_{net}", manf_pn=None, **T)
+                N(net).connect(tp.pin("1"))
+
+    # ── logic-analyzer header: the inter-tile buses, tapped off the channel ──
+    # (outside every tile: the tap is join copper, scrap after depaneling).
+    # Odd pins = signal (direct tap), even pins = GND.
+    la = ("AWR_SPI_CLK", "AWR_SPI_CS", "AWR_SPI_MOSI", "AWR_SPI_MISO",
+          "AWR_RS232_TX", "AWR_RS232_RX", "AWR_SOP2_CTL",
+          "WBA_HCI_SCK", "WBA_HCI_NSS", "WBA_HCI_MOSI", "WBA_HCI_MISO", "WBA_HCI_IRQ",
+          "WBA_UART_TX", "WBA_UART_RX",
+          "SYS_SPI_SCLK", "SYS_SPI_CS_FIN", "SYS_SPI_MOSI", "SYS_SPI_MISO",
+          "I2C2_SCL", "I2C2_SDA")
+    hla = add_wurth_61304021121(d, ref="J_DEV_LA", **T)
+    for k, net in enumerate(la):
+        N(net).connect(hla.pin(str(2 * k + 1)))
+        N("GND").connect(hla.pin(str(2 * k + 2)))
+
     # ── antenna test ports (u.FL) on the tower's slot feeds ────────────────
+    # They sit on the slot side of the feed matches (the tiles are production
+    # boards): into 50 Ω, S1 reads ≈ 3.3 dB low at 2.44 GHz, S4 ≈ 0.7 dB at 4.7 GHz.
     for net in ("ANT_HF_S1", "ANT_HF_S4"):
         uf = DB.add_u_fl_r_smt_1(d, ref=f"J_DEV_{net[4:]}", **T)
-        N(net).connect(uf.pin("1")); N("GND").connect(uf.pin("2")); N("GND").connect(uf.pin("3"))
+        # Hirose land: pad 3 = SIG (the small centre pad), pads 1/2 = the shell's GND tabs
+        N(net).connect(uf.pin("3")); N("GND").connect(uf.pin("1")); N("GND").connect(uf.pin("2"))
     return locks
 
 
@@ -579,7 +582,7 @@ _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
               "companion_compute", "radar_module", "qpd_module", "camera_module")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
-PROG_W_MM = 70.0               # programming-board strip (left edge = board edge: USB-C); (2026-11-22) +14 mm for the 2×20 breakout headers (right of the USB-C, clear of the strip fiducial)
+PROG_W_MM = 84.0               # programming-board strip (left edge = board edge: USB-C): breakout + logic-analyzer headers right of the USB-C, clear of the strip fiducial
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
 # (2026-11-21, user) 4 tabs, none where the bus crosses: the bus passes a
 # fully cut stretch of the slot (|y| ≤ channel/2 + margin stays open)
@@ -597,6 +600,8 @@ MOUSE_BITE_D_MM, MOUSE_BITES = 0.5, 3
 
 
 _LANE_CONTRACT: dict = {}
+DEBUG_TP_R_MM = (20.8, 23.0)   # debug test points (Ø2 pogo pads), alternating radius
+_DEBUG_TP_R: dict = {}         # net → its test point's radius (the stub ends there)
 
 
 def tower_placements(d) -> dict:
@@ -744,6 +749,29 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                           # = mirror_x∘R(−φ), so the stored angle turns the other way
                           "rotation_deg": round((r + (phi if face == "top" else -phi)) % 360, 3),
                           "face": face}
+        # debug castellations: test point radially outside the pad, staggered
+        cast = next((c for c in d.chips if c.ref == f"J_CAST_{name}"), None)
+        if cast is not None:
+            dbg = []
+            for pin, pad in zip(cast.pins, cast.footprint.pads):
+                net = pin.name.split("@")[0]
+                if any(c.ref == f"TP_DEV_DBG_{net}" for c in d.chips):
+                    dbg.append((math.atan2(pad.position_mm[1], pad.position_mm[0]), net, pad))
+            fc = TILE_BOX_MM / 2 - 1.5                    # the tile's local fiducials (box corners)
+            fids = [(cx + sx * fc, cy + sy * fc) for sx in (-1, 1) for sy in (-1, 1)]
+            placed_tp = []                                # (x, y) of this tile's test points
+            for j, (_a, net, pad) in enumerate(sorted(dbg)):
+                px, py = pad.position_mm
+                for rr in (DEBUG_TP_R_MM[j % 2], DEBUG_TP_R_MM[(j + 1) % 2], 25.2, 27.4):
+                    k_ = rr / math.hypot(px, py)
+                    X, Y = rot(px * k_, py * k_)
+                    if (all(math.hypot(cx + X - fx_, cy + Y - fy_) > 3.0 for fx_, fy_ in fids)
+                            and all(math.hypot(cx + X - qx, cy + Y - qy) > 2.6 for qx, qy in placed_tp)):
+                        break
+                placed_tp.append((cx + X, cy + Y))
+                locks[f"TP_DEV_DBG_{net}"] = {"position_mm": [round(cx + X, 4), round(cy + Y, 4)],
+                                               "rotation_deg": 0, "face": "top"}
+                _DEBUG_TP_R[net] = rr
         if m:
             m["holes"] = [(rot(*pos), hd, pl, tg) for pos, hd, pl, tg in m["holes"]]
             m["silk"] = [(ly, [rot(*p) for p in pts], lb) for ly, pts, lb in m.get("silk", [])]
@@ -1010,7 +1038,8 @@ def add_lds_stubs(pcb) -> int:
             if not 16.0 < r < 18.0:
                 continue
             ux, uy = (x - fx) / r, (y - fy) / r
-            ex, ey = fx + ux * LDS_STUB_R_MM, fy + uy * LDS_STUB_R_MM
+            rs = _DEBUG_TP_R.get(net, LDS_STUB_R_MM)       # debug pads: on to the test point
+            ex, ey = fx + ux * rs, fy + uy * rs
             u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/lds/{m[1]}/{pm[1]}")
             segs.append(f'\t(segment\n\t\t(start {x:.4f} {y:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
                         f'\t\t(width {LDS_STUB_W_MM})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
@@ -1213,7 +1242,14 @@ def write_panel_variant(pcb, lay) -> dict:
         "tab (tabs sit in castellation-free gaps and carry no signals).\\n"
         "- Copper outside the tiles (inter-tile joins, socket, debug) is scrap after depaneling; "
         "nothing inside a tile depends on it. The camera's 0.5 mm Al spreader is bonded after.\\n"
-        "- 3 fiducials per side (FID1-3 top, FID4-6 bottom), asymmetric.\\n")
+        "- 3 fiducials per side (FID1-3 top, FID4-6 bottom), asymmetric.\\n"
+        "- J_DEV_LA (logic analyzer, 2×20): 20 inter-tile bus signals on the odd pins "
+        "(direct taps), GND on the even pins. Tap the bus in the channel with the "
+        "shortest possible branch, SPI clocks first.\\n"
+        "- J_DEV_HF_S1 / J_DEV_HF_S4 (u.FL) sit on the slot side of the feed matches: into 50 Ω, "
+        "conducted S1 levels read ≈ 3.3 dB low at 2.44 GHz, S4 ≈ 0.7 dB at 4.7 GHz.\\n"
+        "- MP25 BOOT0: S_DEV_MP25_BOOT or probe PB13, through U_DEV_BUSSW3 / "
+        "U_DEV_FLATSW3 (enabled with the other debug lines).\\n")
     return {"n_slots": len(polys), "n_tabs": ntab, "n_bites": len(bites), "fab": fab}
 
 
@@ -1286,6 +1322,16 @@ def main() -> int:
         sch = KS.write_panel_schematic(d, panel, boards, OUT, project=DEV)
     finally:
         KS.panel_footprint_refs = _orig
+    # The schematic keys each symbol's uuid by its tile SECTION (wakeup_board,
+    # ...); the panel writer keyed the footprint (path …) by DEV. Point every
+    # footprint at its symbol, or Update PCB from Schematic re-adds them all.
+    _txt = pcb.read_text()
+    for ref in refs:
+        sec = section.get(ref, DEV)
+        if sec != DEV:
+            _txt = _txt.replace(f'(path "{KS.symbol_path(DEV, ref)}")',
+                                f'(path "{KS.symbol_path(sec, ref)}")')
+    pcb.write_text(_txt)
     try:
         cli = G.find_kicad_cli()
         G.relink_multi_unit_footprints(pcb, OUT / f"{DEV}.kicad_sch", cli)

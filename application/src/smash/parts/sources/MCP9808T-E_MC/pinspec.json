@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "manf_pn": "MCP9808T-E/MC",
+    "datasheet": "Microchip DS20005095B (2011-2018)",
+    "datasheet_section": "Package Types p1 + Table 3-1 p11 + MC package drawing C04-123C p38",
+    "package": "8-lead DFN 2x3x0.9 mm (MC), 0.5 mm pitch, EP = pin 9",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP9808-0.5C-Maximum-Accuracy-Digital-Temperature-Sensor-Data-Sheet-DS20005095B.pdf",
+    "notes": "Datasheet not vendored in the repo; add it. -E = -40..+125 C. Abs max 6.0 V on VDD and all I/O."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "SDA",
+      "type": "io",
+      "note": "Open-drain; requires pull-up"
+    },
+    {
+      "num": "2",
+      "name": "SCL",
+      "type": "input",
+      "note": "Requires pull-up (bus)"
+    },
+    {
+      "num": "3",
+      "name": "Alert",
+      "type": "output",
+      "aliases": [
+        "ALERT"
+      ],
+      "note": "Open-drain; external pull-up required"
+    },
+    {
+      "num": "4",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "5",
+      "name": "A2",
+      "type": "input",
+      "note": "Address bit; must be tied to the configured level (no float)"
+    },
+    {
+      "num": "6",
+      "name": "A1",
+      "type": "input",
+      "note": "Address bit; must be tied"
+    },
+    {
+      "num": "7",
+      "name": "A0",
+      "type": "input",
+      "note": "Address bit; must be tied"
+    },
+    {
+      "num": "8",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        5.5
+      ]
+    },
+    {
+      "num": "9",
+      "name": "EP",
+      "type": "ground",
+      "note": "Internally connected to GND; must be connected to GND (Table 3-1)"
+    }
+  ]
+}

@@ -127,9 +127,9 @@ class TestDSC1001CI5_008:
         # 8 MHz output
         assert self.q.clock_freq_hz == 8.0e6
 
-    def test_tolerance_25ppm(self):
-        # The "I" code in CI5 = ±25 ppm
-        assert self.q.tolerance_pct == pytest.approx(0.0025)
+    def test_tolerance_10ppm(self):
+        # CI5: C = 3.2×2.5 CDFN, I = industrial, 5 = ±10 ppm (DS20005529B p21)
+        assert self.q.tolerance_pct == pytest.approx(0.001)
 
     def test_temp_range_industrial(self):
         # "C" code = Industrial -40..+85 °C (per the trim convention).
@@ -161,9 +161,9 @@ class TestDSC1001CI5_008:
     def test_footprint_cdfn4(self):
         fp = self.q.footprint
         assert fp.name == "DSC1001CI50080000"
-        assert fp.package_class == "CDFN-4 (2.5×2.0)"
+        assert fp.package_class == "CDFN-4 (3.2×2.5)"
         assert len(fp.pads) == 4
-        assert fp.size_mm == (2.5, 2.0)
+        assert fp.size_mm == (2.5, 3.2)
         assert fp.height_mm == pytest.approx(0.85)
 
     def test_standards(self):

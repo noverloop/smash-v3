@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "manf_pn": "SiT5356AECFQ-33N0-32.000000T",
+    "datasheet": "SiTime SiT5356 Rev 1.08 (1 Jan 2023)",
+    "datasheet_section": "Ordering Information p2; Figure 3 TCXO pin-out (top view) + Table 13 p10; Table 2 DC; Table 8 abs max; p37 Dimensions and Land Pattern",
+    "package": "10L ceramic QFN 5.0x3.2x0.95 mm",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.sitime.com/datasheet/SiT5356",
+    "notes": "Decode: A rev, E -40..105 °C, C clipped sinewave, F 5.0x3.2, Q ±0.1 ppm, 33 = 3.3 V ±10%, N = pin 1 No Connect (TCXO mode), T = 3k reel. TCXO mode: no I2C, so pins 2/5/10 are NC. NC pins may float; layout guide recommends grounding them. IDD 44 typ / 53 max mA."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [
+        "OE/NC/VC"
+      ],
+      "note": "'N' option: no connect, H/L/open no effect"
+    },
+    {
+      "num": "2",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [
+        "SCL/NC"
+      ],
+      "note": "NC in TCXO mode"
+    },
+    {
+      "num": "3",
+      "name": "NC",
+      "type": "nc"
+    },
+    {
+      "num": "4",
+      "name": "GND",
+      "type": "ground",
+      "note": "multiple vias under GND pin"
+    },
+    {
+      "num": "5",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [
+        "A0/NC"
+      ],
+      "note": "NC in TCXO mode"
+    },
+    {
+      "num": "6",
+      "name": "CLK",
+      "type": "output",
+      "aliases": [
+        "OUT"
+      ],
+      "frequency_hz": 32000000,
+      "note": "clipped sinewave 0.8-1.2 V into 10 kΩ||10 pF; AC-couple"
+    },
+    {
+      "num": "7",
+      "name": "NC",
+      "type": "nc"
+    },
+    {
+      "num": "8",
+      "name": "NC",
+      "type": "nc"
+    },
+    {
+      "num": "9",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.97,
+        3.63
+      ],
+      "note": "44 mA typ / 53 mA max; 0.1 µF within 1-2 mm + 10 µF required; abs max 4 V"
+    },
+    {
+      "num": "10",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [
+        "SDA/NC"
+      ],
+      "note": "NC in TCXO mode"
+    }
+  ]
+}

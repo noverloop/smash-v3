@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "manf_pn": "RR123-1H02-612",
+    "datasheet": "Coto RedRock RR123-1H02-612, rev. 03162026",
+    "datasheet_section": "§7.4 Package Pinout (LGA-4), §7.5/7.6 LCP, §8.1 LGA-4 dims (top view), §11.1 pad layout, elec. tables p2-3",
+    "package": "LGA-4 1.45x1.45x0.436",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/RR123-1H02-612/redrock-rr123-datasheet.pdf",
+    "notes": "Top view: 1 bottom-left (PIN1), 2 bottom-right, 3 top-right, 4 top-left. Land 0.38 sq on 0.65 pitch."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "LATCH_CONTROL",
+      "aliases": [
+        "LCP",
+        "Latch Control"
+      ],
+      "type": "input",
+      "note": "LOW = sensor responds; HIGH = output frozen. If unused, drive/tie to GND (DS §7.5)"
+    },
+    {
+      "num": "2",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.0,
+        3.6
+      ],
+      "note": "Abs max 3.6 V; >=0.1 uF decoupling within 10 mm"
+    },
+    {
+      "num": "3",
+      "name": "DIGITAL_OUT",
+      "aliases": [
+        "OUT",
+        "Digital OUT"
+      ],
+      "type": "output",
+      "note": "Push-pull, active low"
+    },
+    {
+      "num": "4",
+      "name": "GND",
+      "type": "ground"
+    }
+  ]
+}

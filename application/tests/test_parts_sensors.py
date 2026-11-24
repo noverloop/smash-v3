@@ -260,12 +260,12 @@ class TestH3LIS331DL:
         for num, name in layout.items():
             assert self.q.pin(num).name == name
 
-    def test_reserved_pins_tied_to_gnd(self):
-        # Datasheet: reserved pins must be tied to GND
-        for n in ("10", "15"):
+    def test_reserved_pins_notes(self):
+        # H3LIS331DL DS Table 1: pin 10 "Connect to GND", pin 15 "Connect to Vdd"
+        for n, want in (("10", "GND"), ("15", "Vdd")):
             p = self.q.pin(n)
             assert p.type == "reserved"
-            assert "GND" in (p.note or "")
+            assert want in (p.note or "")
 
     def test_footprint(self):
         fp = self.q.footprint

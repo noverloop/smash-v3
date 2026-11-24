@@ -1,0 +1,211 @@
+{
+  "_meta": {
+    "manf_pn": "LR2021IMLTRT",
+    "datasheet": "Semtech LR2021/LR2022/LR2012 Final Datasheet Rev. 2.2 (DS.LR20xx 29/07/26)",
+    "datasheet_section": "Table 2-1 Pin-out Description, Figure 2-1; §23.5 Unused Pins; Fig 24-1 outline, Fig 24-3 land pattern; §1.9.3 TCXO, Table 6-65",
+    "package": "QFN-32 5x5 mm, 0.5 pitch, EP 3.70 nom (3.30-3.80)",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/LR2021IMLTRT/LR2021IMLTRT.pdf",
+    "notes": "DS numbers the exposed pad as pin 0; footprint uses 33. DS Table 2-1 has typo 'DI010' for pin 8. VTCXO 1.6-3.3 V programmable, ILTCXO 4 mA max, VDDop > VTCXO + 0.2 V. TCXO into XTA: clipped sine 0.4-1.2 Vpp via 10 pF + 220 Ω."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VR_PA",
+      "type": "power",
+      "note": "regulated PA supply; feeds the choke on each PA output"
+    },
+    {
+      "num": "2",
+      "name": "VPAX2",
+      "type": "power",
+      "note": "connect to VPAX1"
+    },
+    {
+      "num": "3",
+      "name": "NTC",
+      "type": "passive",
+      "note": "leave unconnected if no NTC"
+    },
+    {
+      "num": "4",
+      "name": "XTA",
+      "type": "passive",
+      "note": "32 MHz crystal or TCXO input (clipped sine 0.4-1.2 Vpp, 10 pF + 220 Ω)"
+    },
+    {
+      "num": "5",
+      "name": "XTB",
+      "type": "passive",
+      "note": "leave unconnected with a TCXO"
+    },
+    {
+      "num": "6",
+      "name": "VTCXO/VNTC",
+      "type": "power",
+      "aliases": [
+        "VTCXO"
+      ],
+      "note": "TCXO supply out 1.6-3.3 V, ≤ 4 mA; needs VBAT ≥ VTCXO + 0.2 V"
+    },
+    {
+      "num": "7",
+      "name": "DIO11",
+      "type": "io",
+      "note": "unused: leave unconnected"
+    },
+    {
+      "num": "8",
+      "name": "DIO10",
+      "type": "io",
+      "aliases": [
+        "DI010"
+      ],
+      "note": "unused: leave unconnected"
+    },
+    {
+      "num": "9",
+      "name": "DIO9",
+      "type": "io"
+    },
+    {
+      "num": "10",
+      "name": "DIO8",
+      "type": "io"
+    },
+    {
+      "num": "11",
+      "name": "DIO7",
+      "type": "io"
+    },
+    {
+      "num": "12",
+      "name": "VDCC1",
+      "type": "power",
+      "note": "connect to VDCC2"
+    },
+    {
+      "num": "13",
+      "name": "VPAX1",
+      "type": "power",
+      "note": "connect to VPAX2"
+    },
+    {
+      "num": "14",
+      "name": "LXB",
+      "type": "passive",
+      "note": "SIMO coil; NC in LDO mode"
+    },
+    {
+      "num": "15",
+      "name": "GND_DCC",
+      "type": "ground"
+    },
+    {
+      "num": "16",
+      "name": "LXA",
+      "type": "passive",
+      "note": "SIMO coil; NC in LDO mode"
+    },
+    {
+      "num": "17",
+      "name": "VBAT",
+      "type": "power",
+      "voltage_range_v": [
+        1.8,
+        3.7
+      ],
+      "note": "abs max 3.9 V"
+    },
+    {
+      "num": "18",
+      "name": "DIO6",
+      "type": "io"
+    },
+    {
+      "num": "19",
+      "name": "DIO5",
+      "type": "io"
+    },
+    {
+      "num": "20",
+      "name": "NRESET",
+      "type": "input",
+      "note": "active low"
+    },
+    {
+      "num": "21",
+      "name": "MISO",
+      "type": "output"
+    },
+    {
+      "num": "22",
+      "name": "MOSI",
+      "type": "input"
+    },
+    {
+      "num": "23",
+      "name": "SCK",
+      "type": "input"
+    },
+    {
+      "num": "24",
+      "name": "NSS",
+      "type": "input"
+    },
+    {
+      "num": "25",
+      "name": "BUSY",
+      "type": "output"
+    },
+    {
+      "num": "26",
+      "name": "VDCC2",
+      "type": "power",
+      "note": "from VDCC1"
+    },
+    {
+      "num": "27",
+      "name": "RFO_LF2",
+      "type": "output",
+      "note": "MUST be tied to RFO_LF1 at PCB"
+    },
+    {
+      "num": "28",
+      "name": "RFO_LF1",
+      "type": "output",
+      "note": "MUST be tied to RFO_LF2; choke to VR_PA"
+    },
+    {
+      "num": "29",
+      "name": "RFI_LF",
+      "type": "input"
+    },
+    {
+      "num": "30",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "31",
+      "name": "RFI_HF",
+      "type": "input"
+    },
+    {
+      "num": "32",
+      "name": "RFO_HF",
+      "type": "output",
+      "note": "choke to VR_PA"
+    },
+    {
+      "num": "33",
+      "name": "GND",
+      "type": "ground",
+      "aliases": [
+        "EP",
+        "GND_EP"
+      ],
+      "note": "DS pin 0, exposed ground pad; thermal vias to GND plane"
+    }
+  ]
+}

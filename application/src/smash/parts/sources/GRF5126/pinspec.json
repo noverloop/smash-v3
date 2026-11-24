@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "manf_pn": "GRF5126",
+    "datasheet": "Guerrilla RF GRF5126 Release 0 (2026-01-20)",
+    "datasheet_section": "p2 QFN-16 Pin Out (Top View), Pin Assignments table; p19 Package Outline + Recommended PCB Footprint",
+    "package": "QFN-16 3.0x3.0x0.85 mm, EP 1.70 SQ",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/GRF5126/GRF5126.pdf",
+    "notes": "EP = 'PKG BASE', footprint number 17. VDD rec. 3-5.5 V, abs max 6 V."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "GND",
+      "type": "ground",
+      "note": "internally grounded; MUST be grounded with a via at the pin"
+    },
+    {
+      "num": "2",
+      "name": "RF_IN",
+      "type": "input",
+      "note": "external DC-blocking cap required"
+    },
+    {
+      "num": "3",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "4",
+      "name": "VDD1",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        5.5
+      ],
+      "note": "via inductor + bypass; RF present on pin"
+    },
+    {
+      "num": "5",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "6",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "7",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "8",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "9",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "10",
+      "name": "RF_OUT/VDD",
+      "type": "output",
+      "aliases": [
+        "RF_OUT"
+      ],
+      "voltage_range_v": [
+        3.0,
+        5.5
+      ],
+      "note": "VDD through RF choke"
+    },
+    {
+      "num": "11",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "12",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "13",
+      "name": "VBIAS2",
+      "type": "input",
+      "note": "resistor to common VDD sets IDDQ2; < 0.2 V disables stage 2"
+    },
+    {
+      "num": "14",
+      "name": "VBIAS1",
+      "type": "input",
+      "note": "resistor to common VDD sets IDDQ1; < 0.2 V disables stage 1"
+    },
+    {
+      "num": "15",
+      "name": "VGAIN",
+      "type": "input",
+      "voltage_range_v": [
+        0,
+        2.5
+      ],
+      "note": "≥ 1.0 V (to 2.5 V) high gain, ≤ 0.5 V low gain — do not tie to 5 V"
+    },
+    {
+      "num": "16",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; GND recommended"
+    },
+    {
+      "num": "17",
+      "name": "GND",
+      "type": "ground",
+      "aliases": [
+        "EP",
+        "PKG BASE"
+      ],
+      "note": "DC/RF ground + heat sink; multiple 8 mil vias"
+    }
+  ]
+}

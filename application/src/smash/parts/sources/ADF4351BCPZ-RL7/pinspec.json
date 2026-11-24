@@ -1,0 +1,230 @@
+{
+  "_meta": {
+    "manf_pn": "ADF4351BCPZ-RL7",
+    "datasheet": "ADI ADF4351 Data Sheet Rev. A (D09800-0-1/17(A))",
+    "datasheet_section": "Figure 3 Pin Configuration + Table 5 Pin Function Descriptions; Figure 40 CP-32-7 outline; Ordering Guide",
+    "package": "32-lead LFCSP 5x5x0.75 mm, CP-32-7, EP 3.10 SQ nom",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/ADF4351BCPZ/ADF4351BCPZ.pdf",
+    "notes": "-RL7 = reel of ADF4351BCPZ, same CP-32-7. AVDD=DVDD=VVCO=SDVDD=VP must all be equal (3.0-3.6 V)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "CLK",
+      "type": "input",
+      "note": "SPI clock, high-Z CMOS"
+    },
+    {
+      "num": "2",
+      "name": "DATA",
+      "type": "input",
+      "note": "SPI data, high-Z CMOS"
+    },
+    {
+      "num": "3",
+      "name": "LE",
+      "type": "input",
+      "note": "load enable, high-Z CMOS"
+    },
+    {
+      "num": "4",
+      "name": "CE",
+      "type": "input",
+      "note": "low = power-down, CP three-state; do not float"
+    },
+    {
+      "num": "5",
+      "name": "SW",
+      "type": "analog",
+      "note": "fast-lock switch to loop filter (may be left open if fast-lock unused)"
+    },
+    {
+      "num": "6",
+      "name": "VP",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "charge-pump supply, must equal AVDD; decouple at pin"
+    },
+    {
+      "num": "7",
+      "name": "CPOUT",
+      "type": "analog",
+      "note": "charge-pump output to loop filter"
+    },
+    {
+      "num": "8",
+      "name": "CPGND",
+      "type": "ground"
+    },
+    {
+      "num": "9",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "10",
+      "name": "AVDD",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "must equal DVDD"
+    },
+    {
+      "num": "11",
+      "name": "AGNDVCO",
+      "type": "ground"
+    },
+    {
+      "num": "12",
+      "name": "RFOUTA+",
+      "type": "output",
+      "note": "open-collector style: needs pull-up/choke to VVCO (Fig 38), DC-block"
+    },
+    {
+      "num": "13",
+      "name": "RFOUTA-",
+      "type": "output",
+      "note": "as RFOUTA+; terminate if unused"
+    },
+    {
+      "num": "14",
+      "name": "RFOUTB+",
+      "type": "output",
+      "note": "aux output; terminate if unused"
+    },
+    {
+      "num": "15",
+      "name": "RFOUTB-",
+      "type": "output",
+      "note": "aux output; terminate if unused"
+    },
+    {
+      "num": "16",
+      "name": "VVCO",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "must equal AVDD"
+    },
+    {
+      "num": "17",
+      "name": "VVCO",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "must equal AVDD"
+    },
+    {
+      "num": "18",
+      "name": "AGNDVCO",
+      "type": "ground"
+    },
+    {
+      "num": "19",
+      "name": "TEMP",
+      "type": "analog",
+      "note": "decouple to GND at pin"
+    },
+    {
+      "num": "20",
+      "name": "VTUNE",
+      "type": "analog",
+      "note": "VCO control input from loop filter"
+    },
+    {
+      "num": "21",
+      "name": "AGNDVCO",
+      "type": "ground"
+    },
+    {
+      "num": "22",
+      "name": "RSET",
+      "type": "analog",
+      "note": "resistor to GND sets ICP = 25.5/RSET (5.1 k → 5 mA)"
+    },
+    {
+      "num": "23",
+      "name": "VCOM",
+      "type": "analog",
+      "note": "decouple to GND at pin"
+    },
+    {
+      "num": "24",
+      "name": "VREF",
+      "type": "analog",
+      "note": "decouple to GND at pin"
+    },
+    {
+      "num": "25",
+      "name": "LD",
+      "type": "output",
+      "note": "lock detect, high = locked"
+    },
+    {
+      "num": "26",
+      "name": "PDBRF",
+      "type": "input",
+      "note": "low mutes RF outputs; do not float"
+    },
+    {
+      "num": "27",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "28",
+      "name": "DVDD",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "must equal AVDD"
+    },
+    {
+      "num": "29",
+      "name": "REFIN",
+      "type": "input",
+      "note": "CMOS, threshold AVDD/2, 100 kΩ; may be AC-coupled; 0.7 Vpp-AVDD"
+    },
+    {
+      "num": "30",
+      "name": "MUXOUT",
+      "type": "output"
+    },
+    {
+      "num": "31",
+      "name": "SDGND",
+      "type": "ground"
+    },
+    {
+      "num": "32",
+      "name": "SDVDD",
+      "type": "power",
+      "voltage_range_v": [
+        3.0,
+        3.6
+      ],
+      "note": "must equal AVDD"
+    },
+    {
+      "num": "33",
+      "name": "EP",
+      "type": "ground",
+      "aliases": [
+        "Exposed Pad"
+      ],
+      "note": "must be connected to GND"
+    }
+  ]
+}

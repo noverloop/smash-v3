@@ -547,12 +547,13 @@ def add_tps61175pwpr(design, ref: str, **overrides) -> Chip:
 def _mcp1640_dfn8_mc_footprint() -> Footprint:
     """MCP1640 8-lead 2×3×0.9 mm DFN (MC), Microchip drawing C04-2123B
     recommended land pattern (DS20002234E p26): pitch 0.50, pads 0.30 × 0.75
-    on C1 = 2.90 rows, EP 1.45 × 1.75. Top view: pins 1–4 along the +y row
-    left→right, 5–8 along the −y row right→left."""
+    on C1 = 2.90 rows, EP 1.45 × 1.75. Top view (smash y-up): pins 1–4 along
+    the −y (bottom) row left→right, 5–8 along the +y (top) row right→left —
+    counter-clockwise like the datasheet drawing."""
     pads = []
     for i, x in enumerate((-0.75, -0.25, 0.25, 0.75)):
-        pads.append(Pad(num=str(1 + i), position_mm=(x, 1.45), size_mm=(0.30, 0.75), shape="rect"))
-        pads.append(Pad(num=str(8 - i), position_mm=(x, -1.45), size_mm=(0.30, 0.75), shape="rect"))
+        pads.append(Pad(num=str(1 + i), position_mm=(x, -1.45), size_mm=(0.30, 0.75), shape="rect"))
+        pads.append(Pad(num=str(8 - i), position_mm=(x, 1.45), size_mm=(0.30, 0.75), shape="rect"))
     pads.append(Pad(num="9", position_mm=(0.0, 0.0), size_mm=(1.45, 1.75), shape="rect"))
     return Footprint(
         name="MCHP_MC_DFN-8_2x3", package_class="DFN-8",

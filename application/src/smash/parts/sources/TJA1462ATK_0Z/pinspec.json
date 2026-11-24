@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "manf_pn": "TJA1462ATK/0Z",
+    "datasheet": "NXP TJA1462 product data sheet Rev 3.0, 12 Feb 2025",
+    "datasheet_section": "Fig 2 (TJA1462ATK HVSON8 transparent top view), Table 4, Table 1, Fig 15 SOT782-1",
+    "package": "HVSON8 SOT782-1, 3x3x0.85 mm, 0.65 mm pitch, EP 2.40x1.60 nom",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.nxp.com/docs/en/data-sheet/TJA1462.pdf",
+    "notes": "Same SOT782-1 land/symbol as TJA1462BTK; the A variant has VIO on pin 5 (B: n.c.). EP has no pin number in the DS; ours = 9."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "TXD",
+      "type": "input"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "note": "Must be soldered to board ground (Table 4 note 2)."
+    },
+    {
+      "num": "3",
+      "name": "VCC",
+      "type": "power",
+      "voltage_range_v": [
+        4.5,
+        5.5
+      ],
+      "note": "5 V supply."
+    },
+    {
+      "num": "4",
+      "name": "RXD",
+      "type": "output"
+    },
+    {
+      "num": "5",
+      "name": "VIO",
+      "type": "power",
+      "voltage_range_v": [
+        2.95,
+        5.5
+      ],
+      "note": "I/O level supply (TJA1462A only)."
+    },
+    {
+      "num": "6",
+      "name": "CANL",
+      "type": "io",
+      "voltage_range_v": [
+        -36,
+        40
+      ]
+    },
+    {
+      "num": "7",
+      "name": "CANH",
+      "type": "io",
+      "voltage_range_v": [
+        -36,
+        40
+      ]
+    },
+    {
+      "num": "8",
+      "name": "STB",
+      "type": "input",
+      "note": "Standby control, active-HIGH."
+    },
+    {
+      "num": "9",
+      "name": "EP",
+      "type": "ground",
+      "note": "Die ground is connected to the GND pin and EP; recommended to solder to board ground."
+    }
+  ]
+}

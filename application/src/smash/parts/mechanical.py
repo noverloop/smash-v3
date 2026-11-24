@@ -754,12 +754,13 @@ def add_mt03_092_qpd(design, ref: str = "U_QPD", **overrides) -> Chip:
     fields = dict(
         manf="Marktech", manf_pn="MT03-092", name="MT03-092",
         description=(
-            "Silicon quadrant photodiode, 8 mm active area (4× 4 mm² "
-            "quadrants, 200 µm gaps), 1064 nm peak sensitivity, TO-8 "
-            "6-lead through-hole"
+            "Silicon quadrant photodiode, Ø8 mm active area (4 × 11.8 mm² "
+            "quadrants), peak 950 nm (0.64 A/W; ≈0.2 A/W at 1064 nm), TO-8 "
+            "6-lead through-hole, can at cathode potential"
         ),
         datasheet="Research/MT03-092.pdf",
         package="TO-8 6-lead",
+        height_mm=4.5,               # MT03-092 DS p2: body height 4.50 mm
         pins=_pins_from_pads(fp, name_map={
             "1": "ANODE_Q4", "2": "CATHODE_COM",
             "3": "ANODE_Q3", "4": "ANODE_Q1",

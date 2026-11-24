@@ -139,7 +139,7 @@ def add_awr1843aop(design, ref: str, *, secure: bool = False, **overrides) -> Ch
         ball_count=180,
         size_mm=(15.0, 15.0),
         pitch_mm=0.8,
-        height_mm=0.9,                      # ALP package max height, from the SamacSys 3D model bbox (verify vs SWRS236C mech)
+        height_mm=0.965,                    # ALP0180A outline (4225336/B): 0.965 mm max
         # ── thermal ──────────────────────────────────────────────────
         # SWRS236C-specific power/RθJC table not yet transcribed; values
         # estimated from the same-die-class IWR1843 family (SWRS228B /

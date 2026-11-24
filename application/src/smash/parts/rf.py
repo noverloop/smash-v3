@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace as _dc_replace
 from smash.state import Chip, Pin, Pad, Footprint
 from smash.parts._artifacts import (
     pads_from_kicad_mod, outline_polygon, build_pins, src, datasheet_ref,
@@ -955,6 +956,10 @@ def _grf5126_footprint() -> Footprint:
              for n, x in zip((13, 14, 15, 16), ys[::-1])]
     pads.append(Pad(num="17", position_mm=(0.0, 0.0), size_mm=(1.70, 1.70),
                     shape="rect", layer="F.Cu"))
+    # smash pads are y-UP (the exporter flips once); the list above was written
+    # y-down, so mirror it — pin numbers must wind counter-clockwise in top view
+    # (test_footprint_winding).
+    pads = [_dc_replace(p, position_mm=(p.position_mm[0], -p.position_mm[1])) for p in pads]
     return Footprint(
         name="QFN16_3x3_GRF5126_DS", package_class="QFN-16 3x3 + EP",
         pads=pads,
@@ -1039,6 +1044,10 @@ def _grf2073w_footprint() -> Footprint:
              for n, y in zip((5, 6, 7, 8), ys[::-1])]
     pads.append(Pad(num="9", position_mm=(0.0, 0.0), size_mm=(0.60, 1.20),
                     shape="rect", layer="F.Cu"))
+    # smash pads are y-UP (the exporter flips once); the list above was written
+    # y-down, so mirror it — pin numbers must wind counter-clockwise in top view
+    # (test_footprint_winding).
+    pads = [_dc_replace(p, position_mm=(p.position_mm[0], -p.position_mm[1])) for p in pads]
     return Footprint(
         name="DFN8_2x2_GRF2073W_DS", package_class="DFN-8 2x2 + EP",
         pads=pads,
@@ -1124,7 +1133,7 @@ def add_tcxo_32m_2016(design, ref: str, **overrides) -> Chip:
         package="SMD 2016", size_mm=(2.0, 1.6), height_mm=0.8,
         temp_range_c=(-40, 85),
         body_material=None, lead_material=None,
-        voltage_rating_v=3.6, vcc_nominal_v=1.8,
+        voltage_rating_v=3.6, vcc_nominal_v=3.0,   # "M" supply code = 2.8-3.3 V part: set LR2021 VTCXO to 3.0 V if this DNP fallback is fitted
         i_rms_a=None, power_rating_w=None,
         rth_jc_cw=None, rth_ja_cw=None, tj_max_c=None,
         pins=[Pin(num="1", name="NC", type="nc", note="no connect"),
@@ -1137,3 +1146,23 @@ def add_tcxo_32m_2016(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def _mirror_y(fp):
+    """These lands were transcribed y-down; smash pads are y-UP (the exporter
+    flips once) — mirror so the pins wind counter-clockwise in top view."""
+    from dataclasses import replace as _r
+    fp.pads = [_r(p, position_mm=(p.position_mm[0], -p.position_mm[1])) for p in fp.pads]
+    return fp
+
+__pe64906_footprint_raw = _pe64906_footprint
+
+
+def _pe64906_footprint():
+    return _mirror_y(__pe64906_footprint_raw())
+
+__tcxo_2016_footprint_raw = _tcxo_2016_footprint
+
+
+def _tcxo_2016_footprint():
+    return _mirror_y(__tcxo_2016_footprint_raw())

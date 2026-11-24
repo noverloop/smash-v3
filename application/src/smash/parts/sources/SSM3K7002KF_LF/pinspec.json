@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "manf_pn": "SSM3K7002KF,LF",
+    "datasheet": "Toshiba SSM3K7002KF datasheet Rev.7.0 (2026-11-09)",
+    "datasheet_section": "§3 Packaging and Internal Circuit (p.1); Package Dimensions (p.7)",
+    "package": "S-Mini (SC-59 / SOT-346), 2.9 x 1.5 body, 2.5 lead span, 1.1 +0.2/-0.1 high, 0.95 pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=35718&prodName=SSM3K7002KF",
+    "notes": "Top view: pins 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top centre. VDSS 60 V, VGSS ±20 V, ID 400 mA. Gate has a series resistor + G-S ESD diode internally. AEC-Q101."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -20,
+        20
+      ],
+      "note": "VGSS ±20 V abs max"
+    },
+    {
+      "num": "2",
+      "name": "S",
+      "type": "io",
+      "aliases": [
+        "Source"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "D",
+      "type": "io",
+      "aliases": [
+        "Drain"
+      ],
+      "note": "VDSS 60 V"
+    }
+  ]
+}

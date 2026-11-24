@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "manf_pn": "DSC1001CI5-032.0000",
+    "datasheet": "Microchip DS20005529B (2017) DSC1001/3/4",
+    "datasheet_section": "Package Types (top view) p1; Table 2-1 CDFN pin function; §4.1 Standby; p16 CDFN3225-4LD-PL-1 outline + land; Product Identification System p21",
+    "package": "4-lead CDFN 3.2 x 2.5 x 0.85 mm (code C), Industrial -40..85 °C (I), ±10 ppm (5)",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
+    "notes": "CDFN has no centre pad (only the 7x5 DFN does)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "STANDBY#",
+      "type": "input",
+      "aliases": [
+        "STANDBY",
+        "STB",
+        "OE#"
+      ],
+      "voltage_range_v": [
+        -0.3,
+        3.6
+      ],
+      "note": "High or open = output ON, Low = output Hi-Z; VIH ≥ 0.75·VDD, VIL ≤ 0.25·VDD; abs max VDD+0.3"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "OUT",
+      "type": "output",
+      "frequency_hz": 32000000,
+      "note": "CMOS; load R > 10 kΩ, C ≤ 15 pF"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "aliases": [
+        "V_DD"
+      ],
+      "voltage_range_v": [
+        1.7,
+        3.6
+      ],
+      "note": "decouple 0.01 µF (Fig 5-1)"
+    }
+  ]
+}

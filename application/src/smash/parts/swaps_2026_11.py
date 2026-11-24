@@ -57,14 +57,26 @@ def add_dsc1001ci1_027_0000(design, ref: str, **overrides) -> Chip:
 
 
 def add_sit1602bi_12_xxe_40(design, ref: str, *, vdd: str = "18", **overrides) -> Chip:
-    """SiTime SiT1602BI-12-{vdd}E-40.000000 — 40 MHz MEMS XO, ±20 ppm, 2.5 × 2.0 mm,
-    programmed to order (vdd "18" = 1.8 V, "33" = 3.3 V). 2520 pinout = DSC1001's
-    (1 OE/ST, 2 GND, 3 OUT, 4 VDD), so the DSC1001 land and pin names are reused."""
+    """SiTime SiT1602BI-12-{vdd}E-40.000000 — 40 MHz MEMS XO, ±25 ppm (code 2),
+    PQFN 2.5 × 2.0 × 0.75 mm (package code 1), programmed to order (vdd "18" =
+    1.8 V, "33" = 3.3 V). Pins = DSC1001's (1 OE, active high; 2 GND; 3 OUT;
+    4 VDD) so its pin names are reused; the LAND is SiTime's 2520 one (pads
+    1.0 × 1.1 at 1.9 × 1.5 centres, SiT1602B DS p.10) — the DSC1001 "C" land
+    is the 3.2 × 2.5 package."""
     from smash.parts.oscillators import add_dsc1001ci5_040_0000
+    from smash.parts.devboard import src, _step
+    from smash.parts._artifacts import pads_from_kicad_mod, outline_polygon
     pn = f"SIT1602BI-12-{vdd}E-40.000000"
+    mod = src("SiT8008BI-12-33E-27.000000", "QFN_2520_4pins.kicad_mod")   # SiTime 2520 land
+    fp = Footprint(name="QFN_2520_4pins", package_class="PQFN-4 (2.5×2.0)",
+                   pads=pads_from_kicad_mod(mod), body_outline=outline_polygon(mod, "F.Fab"),
+                   courtyard=outline_polygon(mod, "F.CrtYd"), size_mm=(2.5, 2.0), height_mm=0.75,
+                   model_3d_path=_step("SiT8008BI-12-33E-27.000000"),
+                   source="samacsys").ensure_courtyard_clearance()
     ov = _renumber("DSC1001CI5-040.0000", pn, manf="SiTime",
                    note="DSC1001CI5-040 had 0 stock at Mouser + Digi-Key",
-                   description=f"40 MHz MEMS oscillator, LVCMOS, {vdd[0]}.{vdd[1]} V, ±20 ppm, 2.5×2.0 mm")
+                   description=f"40 MHz MEMS oscillator, LVCMOS, {vdd[0]}.{vdd[1]} V, ±25 ppm, PQFN 2.5×2.0",
+                   package="PQFN-4 (2.5×2.0×0.75)", size_mm=(2.5, 2.0), height_mm=0.75, footprint=fp)
     ov.update(overrides)
     return add_dsc1001ci5_040_0000(design, ref, **ov)
 
@@ -172,15 +184,16 @@ _XC6220_MODEL_ROT = (-90.0, 0.0, 0.0)
 
 
 def add_tja1462btk_0z(design, ref: str, **overrides) -> Chip:
-    """NXP TJA1462BTK/0Z — CAN FD SIC transceiver, HVSON-8 3×3. B variant:
-    pin 5 = VIO (SamacSys symbol labels it N.C. — the B datasheet pinout
-    wins). EP (9) → GND."""
+    """NXP TJA1462ATK/0Z — CAN FD SIC transceiver, HVSON-8 3×3. The A variant
+    has the VIO pin (5) that sets the TXD/RXD logic level (3.3 V here); on the
+    B variant pin 5 is n.c. and the logic follows VCC = 5 V (TJA1462 DS Rev 3
+    Fig. 1 note 1, Table 8 note 3). Function name kept for call sites. EP (9) → GND."""
     pins = [Pin(num="1", name="TXD", type="input"), Pin(num="2", name="GND", type="ground"),
             Pin(num="3", name="VCC", type="power"), Pin(num="4", name="RXD", type="output"),
             Pin(num="5", name="VIO", type="power"), Pin(num="6", name="CANL", type="io"),
             Pin(num="7", name="CANH", type="io"), Pin(num="8", name="STB", type="input"),
             Pin(num="9", name="EP", type="ground")]
-    return _sam(design, ref, pn="TJA1462BTK/0Z", part_dir="TJA1462BTK_0Z",
+    return _sam(design, ref, pn="TJA1462ATK/0Z", part_dir="TJA1462BTK_0Z",   # same HVSON-8 land/symbol
                 mod="SON65P300X300X100-9N-D.kicad_mod", package="HVSON-8 (3×3)", height_mm=1.0,
                 size_mm=(3.0, 3.0), manf="NXP", description="CAN FD SIC transceiver 8 Mbit/s, VIO, HVSON-8",
                 pins=pins, note=f"Replaces TCAN1042 (China lot / EOL) — {_WHY}.", **overrides)
@@ -379,15 +392,17 @@ def add_ssm3k35ctc_l3f(design, ref: str, **overrides) -> Chip:
 
 
 def add_ssm3k7002kfu_lf(design, ref: str, **overrides) -> Chip:
-    """Toshiba SSM3K7002KFU,LF — N-FET 60 V 0.4 A, USM (SOT-323) 2.0 × 2.1 ×
-    0.9 mm. For the 33 V activation / cutter / coil positions. Pins 1 G,
-    2 S, 3 D. VGS ±20 V."""
+    """Toshiba SSM3K7002KF,LF — N-FET 60 V 0.4 A, S-Mini (SOT-346 / SC-59)
+    2.9 × 2.5 × 1.1 mm, on the SC-59 land it was always drawn on (1SS294LFT).
+    For the 33 V activation / cutter / coil positions. Pins 1 G, 2 S, 3 D.
+    VGS ±20 V. (Function name kept for call sites; the KFU is the USM/SOT-323
+    package, which does not fit this land.)"""
     pins = [Pin(num="1", name="G", aliases=["Gate"], type="input"),
             Pin(num="2", name="S", aliases=["Source"], type="io"),
             Pin(num="3", name="D", aliases=["Drain"], type="io")]
-    return _sam(design, ref, pn="SSM3K7002KFU,LF", part_dir="SSM3K7002KFU_LF", mod="1SS294LFT.kicad_mod",
-                package="USM (SOT-323)", height_mm=0.9, size_mm=(2.0, 2.1), manf="Toshiba",
-                description="N-MOSFET 60 V 0.4 A, USM/SOT-323", pins=pins, ring_courtyard=True,
+    return _sam(design, ref, pn="SSM3K7002KF,LF", part_dir="SSM3K7002KFU_LF", mod="1SS294LFT.kicad_mod",
+                package="S-Mini (SOT-346 / SC-59)", height_mm=1.1, size_mm=(2.9, 2.5), manf="Toshiba",
+                description="N-MOSFET 60 V 0.4 A, S-Mini/SC-59", pins=pins, ring_courtyard=True,
                 note=f"33 V-position replacement for RU1J002YNTCL — {_WHY}.", **overrides)
 
 
@@ -476,10 +491,15 @@ def add_s1318d33_a4t2u4(design, ref: str, **overrides) -> Chip:
     Table 8): 1 VOUT, 2 VSS, 3 ON/OFF, 4 VIN; heat sink → GND (DS note *1).
     Land = ABLIC PL004-A-L-SD-2.0 (pads 0.30 × 0.37 at ±0.325 / ±0.54;
     heat sink drawn as a 0.30 □ + 1.02 × 0.12 bar)."""
+    # smash y-UP, in the orientation of the package drawing PL004-A-P-SD (top
+    # view: 1 bottom-left, 2 bottom-right, 3 top-right, 4 top-left; 1–2 and
+    # 4–3 are the 0.65 mm pairs along the heat-sink bar) — the land
+    # PL004-A-L-SD has its 0.65 mm pairs along x. (Fig. 6's sketch is the same
+    # part turned 90°; its corners must not be copied onto this land.)
     pads = [Pad(num="1", position_mm=(-0.325, -0.54), size_mm=(0.30, 0.37)),
-            Pad(num="4", position_mm=(0.325, -0.54), size_mm=(0.30, 0.37)),
-            Pad(num="2", position_mm=(-0.325, 0.54), size_mm=(0.30, 0.37)),
+            Pad(num="2", position_mm=(0.325, -0.54), size_mm=(0.30, 0.37)),
             Pad(num="3", position_mm=(0.325, 0.54), size_mm=(0.30, 0.37)),
+            Pad(num="4", position_mm=(-0.325, 0.54), size_mm=(0.30, 0.37)),
             Pad(num="5", position_mm=(0.0, 0.0), size_mm=(0.30, 0.30)),
             Pad(num="5", position_mm=(0.0, 0.0), size_mm=(1.02, 0.12))]
     fp = _land_fp("ABLIC_HSNT-4-1010", pads, (1.0, 1.0), 0.4,
@@ -504,6 +524,17 @@ def add_s1318d33_a4t2u4(design, ref: str, **overrides) -> Chip:
                   note=f"Replaces XC6504A331MR-G (SOT-25 1.3 mm) — {_WHY}.")
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def add_s1318d18_a4t2u4(design, ref: str, **overrides) -> Chip:
+    """ABLIC S-1318D18-A4T2U4 — the 1.8 V output code of the S-1318D33 (same
+    die family, HSNT-4(1010) land and pinout; S-1318 DS Table 6)."""
+    f = dict(manf_pn="S-1318D18-A4T2U4", canonical_id=canonical_id("S-1318D18-A4T2U4"),
+             name="S-1318D18-A4T2U4", value="1.8V",
+             description="LDO 1.8 V 100 mA, 95 nA Iq, HSNT-4 1.0×1.0×0.4",
+             note="1.8 V code of the S-1318 family (BMM350 VDD).")
+    f.update(overrides)
+    return add_s1318d33_a4t2u4(design, ref, **f)
 
 
 # ── dev board: round 20 (2026-11-22) ─────────────────────────────────────────
@@ -624,7 +655,23 @@ def add_vb1943cajx_1(design, ref: str, **overrides) -> Chip:
     (1.05-1.26), VDDIO 1.8 V (1.70-1.90), any order; RESETN ≥ 100 µs after.
     EXTCLK 12-50 MHz, sub-range on CLK_RANGE0/1 (DS Table 10).
     SamacSys BGA74C80P9X10_890X1030X220 land + symbol (pins by ball ID)."""
-    c = _sam(design, ref, pn="VB1943CAJX/1", part_dir="VB1943CAJX_1",
+    from smash.parts.devboard import _sym
+    from smash.parts._artifacts import build_pins, type_pins_by_base
+    # Ball types: DS14880 Rev 3 Table 5. GPIO0-3 have internal pull-downs
+    # (Table 11) and NCG may float or go to AGND, so both are "reserved"
+    # (connect or float); NC must float. pinspec.json is the cross-check.
+    t = {"VANA": "power", "VCORE": "power", "VDDIO": "power",
+         "AGND": "ground", "DGND": "ground",
+         "LDO2V4": "analog", "VRT": "analog", "CPNEG_IN": "analog",
+         "CPNEG_OUT": "analog", "CPPOS_IN": "analog", "CPPOS_OUT": "analog",
+         "CLKP": "output", "CLKN": "output",
+         "RESETN": "input", "SCL": "input", "SDA": "io", "EXTCLK": "input",
+         "CLK_RANGE0": "input", "CLK_RANGE1": "input", "PORTEST": "input",
+         "NC": "nc", "NCG": "reserved"}
+    t.update({f"GPIO{i}": "reserved" for i in range(4)})
+    t.update({f"DATA{i}{s}": "output" for i in range(1, 5) for s in "PN"})
+    pins = type_pins_by_base(build_pins(_sym("VB1943CAJX_1")), t)
+    c = _sam(design, ref, pn="VB1943CAJX/1", part_dir="VB1943CAJX_1", pins=pins,
              mod="BGA74C80P9X10_890X1030X220.kicad_mod", package="OBGA-74 (8.9×10.3, 0.8 mm)",
              height_mm=2.2, size_mm=(8.9, 10.3), manf="STMicroelectronics",
              description="Image sensor 5.1 MP RGB-NIR GS/RS, MIPI CSI-2 2/4-lane, OBGA-74",

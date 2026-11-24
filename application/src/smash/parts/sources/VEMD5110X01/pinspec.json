@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "manf_pn": "VEMD5110X01",
+    "datasheet": "Vishay VEMD5110X01 Doc 84204 Rev.1.3 (17-Mar-2025)",
+    "datasheet_section": "p.4 Package dimensions (bottom view + recommended footprint), drawing 6.550-5329.01-4 issue 5",
+    "package": "SMD top-view 4 x 5 x 0.9±0.1 mm, 4 terminals + exposed pad",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.vishay.com/docs/84204/vemd5110x01.pdf",
+    "notes": "Datasheet does not number pads; numbers are our footprint's. Bottom view: two cathode terminals on one short edge, anode + NC on the other (anode right, NC left in bottom view → anode left, NC right in top view). Exposed pad (cathode) and a tie bar are electrically cathode; recommended footprint has NO land for the exposed pad. Recommended lands 4 x (1.55 x 1.0), 4.1 x 5.2 overall, 1.0 gap. AEC-Q101, MSL 4."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "aliases": [
+        "CATHODE_1"
+      ],
+      "note": "cathode"
+    },
+    {
+      "num": "2",
+      "name": "K2",
+      "type": "passive",
+      "aliases": [
+        "CATHODE_2"
+      ],
+      "note": "cathode (same as pin 1)"
+    },
+    {
+      "num": "3",
+      "name": "A",
+      "type": "passive",
+      "aliases": [
+        "ANODE"
+      ]
+    },
+    {
+      "num": "4",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [],
+      "note": "no connection"
+    }
+  ]
+}

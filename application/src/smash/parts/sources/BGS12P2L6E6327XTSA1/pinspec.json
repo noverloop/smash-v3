@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "manf_pn": "BGS12P2L6E6327XTSA1",
+    "datasheet": "Infineon BGS12P2L6 Revision 2.1 (2025-08-12)",
+    "datasheet_section": "Figure 2 Pin Configuration (top view), Table 10, Table 11 truth table; Figure 3/4 TSLP-6-4 outline + footprint",
+    "package": "PG-TSLP-6-4, 0.7x1.1x0.31 mm, 0.4 mm pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/BGS12P2L6E6327XTSA1/BGS12P2L6.pdf",
+    "notes": "CTRL 0: RFin-RF1, CTRL 1: RFin-RF2. No DC allowed on any RF port (abs max VRFDC = 0 V; DC path exists between switched paths)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "RF2",
+      "type": "io",
+      "note": "no DC (abs max 0 V) — DC-block"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "RF1",
+      "type": "io",
+      "note": "no DC (abs max 0 V) — DC-block"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.65,
+        3.4
+      ],
+      "note": "abs max 3.6 V"
+    },
+    {
+      "num": "5",
+      "name": "RFin",
+      "type": "io",
+      "aliases": [
+        "RFIN"
+      ],
+      "note": "RF common; no DC"
+    },
+    {
+      "num": "6",
+      "name": "CTRL",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        3.4
+      ],
+      "note": "VIL ≤ 0.45 V, VIH ≥ 1.0 V (≤ VDD); do not float"
+    }
+  ]
+}

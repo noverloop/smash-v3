@@ -1,0 +1,113 @@
+{
+  "_meta": {
+    "manf_pn": "ISM330DLCTR",
+    "datasheet": "ST DS12171 Rev 4",
+    "datasheet_section": "Table 1 Pin description (Mode 1 column); §4 supply 1.71-3.6 V",
+    "package": "LGA-14L 2.5x3.0x0.86 (W=3.0 x, L=2.5 y), 0.5 pitch",
+    "verified_by": "library check 2026-11-24 (datasheet supplied by user)",
+    "verified_from_pdf": "application/src/smash/parts/sources/ISM330DLCTR/ISM330DLC_DS12171.pdf",
+    "notes": "Verified against DS12171 Table 1. Mode-1 notes from secondary sources only."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "SDO/SA0",
+      "aliases": [
+        "SA0",
+        "SDO"
+      ],
+      "type": "io",
+      "note": "I2C address LSB; do not float"
+    },
+    {
+      "num": "2",
+      "name": "SDX",
+      "type": "io",
+      "note": "Mode 1: connect to VDDIO or GND"
+    },
+    {
+      "num": "3",
+      "name": "SCX",
+      "type": "io",
+      "note": "Mode 1: connect to VDDIO or GND"
+    },
+    {
+      "num": "4",
+      "name": "INT1",
+      "type": "output"
+    },
+    {
+      "num": "5",
+      "name": "VDDIO",
+      "type": "power"
+    },
+    {
+      "num": "6",
+      "name": "GND_1",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "7",
+      "name": "GND_2",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "8",
+      "name": "VDD",
+      "type": "power"
+    },
+    {
+      "num": "9",
+      "name": "INT2",
+      "type": "output"
+    },
+    {
+      "num": "10",
+      "name": "OCS_AUX",
+      "aliases": [
+        "OCS_Aux"
+      ],
+      "type": "output",
+      "note": "Mode 1: leave unconnected"
+    },
+    {
+      "num": "11",
+      "name": "SD0_AUX",
+      "aliases": [
+        "SDO_AUX",
+        "SDO_Aux"
+      ],
+      "type": "io",
+      "note": "Mode 1: VDDIO or leave unconnected"
+    },
+    {
+      "num": "12",
+      "name": "CS",
+      "type": "input",
+      "note": "1 = I2C, 0 = SPI"
+    },
+    {
+      "num": "13",
+      "name": "SCL",
+      "aliases": [
+        "SPC"
+      ],
+      "type": "input"
+    },
+    {
+      "num": "14",
+      "name": "SDA",
+      "aliases": [
+        "SDI",
+        "SDO"
+      ],
+      "type": "io"
+    }
+  ]
+}

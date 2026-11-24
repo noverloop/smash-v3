@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "manf_pn": "USBLC6-4SC6",
+    "datasheet": "ST DocID11068 Rev 7 (Nov 2015)",
+    "datasheet_section": "Figure 1 functional diagram/pinout, Table 2, Table 3 SOT23-6L, Figure 20 footprint",
+    "package": "SOT23-6L",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "~/Downloads/DS_usblc6-4.pdf (st.com)",
+    "notes": "Flow-through pairs I/O1-I/O4 and I/O2-I/O3. VBUS-GND breakdown 6-10 V; VRM 5.25 V."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "I/O1",
+      "type": "passive"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "note": "Short path to the GND plane."
+    },
+    {
+      "num": "3",
+      "name": "I/O2",
+      "type": "passive"
+    },
+    {
+      "num": "4",
+      "name": "I/O3",
+      "type": "passive"
+    },
+    {
+      "num": "5",
+      "name": "VBUS",
+      "type": "power",
+      "note": "Connect to VBUS/VCC (protects VBUS; needed for the clamp reference)."
+    },
+    {
+      "num": "6",
+      "name": "I/O4",
+      "type": "passive"
+    }
+  ]
+}

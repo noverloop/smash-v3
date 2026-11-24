@@ -16,7 +16,7 @@ from smash.parts._slug import canonical_id
 
 # ═════════════════════════════════════════════════════════════════════════
 # Microchip DSC1001CI5-008.0000 — 8 MHz MEMS oscillator, 1.7-3.6 V,
-# CDFN/DFN 2.5×2.0 mm 4-pad
+# CDFN/DFN 3.2×2.5 mm 4-pad
 #
 # >>> Family-frequency-range caveat:
 #     DSC1001/3/4 family supports 1 MHz to 150 MHz ONLY. A
@@ -34,7 +34,7 @@ This factory: **DSC1001CI5-008.0000**
   C       : Industrial temperature -40 to +85 °C
             (B = Commercial -20..+70, I = Industrial -40..+85,
              E = Ext. Industrial -40..+105)
-  I       : ±25 ppm frequency tolerance (10/20/25/50 ppm available)
+  C       : 3.2 × 2.5 mm CDFN; I: -40..+85 °C; 5: ±10 ppm (DS20005529B p21)
   5       : CDFN/DFN 2.5 × 2.0 × 0.85 mm package
             (other options 3.2×2.5, 5.0×3.2, 7.0×5.0 mm)
   008.0000: 8.000 MHz output frequency
@@ -97,7 +97,7 @@ Distributor (from SamacSys metadata):
 
 
 def _dsc1001ci5_footprint() -> Footprint:
-    """CDFN/DFN 2.5×2.0×0.85 mm 4-pad footprint per SamacSys
+    """CDFN/DFN 3.2×2.5×0.85 mm 4-pad footprint per SamacSys
     DSC1001CI50080000.kicad_mod.
 
     Pads at corners: ±0.95 (x) × ±1.05 (y), 0.9 × 1.0 mm each.
@@ -109,7 +109,7 @@ def _dsc1001ci5_footprint() -> Footprint:
     """
     return Footprint(
         name="DSC1001CI50080000",
-        package_class="CDFN-4 (2.5×2.0)",
+        package_class="CDFN-4 (3.2×2.5)",
         pads=[
             Pad(num="1", position_mm=(-0.95, 1.05), size_mm=(1.0, 0.9), shape="rect", layer="F.Cu"),
             Pad(num="2", position_mm=(-0.95, -1.05), size_mm=(1.0, 0.9), shape="rect", layer="F.Cu"),
@@ -121,12 +121,12 @@ def _dsc1001ci5_footprint() -> Footprint:
         courtyard=[(-3.0, -2.6), (2.45, -2.6),
                    (2.45, 2.6), (-3.0, 2.6)],
         pitch_mm=None,
-        size_mm=(2.5, 2.0),
+        size_mm=(2.5, 3.2),
         height_mm=0.85,
         model_3d_path="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001CI5-008.0000.stp",
         source="samacsys",
         note=(
-            "CDFN/DFN 2.5×2.0×0.85 mm 4-pad MEMS oscillator footprint. "
+            "CDFN/DFN 3.2×2.5×0.85 mm 4-pad MEMS oscillator footprint. "
             "Pin 1 (STANDBY#) at bottom-left, going counter-clockwise."
         ),
     )
@@ -134,7 +134,7 @@ def _dsc1001ci5_footprint() -> Footprint:
 
 def add_dsc1001ci5_008_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI5-008.0000 — 8 MHz MEMS oscillator,
-    ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
+    ±10 ppm, 1.7-3.6 V, CDFN 3.2×2.5 mm. Industrial -40..+85 °C.
     """
     fields = dict(
         manf="Microchip",
@@ -143,8 +143,8 @@ def add_dsc1001ci5_008_0000(design, ref: str, **overrides) -> Chip:
         name="DSC1001CI5-008.0000",
         value="DSC1001CI5-008.0000",
         description=(
-            "8 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, "
-            "CDFN 2.5×2.0×0.85 mm 4-pad"
+            "8 MHz MEMS oscillator, ±10 ppm, V_DD=1.7..3.6 V, "
+            "CDFN 3.2×2.5×0.85 mm 4-pad"
         ),
         datasheet="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
         fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
@@ -157,8 +157,8 @@ def add_dsc1001ci5_008_0000(design, ref: str, **overrides) -> Chip:
             "ESD CDM 1.5 kV",
         ],
         eccn=None, itar=None,
-        package="CDFN/DFN-4 (2.5×2.0×0.85)",
-        size_mm=(2.5, 2.0),
+        package="CDFN/DFN-4 (3.2×2.5×0.85)",
+        size_mm=(2.5, 3.2),
         height_mm=0.85,
         # "I" = Industrial -40..+85 °C per datasheet temp-code table
         temp_range_c=(-40, 85),
@@ -168,7 +168,7 @@ def add_dsc1001ci5_008_0000(design, ref: str, **overrides) -> Chip:
         i_rms_a=0.0063,              # 8 MHz @ 1.8 V worst-case ~6.3 mA
         power_rating_w=None,
         clock_freq_hz=8.0e6,         # the headline spec
-        tolerance_pct=0.0025,        # ±25 ppm = ±0.0025 %
+        tolerance_pct=0.001,         # CI5: ±10 ppm = ±0.001 %
         rth_jc_cw=None, rth_ja_cw=None,
         tj_max_c=None,
         pins=[
@@ -190,7 +190,7 @@ def add_dsc1001ci5_008_0000(design, ref: str, **overrides) -> Chip:
 
 def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI5-032.0000 — 32 MHz MEMS oscillator,
-    ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
+    ±10 ppm, 1.7-3.6 V, CDFN 3.2×2.5 mm. Industrial -40..+85 °C.
 
     Same package, pinout, and electrical spec as the -008.0000 variant
     — only the programmed frequency differs. Smash uses this part for
@@ -204,8 +204,8 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
         name="DSC1001CI5-032.0000",
         value="DSC1001CI5-032.0000",
         description=(
-            "32 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, "
-            "CDFN 2.5×2.0×0.85 mm 4-pad"
+            "32 MHz MEMS oscillator, ±10 ppm, V_DD=1.7..3.6 V, "
+            "CDFN 3.2×2.5×0.85 mm 4-pad"
         ),
         datasheet="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
         fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
@@ -218,8 +218,8 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
             "ESD CDM 1.5 kV",
         ],
         eccn=None, itar=None,
-        package="CDFN/DFN-4 (2.5×2.0×0.85)",
-        size_mm=(2.5, 2.0),
+        package="CDFN/DFN-4 (3.2×2.5×0.85)",
+        size_mm=(2.5, 3.2),
         height_mm=0.85,
         temp_range_c=(-40, 85),
         body_material=None, lead_material=None,
@@ -230,7 +230,7 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
         i_rms_a=0.0071,
         power_rating_w=None,
         clock_freq_hz=32.0e6,
-        tolerance_pct=0.0025,
+        tolerance_pct=0.001,
         rth_jc_cw=None, rth_ja_cw=None,
         tj_max_c=None,
         pins=[
@@ -251,7 +251,7 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
 
 def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI5-027.0000 — 27 MHz MEMS oscillator,
-    ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
+    ±10 ppm, 1.7-3.6 V, CDFN 3.2×2.5 mm. Industrial -40..+85 °C.
 
     Same package, pinout, and electrical spec as the -008.0000 variant
     — only the programmed frequency differs. Smash uses this part (2026-11-21) as the AR0234 camera EXTCLK on
@@ -265,8 +265,8 @@ def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
         name="DSC1001CI5-027.0000",
         value="DSC1001CI5-027.0000",
         description=(
-            "27 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, "
-            "CDFN 2.5×2.0×0.85 mm 4-pad"
+            "27 MHz MEMS oscillator, ±10 ppm, V_DD=1.7..3.6 V, "
+            "CDFN 3.2×2.5×0.85 mm 4-pad"
         ),
         datasheet="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
         fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
@@ -279,8 +279,8 @@ def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
             "ESD CDM 1.5 kV",
         ],
         eccn=None, itar=None,
-        package="CDFN/DFN-4 (2.5×2.0×0.85)",
-        size_mm=(2.5, 2.0),
+        package="CDFN/DFN-4 (3.2×2.5×0.85)",
+        size_mm=(2.5, 3.2),
         height_mm=0.85,
         temp_range_c=(-40, 85),
         body_material=None, lead_material=None,
@@ -291,7 +291,7 @@ def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
         i_rms_a=0.0071,
         power_rating_w=None,
         clock_freq_hz=27.0e6,
-        tolerance_pct=0.0025,
+        tolerance_pct=0.001,
         rth_jc_cw=None, rth_ja_cw=None,
         tj_max_c=None,
         pins=[
@@ -312,7 +312,7 @@ def add_dsc1001ci5_027_0000(design, ref: str, **overrides) -> Chip:
 
 def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI5-040.0000 — 40 MHz MEMS oscillator,
-    ±25 ppm, 1.7-3.6 V, CDFN 2.5×2.0 mm. Industrial -40..+85 °C.
+    ±10 ppm, 1.7-3.6 V, CDFN 3.2×2.5 mm. Industrial -40..+85 °C.
 
     Same package, pinout, and electrical spec as the -008/-032 variants
     — only the programmed frequency differs (40 MHz is well inside the
@@ -327,8 +327,8 @@ def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
         name="DSC1001CI5-040.0000",
         value="DSC1001CI5-040.0000",
         description=(
-            "40 MHz MEMS oscillator, ±25 ppm, V_DD=1.7..3.6 V, "
-            "CDFN 2.5×2.0×0.85 mm 4-pad"
+            "40 MHz MEMS oscillator, ±10 ppm, V_DD=1.7..3.6 V, "
+            "CDFN 3.2×2.5×0.85 mm 4-pad"
         ),
         datasheet="application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
         fab_country=None, currency=None, price_1pc=None, price_20kpc=None, weight_g=None,
@@ -341,8 +341,8 @@ def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
             "ESD CDM 1.5 kV",
         ],
         eccn=None, itar=None,
-        package="CDFN/DFN-4 (2.5×2.0×0.85)",
-        size_mm=(2.5, 2.0),
+        package="CDFN/DFN-4 (3.2×2.5×0.85)",
+        size_mm=(2.5, 3.2),
         height_mm=0.85,
         temp_range_c=(-40, 85),
         body_material=None, lead_material=None,
@@ -353,7 +353,7 @@ def add_dsc1001ci5_040_0000(design, ref: str, **overrides) -> Chip:
         i_rms_a=0.0075,
         power_rating_w=None,
         clock_freq_hz=40.0e6,
-        tolerance_pct=0.0025,
+        tolerance_pct=0.001,
         rth_jc_cw=None, rth_ja_cw=None,
         tj_max_c=None,
         pins=[
@@ -520,7 +520,7 @@ def add_sit1533ai_h4_dcc_32_768e(design, ref: str, **overrides) -> Chip:
         manf="SiTime", manf_pn=pn, canonical_id=canonical_id(pn),
         name=pn, value="32.768kHz",
         description="32.768 kHz MEMS oscillator, LVCMOS, 1.5–3.63 V, 2.0×1.2×0.55 mm",
-        datasheet=None,
+        datasheet=datasheet_ref(pn, "SiT1533.pdf"),   # SiTime Rev 1.4 (Aug 2023)
         package="SMD 2012 4-pin", size_mm=(2.0, 1.2), height_mm=0.55,
         temp_range_c=(-40, 85), voltage_rating_v=3.63,
         pins=[

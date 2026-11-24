@@ -245,3 +245,18 @@ def add_tlv3691idpfr(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def _mirror_y(fp):
+    """Transcribed y-down from SamacSys; smash pads are y-UP (the exporter
+    flips once) — mirror so the pins wind counter-clockwise in top view."""
+    from dataclasses import replace as _r
+    fp.pads = [_r(p, position_mm=(p.position_mm[0], -p.position_mm[1])) for p in fp.pads]
+    return fp
+
+
+__tlv3691_x2son6_footprint_raw = _tlv3691_x2son6_footprint
+
+
+def _tlv3691_x2son6_footprint():
+    return _mirror_y(__tlv3691_x2son6_footprint_raw())

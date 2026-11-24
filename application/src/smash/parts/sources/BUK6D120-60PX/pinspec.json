@@ -1,0 +1,80 @@
+{
+  "_meta": {
+    "manf_pn": "BUK6D120-60PX",
+    "datasheet": "Nexperia BUK6D120-60P product data sheet, 3 April 2018",
+    "datasheet_section": "§5 Table 2 Pinning information (transparent top view); Fig.18 package outline SOT1220; Fig.19 reflow footprint",
+    "package": "DFN2020MD-6 (SOT1220), 2 x 2 x 0.65 max, 0.65 pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/BUK6D120-60PX/BUK6D120-60P.pdf",
+    "notes": "P-channel, VDS -60 V, VGS ±20 V. Top view: 1-2-3 down the left side, 4-5-6 up the right, pad 7 (large drain) toward pins 1/6, pad 8 (small source) between pins 3 and 4."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "D_1",
+      "type": "io",
+      "aliases": [
+        "D",
+        "Drain"
+      ],
+      "note": "drain"
+    },
+    {
+      "num": "2",
+      "name": "D_2",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "3",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -20,
+        20
+      ]
+    },
+    {
+      "num": "4",
+      "name": "S_1",
+      "type": "io",
+      "aliases": [
+        "S",
+        "Source"
+      ],
+      "note": "source; tie to pin 8"
+    },
+    {
+      "num": "5",
+      "name": "D_3",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "6",
+      "name": "D_4",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "7",
+      "name": "D_5",
+      "type": "io",
+      "aliases": [],
+      "note": "large drain pad (thermal) — connect to drain"
+    },
+    {
+      "num": "8",
+      "name": "S_2",
+      "type": "io",
+      "aliases": [],
+      "note": "source pad — connect to source (pin 4)"
+    }
+  ]
+}

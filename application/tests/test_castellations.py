@@ -104,8 +104,40 @@ def test_each_lane_is_one_physical_angle_through_the_fold(built):
             px, py = m11 * x + m21 * y, m12 * x + m22 * y
             phys = math.degrees(math.atan2(py, px)) % 360
             assert min(abs(phys - ang), 360 - abs(phys - ang)) < 1e-3, (c.ref, net)
+            dbg = {n: a for a, n in (contract.get("debug") or {}).get(c.board_tag, [])}
+            if net in dbg and net not in contract["lanes"]:      # board-local debug pad
+                assert abs(dbg[net] - ang) < 1e-3, (c.ref, net)
+                continue
             ln = contract["lanes"][net]
             assert ang in ln.get("board_angles", {}).get(c.board_tag, ln["angles"])
+
+
+def test_debug_castellations_sit_where_no_lane_passes(built):
+    """Each debug castellation is on its own board only, at an angle no lane
+    uses at that board, ≥ 2 pitches from the board's other debug pads."""
+    from smash.parts.castellations import DEBUG_CASTELLATIONS, CAST_PITCH_MM
+    _d, _p, _b, contract, _n, _M = built
+    debug = contract.get("debug") or {}
+    assert debug, "no debug castellations allocated"
+    step = math.degrees(CAST_PITCH_MM / contract["radius_mm"])
+    sep = lambda a, b: abs(((a - b + 180) % 360) - 180)
+    for b, items in debug.items():
+        assert {n for _a, n in items} <= set(DEBUG_CASTELLATIONS[b])
+        for a, net in items:
+            assert net not in contract["lanes"], net
+            for key, ln in contract["lanes"].items():
+                if b in ln["boards"]:
+                    for la in ln.get("board_angles", {}).get(b, ln["angles"]):
+                        assert sep(a, la) > 0.5 * step, (b, net, key)
+            for a2, n2 in items:
+                if n2 != net:
+                    assert sep(a, a2) >= 2 * step - 1e-6, (b, net, n2)
+            # never inside an adjacent slot's antenna keep-out wedge
+            from smash.parts.antenna_slots import SLOTS, KEEPOUT_HALFWIDTH_MM, BOARD_R_MM
+            ko = math.degrees(KEEPOUT_HALFWIDTH_MM / BOARD_R_MM)
+            for s_ in SLOTS:
+                if b in (s_.lower, s_.upper):
+                    assert not (s_.span_deg[0] - ko <= a <= s_.span_deg[1] + ko), (b, net, s_.name, a)
 
 
 def test_lane_capacity_headroom(built):

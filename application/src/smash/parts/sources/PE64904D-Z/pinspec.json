@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "manf_pn": "PE64904D-Z",
+    "datasheet": "pSemi PE64904 Product Specification DOC-87399-3.02 (09/2026)",
+    "datasheet_section": "Figure 20 Pin configuration (top view), Table 9 Pin descriptions; Figure 21 package drawing; Table 1/2; Ordering information",
+    "package": "10-lead QFN 2x2x0.45 mm, no exposed pad, MSL3",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.psemi.com/pdf/datasheets/pe64904ds.pdf",
+    "notes": "PE64904D-Z is the only order code listed. Shunt 1.14-5.10 pF, series 0.60-4.60 pF, 32 states. No land pattern in the DS."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "RF-",
+      "type": "io",
+      "note": "tie to pin 2; solidly grounded in shunt configuration"
+    },
+    {
+      "num": "2",
+      "name": "RF-",
+      "type": "io",
+      "note": "tie to pin 1"
+    },
+    {
+      "num": "3",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.3,
+        3.6
+      ],
+      "note": "abs max 4.0 V"
+    },
+    {
+      "num": "5",
+      "name": "SCL",
+      "type": "input",
+      "voltage_range_v": [
+        0,
+        3.6
+      ],
+      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+    },
+    {
+      "num": "6",
+      "name": "SEN",
+      "type": "input",
+      "voltage_range_v": [
+        0,
+        3.6
+      ],
+      "note": "latch enable; VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+    },
+    {
+      "num": "7",
+      "name": "SDA",
+      "type": "input",
+      "voltage_range_v": [
+        0,
+        3.6
+      ],
+      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+    },
+    {
+      "num": "8",
+      "name": "RF+",
+      "type": "io",
+      "note": "tie to pin 9"
+    },
+    {
+      "num": "9",
+      "name": "RF+",
+      "type": "io",
+      "note": "tie to pin 8"
+    },
+    {
+      "num": "10",
+      "name": "GND",
+      "type": "ground",
+      "note": "RF ground"
+    }
+  ]
+}

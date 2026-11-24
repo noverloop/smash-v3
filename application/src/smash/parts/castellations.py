@@ -579,6 +579,8 @@ def castellation_contract(design, panel, boards, plug_groups=None,
         if crown_over:
             print(f"  WARNING: castellations: {len(crown_over)} crown contact(s) short of a "
                   f"compute rim slot", file=sys.stderr)
+    debug = _debug_castellations(design, panel, boards, chain, pos, r, angles,
+                                 upper_angles, occupied)
     # (2026-11-18) capacity counts the signal sector + the upper antenna-sector
     # angles (open to lanes from wakeup upward); a crown pad reservation only
     # occupies its angle at compute.
@@ -601,7 +603,76 @@ def castellation_contract(design, panel, boards, plug_groups=None,
             "crown_compute_angles": {c.tooth: comp[c.tooth] for c in crown if c.tooth in comp},
             "crown_gnd_ring": crown_ring,
             "plug": plug,
+            "debug": debug,
             "lanes": lanes}
+
+
+# DEBUG castellations: board-local debug nets on a castellation of their own
+# board. No sleeve lane faces them (the tower leaves them open; a sleeve via
+# at that angle brings one out later); on the dev board the escape stub ends
+# on a test point. Allocated AFTER every lane, only at angles no lane uses at
+# that board, so they never move a lane.
+DEBUG_CASTELLATIONS = {
+    "radar_module": ("AWR_TCK", "AWR_TMS", "AWR_TDI", "AWR_SOP0", "AWR_DBG_GPIO"),
+    # wakeup_board: on-tile test points instead (no edge room outside the antenna keep-outs)
+    "power_board": ("PMIC_NRST", "PMIC_WAKEUP"),      # the STPMIC25 sits on power_board
+}
+DEBUG_MIN_SEP_STEPS = 2      # debug pads ≥ 2 lane pitches apart (room for the dev test points)
+
+
+def _debug_castellations(design, panel, boards, chain, pos, r, angles, upper_angles,
+                         occupied) -> dict:
+    """{board: [[angle, net], ...]}: each debug net on the free angle nearest
+    its chip, antenna-sector angles first (they face away from the dev board's
+    channel and keep the signal sector for lanes). Marks the angle occupied
+    at that board only."""
+    out: dict = {}
+    if not DEBUG_CASTELLATIONS:
+        return out
+    M = board_fold_transforms(panel, chain)
+    step = math.degrees(CAST_PITCH_MM / r)
+
+    def adist(a, b):
+        return abs(((a - b + 180.0) % 360.0) - 180.0)
+    from smash.parts.antenna_slots import KEEPOUT_HALFWIDTH_MM, BOARD_R_MM
+    _ko = math.degrees(KEEPOUT_HALFWIDTH_MM / BOARD_R_MM) + 0.5 * step
+    for b, nets in DEBUG_CASTELLATIONS.items():
+        if b not in pos or b not in M or b not in boards:
+            continue
+        k = pos[b]
+        # a board next to a slot keeps that slot's antenna keep-out wedge
+        # (span ± keep-out half-width) free of debug copper
+        ko = [(s_.span_deg[0] - _ko, s_.span_deg[1] + _ko) for s_ in _ANT_SLOTS
+              if b in (s_.lower, s_.upper)]
+
+        def free_at(a):
+            return (all(not (lo <= k <= hi) for lo, hi in occupied[a])
+                    and all(not (a0 <= a <= a1) for a0, a1 in ko))
+        place = {pl.item.ref: pl.position_mm for pl in boards[b].chip_placements
+                 if getattr(pl.item, "board_tag", b) == b}
+        taken: list = []
+        for net_name in nets:
+            net = design.net_by_name(net_name)
+            if net is None:
+                continue
+            refs = [p[0] for p in net.pins if p[0] in place]
+            refs.sort(key=lambda ref: (not ref.startswith("U_"), ref))
+            xy = place[refs[0]] if refs else (0.0, 0.0)
+            best = None
+            for group in (upper_angles, angles):
+                cands = [a for a in group if free_at(a)
+                         and all(adist(a, t) >= DEBUG_MIN_SEP_STEPS * step - 1e-6 for t in taken)]
+                if cands:
+                    best = min(cands, key=lambda a: (math.dist(_local_xy(M[b], a, r), xy), a))
+                    break
+            if best is None:
+                print(f"  WARNING: castellations: no free angle for debug net {net_name} "
+                      f"on {b}", file=sys.stderr)
+                continue
+            occupied[best].append((k, k))
+            taken.append(best)
+            out.setdefault(b, []).append([round(best, 4), net_name])
+    return out
 
 
 AFT_CAP_TAG = "aft_end_cap"         # virtual board of the aft public-interface contacts
@@ -841,13 +912,20 @@ def place_castellations(design, panel, boards, *, connect,
                 # battery-zone fan moves the aft board's castellations)
                 for a in lane.get("board_angles", {}).get(b, lane["angles"]):
                     per_board.setdefault(b, []).append((a, net_name))
+    for b, items in (contract.get("debug") or {}).items():
+        if b in boards and b in M:
+            for a, net_name in items:
+                per_board.setdefault(b, []).append((a, net_name))
     ab = contract.get("aft_board")
     for e in contract.get("plug", []):
         if ab in boards and ab in M:
             per_board.setdefault(ab, []).append((e["angle"], e["net"]))
     counts = {}
+    dbg_nets = {b: {n for _a, n in its} for b, its in (contract.get("debug") or {}).items()}
     for b, items in per_board.items():
-        items.sort()
+        # lanes numbered in angle order; debug pads AFTER them (adding one
+        # never renumbers a lane pad)
+        items.sort(key=lambda it: (it[1] in dbg_nets.get(b, ()), it[0]))
         pads = []
         for i, (a, _n) in enumerate(items):
             pads.append(Pad(num=str(i + 1), position_mm=_local_xy(M[b], a, r_of(b)),

@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "manf_pn": "VSMB1940X01",
+    "datasheet": "Vishay VSMB1940X01 Doc 81933 Rev.1.6 (24-Mar-2025)",
+    "datasheet_section": "p.4 Package dimensions (drawing 6.541-5064.01-4) + recommended solder pad",
+    "package": "0805 2.0 x 1.25 x 0.85 mm",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/VSMB1940X01/vsmb1940.pdf",
+    "notes": "Terminals labelled Anode / Cathode in the drawing; recommended pads 2 x (1.0 x 1.45), 0.6 gap. AEC-Q101, MSL 3."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "aliases": [
+        "Cathode"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "A",
+      "type": "passive",
+      "aliases": [
+        "Anode"
+      ]
+    }
+  ]
+}

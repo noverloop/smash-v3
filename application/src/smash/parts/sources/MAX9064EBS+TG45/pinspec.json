@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "manf_pn": "MAX9064EBS+TG45",
+    "datasheet": "ADI MAX9060–MAX9064 19-4105 Rev 11 (1/25)",
+    "datasheet_section": "p.1 Pin Configurations (UCSP top view, bumps on bottom); p.7 Pin/Bump Description; p.3 MAX9062/3/4 Electrical Characteristics; p.11 package outline 21-0789",
+    "package": "4-bump UCSP B4+1, 1.0x1.0 mm, 0.5 mm pitch, 0.64±0.05 mm",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/MAX9064EBS+TG45/MAX9060-MAX9064.pdf",
+    "notes": "MAX9064 = internal 0.2 V reference, NONINVERTING input, PUSH-PULL output: OUT high when IN > VREF (toc18). VREF 188/200/212 mV @25C, 185-215 mV over -40..85C; VHYS ±0.9 mV. 'T' = tape and reel, G45 = protective die coating."
+  },
+  "pins": [
+    {
+      "num": "A1",
+      "name": "OUT",
+      "type": "output",
+      "note": "Push-pull; high when IN > 0.2 V. Abs max -0.3 V to VCC+0.3 V."
+    },
+    {
+      "num": "A2",
+      "name": "IN",
+      "type": "input",
+      "aliases": [
+        "IN+"
+      ],
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ],
+      "note": "Noninverting input vs internal 0.2 V. Input range independent of VCC; stays high-Z when VCC = 0. No ESD clamp to VCC. Abs max -0.3 to +6 V, ±20 mA."
+    },
+    {
+      "num": "B1",
+      "name": "VCC",
+      "type": "power",
+      "aliases": [
+        "V+"
+      ],
+      "voltage_range_v": [
+        1.0,
+        5.5
+      ],
+      "note": "Bypass to GND with 0.1 µF."
+    },
+    {
+      "num": "B2",
+      "name": "GND",
+      "type": "ground",
+      "aliases": [
+        "V-"
+      ]
+    }
+  ]
+}

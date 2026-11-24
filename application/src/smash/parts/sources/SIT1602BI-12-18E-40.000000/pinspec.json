@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "manf_pn": "SIT1602BI-12-18E-40.000000",
+    "datasheet": "SiTime SiT1602B Rev 1.08 (Jan 2023)",
+    "datasheet_section": "Table 2 Pin Description + Figure 1 (top view); Ordering Information p13; Dimensions/land pattern p10 (2.5 x 2.0, POD-PQFN-004-X02025-010)",
+    "package": "4L PQFN 2.5 x 2.0 x 0.75 mm (package code '1'); recommended land: 1.1 x 1.0 pads at 1.9 (long axis) x 1.5 (short axis) centre spacing",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.sitime.com/datasheet/SiT1602",
+    "notes": "Decode: B = revision, I = -40..85 C, '-' = default drive, '1' = 2.5x2.0, '2' = +/-25 ppm, '18' = 1.8 V +/-10%, 'E' = output enable, no packing suffix = bulk. 40 MHz is a listed standard frequency."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "OE",
+      "type": "input",
+      "aliases": [
+        "OE/ST#/NC",
+        "STANDBY#"
+      ],
+      "note": "H = output on, L = output high-Z. Use a pull-up of 10 kOhm or less if not driven; internal 50-150 kOhm. VIH 70% Vdd, VIL 30% Vdd"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "aliases": []
+    },
+    {
+      "num": "3",
+      "name": "OUT",
+      "type": "output",
+      "aliases": [],
+      "note": "LVCMOS, 15 pF rated load"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "aliases": [],
+      "voltage_range_v": [
+        1.62,
+        1.98
+      ],
+      "note": "0.1 uF or more between VDD and GND required"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "_meta": {
+    "manf_pn": "MCP1640D-I/MC",
+    "datasheet": "Microchip DS20002234E",
+    "datasheet_section": "Package Types p1 + Table 3-1 p9 + MC package drawing C04-123C p25 + land pattern C04-2123B p26",
+    "package": "8-lead DFN 2x3x0.9 mm (MC), 0.5 mm pitch, EP = pin 9",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/MCP1640DT-I_MC/MCP1640-family.pdf",
+    "notes": "D = PWM only, input-to-output bypass. Blank packaging = tube; DT = tape and reel. Same die and package."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VFB",
+      "type": "analog",
+      "note": "1.21 V typ feedback"
+    },
+    {
+      "num": "2",
+      "name": "SGND",
+      "type": "ground",
+      "note": "Connect externally to PGND"
+    },
+    {
+      "num": "3",
+      "name": "PGND",
+      "type": "ground",
+      "note": "Connect externally to SGND"
+    },
+    {
+      "num": "4",
+      "name": "EN",
+      "type": "input",
+      "note": "High >90 % VIN, low <20 % VIN"
+    },
+    {
+      "num": "5",
+      "name": "SW",
+      "type": "passive",
+      "note": "Inductor from VIN; up to 800 mA peak"
+    },
+    {
+      "num": "6",
+      "name": "VOUTP",
+      "type": "power",
+      "voltage_range_v": [
+        2.0,
+        5.5
+      ],
+      "note": "Connect externally to VOUTS"
+    },
+    {
+      "num": "7",
+      "name": "VOUTS",
+      "type": "power",
+      "note": "Output sense; connect externally to VOUTP"
+    },
+    {
+      "num": "8",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        0.35,
+        5.5
+      ],
+      "note": "0.65 V typ / 0.8 V max start-up; >=4.7 uF"
+    },
+    {
+      "num": "9",
+      "name": "EP",
+      "type": "ground",
+      "note": "No internal connection; must be connected to VSS (same potential as SGND/PGND)"
+    }
+  ]
+}

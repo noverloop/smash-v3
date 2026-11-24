@@ -1,0 +1,123 @@
+{
+  "_meta": {
+    "manf_pn": "LTC3124EDHC#TRPBF",
+    "datasheet": "Linear/ADI LTC3124 datasheet 3124f",
+    "datasheet_section": "Pin Configuration (DHC package, top view) p2 + Pin Functions p7-8 + Order Information p2; package DHC16 LTC DWG 05-08-1706 Rev 0",
+    "package": "DHC 16-lead DFN 5x3x0.75 mm, 0.5 mm pitch, EP = pin 17",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/LTC3124EDHC_TRPBF/3124f.pdf",
+    "notes": "Grounds are typed power in our factory by design (FLEX_GND convention)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "SWB",
+      "type": "passive",
+      "note": "Phase B switch node; inductor to VIN"
+    },
+    {
+      "num": "2",
+      "name": "PGNDB",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "SWA",
+      "type": "passive",
+      "note": "Phase A switch node; inductor to VIN"
+    },
+    {
+      "num": "4",
+      "name": "PGNDA",
+      "type": "ground"
+    },
+    {
+      "num": "5",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        0.5,
+        5.5
+      ],
+      "note": "1.8 V max start-up (VOUT=0); >=10 uF ceramic to PGND"
+    },
+    {
+      "num": "6",
+      "name": "PWM/SYNC",
+      "type": "input",
+      "note": "Do not leave floating. High=PWM, Low=Burst, clock=sync (then RT resistor required)"
+    },
+    {
+      "num": "7",
+      "name": "VCC",
+      "type": "power",
+      "note": "Regulator output; >=4.7 uF to SGND"
+    },
+    {
+      "num": "8",
+      "name": "RT",
+      "type": "analog",
+      "note": "Resistor to SGND; fOSC ~ 56/RT(kOhm) MHz"
+    },
+    {
+      "num": "9",
+      "name": "VC",
+      "type": "analog",
+      "note": "Error-amp output; compensation network to SGND"
+    },
+    {
+      "num": "10",
+      "name": "FB",
+      "type": "analog",
+      "note": "VOUT = 1.2 V*(1+R1/R2); divider bottom to SGND"
+    },
+    {
+      "num": "11",
+      "name": "SD",
+      "type": "input",
+      "note": "Do not leave floating. >1.6 V on, <0.25 V off (output disconnected)"
+    },
+    {
+      "num": "12",
+      "name": "SGND",
+      "type": "ground"
+    },
+    {
+      "num": "13",
+      "name": "VOUTA",
+      "type": "power",
+      "voltage_range_v": [
+        2.5,
+        15
+      ],
+      "note": "Must be tied to VOUTB; >=10 uF per phase"
+    },
+    {
+      "num": "14",
+      "name": "NC",
+      "type": "nc",
+      "note": "Not connected internally; DS: connect to VOUTA/VOUTB for copper"
+    },
+    {
+      "num": "15",
+      "name": "VOUTB",
+      "type": "power",
+      "note": "Must be tied to VOUTA"
+    },
+    {
+      "num": "16",
+      "name": "CAP",
+      "type": "passive",
+      "note": "~100 nF low-ESR from CAP to VOUT"
+    },
+    {
+      "num": "17",
+      "name": "PGND",
+      "type": "ground",
+      "aliases": [
+        "EP"
+      ],
+      "note": "Exposed pad is PGND; must be soldered to the PCB ground plane"
+    }
+  ]
+}

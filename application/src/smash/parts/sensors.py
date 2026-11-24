@@ -482,7 +482,7 @@ Pin map (datasheet p7 §1 + pinmap.txt):
   15 = RESERVED_2  (connect to GND)
   16 = GND_4
 
->>> RESERVED pins (10, 15) must be tied to GND.
+>>> RESERVED pin 10 to GND, pin 15 to Vdd (DS Table 1).
 
 Applications (datasheet p1): car crash detection, shock detection,
 impact recognition, concussion detection, asset tracking, augmented
@@ -496,7 +496,8 @@ Distributor: ST product page www.st.com/h3lis331dl
 
 
 def _h3lis331dl_lga16_footprint() -> Footprint:
-    """LGA-16 (3x3x1 mm) footprint per SamacSys LIS3DHTR.kicad_mod.
+    """LGA-16 (3x3x1 mm) footprint per SamacSys LIS3DHTR.kicad_mod, in smash
+    y-UP coordinates (pin 1 top-left, counter-clockwise; H3LIS331DL DS Fig. 2).
     Shared with LIS3DH 3-axis accelerometer family.
 
     Pad rotation is baked into the sizes. In the source mod the two SIDE
@@ -511,26 +512,26 @@ def _h3lis331dl_lga16_footprint() -> Footprint:
         name="LIS3DHTR (LGA-16)",
         package_class="TFLGA-16L",
         pads=[
-            # Left column (pins 1-5): x=-1.2, y from -1 to +1 in steps of 0.5
-            Pad(num="1", position_mm=(-1.2, -1.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="2", position_mm=(-1.2, -0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="3", position_mm=(-1.2,  0.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="4", position_mm=(-1.2,  0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="5", position_mm=(-1.2,  1.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            # Bottom row (pins 6-8): y=+1.2
-            Pad(num="6", position_mm=(-0.5,  1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
-            Pad(num="7", position_mm=( 0.0,  1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
-            Pad(num="8", position_mm=( 0.5,  1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            # Left column (pins 1-5): x=-1.2, y from +1 to -1 in steps of 0.5
+            Pad(num="1", position_mm=(-1.2, 1), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="2", position_mm=(-1.2, 0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="3", position_mm=(-1.2, 0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="4", position_mm=(-1.2, -0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="5", position_mm=(-1.2, -1), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            # Bottom row (pins 6-8): y=-1.2
+            Pad(num="6", position_mm=(-0.5, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="7", position_mm=(0.0, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="8", position_mm=(0.5, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
             # Right column (pins 9-13): x=+1.2
-            Pad(num="9",  position_mm=( 1.2,  1.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="10", position_mm=( 1.2,  0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="11", position_mm=( 1.2,  0.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="12", position_mm=( 1.2, -0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            Pad(num="13", position_mm=( 1.2, -1.0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
-            # Top row (pins 14-16): y=-1.2
-            Pad(num="14", position_mm=( 0.5, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
-            Pad(num="15", position_mm=( 0.0, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
-            Pad(num="16", position_mm=(-0.5, -1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="9",  position_mm=(1.2, -1), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="10", position_mm=(1.2, -0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="11", position_mm=(1.2, 0), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="12", position_mm=(1.2, 0.5), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            Pad(num="13", position_mm=(1.2, 1), size_mm=(0.6, 0.3), shape="rect", layer="F.Cu"),
+            # Top row (pins 14-16): y=+1.2
+            Pad(num="14", position_mm=(0.5, 1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="15", position_mm=(0.0, 1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="16", position_mm=(-0.5, 1.2), size_mm=(0.3, 0.6), shape="rect", layer="F.Cu"),
         ],
         body_outline=[(-1.5, -1.5), (1.5, -1.5), (1.5, 1.5), (-1.5, 1.5)],
         courtyard=[(-1.8, -1.8), (1.8, -1.8), (1.8, 1.8), (-1.8, 1.8)],
@@ -598,7 +599,7 @@ def add_h3lis331dltr(design, ref: str, **overrides) -> Chip:
             Pin(num="13", name="GND_3",                             type="ground"),
             Pin(num="14", name="VDD",                               type="power"),
             Pin(num="15", name="RESERVED_2",                        type="reserved",
-                note="datasheet implies: Connect to GND"),
+                note="DS Table 1: Connect to Vdd"),
             Pin(num="16", name="GND_4",                             type="ground"),
         ],
         footprint=_h3lis331dl_lga16_footprint(),
@@ -606,3 +607,17 @@ def add_h3lis331dltr(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+def _mirror_y(fp):
+    """These lands were transcribed y-down; smash pads are y-UP (the exporter
+    flips once) — mirror so the pins wind counter-clockwise in top view."""
+    from dataclasses import replace as _r
+    fp.pads = [_r(p, position_mm=(p.position_mm[0], -p.position_mm[1])) for p in fp.pads]
+    return fp
+
+__ism330dhcx_lga14_footprint_raw = _ism330dhcx_lga14_footprint
+
+
+def _ism330dhcx_lga14_footprint():
+    return _mirror_y(__ism330dhcx_lga14_footprint_raw())

@@ -9,6 +9,7 @@ from __future__ import annotations
 from smash.state import Chip, Footprint
 from smash.parts._artifacts import (
     pads_from_kicad_mod, outline_polygon, build_pins, src, datasheet_ref,
+    type_pins_by_base,
 )
 from smash.parts._slug import canonical_id
 
@@ -247,6 +248,11 @@ def add_mt29f4g01abafdwb_it_f(design, ref: str, **overrides) -> Chip:
             "8-pad WSON package, 6×8 mm body."
         ),
     )
+    # Signal types: m70a_4gb_3v_nand_spi Rev. G Table 1 (IO2/IO3 are I/O in
+    # quad mode, so WP#/HOLD# are typed io). pinspec.json is the cross-check.
+    type_pins_by_base(fields["pins"], {
+        "CS#": "input", "SCK": "input", "SI/IO0": "io", "SO/IO1": "io",
+        "WP#/IO2": "io", "HOLD#/IO3": "io", "VCC": "power", "VSS": "ground"})
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
 
@@ -391,6 +397,20 @@ def add_mt41k256m16tw_107_ptr(design, ref: str, **overrides) -> Chip:
             "if 4 Gbit suffices."
         ),
     )
+    # Ball types: 4Gb_DDR3L Rev. Q Table 4 (x16 ball descriptions).
+    # pinspec.json is the cross-check.
+    # VREFCA/VREFDQ: Table 4 says "Supply", but they are 0.5 × VDDQ reference
+    # inputs (DDR3L_VREF net, PMIC VREFDDR) — typed analog.
+    t = {"VDD": "power", "VDDQ": "power", "VREFCA": "analog", "VREFDQ": "analog",
+         "VSS": "ground", "VSSQ": "ground", "ZQ": "analog", "NC": "nc",
+         "LDQS": "io", "LDQS#": "io", "UDQS": "io", "UDQS#": "io",
+         "LDM": "input", "UDM": "input", "CK": "input", "CK#": "input",
+         "CKE": "input", "CS#": "input", "RAS#": "input", "CAS#": "input",
+         "WE#": "input", "ODT": "input", "RESET#": "input"}
+    t.update({f"DQ{i}": "io" for i in range(16)})
+    t.update({f"A{i}": "input" for i in range(15)})
+    t.update({f"BA{i}": "input" for i in range(3)})
+    type_pins_by_base(fields["pins"], t)
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
 

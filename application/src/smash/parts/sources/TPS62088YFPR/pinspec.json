@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "manf_pn": "TPS62088YFPR",
+    "datasheet": "TI SLVSD94F (Nov 2024)",
+    "datasheet_section": "Figure 5-1 (6-pin YFP DSBGA top view) + Table 5-1; Device Options (TPS62088YFP = 3 A adjustable, PFM/PWM); YFP0006-C01 land",
+    "package": "DSBGA-6 (YFP) 0.8x1.2x0.5 mm, 0.4 mm pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/TPS62088YFPR/tps62088.pdf",
+    "notes": "Abs max 6 V on VIN/FB/EN/PG; recommended VIN 2.4-5.5 V, VOUT 0.6-4.0 V, PG pull-up <=5.5 V."
+  },
+  "pins": [
+    {
+      "num": "A1",
+      "name": "EN",
+      "type": "input",
+      "note": "Do not leave floating"
+    },
+    {
+      "num": "A2",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        2.4,
+        5.5
+      ]
+    },
+    {
+      "num": "B1",
+      "name": "PG",
+      "type": "output",
+      "note": "Open-drain; if unused leave floating"
+    },
+    {
+      "num": "B2",
+      "name": "SW",
+      "type": "passive"
+    },
+    {
+      "num": "C1",
+      "name": "FB",
+      "type": "analog",
+      "note": "Adjustable version: resistor divider (fixed versions: to output)"
+    },
+    {
+      "num": "C2",
+      "name": "GND",
+      "type": "ground"
+    }
+  ]
+}

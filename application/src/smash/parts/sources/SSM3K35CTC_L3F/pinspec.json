@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "manf_pn": "SSM3K35CTC,L3F",
+    "datasheet": "Toshiba SSM3K35CTC datasheet Rev.3.0.A (2026-04-14)",
+    "datasheet_section": "§3 Packaging and Pin Assignment (bottom view, p.1); Package Dimensions (bottom view, p.8)",
+    "package": "CST3C 0.6 x 0.8 x 0.38 (+0.02/-0.03) mm; terminals 1,2 0.15x0.2 at 0.35 pitch, terminal 3 0.5x0.2, row spacing 0.5",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=29855&prodName=SSM3K35CTC",
+    "notes": "Bottom view: 1 (G) top-left, 2 (S) top-right, 3 (D) wide terminal on the opposite edge → top view mirrored. VDSS 20 V, VGSS ±10 V, ID 250 mA. G-S protection diode + gate resistor internal. No recommended land in the datasheet."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -10,
+        10
+      ]
+    },
+    {
+      "num": "2",
+      "name": "S",
+      "type": "io",
+      "aliases": [
+        "Source"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "D",
+      "type": "io",
+      "aliases": [
+        "Drain"
+      ],
+      "note": "VDSS 20 V"
+    }
+  ]
+}

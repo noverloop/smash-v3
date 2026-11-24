@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "manf_pn": "RB160VAM-60TR",
+    "datasheet": "ROHM RB160VAM-60 data sheet 2017/05/16 Rev.001",
+    "datasheet_section": "p.1 Outline + Inner Circuit; p.5 Dimensions SOD-323HE [SC-108B] (TUMD2M) incl. land pattern",
+    "package": "SOD-323HE / SC-108B / TUMD2M: D 1.4, E 2.0, HE 2.5 (2.3-2.7), A 0.6 (max 0.80)",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://fscdn.rohm.com/en/products/databook/datasheet/discrete/diode/schottky_barrier/rb160vam-60tr-e.pdf",
+    "notes": "(1) Cathode = marking-bar end, large terminal; (2) Anode, small terminal. Land: l1 2.0 (cathode) + l2 0.8 (anode), b4 1.1, l3 3.3 overall. VR 60 V, Io 1 A, IFSM 5 A, IR 40 µA max @ 60 V. Marking 7."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "aliases": [
+        "Cathode"
+      ],
+      "note": "large pad"
+    },
+    {
+      "num": "2",
+      "name": "A",
+      "type": "passive",
+      "aliases": [
+        "Anode"
+      ]
+    }
+  ]
+}

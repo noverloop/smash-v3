@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "manf_pn": "SN74CB3T3125PWR",
+    "datasheet": "TI SCDS120C (Feb 2003, rev. Dec 2018)",
+    "datasheet_section": "Section 5 PW top-view diagram (authoritative) + Pin Functions; 6.3 Recommended Operating Conditions",
+    "package": "TSSOP-14 (PW) 5.0x4.4 mm, 0.65 mm pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.ti.com/lit/ds/symlink/sn74cb3t3125.pdf",
+    "notes": "Datasheet Pin Functions table lists 8=3A, 9=3B, 11=4A, 12=4B, which contradicts its own PW/RGY top-view drawing and the standard '125 pinout (8=3B, 9=3A, 11=4B, 12=4A). Drawing followed. A/B are symmetric FET-switch terminals, so the consequence is naming only. Top mark KS125."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "1~{OE}",
+      "type": "input",
+      "aliases": [
+        "1OE"
+      ],
+      "note": "Active-low; unused control inputs must be held at VCC or GND."
+    },
+    {
+      "num": "2",
+      "name": "1A",
+      "type": "io"
+    },
+    {
+      "num": "3",
+      "name": "1B",
+      "type": "io"
+    },
+    {
+      "num": "4",
+      "name": "2~{OE}",
+      "type": "input",
+      "aliases": [
+        "2OE"
+      ],
+      "note": "Do not float."
+    },
+    {
+      "num": "5",
+      "name": "2A",
+      "type": "io"
+    },
+    {
+      "num": "6",
+      "name": "2B",
+      "type": "io"
+    },
+    {
+      "num": "7",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "8",
+      "name": "3B",
+      "type": "io"
+    },
+    {
+      "num": "9",
+      "name": "3A",
+      "type": "io"
+    },
+    {
+      "num": "10",
+      "name": "3~{OE}",
+      "type": "input",
+      "aliases": [
+        "3OE"
+      ],
+      "note": "Do not float."
+    },
+    {
+      "num": "11",
+      "name": "4B",
+      "type": "io"
+    },
+    {
+      "num": "12",
+      "name": "4A",
+      "type": "io"
+    },
+    {
+      "num": "13",
+      "name": "4~{OE}",
+      "type": "input",
+      "aliases": [
+        "4OE"
+      ],
+      "note": "Do not float."
+    },
+    {
+      "num": "14",
+      "name": "VCC",
+      "type": "power",
+      "voltage_range_v": [
+        2.3,
+        3.6
+      ],
+      "note": "0.1 µF bypass. I/O 0..5.5 V."
+    }
+  ]
+}

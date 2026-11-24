@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "manf_pn": "INA241A2IDGKR",
+    "datasheet": "TI SBOSA30D (Mar 2022, rev. Dec 2024)",
+    "datasheet_section": "Figure 5-2 (D/DGK top view), Table 5-1, 6.3 Recommended Operating Conditions",
+    "package": "VSSOP-8 (DGK) 3x3 mm body, 4.9 mm lead span, 0.65 mm pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://www.ti.com/lit/ds/symlink/ina241a.pdf",
+    "notes": "A2 = gain 20 V/V. Top mark 2U7B."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "IN-",
+      "type": "input",
+      "aliases": [
+        "IN–"
+      ],
+      "voltage_range_v": [
+        -5,
+        110
+      ],
+      "note": "Load side of shunt (high-side). Abs max -20..120 V."
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "REF2",
+      "type": "input",
+      "note": "Connect to 0 V..VS; do not float."
+    },
+    {
+      "num": "4",
+      "name": "NC",
+      "type": "reserved",
+      "note": "Reserved — datasheet: connect to ground."
+    },
+    {
+      "num": "5",
+      "name": "OUT",
+      "type": "output"
+    },
+    {
+      "num": "6",
+      "name": "VS",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        20
+      ]
+    },
+    {
+      "num": "7",
+      "name": "REF1",
+      "type": "input",
+      "note": "Connect to 0 V..VS; do not float."
+    },
+    {
+      "num": "8",
+      "name": "IN+",
+      "type": "input",
+      "voltage_range_v": [
+        -5,
+        110
+      ],
+      "note": "Bus side of shunt (high-side)."
+    }
+  ]
+}

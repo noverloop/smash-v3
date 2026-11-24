@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "manf_pn": "TG2016SMN 32.0000M-MCGNNM0",
+    "datasheet": "Epson TG2016SMN/TG2520SMN TCXO brief (TG2016SMN_en.pdf, product no. X1G005441xxxx25)",
+    "datasheet_section": "Pin map; External dimensions; Footprint (Recommended) A 0.75 / B 0.6 / C 1.13 / D 1.65; product-name code table",
+    "package": "SMD 2.0x1.6x0.73 mm, 4-pad",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "https://download.epsondevice.com/td/pdf/brief/TG2016SMN_en.pdf",
+    "notes": "Decode: S clipped sine; M = supply 2.8 to 3.3 V (TCXO); C ±0.5 ppm; G -40..85 °C; N no ST; N no Vc; M internal code. Supply listed as 2.8 V±5% / 3.0 V±5% / 3.3 V±5%, range 1.7-3.63 V. Quartz (shock rule: open issue)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "N.C.",
+      "type": "nc",
+      "aliases": [
+        "NC"
+      ],
+      "note": "keep OPEN or GND; not a ground pin"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "OUT",
+      "type": "output",
+      "frequency_hz": 32000000,
+      "note": "clipped sine ≥ 0.8 Vpp into 10 kΩ||10 pF, DC-cut cap"
+    },
+    {
+      "num": "4",
+      "name": "VCC",
+      "type": "power",
+      "aliases": [
+        "VDD"
+      ],
+      "voltage_range_v": [
+        2.66,
+        3.465
+      ],
+      "note": "M code: 2.8/3.0/3.3 V ±5%; ≤ 1.8 mA; bypass 0.01-0.1 µF at pin"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "manf_pn": "S-1318D33-A4T2U4",
+    "datasheet": "ABLIC S-1318 Series Rev.1.3_00",
+    "datasheet_section": "Table 8 / Fig. 6 (HSNT-4(1010)); PL004-A-P-SD-1.1 (p.38); PL004-A-L-SD-2.0 (p.41); Table 1, Table 9, §3.2",
+    "package": "HSNT-4(1010) 1.0x1.0x0.38, heat sink",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/S-1318D33-A4T2U4/S-1318_datasheet.pdf",
+    "notes": "PL004-A-P-SD top view: 4 TL, 3 TR, 1 BL, 2 BR; 1-2 and 4-3 are the 0.65 mm pairs; heat-sink bar runs parallel to them. D type: no discharge, no ON/OFF pull-down."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VOUT",
+      "aliases": [
+        "OUT"
+      ],
+      "type": "power",
+      "voltage_v": 3.3
+    },
+    {
+      "num": "2",
+      "name": "VSS",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "ON/OFF",
+      "aliases": [
+        "EN"
+      ],
+      "type": "input",
+      "note": "Active H; D type has no pull-down - do not float; tie to VIN if unused (DS §3.2). Abs max 6.0 V"
+    },
+    {
+      "num": "4",
+      "name": "VIN",
+      "aliases": [
+        "IN"
+      ],
+      "type": "power",
+      "voltage_range_v": [
+        1.7,
+        5.5
+      ],
+      "note": "Abs max 6.0 V"
+    },
+    {
+      "num": "5",
+      "name": "EP",
+      "aliases": [
+        "heat sink"
+      ],
+      "type": "ground",
+      "note": "Connect to board at GND potential; not an electrode (Fig. 6 *1)"
+    }
+  ]
+}

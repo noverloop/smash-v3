@@ -1,0 +1,147 @@
+{
+  "_meta": {
+    "manf_pn": "TC78H653FTG,EL",
+    "datasheet": "Toshiba TC78H653FTG datasheet 2018-11-13",
+    "datasheet_section": "Pin Assignment (Top View) p.2, Pin Functions p.3, Abs Max/Operating p.6, Package P-VQFN16-0303-0.50-001 p.11",
+    "package": "P-VQFN16-0303-0.50-001 3x3x0.9, 0.5 pitch, EP 1.7 typ",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_datasheet.pdf",
+    "notes": "Top view: 1-4 left column top->bottom, 5-8 bottom L->R, 9-12 right bottom->top, 13-16 top R->L. Control inputs have internal 37k series / 150k pull-down per block diagram. EP connection NOT stated in DS (pin table lists no EP)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "IN4/PHA_B",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ],
+      "note": "Abs max -0.3..6 V"
+    },
+    {
+      "num": "2",
+      "name": "IN3/ENB_B",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "3",
+      "name": "NC_1",
+      "aliases": [
+        "NC"
+      ],
+      "type": "nc",
+      "note": "Leave open (DS: 'Please use this terminal open')"
+    },
+    {
+      "num": "4",
+      "name": "IN1/ENB_A",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "5",
+      "name": "IN2/PHA_A",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "6",
+      "name": "STBY",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "7",
+      "name": "NC_2",
+      "aliases": [
+        "NC"
+      ],
+      "type": "nc",
+      "note": "Leave open"
+    },
+    {
+      "num": "8",
+      "name": "GND_1",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "9",
+      "name": "OUT2",
+      "type": "output"
+    },
+    {
+      "num": "10",
+      "name": "OUT1",
+      "type": "output"
+    },
+    {
+      "num": "11",
+      "name": "OUT3",
+      "type": "output"
+    },
+    {
+      "num": "12",
+      "name": "OUT4",
+      "type": "output"
+    },
+    {
+      "num": "13",
+      "name": "GND_2",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "14",
+      "name": "VM",
+      "type": "power",
+      "voltage_range_v": [
+        1.8,
+        7.5
+      ],
+      "note": "Abs max 8.0 V; mind back-EMF pumping"
+    },
+    {
+      "num": "15",
+      "name": "LARGE",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "16",
+      "name": "MODE",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ]
+    },
+    {
+      "num": "17",
+      "name": "EP",
+      "type": "ground",
+      "note": "Not specified in DS; GND assumed (Toshiba convention) - unverified"
+    }
+  ]
+}

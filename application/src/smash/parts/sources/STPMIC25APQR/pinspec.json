@@ -1,0 +1,370 @@
+{
+  "_meta": {
+    "manf_pn": "STPMIC25APQR",
+    "datasheet": "ST DS14278 Rev 6 (Feb 2026)",
+    "datasheet_section": "Figure 2 (pin configuration VQFN 56L top view) + Table 3 (pin description) p6-7; Table 109 mechanical p133; Table 110 ordering",
+    "package": "VQFN 56L 6.5x6.5x0.9 mm, 0.4 mm pitch, EP 4.50 typ (pin 57)",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/STPMIC25APQR/STPMIC25APQR.pdf",
+    "notes": "A variant: VIO/BUCK4 programmed 3.3 V. Abs max: VIN/BUCKxIN/VLX/LDOxIN/PONKEYn/VBUS 6.5 V; VIO + digital pins 4.2 V; INTLDO 2 V; VOUT1/2/3/6 3 V; VOUT4/5/7, LDOxOUT, VREFDDR 5 V. 'unused' = DS 'Not used pin connection' column."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "PONKEYn",
+      "type": "input",
+      "aliases": [
+        "PONKEYN"
+      ],
+      "note": "Active low, internal pull-up; unused: floating"
+    },
+    {
+      "num": "2",
+      "name": "LDO8OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "3",
+      "name": "LDO78IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "4",
+      "name": "LDO7OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "5",
+      "name": "LDO6OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "6",
+      "name": "LDO56IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "7",
+      "name": "LDO5OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "8",
+      "name": "INTLDO",
+      "type": "output",
+      "note": "Internal LDO; 4.7 uF capacitor required"
+    },
+    {
+      "num": "9",
+      "name": "GNDLDO",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "10",
+      "name": "AGND",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "11",
+      "name": "VIN",
+      "type": "power",
+      "note": "Main input (LDO4, VREF)"
+    },
+    {
+      "num": "12",
+      "name": "VBUS",
+      "type": "input",
+      "note": "USB input; unused: floating"
+    },
+    {
+      "num": "13",
+      "name": "LDO4OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "14",
+      "name": "LDO1OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "15",
+      "name": "LDO12IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "16",
+      "name": "LDO2OUT",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "17",
+      "name": "VOUT4",
+      "type": "analog",
+      "note": "Buck4 feedback; unused: floating"
+    },
+    {
+      "num": "18",
+      "name": "PGND4",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "19",
+      "name": "VLX4",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "20",
+      "name": "BUCK4IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "21",
+      "name": "VOUT3",
+      "type": "analog",
+      "note": "unused: floating"
+    },
+    {
+      "num": "22",
+      "name": "PGND3",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "23",
+      "name": "VLX3",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "24",
+      "name": "BUCK3IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "25",
+      "name": "BUCK2IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "26",
+      "name": "VLX2",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "27",
+      "name": "PGND2",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "28",
+      "name": "VOUT2",
+      "type": "analog",
+      "note": "unused: floating"
+    },
+    {
+      "num": "29",
+      "name": "VIO",
+      "type": "power",
+      "note": "I/O supply for all digital pins except WAKEUPn/PONKEYn; abs max 4.2 V"
+    },
+    {
+      "num": "30",
+      "name": "WAKEUPn",
+      "type": "input",
+      "aliases": [
+        "WAKEUPN"
+      ],
+      "note": "Active low, internal pull-up; unused: floating"
+    },
+    {
+      "num": "31",
+      "name": "RSTn",
+      "type": "io",
+      "aliases": [
+        "RSTN"
+      ],
+      "note": "Bidirectional, internal pull-up"
+    },
+    {
+      "num": "32",
+      "name": "INTn",
+      "type": "output",
+      "aliases": [
+        "INTN"
+      ],
+      "note": "Active low, internal pull-up"
+    },
+    {
+      "num": "33",
+      "name": "SCL",
+      "type": "input",
+      "note": "unused: VIO"
+    },
+    {
+      "num": "34",
+      "name": "SDA",
+      "type": "io",
+      "note": "unused: VIO"
+    },
+    {
+      "num": "35",
+      "name": "VOUT5",
+      "type": "analog",
+      "note": "unused: floating"
+    },
+    {
+      "num": "36",
+      "name": "PGND5",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "37",
+      "name": "VLX5",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "38",
+      "name": "BUCK5IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "39",
+      "name": "BUCK1IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "40",
+      "name": "VLX1",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "41",
+      "name": "PGND1",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "42",
+      "name": "VOUT1",
+      "type": "analog",
+      "note": "abs max 3 V; unused: floating"
+    },
+    {
+      "num": "43",
+      "name": "LDO3IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "44",
+      "name": "LDO3OUT",
+      "type": "output",
+      "note": "unused: VIN (per DS)"
+    },
+    {
+      "num": "45",
+      "name": "VREFDDR",
+      "type": "output",
+      "note": "unused: floating"
+    },
+    {
+      "num": "46",
+      "name": "VOUT6",
+      "type": "analog",
+      "note": "abs max 3 V; unused: floating"
+    },
+    {
+      "num": "47",
+      "name": "PGND6",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "48",
+      "name": "VLX6",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "49",
+      "name": "BUCK6IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "50",
+      "name": "BUCK7IN",
+      "type": "power",
+      "note": "unused: VIN"
+    },
+    {
+      "num": "51",
+      "name": "VLX7",
+      "type": "passive",
+      "note": "unused: floating"
+    },
+    {
+      "num": "52",
+      "name": "PGND7",
+      "type": "ground",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "53",
+      "name": "VOUT7",
+      "type": "analog",
+      "note": "unused: floating"
+    },
+    {
+      "num": "54",
+      "name": "PWRCTRL3",
+      "type": "input",
+      "note": "Internal pull-up (default)/pull-down; unused: VIO or GND"
+    },
+    {
+      "num": "55",
+      "name": "PWRCTRL2",
+      "type": "input",
+      "note": "unused: VIO or GND"
+    },
+    {
+      "num": "56",
+      "name": "PWRCTRL1",
+      "type": "input",
+      "note": "unused: VIO or GND"
+    },
+    {
+      "num": "57",
+      "name": "EPGND",
+      "type": "ground",
+      "aliases": [
+        "EP"
+      ],
+      "note": "Exposed pad; must be connected to ground"
+    }
+  ]
+}

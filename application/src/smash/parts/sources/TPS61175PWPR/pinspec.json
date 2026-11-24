@@ -1,0 +1,119 @@
+{
+  "_meta": {
+    "manf_pn": "TPS61175PWPR",
+    "datasheet": "TI SLVS892F (Apr 2019)",
+    "datasheet_section": "Section 5 Pin Configuration and Functions p3; PWP0014K outline + example board layout 4229706/B",
+    "package": "HTSSOP-14 PowerPAD (PWP) 5.0x4.4 mm, 0.65 mm pitch, thermal pad = pin 15",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/TPS61175PWPR/TPS61175.pdf",
+    "notes": "Our names use _1/_2/_3 suffixes for repeated SW/PGND."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "SW",
+      "type": "passive",
+      "aliases": [
+        "SW_1"
+      ],
+      "note": "Switch node"
+    },
+    {
+      "num": "2",
+      "name": "SW",
+      "type": "passive",
+      "aliases": [
+        "SW_2"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        2.9,
+        18
+      ]
+    },
+    {
+      "num": "4",
+      "name": "EN",
+      "type": "input",
+      "note": "Below threshold >10 ms turns IC off"
+    },
+    {
+      "num": "5",
+      "name": "SS",
+      "type": "analog",
+      "note": "Soft-start capacitor to GND"
+    },
+    {
+      "num": "6",
+      "name": "SYNC",
+      "type": "input",
+      "note": "If unused, tie to AGND (short trace)"
+    },
+    {
+      "num": "7",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "8",
+      "name": "COMP",
+      "type": "analog",
+      "note": "RC compensation"
+    },
+    {
+      "num": "9",
+      "name": "FB",
+      "type": "analog"
+    },
+    {
+      "num": "10",
+      "name": "FREQ",
+      "type": "analog",
+      "note": "Resistor sets switching frequency"
+    },
+    {
+      "num": "11",
+      "name": "NC",
+      "type": "reserved",
+      "note": "Reserved pin. MUST connect to ground."
+    },
+    {
+      "num": "12",
+      "name": "PGND",
+      "type": "ground",
+      "aliases": [
+        "PGND_1"
+      ]
+    },
+    {
+      "num": "13",
+      "name": "PGND",
+      "type": "ground",
+      "aliases": [
+        "PGND_2"
+      ]
+    },
+    {
+      "num": "14",
+      "name": "PGND",
+      "type": "ground",
+      "aliases": [
+        "PGND_3"
+      ]
+    },
+    {
+      "num": "15",
+      "name": "Thermal Pad",
+      "type": "ground",
+      "aliases": [
+        "EP",
+        "ExposedPad"
+      ],
+      "note": "Solder to analog ground; thermal vias"
+    }
+  ]
+}

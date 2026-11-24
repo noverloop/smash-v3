@@ -1,0 +1,126 @@
+{
+  "_meta": {
+    "manf_pn": "PAC1941T-1E/4MX",
+    "datasheet": "Microchip DS20006543C",
+    "datasheet_section": "Package Types p.1 (PAC194X-1 VQFN), Table 3-1, Sec 3.x, 4MX outline C04-508 + land C04-2508",
+    "package": "16-VQFN 3x3x0.9 mm (4MX), 0.5 mm pitch, EP 1.10 nom, wettable flanks",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/PAC1941T-1E_J6CX/PAC194X_datasheet_mchp.pdf",
+    "notes": "PAC1941-1: pins 7-10, 13, 14 not connected inside and MUST be grounded (Table 3-1 note 1)."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "SLOW/ALERT1",
+      "type": "io",
+      "note": "Default SLOW input (high = 8 SPS); ALERT1/GPIO is open-drain and needs a pull-up."
+    },
+    {
+      "num": "2",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        5.5
+      ],
+      "note": "100 nF bypass."
+    },
+    {
+      "num": "3",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "4",
+      "name": "SCL",
+      "type": "input",
+      "note": "Pull-up required."
+    },
+    {
+      "num": "5",
+      "name": "SDA",
+      "type": "io",
+      "note": "Open-drain, pull-up required."
+    },
+    {
+      "num": "6",
+      "name": "ADDRSEL",
+      "type": "analog",
+      "note": "Resistor to GND selects the address."
+    },
+    {
+      "num": "7",
+      "name": "SENSE3-",
+      "type": "nc",
+      "note": "PAC1941-1: not connected inside — must be grounded."
+    },
+    {
+      "num": "8",
+      "name": "SENSE3+",
+      "type": "nc",
+      "note": "Must be grounded."
+    },
+    {
+      "num": "9",
+      "name": "SENSE4-",
+      "type": "nc",
+      "note": "Must be grounded."
+    },
+    {
+      "num": "10",
+      "name": "SENSE4+",
+      "type": "nc",
+      "note": "Must be grounded."
+    },
+    {
+      "num": "11",
+      "name": "SENSE1+",
+      "type": "analog",
+      "voltage_range_v": [
+        0,
+        9
+      ],
+      "note": "Supply side of shunt; also VBUS sense."
+    },
+    {
+      "num": "12",
+      "name": "SENSE1-",
+      "type": "analog",
+      "voltage_range_v": [
+        0,
+        9
+      ],
+      "note": "Load side of shunt."
+    },
+    {
+      "num": "13",
+      "name": "SENSE2+",
+      "type": "nc",
+      "note": "Must be grounded."
+    },
+    {
+      "num": "14",
+      "name": "SENSE2-",
+      "type": "nc",
+      "note": "Must be grounded."
+    },
+    {
+      "num": "15",
+      "name": "GPIO/ALERT2",
+      "type": "io",
+      "note": "Open-drain; pull-up to VDD if used as an output."
+    },
+    {
+      "num": "16",
+      "name": "PWRDN",
+      "type": "input",
+      "note": "Active-low power-down; do not float."
+    },
+    {
+      "num": "17",
+      "name": "EP",
+      "type": "passive",
+      "note": "Not electrically connected; recommended to connect to GND."
+    }
+  ]
+}

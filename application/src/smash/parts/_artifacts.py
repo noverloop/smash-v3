@@ -119,6 +119,7 @@ _PAD_RX = re.compile(
         (?P<num>\S+)\s+               # pin number/name (can be quoted)
         (?P<class>\w+)\s+             # smd | thru_hole | np_thru_hole | connect
         (?P<shape>\w+)\s+             # rect | circle | oval | roundrect | custom
+        (?:\((?!at\s)[^()]*\)\s+)*      # optional attrs before (at …), e.g. (roundrect_rratio 0.125)
         \(at\s+(?P<x>-?\d+(?:\.\d+)?)\s+(?P<y>-?\d+(?:\.\d+)?)
                   (?:\s+(?P<rot>-?\d+(?:\.\d+)?))?\s*\)\s+
         \(size\s+(?P<w>-?\d+(?:\.\d+)?)\s+(?P<h>-?\d+(?:\.\d+)?)\s*\)
@@ -305,3 +306,25 @@ def build_pins(kicad_sym_path: str, *,
             note=notes.get(key),
         ))
     return out
+
+
+def type_pins_by_base(pins: list, base_types: dict) -> list:
+    """Set `Pin.type` from a datasheet signal-type table keyed by BASE name.
+
+    SamacSys symbols number repeated supply balls (`VDDQ_3`, `AGND_7`,
+    `NC_2`); the datasheet types the signal once (`VDDQ` = supply). A key
+    matches the pin name, the name with its `_<n>` repeat index dropped, or
+    any part of a "/" label (`A10/AP` → `A10`). Pins with no match keep
+    their type. Every key must be used at least once (catches typos)."""
+    used: set = set()
+    for p in pins:
+        name = p.name or ""
+        cands = [name, re.sub(r"_\d+$", "", name), *name.split("/")]
+        key = next((k for k in cands if k in base_types), None)
+        if key is not None:
+            p.type = base_types[key]
+            used.add(key)
+    unused = set(base_types) - used
+    if unused:
+        raise KeyError(f"type_pins_by_base: no pin named {sorted(unused)}")
+    return pins

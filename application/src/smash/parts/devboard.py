@@ -125,10 +125,16 @@ def add_tpd4e05u06dqar(design, ref: str, **overrides) -> Chip:
 
 
 def add_u_fl_r_smt_1(design, ref: str, **overrides) -> Chip:
-    """Hirose U.FL-R-SMT-1(10) — U.FL RF receptacle (1 = centre, 2/3 = GND)."""
+    """Hirose U.FL-R-SMT-1(10) — U.FL RF receptacle. Footprint pads (Hirose
+    recommended mounting pattern, catalog p.3): 3 = SIG (1.0 × 1.05 centre
+    pad), 1 and 2 = GND (the shell's 1.0 × 2.2 side tabs)."""
+    from smash.state import Pin
+    pins = [Pin(num="1", name="GND", aliases=["GND_1"], type="ground"),
+            Pin(num="2", name="GND", aliases=["GND_2"], type="ground"),
+            Pin(num="3", name="SIG", type="io")]
     return _sam(design, ref, pn="U.FL-R-SMT-1(10)", part_dir="U.FL-R-SMT-1_10_",
                 mod="U.FL-R-SMT-1_10_.kicad_mod", package="U.FL",
-                height_mm=1.25, size_mm=(2.6, 3.0), manf="Hirose",
+                height_mm=1.25, size_mm=(2.6, 3.0), manf="Hirose", pins=pins,
                 description="U.FL coaxial receptacle, SMT", **overrides)
 
 

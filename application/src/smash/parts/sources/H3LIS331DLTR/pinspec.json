@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "manf_pn": "H3LIS331DLTR",
+    "datasheet": "ST DS9012 Rev 5 (July 2024)",
+    "datasheet_section": "Fig. 2 Pin connections (bottom view), Table 1, Table 3 elec., Fig. 12 TFLGA-16L",
+    "package": "TFLGA-16L 3x3x1.0, 0.5 pitch",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/H3LIS331DLTR/H3LIS331DLTR.pdf",
+    "notes": "Bottom view pin 1 top-right; top view: 1-5 left column downward, 6-8 bottom L->R, 9-13 right column upward, 14-16 top R->L."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VDD_IO",
+      "aliases": [
+        "Vdd_IO",
+        "VDDIO"
+      ],
+      "type": "power",
+      "voltage_range_v": [
+        1.71,
+        3.7
+      ],
+      "note": "Max Vdd+0.1 V"
+    },
+    {
+      "num": "2",
+      "name": "NC_1",
+      "aliases": [
+        "NC"
+      ],
+      "type": "nc"
+    },
+    {
+      "num": "3",
+      "name": "NC_2",
+      "aliases": [
+        "NC"
+      ],
+      "type": "nc"
+    },
+    {
+      "num": "4",
+      "name": "SCL_SPC",
+      "aliases": [
+        "SCL",
+        "SPC"
+      ],
+      "type": "input"
+    },
+    {
+      "num": "5",
+      "name": "GND_1",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "6",
+      "name": "SDA_SDI_SDO",
+      "aliases": [
+        "SDA",
+        "SDI",
+        "SDO"
+      ],
+      "type": "io"
+    },
+    {
+      "num": "7",
+      "name": "SDO_SA0",
+      "aliases": [
+        "SDO",
+        "SA0"
+      ],
+      "type": "io",
+      "note": "I2C address LSB; do not float in I2C mode"
+    },
+    {
+      "num": "8",
+      "name": "CS",
+      "type": "input",
+      "note": "1 = I2C, 0 = SPI"
+    },
+    {
+      "num": "9",
+      "name": "INT2",
+      "aliases": [
+        "INT 2"
+      ],
+      "type": "output"
+    },
+    {
+      "num": "10",
+      "name": "RESERVED_1",
+      "aliases": [
+        "Reserved"
+      ],
+      "type": "reserved",
+      "note": "Connect to GND"
+    },
+    {
+      "num": "11",
+      "name": "INT1",
+      "aliases": [
+        "INT 1"
+      ],
+      "type": "output"
+    },
+    {
+      "num": "12",
+      "name": "GND_2",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "13",
+      "name": "GND_3",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    },
+    {
+      "num": "14",
+      "name": "VDD",
+      "aliases": [
+        "Vdd"
+      ],
+      "type": "power",
+      "voltage_range_v": [
+        2.16,
+        3.6
+      ]
+    },
+    {
+      "num": "15",
+      "name": "RESERVED_2",
+      "aliases": [
+        "Reserved"
+      ],
+      "type": "reserved",
+      "note": "Connect to Vdd"
+    },
+    {
+      "num": "16",
+      "name": "GND_4",
+      "aliases": [
+        "GND"
+      ],
+      "type": "ground"
+    }
+  ]
+}

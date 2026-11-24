@@ -18,6 +18,7 @@ pinspecs for new factories once a critical mass exists.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -75,10 +76,13 @@ def load_pinspec(manf_pn: str) -> PinSpec | None:
     whose folder name matches `manf_pn` (case-sensitive). Tolerant of
     chips without sidecars — those just return None.
     """
+    import re as _re
     candidates = [
         _sources_root() / manf_pn / "pinspec.json",
         _sources_root() / manf_pn.replace(":", "_") / "pinspec.json",
         _sources_root() / manf_pn.replace("/", "_") / "pinspec.json",
+        # library check (2026-11-24): folder = manf_pn with / # , : space ( ) + → _
+        _sources_root() / _re.sub(r"[/#,: ()+]", "_", manf_pn) / "pinspec.json",
     ]
     path = next((p for p in candidates if p.is_file()), None)
     if path is None:
@@ -116,14 +120,45 @@ def _norm(s: str) -> str:
     return s.strip().lower().replace(" ", "_")
 
 
-def _names_for(p) -> set:
-    """All ways this pin can be referred to: primary name + aliases."""
-    out: set = set()
-    if p.name:
-        out.add(_norm(p.name))
-    for a in (p.aliases or ()):
-        out.add(_norm(a))
+def _expand(name: str) -> set:
+    """A name plus its tolerated variants: vendor symbols number repeated pins
+    ("VSS_3", "GND_1", "NC_5") and datasheets fold functions into one label
+    ("GND/NC", "WP#/SIO2") — each part of a "/" label and the base name
+    without the "_<n>" repeat index count as the same pin name."""
+    n = _norm(name)
+    out = {n}
+    for part in [n, *n.split("/")]:
+        part = part.strip()
+        if part:
+            out.add(part)
+            out.add(re.sub(r"_\d+$", "", part))
     return out
+
+
+def _names_for(p) -> set:
+    """All ways this pin can be referred to: primary name + aliases (+ variants)."""
+    out: set = set()
+    for nm in [p.name, *(p.aliases or ())]:
+        if nm:
+            out |= _expand(nm)
+    return out
+
+
+_TYPE_CLASS = {"power": "supply", "ground": "supply",
+               "input": "signal", "output": "signal", "io": "signal", "analog": "signal",
+               "bidirectional": "signal",
+               "nc": "none", "no_connect": "none", "reserved": "none"}
+
+
+def _type_conflict(factory: str | None, spec: str | None) -> bool:
+    if not factory or not spec or "passive" in (factory, spec):
+        return False
+    fa, sa = _TYPE_CLASS.get(factory), _TYPE_CLASS.get(spec)
+    if fa is None or sa is None:
+        return factory != spec
+    if {fa, sa} == {"none", "signal"} and spec == "reserved":
+        return False            # a reserved pin the factory wires as a signal/strap
+    return fa != sa
 
 
 def compare(chip, spec: PinSpec) -> list:
@@ -157,7 +192,7 @@ def compare(chip, spec: PinSpec) -> list:
         # Name check: datasheet's canonical name (or any datasheet alias)
         # must appear in factory's name-or-alias set, normalized.
         chip_names = _names_for(cp)
-        spec_names = {_norm(sp.name), *(_norm(a) for a in sp.aliases)}
+        spec_names = set().union(*(_expand(x) for x in (sp.name, *sp.aliases)))
         if not (chip_names & spec_names):
             out.append((
                 "pinspec_name_mismatch",
@@ -165,8 +200,11 @@ def compare(chip, spec: PinSpec) -> list:
                 f"shares no name with pinspec name={sp.name!r} "
                 f"(aliases={list(sp.aliases)})",
             ))
-        # Type check: strict.
-        if (cp.type or "") != sp.type:
+        # Type check: a real conflict only. An untyped factory pin (vendor
+        # symbols carry none) and the project convention of typing ground
+        # pins "power" are not errors; a supply pin declared as a signal, or a
+        # no-connect declared as anything live, is.
+        if _type_conflict(cp.type, sp.type):
             out.append((
                 "pinspec_type_mismatch",
                 f"pin {num!r} ({sp.name!r}): factory type={(cp.type or '')!r}, "

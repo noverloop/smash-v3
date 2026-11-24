@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "manf_pn": "MT03-092",
+    "datasheet": "Marktech MT03-092 (QD50PV2-11-8), Series 11 QPD, 2025-11-11",
+    "datasheet_section": "p2 Package Dimensions (front view, window cap removed) + internal schematic; p1 ratings/characteristics",
+    "package": "TO-8 6-pin hermetic, cap dia 15.40 +/-0.2, height 4.50, leads dia 0.45 x 12.7 min; 2 rows of 3 at 2.54 pitch, rows 10.16 apart",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "Research/MT03-092.pdf",
+    "notes": "Common-cathode quad photodiode; cathode = pin 2 = backside butt weld (the can sits at cathode potential). Peak response 950 nm; ~0.2 A/W at 1064 nm (p3 curve). VBR >= 50 V; Cj 140 pF @0 V, 25 pF @10 V per quadrant. Operating temperature -40..+85 C; lead soldering 260 C for 5 s, >= 3 mm from the body."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "ANODE_Q4",
+      "type": "analog",
+      "aliases": [
+        "Q4"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "CATHODE_COM",
+      "type": "analog",
+      "aliases": [
+        "K",
+        "CASE"
+      ],
+      "note": "common cathode, welded to the case: the metal can is at this potential, so insulate it from the chassis"
+    },
+    {
+      "num": "3",
+      "name": "ANODE_Q3",
+      "type": "analog",
+      "aliases": [
+        "Q3"
+      ]
+    },
+    {
+      "num": "4",
+      "name": "ANODE_Q1",
+      "type": "analog",
+      "aliases": [
+        "Q1"
+      ]
+    },
+    {
+      "num": "5",
+      "name": "NC",
+      "type": "nc",
+      "aliases": []
+    },
+    {
+      "num": "6",
+      "name": "ANODE_Q2",
+      "type": "analog",
+      "aliases": [
+        "Q2"
+      ]
+    }
+  ]
+}

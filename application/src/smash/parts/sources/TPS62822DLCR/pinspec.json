@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "manf_pn": "TPS62822DLCR",
+    "datasheet": "TI SLVSDV6C (Nov 2019)",
+    "datasheet_section": "Section 6 Pin Configuration and Functions p3; DLC0008B outline + example board layout 4224310/A",
+    "package": "VSON-HR 8 (DLC) 1.5x2.0x1.0 mm, 0.5 mm pitch, no EP",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/TPS62822DLCR/tps62822.pdf",
+    "notes": "Abs max 6 V on VIN/FB/EN/PG/NC; recommended VIN 2.4-5.5 V, VOUT 0.6-4 V, 2 A."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "EN",
+      "type": "input",
+      "note": "Do not leave floating"
+    },
+    {
+      "num": "2",
+      "name": "FB",
+      "type": "analog"
+    },
+    {
+      "num": "3",
+      "name": "AGND",
+      "type": "ground",
+      "note": "Internally connected to PGND; can be left floating"
+    },
+    {
+      "num": "4",
+      "name": "NC",
+      "type": "nc",
+      "note": "Not connected internally; VOUT, GND or floating"
+    },
+    {
+      "num": "5",
+      "name": "PGND",
+      "type": "ground"
+    },
+    {
+      "num": "6",
+      "name": "SW",
+      "type": "passive"
+    },
+    {
+      "num": "7",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        2.4,
+        5.5
+      ]
+    },
+    {
+      "num": "8",
+      "name": "PG",
+      "type": "output",
+      "note": "Open-drain; if unused leave floating or GND"
+    }
+  ]
+}

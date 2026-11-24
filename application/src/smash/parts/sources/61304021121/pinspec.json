@@ -1,0 +1,213 @@
+{
+  "_meta": {
+    "manf_pn": "61304021121",
+    "datasheet": "Würth WR-PHD 61304021121 (2025-11-08, rev 002.000)",
+    "datasheet_section": "p1 dimensions + recommended hole pattern",
+    "package": "2x20 THT header 2.54 mm, Ø1.10 holes",
+    "verified_from_pdf": "application/src/smash/parts/sources/61304021121/61304021121.pdf",
+    "notes": "Pin 1 and 2 across the two rows; odd pins on one row, even on the other.",
+    "verified_by": "library check 2026-11-24"
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "1",
+      "type": "passive"
+    },
+    {
+      "num": "2",
+      "name": "2",
+      "type": "passive"
+    },
+    {
+      "num": "3",
+      "name": "3",
+      "type": "passive"
+    },
+    {
+      "num": "4",
+      "name": "4",
+      "type": "passive"
+    },
+    {
+      "num": "5",
+      "name": "5",
+      "type": "passive"
+    },
+    {
+      "num": "6",
+      "name": "6",
+      "type": "passive"
+    },
+    {
+      "num": "7",
+      "name": "7",
+      "type": "passive"
+    },
+    {
+      "num": "8",
+      "name": "8",
+      "type": "passive"
+    },
+    {
+      "num": "9",
+      "name": "9",
+      "type": "passive"
+    },
+    {
+      "num": "10",
+      "name": "10",
+      "type": "passive"
+    },
+    {
+      "num": "11",
+      "name": "11",
+      "type": "passive"
+    },
+    {
+      "num": "12",
+      "name": "12",
+      "type": "passive"
+    },
+    {
+      "num": "13",
+      "name": "13",
+      "type": "passive"
+    },
+    {
+      "num": "14",
+      "name": "14",
+      "type": "passive"
+    },
+    {
+      "num": "15",
+      "name": "15",
+      "type": "passive"
+    },
+    {
+      "num": "16",
+      "name": "16",
+      "type": "passive"
+    },
+    {
+      "num": "17",
+      "name": "17",
+      "type": "passive"
+    },
+    {
+      "num": "18",
+      "name": "18",
+      "type": "passive"
+    },
+    {
+      "num": "19",
+      "name": "19",
+      "type": "passive"
+    },
+    {
+      "num": "20",
+      "name": "20",
+      "type": "passive"
+    },
+    {
+      "num": "21",
+      "name": "21",
+      "type": "passive"
+    },
+    {
+      "num": "22",
+      "name": "22",
+      "type": "passive"
+    },
+    {
+      "num": "23",
+      "name": "23",
+      "type": "passive"
+    },
+    {
+      "num": "24",
+      "name": "24",
+      "type": "passive"
+    },
+    {
+      "num": "25",
+      "name": "25",
+      "type": "passive"
+    },
+    {
+      "num": "26",
+      "name": "26",
+      "type": "passive"
+    },
+    {
+      "num": "27",
+      "name": "27",
+      "type": "passive"
+    },
+    {
+      "num": "28",
+      "name": "28",
+      "type": "passive"
+    },
+    {
+      "num": "29",
+      "name": "29",
+      "type": "passive"
+    },
+    {
+      "num": "30",
+      "name": "30",
+      "type": "passive"
+    },
+    {
+      "num": "31",
+      "name": "31",
+      "type": "passive"
+    },
+    {
+      "num": "32",
+      "name": "32",
+      "type": "passive"
+    },
+    {
+      "num": "33",
+      "name": "33",
+      "type": "passive"
+    },
+    {
+      "num": "34",
+      "name": "34",
+      "type": "passive"
+    },
+    {
+      "num": "35",
+      "name": "35",
+      "type": "passive"
+    },
+    {
+      "num": "36",
+      "name": "36",
+      "type": "passive"
+    },
+    {
+      "num": "37",
+      "name": "37",
+      "type": "passive"
+    },
+    {
+      "num": "38",
+      "name": "38",
+      "type": "passive"
+    },
+    {
+      "num": "39",
+      "name": "39",
+      "type": "passive"
+    },
+    {
+      "num": "40",
+      "name": "40",
+      "type": "passive"
+    }
+  ]
+}

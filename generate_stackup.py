@@ -106,7 +106,7 @@ from smash.parts.swaps_2026_11 import (                                  # noqa:
     add_stm32mp257fal3, add_adf4351bcpz_rl7, add_dsc1001ci1_027_0000, add_sit1602bi_12_xxe_40,
     add_mx25v8035fzni, add_ssm3j372r_lf, add_ru1j002yntcl, add_rb160vam_60, add_vemd5110x01,
     add_lmr10510ysde_nopb, add_ssm3k35ctc_l3f, add_ssm3k7002kfu_lf, add_ihlp2020bzer100m01,
-    add_ncs1_292p, add_pe64904d_z, add_tlv7031dpwr, add_s1318d33_a4t2u4,
+    add_ncs1_292p, add_pe64904d_z, add_tlv7031dpwr, add_s1318d33_a4t2u4, add_s1318d18_a4t2u4,
     add_xc6504a331mr_g, add_xc6220b181mr_g, add_tja1462btk_0z, add_ism330dlctr, add_usblc6_4sc6,
     add_stm32u545rei6q, add_tc78h653ftg, add_mcp9808t_e_mc, add_bmm350,
     add_sit5356aecfq_33n0_32, add_mcp6541t_e_ot)
@@ -159,6 +159,8 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "COMP_5V_RAW":  5.0,    # boost output, fin/VM side of the LC filter (rule-sweep F6 — was kind="signal")
     "COMP_3V3":     3.3,    # PMIC BUCK2 — MP25 IO ring (rule-sweep F6 — was kind="signal")
     "COMP_1V8":     1.8,
+    "COMP_1V8_AON": 1.8,
+    "MAG_1V8":      1.8,    # S-1318D18 → BMM350 VDD (activation_interface)    # PMIC LDO1 (rank 1, with VDD): MP25 VDDA18AON + PDR_ON + VDDA18USB
     "COMP_1V35":    1.35,   # (2026-11-22) DDR3L VDD/VDDQ (was COMP_1V2 DDR4 + COMP_VPP 2.5 V)
     "COMP_0V9":     0.9,
     "COMP_0V82":    0.82,   # MP25 VDDCORE domain (PMIC BUCK5; DS ROC 0.79–0.842 V)
@@ -336,22 +338,23 @@ def _add_printed_pcb_monopole(d: Design, *, ref: str, board_tag: str,
     )
 
 
-def _add_testpoint(d: Design, *, ref: str, board_tag: str):
-    """1.5 mm-Ø round TestPoint pad. SKiDL uses Part("Connector", "TestPoint",
+def _add_testpoint(d: Design, *, ref: str, board_tag: str, dia_mm: float = 1.5):
+    """Round TestPoint pad, 1.5 mm Ø by default (1.0 mm for probe-only debug
+    pads on crowded tiles). SKiDL uses Part("Connector", "TestPoint",
     footprint=FP_TP) with FP_TP="TestPoint:TestPoint_Pad_D1.5mm"."""
     fp = Footprint(
-        name="TestPoint:TestPoint_Pad_D1.5mm",
-        package_class="TestPoint pad (1.5 mm Ø)",
+        name=f"TestPoint:TestPoint_Pad_D{dia_mm:g}mm",
+        package_class=f"TestPoint pad ({dia_mm:g} mm Ø)",
         pads=[Pad(num="1", position_mm=(0.0, 0.0),
-                  size_mm=(1.5, 1.5), shape="circle", layer="F.Cu")],
-        size_mm=(1.5, 1.5),
+                  size_mm=(dia_mm, dia_mm), shape="circle", layer="F.Cu")],
+        size_mm=(dia_mm, dia_mm),
         source="kicad",
     )
     fp.ensure_courtyard_clearance()       # ring the lone pad so it can't abut
     return d.add_chip(
         ref=ref, manf_pn=None, footprint=fp, board_tag=board_tag,
         name="TestPoint", value="TestPoint",
-        description="1.5 mm Ø round TestPoint pad",
+        description=f"{dia_mm:g} mm Ø round TestPoint pad",
         pins=[Pin(num="1", name="1", type="passive")],
     )
 
@@ -437,9 +440,14 @@ def build_companion_compute(d: Design) -> None:
             _net(d, "COMP_0V82").connect(mpu.pin(p.num))
         elif re.fullmatch(r"VDDQDDR_\d+", p.name):
             _net(d, "COMP_1V35").connect(mpu.pin(p.num))   # DDR3L I/O = 1.35 V
-        elif p.name in ("VDDA18AON", "VDDA18PLL1", "VDDA18PLL2", "VDDA18PLL3",
+        elif p.name in ("VDDA18AON", "PDR_ON"):
+            # DS14285 §6.3.2: VDDA18AON + VDD present before any other supply
+            # and ramp together (≤ 1 ms) — "damage could occur". ST's STPMIC25A
+            # map: LDO1 1.8 V rank 1, same slot as BUCK4 (VDD).
+            _net(d, "COMP_1V8_AON").connect(mpu.pin(p.num))
+        elif p.name in ("VDDA18PLL1", "VDDA18PLL2", "VDDA18PLL3",
                         "VDDA18DDR", "VDDA18ADC", "VDDA18CSI", "VDDA18DSI",
-                        "VDDA18LVDS", "VDDA18COMBOPHY", "PDR_ON"):
+                        "VDDA18LVDS", "VDDA18COMBOPHY"):
             # (2026-11-21) PDR_ON: "must always be connected at board level
             # to VDDA18AON" (DS14285 p.78 Table 11 note 9) — it was floating
             _net(d, "COMP_1V8").connect(mpu.pin(p.num))   # 1.8 V analog domains
@@ -478,6 +486,8 @@ def build_companion_compute(d: Design) -> None:
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_0V82", "100nF", ref="C_MPU_0V82_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
+    cap_to_gnd(d, "COMP_1V8_AON", "100nF", ref="C_MPU_18AON",
+               board_tag=BTAG, pin=mpu.pin("VDDA18AON"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_MPU_18A_1",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_MPU_18A_2",
@@ -496,14 +506,17 @@ def build_companion_compute(d: Design) -> None:
     # HSE — 40 MHz into OSC_IN (R1); OSC_OUT (R2) NC.
     # feature="clock": rides the bottom face beneath the MP25's OSC balls
     # (the top face is full with the BGA + DDR4 + NAND).
-    hse_osc = add_sit1602bi_12_xxe_40(d, ref="Y_MPU_HSE", board_tag=BTAG, vdd="33",   # (2026-11-22) 3.3 V code
+    # OSC_IN is in the VDDA18AON domain (DS14285 Table 38: VHSEH ≤ VDDA18AON),
+    # so the oscillator is the 1.8 V code, powered from that same rail
+    # (COMP_1V8): it never drives OSC_IN while VDDA18AON is off.
+    hse_osc = add_sit1602bi_12_xxe_40(d, ref="Y_MPU_HSE", board_tag=BTAG, vdd="18",
                                       feature="clock")
-    _net(d, "COMP_3V3")   .connect(hse_osc.pin("1"))  # STANDBY# tied high
+    _net(d, "COMP_1V8")   .connect(hse_osc.pin("1"))  # STANDBY# tied high
     _net(d, "GND")        .connect(hse_osc.pin("2"))
     _net(d, "COMP_HSE_IN").connect(hse_osc.pin("3"))  # OUT
-    _net(d, "COMP_3V3")   .connect(hse_osc.pin("4"))  # VDD
+    _net(d, "COMP_1V8")   .connect(hse_osc.pin("4"))  # VDD
     _net(d, "COMP_HSE_IN").connect(mpu.pin("OSC_IN"))   # R1
-    cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_HSE_VDD",
+    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_MPU_HSE_VDD",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=hse_osc.pin("4"))
     #
     # LSE — 32.768 kHz into OSC32_IN (M2); OSC32_OUT (M1) NC. Real LSE
@@ -529,13 +542,14 @@ def build_companion_compute(d: Design) -> None:
     # joint). Shared quad bus (CLK + IO0-3) with a per-die chip-select; the
     # two physical dies give die-level A/B rootfs redundancy. Replaces the
     # parallel x8 NAND that used to sit on companion_io.
-    _net(d, "NAND_OSPI_CLK").connect(mpu.pin("PD13"))
-    _net(d, "NAND_OSPI_IO0").connect(mpu.pin("PE15"))
-    _net(d, "NAND_OSPI_IO1").connect(mpu.pin("PE12"))
-    _net(d, "NAND_OSPI_IO2").connect(mpu.pin("PE11"))
-    _net(d, "NAND_OSPI_IO3").connect(mpu.pin("PE8"))
-    _net(d, "NAND_OSPI_CS0").connect(mpu.pin("PB12"))
-    _net(d, "NAND_OSPI_CS1").connect(mpu.pin("PE9"))
+    # OCTOSPIM port 1 = the boot ROM's serial-NAND pins (DS14285 Table 6).
+    _net(d, "NAND_OSPI_CLK").connect(mpu.pin("PD0"))   # OCTOSPIM_P1_CLK
+    _net(d, "NAND_OSPI_IO0").connect(mpu.pin("PD4"))   # OCTOSPIM_P1_IO0
+    _net(d, "NAND_OSPI_IO1").connect(mpu.pin("PD5"))   # OCTOSPIM_P1_IO1
+    _net(d, "NAND_OSPI_IO2").connect(mpu.pin("PD6"))   # OCTOSPIM_P1_IO2
+    _net(d, "NAND_OSPI_IO3").connect(mpu.pin("PD7"))   # OCTOSPIM_P1_IO3
+    _net(d, "NAND_OSPI_CS0").connect(mpu.pin("PD3"))   # OCTOSPIM_P1_NCS1 (boot die)
+    _net(d, "NAND_OSPI_CS1").connect(mpu.pin("PB11"))  # OCTOSPIM_P1_NCS2
     for die, cs in (("A", "NAND_OSPI_CS0"), ("B", "NAND_OSPI_CS1")):
         nand = add_mt29f4g01abafdwb_it_f(d, ref=f"U_NAND_{die}",
                                          board_tag=BTAG,
@@ -561,7 +575,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "CAM_CSI_D1_P") .connect(mpu.pin("CSI_D1P"))
     _net(d, "CAM_CSI_D1_N") .connect(mpu.pin("CSI_D1N"))
     _net(d, "CSI_REXT").connect(mpu.pin("CSI_REXT"))
-    res_between(d, "CSI_REXT", "GND", "12k", ref="R_MPU_CSI_REXT", board_tag=BTAG)
+    res_between(d, "CSI_REXT", "GND", "200", ref="R_MPU_CSI_REXT", board_tag=BTAG)   # DS14285 Table 123: 200 Ω ±1 %
     # (2026-11-21) CAM_EXTCLK no longer from PA8 (3.3 V bank into the sensor's
     # 1.8 V input): the camera board has its own 27 MHz DSC1001 at 1.8 V.
     _net(d, "CAM_NRST").connect(mpu.pin("PA9"))        # (2026-11-21) open-drain → AR0234 RESET_BAR
@@ -618,7 +632,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "SYS_SPI_SCLK")  .connect(mpu.pin("PB0"))   # SPI2_SCK
     _net(d, "SYS_SPI_MISO")  .connect(mpu.pin("PB6"))   # SPI2_MISO
     _net(d, "SYS_SPI_MOSI")  .connect(mpu.pin("PB2"))   # SPI2_MOSI
-    _net(d, "SYS_SPI_CS_FIN").connect(mpu.pin("PD6"))   # GPIO chip-select
+    _net(d, "SYS_SPI_CS_FIN").connect(mpu.pin("PD13"))  # SPI2_NSS / GPIO chip-select
 
     # Flight sensors (mag + 3× IMU) — I²C masters on the M33; the sensors live
     # on the sensor tile and reach here over the LGA backbone.
@@ -629,7 +643,7 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "MAG_DRDY").connect(mpu.pin("PE1"))    # EXTI
     _net(d, "IMU1_INT").connect(mpu.pin("PE5"))
     _net(d, "IMU2_INT").connect(mpu.pin("PE7"))
-    _net(d, "IMU3_INT").connect(mpu.pin("PD7"))
+    _net(d, "IMU3_INT").connect(mpu.pin("PE8"))    # EXTI8
     _net(d, "H3LIS_INT1").connect(mpu.pin("PD10"))  # EXTI10 — ±400 g launch
     # witness (moved off the WBA with the IR-wake change; alive from
     # Ready (merged stage), quantitative rapid deceleration beside the piezo's COMP_OUT edge)
@@ -637,11 +651,11 @@ def build_companion_compute(d: Design) -> None:
     # Aim-point steering (QPD TIAs) for the sensor drop, plus the drop-shock
     # piezo and the parachute cutters.
     # PARACHUTE_CUTTER_SET arms the high side; ACTIVATE_CONFIRM reads the 33 V rail.
-    _net(d, "QPD_TIA_A").connect(mpu.pin("PB11"))  # ADC1
-    _net(d, "QPD_TIA_B").connect(mpu.pin("PG15"))  # ADC1
-    _net(d, "QPD_TIA_C").connect(mpu.pin("PI11"))  # ADC1
-    _net(d, "QPD_TIA_D").connect(mpu.pin("PG11"))  # ADC2
-    _net(d, "COMP_OUT").connect(mpu.pin("PD5"))         # TLV3691 piezo comparator EXTI
+    _net(d, "QPD_TIA_A").connect(mpu.pin("ANA0"))  # ADC1/2/3_INP0
+    _net(d, "QPD_TIA_B").connect(mpu.pin("ANA1"))  # ADC1/2/3_INP1
+    _net(d, "QPD_TIA_C").connect(mpu.pin("PF0"))   # ADC1/2/3_INP11
+    _net(d, "QPD_TIA_D").connect(mpu.pin("PG2"))   # ADC1/2_INP2 (PG3 = boot-ROM UART8_TX)
+    _net(d, "COMP_OUT").connect(mpu.pin("PE11"))        # piezo comparator EXTI11
     _net(d, "PARACHUTE_CUTTER_SET").connect(mpu.pin("PE0"))
     _net(d, "ACTIVATE_CONFIRM").connect(mpu.pin("PD9"))
 
@@ -664,12 +678,12 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "WBA_BOOT0").connect(mpu.pin("PI10"))     # boot strap
 
     # Control + status GPIO
-    _net(d, "PWR_HOLD")  .connect(mpu.pin("PD0"))
+    _net(d, "PWR_HOLD")  .connect(mpu.pin("PE15"))
     # (2026-11-21) RF_SW_CTRL (PD4) removed: it drove the long-gone BGS12 LoRa
     # diversity switch (WLE5 era); today's BGS12s are steered by the WBA55 /
     # LR2021. PD4 is a spare GPIO.
     _net(d, "GPIO_EXT_0").connect(mpu.pin("PB7"))
-    _net(d, "GPIO_EXT_1").connect(mpu.pin("PD3"))
+    _net(d, "GPIO_EXT_1").connect(mpu.pin("PE12"))
     _net(d, "GPIO_EXT_2").connect(mpu.pin("PB1"))
     _net(d, "GPIO_EXT_3").connect(mpu.pin("PD8"))
     # (nose status LEDs dropped — they crossed the companion↔flight sensor
@@ -679,7 +693,7 @@ def build_companion_compute(d: Design) -> None:
     # the STPMIC25 is the MP25's own PMIC (PMIC control wired in the power tree).
     _net(d, "BAT_ISO_DRIVE").connect(mpu.pin("PE6"))  # ideal-diode low-drop enable (out; series R on power_board lets the USB interlock win)
     # PG10 / PF15 freed: eFuse BAT_PGOOD / BAT_IMON removed with the eFuse
-    _net(d, "TMP1_ALERT") .connect(mpu.pin("PD1"))    # thermal trip EXTI
+    _net(d, "TMP1_ALERT") .connect(mpu.pin("PB12"))   # thermal trip EXTI12
     _net(d, "PMIC_PWR_OK").connect(mpu.pin("PI4"))
 
     # ── EXT_CAN client-extension gateway — FDCAN1 controller side ──────────
@@ -706,9 +720,11 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "USB_D_N").connect(mpu.pin("USB3DR_DM"))
     _net(d, "USB_VBUS_DET").connect(mpu.pin("PC10"))   # USB3DR_VBUSEN (host-attached sense)
     _net(d, "COMP_3V3")    .connect(mpu.pin("VDD33USB"))
-    _net(d, "COMP_1V8").connect(mpu.pin("VDDA18USB"))
+    # VDDA18USB must be present whenever VDD33USB is (DS14285 §6.3.2): it rides
+    # the rank-1 AON rail, up together with COMP_3V3 (VDD33USB).
+    _net(d, "COMP_1V8_AON").connect(mpu.pin("VDDA18USB"))
     cap_to_gnd(d, "COMP_3V3", "1uF", ref="C_USB_33", board_tag=BTAG, pin=mpu.pin("VDD33USB"))
-    cap_to_gnd(d, "COMP_1V8", "100nF", ref="C_USB_18",
+    cap_to_gnd(d, "COMP_1V8_AON", "100nF", ref="C_USB_18",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=mpu.pin("VDDA18USB"))
     # PC10 = USB3DR_VBUSEN ("VBUS valid" sense for the device stack),
     # strapped permanently high (rule-sweep F4): the depot session powers
@@ -733,12 +749,15 @@ def build_companion_compute(d: Design) -> None:
     # UARTs (DS boot-interface table), so the aft fixture also serial-boots it.
     _net(d, "MP25_CONSOLE_TX").connect(mpu.pin("PF5"))  # USART6_TX → aft TP_CONS_TX
     _net(d, "MP25_CONSOLE_RX").connect(mpu.pin("PF4"))  # USART6_RX ← aft TP_CONS_RX
-    _net(d, "GND").connect(mpu.pin("BOOT1"))   # boot-mode straps — defined low;
-    _net(d, "GND").connect(mpu.pin("BOOT2"))   # the OTP overrides boot device
-    _net(d, "GND").connect(mpu.pin("BOOT3"))   # after provisioning.
+    # BOOT[3:0] = 0101 → Serial NAND, Cortex-A35 master, default OTP
+    # (DS14285 Table 5). BOOT0 and BOOT2 share the BOOT0 net (10 k up); the
+    # fixture pulls it low → 0000 = UART/USB serial boot (not OTP-overridable).
+    _net(d, "GND").connect(mpu.pin("BOOT1"))
+    _net(d, "BOOT0").connect(mpu.pin("BOOT2"))
+    _net(d, "GND").connect(mpu.pin("BOOT3"))
     res_between(d, "COMP_3V3", "NRST", "10k", ref="R_MPU_NRST", board_tag=BTAG)
     cap_to_gnd(d, "NRST", "100nF", ref="C_MPU_NRST", board_tag=BTAG, pin=mpu.pin("NRST"))
-    res_between(d, "GND", "BOOT0", "10k", ref="R_MPU_BOOT0", board_tag=BTAG)
+    res_between(d, "COMP_3V3", "BOOT0", "4.7k", ref="R_MPU_BOOT0", board_tag=BTAG)   # default = NAND boot; vs 2 × 30-50 k BOOT pull-downs ≥ 2.43 V > VIH 2.31 V
 
     # Bulk decoupling on supply rails
     cap_to_gnd(d, "COMP_5V",  "10uF",  ref="C_MPU_5V",   board_tag=BTAG)
@@ -813,8 +832,8 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "DDR3L_VREF").connect(mpu.pin("DDR_VREF"))
     try:
         _net(d, "MPU_DDR_ZQ").connect(mpu.pin("DDR_ZQ"))
-        cap_to_gnd(d, "MPU_DDR_ZQ", "0.1uF", ref="C_MPU_DDR_ZQ",
-                   board_tag=BTAG, pin=mpu.pin("DDR_ZQ"))
+        # PHY calibration resistor: RZQ 240 Ω ±1 % to GND (DS14285 DDR PHY table)
+        res_between(d, "MPU_DDR_ZQ", "GND", "240", ref="R_MPU_DDR_ZQ", board_tag=BTAG)
     except KeyError:
         pass
 
@@ -1305,6 +1324,8 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # gap (companion→radar) over the LGA lands. The VIOIN_18* balls above
     # stay on AWR_1V8 — that domain is fixed-1.8 V by the chip.
     _tie("COMP_3V3", "VIOIN")
+    for _n, _ball in ((1, "H1"), (2, "V9")):        # local 100 nF at each VIOIN ball
+        cap_to_gnd(d, "COMP_3V3", "100nF", ref=f"C_AWR_VIOIN{_n}", board_tag=BTAG, pin=awr.pin(_ball))
 
     # Internal-regulator outputs — decouple to GND, never driven
     for net, base in (("VBGAP", "VBGAP"),
@@ -1364,7 +1385,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_OSC_VDD",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=osc.pin("4"))
     _net(d, "AWR_CLKREF").connect(awr.pin("CLKP"))
-    _net(d, "AWR_CLKM")  .connect(awr.pin("CLKM"))
+    _net(d, "GND")       .connect(awr.pin("CLKM"))   # external-clock mode: "Connect this port to ground" (SWRS236C)
     # External-clock mode per SWRS236 Table 6-6: AC-coupled SINE or
     # DC-COUPLED SQUARE, amplitude 0.7–1.2 V. The DSC1001 is a 1.8 Vpp CMOS
     # square → DC-coupled through a 330/390 divider: 1.8 × 390/720 ≈ 0.98 V
@@ -1375,7 +1396,6 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                 ref="R_AWR_CLK_SER", board_tag=BTAG)
     res_between(d, "AWR_CLKREF", "GND", "390",
                 ref="R_AWR_CLK_SH", board_tag=BTAG)
-    cap_to_gnd(d, "AWR_CLKM", "100pF", ref="C_AWR_CLKM", board_tag=BTAG, pin=awr.pin("CLKM"))  # CLKM AC-gnd (confirm vs TI mmWave HW guide)
 
     # ── SPI boot flash (SST26WF080B, 8 Mbit/1 MB, SINGLE-bit SPI) ────────────
     # The AWR1843AOP boots its application from this NOR during GROUND staging
@@ -1408,10 +1428,15 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "AWR_QSPI_SI") .connect(fl.pin("SI/SIO0"))
     _net(d, "AWR_QSPI_SO") .connect(awr.pin("QSPI[1]"))    # flash SO → AWR DQ1
     _net(d, "AWR_QSPI_SO") .connect(fl.pin("SO/SIO1"))
-    # Single-SPI: tie the quad data lines (SIO2/SIO3) inactive (high).
-    _net(d, "COMP_3V3").connect(fl.pin("WP#/SIO2"))               # WP# inactive
-    _net(d, "COMP_3V3").connect(fl.pin("RESET#/HOLD#/SIO3"))      # RESET#/HOLD# inactive
-    # AWR QSPI[2]/QSPI[3] (quad data) unused in single-SPI mode — left open.
+    # Quad: the AWR ROM reads the flash in quad mode and sets the QE bit
+    # during SOP5 flashing (TI SPRACH9 §3.2.3, Table 3-2), so SIO2/SIO3 are
+    # data lines to QSPI[2]/[3]. 10 k pull-ups keep WP#/HOLD# inactive while QE=0.
+    _net(d, "AWR_QSPI_IO2").connect(awr.pin("QSPI[2]"))
+    _net(d, "AWR_QSPI_IO2").connect(fl.pin("WP#/SIO2"))
+    _net(d, "AWR_QSPI_IO3").connect(awr.pin("QSPI[3]"))
+    _net(d, "AWR_QSPI_IO3").connect(fl.pin("RESET#/HOLD#/SIO3"))
+    res_between(d, "COMP_3V3", "AWR_QSPI_IO2", "10k", ref="R_AWR_QSPI_IO2", board_tag=BTAG)
+    res_between(d, "COMP_3V3", "AWR_QSPI_IO3", "10k", ref="R_AWR_QSPI_IO3", board_tag=BTAG)
 
     # ── SOP boot straps → functional / QSPI-flash boot ───────────────────────
     # SOP[2:0] are muxed onto functional balls (datasheet pin table): SOP0=TDO
@@ -1421,6 +1446,12 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     _net(d, "AWR_SOP0").connect(awr.pin("TDO"))          # U10
     _net(d, "AWR_SOP1").connect(awr.pin("SYNC_OUT"))     # M3
     _net(d, "AWR_SOP2").connect(awr.pin("PMIC_CLKOUT"))  # V10
+    # JTAG (TDO = SOP0 above) + one firmware debug GPIO: on DEBUG castellations
+    # of the radar board (castellations.DEBUG_CASTELLATIONS), no sleeve lane.
+    _net(d, "AWR_TCK").connect(awr.pin("TCK"))            # T3
+    _net(d, "AWR_TMS").connect(awr.pin("TMS"))
+    _net(d, "AWR_TDI").connect(awr.pin("TDI"))
+    _net(d, "AWR_DBG_GPIO").connect(awr.pin("GPIO_0"))    # M2
     # (2026-11-23, user) SOP2 under MP25 control (default 0 by the 10 k below =
     # boot from flash; MP25 drives 1 + resets = SOP 101, flash programming over
     # the RS232 UART). 1 k series: PMIC_CLKOUT is an output after boot.
@@ -2573,6 +2604,8 @@ def _build_activation_array(d: Design) -> None:
     _net(d, "PARACHUTE_CUTTER_ACTIVATE_GD").connect(q_unlock.pin("3"))   # drain
     _net(d, "GND")        .connect(q_unlock.pin("2"))   # source
     _net(d, "PARACHUTE_CUTTER_SET").connect(q_unlock.pin("1"))  # gate ← MP25 PARACHUTE_CUTTER_SET
+    # MP25 pins are high-Z in reset / unpowered: hold the master arm OFF
+    res_between(d, "PARACHUTE_CUTTER_SET", "GND", "100k", ref="R_PARACHUTE_CUTTER_SET_PD", board_tag=BT)
 
     # ── (2026-11-20, user) 4 × 4 DIODE MATRIX, driven straight by the fin MCU ──
     # Wire k = (row k // 4, column k % 4): row PFET (high side, behind the
@@ -3027,7 +3060,11 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # considered and dropped; a high-power line through the whole stack
     # is worth the 4 lands (future loads tap it without re-plumbing).
     _net(d, "COMP_5V").connect(can_gw.pin("VCC"))
-    _net(d, "3V3").connect(can_gw.pin("VIO"))
+    # VIO on the MP25's own I/O rail (COMP_3V3, PMIC BUCK4): with VIO down the
+    # TJA1462A is in Off mode, RXD high-Z (DS §7.1.1) — it never back-drives
+    # an unpowered MP25 (3V3 is up ~7 ms before COMP_3V3 and after SWOFF).
+    _net(d, "COMP_3V3").connect(can_gw.pin("VIO"))
+    cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_CAN_GW_VIO", board_tag=_CAN_TAG, pin=can_gw.pin("VIO"))
     _net(d, "GND").connect(can_gw.pin("STB"))        # high-speed mode
     _net(d, "EXT_CAN_P").connect(can_gw.pin("CANH"))
     _net(d, "EXT_CAN_N").connect(can_gw.pin("CANL"))
@@ -3041,7 +3078,18 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # availability/decisions.csv). I²C address 0x14 (ADSEL = GND).
     # FIRMWARE: new driver; ⚠ re-run the magnetic-link sim with BMM350 noise.
     mag = add_bmm350(d, ref="U_MAG", board_tag=_MAG_TAG, feature="bottom")
-    _net(d, "3V3")     .connect(mag.pin("VDD"))
+    # VDD (C1) is the 1.8 V core supply: 1.72–1.98 V, abs max 2.0 V (BMM350
+    # DS Tables 1/4) — its own 1.8 V LDO from 3V3. VDDIO (B3) 1.72–3.6 V on 3V3.
+    # Any VDD/VDDIO order is allowed (DS §5).
+    mag_ldo = add_s1318d18_a4t2u4(d, ref="U_MAG_LDO", board_tag=_MAG_TAG)
+    _net(d, "3V3")    .connect(mag_ldo.pin("IN"))
+    _net(d, "3V3")    .connect(mag_ldo.pin("EN"))
+    _net(d, "GND")    .connect(mag_ldo.pin("GND"))
+    _net(d, "GND")    .connect(mag_ldo.pin("EP"))
+    _net(d, "MAG_1V8").connect(mag_ldo.pin("OUT"))
+    cap_to_gnd(d, "3V3", "1uF", ref="C_MAG_LDO_IN", board_tag=_MAG_TAG, pin=mag_ldo.pin("IN"))
+    cap_to_gnd(d, "MAG_1V8", "1uF", ref="C_MAG_LDO_OUT", board_tag=_MAG_TAG, pin=mag_ldo.pin("OUT"))
+    _net(d, "MAG_1V8") .connect(mag.pin("VDD"))
     _net(d, "3V3")     .connect(mag.pin("VDDIO"))
     _net(d, "GND")     .connect(mag.pin("GND"))
     _net(d, "GND")     .connect(mag.pin("BYPASS"))
@@ -3053,7 +3101,7 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     # CRST reservoir: 2.2 µF low-ESL, tight to C2 — a real discrete, never
     # ECM-absorbed (private node, not a rail).
     cap_to_gnd(d, "MAG_CRST", "2.2uF", ref="C_MAG_C1", board_tag=_MAG_TAG, pin=mag.pin("CRST"))
-    cap_to_gnd(d, "3V3", "100nF", ref="C_MAG1", embedded_cap_absorbs=True, board_tag=_MAG_TAG, pin=(mag.ref, None))
+    cap_to_gnd(d, "MAG_1V8", "100nF", ref="C_MAG1", board_tag=_MAG_TAG, pin=mag.pin("VDD"))
     cap_to_gnd(d, "3V3", "1uF",   ref="C_MAG2", board_tag=_MAG_TAG, pin=(mag.ref, None))
     tp_drdy = _add_testpoint(d, ref="TP_MAG_DRDY", board_tag=_MAG_TAG)
     _net(d, "MAG_DRDY").connect(tp_drdy.pin("1"))
@@ -3133,7 +3181,8 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
                                         ("B", "QPD_B", "QPD_TIA_B"),
                                         ("C", "QPD_C", "QPD_TIA_C"),
                                         ("D", "QPD_D", "QPD_TIA_D")]:
-        res_between(d, qpd_in_net, tia_out_net, "1M", ref=f"R_TIA_{ch}", board_tag="qpd_module")
+        amp = f"{tia_out_net}_AMP"          # op-amp output node (feedback taps here)
+        res_between(d, qpd_in_net, amp, "1M", ref=f"R_TIA_{ch}", board_tag="qpd_module")
         # Cf = 8.2 pF for TIA stability: at zero bias the MT03-092 quadrant is
         # ~140 pF (DS, VR=0), and Cf_opt ≈ sqrt(Cin/(2π·Rf·GBP)) =
         # sqrt(140p/(2π·1M·400k)) ≈ 7.5 pF — the old 1 pF left the noise-gain
@@ -3142,12 +3191,15 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
         # 400 kHz GBP
         cap_fb = add_capacitor_c0g_0603_avx_sqcs(d, ref=f"C_TIA_{ch}", value="8.2pF", board_tag="qpd_module")
         _net(d, qpd_in_net) .connect(cap_fb.pin("1"))
-        _net(d, tia_out_net).connect(cap_fb.pin("2"))
+        _net(d, amp)        .connect(cap_fb.pin("2"))
         opa = add_ad8603aujz_r2_single_supply(d, ref=f"U_TIA_{ch}", board_tag="qpd_module")
         _net(d, qpd_in_net) .connect(opa.pin("-IN"))
         _net(d, "GND")      .connect(opa.pin("V-"))
         _net(d, "QPD_VREF") .connect(opa.pin("+IN"))
-        _net(d, tia_out_net).connect(opa.pin("OUT"))
+        _net(d, amp)        .connect(opa.pin("OUT"))
+        # 1 k series into the MP25 ADC pin: limits injection while the 1.8 V
+        # ADC domain is still off (3V3 is up first) + ADC kick-back RC
+        res_between(d, amp, tia_out_net, "1k", ref=f"R_TIA_{ch}_SER", board_tag="qpd_module")
         _net(d, "3V3")      .connect(opa.pin("V+"))
         cap_to_gnd(d, "3V3", "100nF", ref=f"C_TIA_{ch}_PWR", embedded_cap_absorbs=True, board_tag="qpd_module", pin=opa.pin("V+"))
 
@@ -3464,8 +3516,9 @@ def build_power_board(d: Design) -> None:
     #   rank 3  BUCK5 1.80 V → COMP_1V8  (VDDA18*, camera IO; 0.5 A)
     #   off     BUCK6 → COMP_1V35 (DDR3L VDD/VDDQ, 2026-11-22; was 1.2 V DDR4):
     #           boot firmware sets 1.35 V + enables it before DDR init.
-    # BUCK3 / BUCK7 unused. ⚠ NVM: BUCK7 (3.3 V rank 4) and LDO1/2/4 default
-    # ON with no load — set their rank to 0 in the provisioning pass.
+    #   rank 1  LDO1  1.80 V → COMP_1V8_AON (VDDA18AON/PDR_ON/VDDA18USB, with VDD)
+    # BUCK3 / BUCK7 unused. NVM: BUCK7 (3.3 V rank 4) and LDO2/4 default ON
+    # with no load — set their rank to 0 in the provisioning pass.
     _net(d, "PMIC_SW1") .connect(pmic.pin("VLX1"))
     _net(d, "COMP_0V9") .connect(pmic.pin("VOUT1"))
     _net(d, "PMIC_SW2") .connect(pmic.pin("VLX2"))
@@ -3488,14 +3541,9 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_PMIC_3V3_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT4"))
 
-    # Unused BUCK 3 / 7 — VLX + VOUT decoupling caps on auto-named nets
-    for n in (3, 7):
-        vlx_net  = f"PMIC_VLX{n}_TERM"
-        vout_net = f"PMIC_VOUT{n}_TERM"
-        _net(d, vlx_net) .connect(pmic.pin(f"VLX{n}"))
-        _net(d, vout_net).connect(pmic.pin(f"VOUT{n}"))
-        cap_to_gnd(d, vlx_net,  "100nF", ref=f"C_PMIC_VLX{n}",  board_tag=BTAG, pin=pmic.pin(f"VLX{n}"))
-        cap_to_gnd(d, vout_net, "100nF", ref=f"C_PMIC_VOUT{n}", board_tag=BTAG, pin=pmic.pin(f"VOUT{n}"))
+    # Unused BUCK 3 / 7: VLXn + VOUTn left floating (DS14278 Table 3). BUCK7
+    # is ON in the factory NVM (3.3 V rank 4) — with nothing on VLX7 it just
+    # regulates nothing; the provisioning pass sets it to rank 0.
 
     # (2026-11-22) LDO6 was the DDR4 VPP 2.5 V — DDR3L has no VPP: unused now,
     # handled with the other spare LDOs below.
@@ -3503,12 +3551,19 @@ def build_power_board(d: Design) -> None:
     # LDO5 → COMP_2V8 (camera analog rail)
     _net(d, "COMP_2V8").connect(pmic.pin("LDO5OUT"))
 
-    # Remaining LDOs (1-2, 4, 7-8) — decoupling caps on auto-named nets
-    for n in (1, 2, 4, 6, 7, 8):
+    # LDO1 → COMP_1V8_AON (factory 1.80 V, rank 1 = with BUCK4): MP25
+    # VDDA18AON / PDR_ON / VDDA18USB — ST's MP25 mapping (DS14278 Table 1).
+    _net(d, "COMP_1V8_AON").connect(pmic.pin("LDO1OUT"))
+    cap_to_gnd(d, "COMP_1V8_AON", "4.7uF", ref="C_PMIC_LDO1", board_tag=BTAG, pin=pmic.pin("LDO1OUT"))
+
+    # Remaining LDOs (2, 4, 6-8) — decoupling caps on auto-named nets. LDO2
+    # (3.3 V rank 4) and LDO4 (3.3 V rank 5) are ON in the factory NVM until
+    # provisioning: their stable output cap (DS14278 Table 2: 4.7 µF).
+    for n in (2, 4, 6, 7, 8):
         ldo_net = f"PMIC_LDO{n}_TERM"
         _net(d, ldo_net).connect(pmic.pin(f"LDO{n}OUT"))
-        cap_to_gnd(d, ldo_net, "100nF", ref=f"C_PMIC_LDO{n}",
-                   embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin(f"LDO{n}OUT"))
+        cap_to_gnd(d, ldo_net, "4.7uF" if n in (2, 4) else "100nF", ref=f"C_PMIC_LDO{n}",
+                   embedded_cap_absorbs=n not in (2, 4), board_tag=BTAG, pin=pmic.pin(f"LDO{n}OUT"))
     # LDO3 (the DDR sink-source terminator) is unused — DS Table 3 says
     # tie BOTH LDO3IN and LDO3OUT to VIN when not used (no output cap).
     _net(d, "COMP_5V").connect(pmic.pin("LDO3OUT"))
@@ -3519,23 +3574,18 @@ def build_power_board(d: Design) -> None:
     # factory NVM (see "Active BUCKs"), so the core rails come up right with
     # no programming; I²C turns on BUCK6 (DDR VDD/VDDQ), LDO6 (VPP 2.5 V) and
     # LDO5 (camera 2.8 V), raises BUCK1 to 0.9 V, and the provisioning pass
-    # sets the unused BUCK7 / LDO1/2/4 to rank 0.
+    # sets the unused BUCK7 / LDO2/4 to rank 0.
     _net(d, "I2C2_SCL")    .connect(pmic.pin("SCL"))
     _net(d, "I2C2_SDA")    .connect(pmic.pin("SDA"))
     _net(d, "PMIC_NRST")   .connect(pmic.pin("RSTN"))
     _net(d, "PMIC_PWR_OK") .connect(pmic.pin("INTN"))
 
-    # PONKEY/WAKEUP pull-ups — to the always-on 3V3 (= VIO rail), NOT
-    # COMP_5V: WAKEUPn/RSTn/INTn are rated -0.5..+4.2 V abs max (DS14278
-    # Table 4), so a 5 V pull-up violates the rating. (They also carry
-    # internal pull-ups referenced to VIO/VINTLDO — the externals are
-    # belt-and-braces only.)
-    _net(d, "PMIC_PONKEY") .connect(pmic.pin("PONKEYN"))
-    res_between(d, "3V3", "PMIC_PONKEY", "10k",
-                ref="R_PMIC_PONKEY", board_tag=BTAG)
+    # PONKEYn / WAKEUPn: no external pull-ups (DS14278 Table 3: unused →
+    # floating). The internal pull-ups give a clean high — PONKEYn to VIN
+    # (an external 3V3 pull-up fought it into the 0.7·VIN undefined zone),
+    # WAKEUPn to VINTLDO (≤ 2 V; a 3V3 pull-up exceeded its input range).
+    # WAKEUPn keeps its debug castellation (pull low to wake).
     _net(d, "PMIC_WAKEUP") .connect(pmic.pin("WAKEUPN"))
-    res_between(d, "3V3", "PMIC_WAKEUP", "10k",
-                ref="R_PMIC_WAKEUP", board_tag=BTAG)
 
     # PWRCTRL pull-downs (safe-default off)
     _net(d, "PMIC_PWRCTRL1").connect(pmic.pin("PWRCTRL1"))
@@ -4443,6 +4493,13 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "BAT_PROT").connect(tp_bat.pin("1"))
     _net(d, "3V3")     .connect(tp_3v3.pin("1"))
     _net(d, "GND")     .connect(tp_gnd.pin("1"))
+    # LoRa host bus + LO mux debug: 1.0 mm probe pads on the tile itself
+    # (probe-able on the panel before potting). No castellations: the board
+    # edge outside the S1/S4 antenna keep-outs has no room left for them.
+    for net in ("LR_SPI_SCK", "LR_SPI_MOSI", "LR_SPI_MISO", "LR_NSS", "LR_BUSY",
+                "LR_IRQ", "XV_LO_MUX"):
+        tp = _add_testpoint(d, ref=f"TP_{net}", board_tag="wakeup_board", dia_mm=1.0)
+        _net(d, net).connect(tp.pin("1"))
 
 
 # ── main ──────────────────────────────────────────────────────────────────
@@ -4475,6 +4532,7 @@ def _prime_power_rails(d: Design) -> None:
     d.add_clock_net("WBA_HSE_IN",   frequency_hz=32_000_000)  # DSC1001 32 MHz → WBA55 OSC_IN
     d.add_clock_net("COMP_HSE_IN",  frequency_hz=40_000_000)  # DSC1001 40 MHz → MP25 OSC_IN (HSE)
     d.add_clock_net("COMP_LSE_IN",  frequency_hz=32_768)      # SiT1630 32.768 kHz → MP25 OSC32_IN (LSE)
+    d.add_clock_net("CAM_EXTCLK",   frequency_hz=27_000_000)  # DSC1001CI1 27 MHz → VB1943 EXTCLK (12-50 MHz)
 
 
 # ── board configurations ───────────────────────────────────────────────

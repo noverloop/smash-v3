@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "manf_pn": "GRF2073W",
+    "datasheet": "Guerrilla RF GRF2073W Release D (2025-09-11)",
+    "datasheet_section": "p2 DFN-8 Pin Out (Top View), p3 Pin Assignments; p23 Suggested PCB Footprint + Package Dimensions",
+    "package": "DFN-8 2.0x2.0x0.75 mm, EP 0.60x1.20",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/GRF2073W/GRF2073W.pdf",
+    "notes": "EP is 'PKG BASE' in the DS; footprint number 9."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VENABLE",
+      "type": "input",
+      "note": "with series R sets IDDQ; ≤ 0.2 V disables"
+    },
+    {
+      "num": "2",
+      "name": "RF_IN",
+      "type": "input",
+      "note": "external match must DC-block"
+    },
+    {
+      "num": "3",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; connect to GND (recommended)"
+    },
+    {
+      "num": "4",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; connect to GND (recommended)"
+    },
+    {
+      "num": "5",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; connect to GND (recommended)"
+    },
+    {
+      "num": "6",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; connect to GND (recommended)"
+    },
+    {
+      "num": "7",
+      "name": "RF_OUT/VDD",
+      "type": "output",
+      "aliases": [
+        "RF_OUT"
+      ],
+      "voltage_range_v": [
+        0,
+        6
+      ],
+      "note": "VDD via external bias inductor; typ 5 V"
+    },
+    {
+      "num": "8",
+      "name": "GND/NC",
+      "type": "passive",
+      "note": "no internal connection; connect to GND (recommended)"
+    },
+    {
+      "num": "9",
+      "name": "GND",
+      "type": "ground",
+      "aliases": [
+        "EP",
+        "PKG BASE"
+      ],
+      "note": "DC/RF ground + heat sink; multiple 8 mil vias"
+    }
+  ]
+}

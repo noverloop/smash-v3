@@ -97,6 +97,29 @@ radar / QPD), 39.7 mm with the camera nose.
 
 ## 3. Board-specific notes
 
+- **Debug castellations (radar_module, wakeup_board, companion_compute)**:
+  board-local debug nets on castellation pads of their own board, numbered
+  after the lane pads. No sleeve lane faces them (open in the tower); on the
+  dev board each one's escape stub ends on a Ø2 test point (TP_DEV_DBG_<net>).
+  Route each as a plain trace from the pin to its pad; short stubs are fine.
+
+  | Board | Net | From (pin) | Sleeve angle |
+  |---|---|---|---|
+  | radar_module | AWR_TCK | U_AWR T3 | 230.1° |
+  | radar_module | AWR_TMS | U_AWR U8 | 254.4° |
+  | radar_module | AWR_TDI | U_AWR U9 | 211.1° |
+  | radar_module | AWR_SOP0 (= TDO) | U_AWR U10 | 224.7° |
+  | radar_module | AWR_DBG_GPIO | U_AWR M2 (GPIO_0) | 240.9° |
+  | wakeup_board | LR_SPI_SCK | U_WBA H8 | 111.0° |
+  | wakeup_board | LR_SPI_MOSI | U_WBA G8 | 116.4° |
+  | wakeup_board | LR_SPI_MISO | U_WBA G7 / U_LR | 257.1° |
+  | wakeup_board | LR_NSS | U_WBA G1 | 132.6° |
+  | wakeup_board | LR_BUSY | U_WBA D7 | 140.8° |
+  | wakeup_board | LR_IRQ | U_WBA B2 | 151.6° |
+  | wakeup_board | XV_LO_MUX | U_WBA D2 / U_XV_LO 30 | 165.1° |
+  | companion_compute | PMIC_NRST | U_PMIC 31 | 230.1° |
+  | companion_compute | PMIC_WAKEUP | U_PMIC 30 | 254.4° |
+
 - **wakeup_board — antenna matches**: S1 (shared BLE / LR2021) has a fixed
   match between the owner switch U_ANTSW_S1 and the ANT_HF_S1 castellation:
   C_ANT_S1_DCBLK 0.8 pF in series right at the castellation, C_ANT_S1_SHUNT
@@ -137,7 +160,8 @@ radar / QPD), 39.7 mm with the camera nose.
   / GRF2073W DFN8, MT03-092 QPD (TO-8), piezo disc, cell lead PTHs (Ø0.8 pin is
   a placeholder until Tadiran confirms), clamp tabs, pogo pads.
 - **Vendor lands we changed**: 3D models rotated by us (LTC3124, VB1943,
-  BUK6D120, S-1318, GRF5126 — check pin 1 in the 3D viewer), and lands taken
+  BUK6D120, S-1318, GRF5126, GRF2073W, H3LIS331 — check pin 1 in the 3D
+  viewer against the land's pin 1), and lands taken
   from a sibling part or named after one (STM32MP255F land for the MP257F,
   LTC5549 land for the LTC5552, PE64904C for D, SST26 SON-8 for the MX25V8035F,
   SiT5356 20 MHz for 32 MHz, DSC1001 family, H3LIS331 on a LIS3DH LGA-16 land,
@@ -145,9 +169,16 @@ radar / QPD), 39.7 mm with the camera nose.
 
 ## 5. Dev board (`dev_board/` in this package)
 
-- 5 debug parts did not fit under the tower socket and are unplaced
-  (U_DEV_INA, U_DEV_ISENSE, U_DEV_LDO, Y_DEV_HUB stacked at one spot;
-  U_DEV_FLATSW2 off to the side) — place by hand.
+- Programmer strip: USB-C (CC1/CC2 5.1 k to GND at the connector) → ESD →
+  probe MCU U_DEV_MCU (USB FS on PA12/PA11, no hub). J_DEV_LA = logic-analyzer
+  header (20 inter-tile bus signals on odd pins, GND on even pins).
+  S_DEV_MP25_BOOT / probe PB13 pull the MP25 BOOT0/BOOT2 net low (UART/USB
+  serial boot; the tower's 10 k pull-up selects serial-NAND boot) through
+  U_DEV_BUSSW3 / U_DEV_FLATSW3.
+- Debug test points TP_DEV_DBG_* sit just outside the tiles at the end of
+  their castellation's escape stub (pre-routed on F.Cu); keep them clear.
+- J_DEV_HF_S1 / J_DEV_HF_S4 (u.FL) are on the slot side of the feed matches:
+  conducted S1 levels read ≈ 3.3 dB low at 2.44 GHz, S4 ≈ 0.7 dB.
 - J_DEV_USB is still the Same Sky UJ20-C-H (China origin); 4 annular-ring DRC
   errors on its shell slots. It is due to become the Hirose CX90B-16P (accepted,
   not applied yet: the SnapMagic land is the CX90B-16P1 file and needs checking

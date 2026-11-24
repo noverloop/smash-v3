@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "manf_pn": "LTST-C190GKT",
+    "datasheet": "Lite-On LTST-C190GKT spec BNS-OD-C131/A4",
+    "datasheet_section": "p.1 Package Dimensions; p.7 Suggest Soldering Pad Dimensions",
+    "package": "0603 chip LED 1.6 x 0.8 x 0.8 mm",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/LTST-C190GKT/LTST-C190GKT.pdf",
+    "notes": "Cathode terminal marked (notched/stepped terminal, p.1); tape cathode orientation p.7. Suggested pads 0.8 x 0.8, 2.3 overall. IF DC 30 mA, VR 5 V, -55..85 °C."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "aliases": [
+        "Cathode"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "A",
+      "type": "passive",
+      "aliases": [
+        "Anode"
+      ],
+      "note": "VR 5 V max"
+    }
+  ]
+}
