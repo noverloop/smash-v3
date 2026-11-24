@@ -1,0 +1,17 @@
+{
+  "_meta": {
+      "manf_pn": "LP5907MFX-2.8/NOPB",
+      "datasheet": "TI SNVS798Q (Apr 2012, rev. Jul 2025), LP5907",
+      "datasheet_section": "Figure 4-3 (DBV SOT-23-5, top view) + Table 4-2 (pin functions) + §5.1 abs max + §5.3 recommended operating conditions",
+      "package": "SOT-23-5 (DBV)",
+      "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
+      "verified_from_pdf": "application/src/smash/parts/sources/LP5907MFX-2.8_NOPB/lp5907-family.pdf"
+  },
+  "pins": [
+    {"num": "1", "name": "IN", "type": "power", "aliases": ["VIN"], "voltage_range_v": [2.2, 5.5], "note": "2.2-5.5 V (§5.3); abs max 6 V. 1 µF at the input"},
+    {"num": "2", "name": "GND", "type": "ground"},
+    {"num": "3", "name": "EN", "type": "input", "voltage_range_v": [0, 5.5], "note": "High = on; internal 1 MΩ pull-down (off by default). 0-5.5 V (§5.3), abs max 6 V"},
+    {"num": "4", "name": "N/C", "type": "nc", "aliases": ["NC"], "note": "No internal connection"},
+    {"num": "5", "name": "OUT", "type": "power", "aliases": ["VOUT"], "voltage_v": 2.8, "note": "2.8 V fixed, 250 mA; ≥ 1 µF low-ESR output cap; 230 Ω pull-down when disabled"}
+  ]
+}

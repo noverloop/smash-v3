@@ -154,3 +154,33 @@ def test_design_validate_runs_pinspec_check():
     issues = list(d.validate())
     pinspec_issues = [i for i in issues if i.rule.startswith("pinspec_")]
     assert any("type_mismatch" in i.rule for i in pinspec_issues)
+
+
+# ── compute + camera parts (DDR3L, SPI-NAND, VB1943, LP5907, clocks) ──
+
+import pytest
+
+
+def _six_factories():
+    from smash.parts.flash import add_mt41k256m16tw_107_ptr, add_mt29f4g01abafdwb_it_f
+    from smash.parts.swaps_2026_11 import add_vb1943cajx_1, add_dsc1001ci1_027_0000
+    from smash.parts.ldos import add_lp5907mfx_2_8_nopb
+    from smash.parts.oscillators import add_sit1533ai_h4_dcc_32_768e
+    return [
+        (add_mt41k256m16tw_107_ptr, {"manf_pn": "MT41K256M16TW-107 IT:P"}, 96),
+        (add_mt29f4g01abafdwb_it_f, {}, 8),
+        (add_vb1943cajx_1, {}, 74),
+        (add_lp5907mfx_2_8_nopb, {}, 5),
+        (add_dsc1001ci1_027_0000, {}, 4),
+        (add_sit1533ai_h4_dcc_32_768e, {}, 4),
+    ]
+
+
+@pytest.mark.parametrize("idx", range(6))
+def test_compute_camera_factories_match_pinspec(idx):
+    factory, kw, n_pins = _six_factories()[idx]
+    c = factory(Design(), ref="U_T", **kw)
+    spec = load_pinspec(c.manf_pn)
+    assert spec is not None, c.manf_pn
+    assert len(spec.pins) == n_pins
+    assert compare(c, spec) == []

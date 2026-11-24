@@ -1,0 +1,21 @@
+{
+  "_meta": {
+      "manf_pn": "MT29F4G01ABAFDWB-IT_F",
+      "datasheet": "Micron m70a_4gb_3v_nand_spi.pdf Rev. G 8/19 (4Gb 3.3V x1/x2/x4 SPI NAND, MT29F4G01ABAFDWB / -ABAFD12)",
+      "datasheet_section": "Figure 3 (8-pin U-PDFN, top view) + Table 1 (SPI pin descriptions) + Tables 15/16 (abs max / operating conditions)",
+      "package": "U-PDFN-8 (MLP8) 8×6×0.65 mm, package code WB, no exposed pad",
+      "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
+      "verified_from_pdf": "application/src/smash/parts/sources/MT29F4G01ABAFDWB-IT_F/m70a_4gb_3v_nand_spi.pdf",
+      "notes": "Orderable MT29F4G01ABAFDWB-IT:F. The other PDFs in this folder are a Micron product page and a proxy datasheet for a different die (MT29F4G01AAADD, BGA) — not the pinout source. I/O abs max = VCC abs max (-0.6..4.6 V)."
+  },
+  "pins": [
+    {"num": "1", "name": "CS#", "type": "input", "aliases": ["CS"], "voltage_range_v": [-0.6, 4.6], "note": "Chip select, active low; a falling edge is required after power-up before the first command"},
+    {"num": "2", "name": "SO/IO1", "type": "io", "aliases": ["SO", "IO1", "DO"], "note": "Serial out / IO1 (x2/x4 modes)"},
+    {"num": "3", "name": "WP#/IO2", "type": "io", "aliases": ["WP#", "IO2"], "note": "Write protect (input in x1/x2) / IO2 in x4; must not be driven by the host during x4 READ"},
+    {"num": "4", "name": "VSS", "type": "ground", "aliases": ["GND"]},
+    {"num": "5", "name": "SI/IO0", "type": "io", "aliases": ["SI", "IO0", "DI"], "note": "Serial in / IO0 (x2/x4 modes)"},
+    {"num": "6", "name": "SCK", "type": "input", "aliases": ["CLK"], "note": "Serial clock; hold at VCC or GND (mode 3/0) while CS# is high"},
+    {"num": "7", "name": "HOLD#/IO3", "type": "io", "aliases": ["HOLD#", "IO3"], "note": "HOLD disabled by default (standard PNs); IO3 in x4; must not be driven by the host during x4 READ"},
+    {"num": "8", "name": "VCC", "type": "power", "voltage_range_v": [2.7, 3.6], "note": "2.7-3.6 V (3.3 V typ), Table 16; abs max 4.6 V, Table 15"}
+  ]
+}
