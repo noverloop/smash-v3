@@ -481,7 +481,7 @@ def build_companion_compute(d: Design) -> None:
                 ref="R_MPU_TXRTUNE", board_tag=BTAG)
     _net(d, "USB_TXRTUNE").connect(mpu.pin("USB3DR_TXRTUNE"))
     _net(d, "V08_CAP") .connect(mpu.pin("V08CAP"))
-    cap_to_gnd(d, "V08_CAP", "2.2uF", ref="C_MPU_V08CAP", board_tag=BTAG, pin=mpu.pin("V08CAP"))
+    cap_to_gnd(d, "V08_CAP", "4.7uF/LV", ref="C_MPU_V08CAP", board_tag=BTAG, pin=mpu.pin("V08CAP"))
     # Local decoupling for the newly-wired domains (bulk lives at the
     # PMIC; HF bypass pairs ride the ECM laminate). Local bulk is a
     # single 0603 2.2 µF (a 22 µF tantalum cost too much joint area at
@@ -501,6 +501,34 @@ def build_companion_compute(d: Design) -> None:
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
     cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_MPU_QDDR_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(mpu.ref, None))
+    # AN5489 Rev 7 Table 4 (VFBGA361 column): the full per-package decoupling,
+    # under the BGA on the bottom face, each cap assigned to a ball of its
+    # group (round-robin) so the decoupling map can measure it.
+    def _balls(prefixes):
+        return [p for p in mpu.pins
+                if any(re.fullmatch(rf"{pf}(_\d+)?", str(p.name)) for pf in prefixes)]
+
+    def _an5489(rail, value, count, prefixes, tag):
+        balls = _balls(prefixes)
+        for k in range(count):
+            cap_to_gnd(d, rail, value, ref=f"C_MPU_{tag}_{k + 1}", board_tag=BTAG,
+                       feature="bottom", pin=balls[k % len(balls)] if balls else (mpu.ref, None))
+    _an5489("COMP_0V82", "1uF", 6, ["VDDCORE"], "CORE")                     # 6 × 1 µF
+    _an5489("COMP_0V82", "100nF", 4, ["VDDCSI", "VDDDSI", "VDDLVDS", "VDDCOMBOPHY",
+                                      "VDDCOMBOPHYTX", "VDDPCIECLK"], "PHY")   # 6 × 100 nF (2 above)
+    _an5489("COMP_0V82", "1uF", 7, ["VDDGPU"], "GPU")                       # 7 × 1 µF
+    _an5489("COMP_0V9", "1uF", 7, ["VDDCPU"], "CPU")                        # 7 × 1 µF
+    _an5489("COMP_1V35", "1uF", 5, ["VDDQDDR"], "VQDDR")                     # 5 × 1 µF
+    _an5489("COMP_1V8", "100nF", 5, ["VDDA18PLL1", "VDDA18PLL2", "VDDA18PLL3", "VDDA18DDR",
+                                     "VDDA18DSI", "VDDA18LVDS", "VDDA18CSI",
+                                     "VDDA18COMBOPHY"], "A18")             # 7 × 100 nF (2 above)
+    _an5489("COMP_1V8", "2.2uF", 1, ["VDDA18ADC"], "ADC_B")                 # 2.2 µF + 100 nF
+    _an5489("COMP_1V8", "100nF", 1, ["VDDA18ADC"], "ADC")
+    _an5489("COMP_1V8", "1uF", 1, ["VREF\\+"], "VREF_B")                    # 1 µF + 100 nF
+    _an5489("COMP_1V8", "100nF", 1, ["VREF\\+"], "VREF")
+    _an5489("COMP_3V3", "1uF", 5, ["VDD"], "VDD")                           # 5 × 1 µF
+    _an5489("COMP_3V3", "100nF", 4, ["VDDIO1", "VDDIO2", "VDDIO3", "VDDIO4"], "VDDIO")
+    _an5489("COMP_3V3", "100nF", 1, ["VDD33USB", "VDD33UCPD"], "USB33")     # VBAT = VDD: none
 
     # ── System clocks — shock-tolerant MEMS oscillators in bypass mode ──
     # The MP25 needs an external HSE + LSE; both are MEMS clipped-sine
@@ -1358,8 +1386,34 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     # gap (companion→radar) over the LGA lands. The VIOIN_18* balls above
     # stay on AWR_1V8 — that domain is fixed-1.8 V by the chip.
     _tie("COMP_3V3", "VIOIN")
-    for _n, _ball in ((1, "H1"), (2, "V9")):        # local 100 nF at each VIOIN ball
-        cap_to_gnd(d, "COMP_3V3", "100nF", ref=f"C_AWR_VIOIN{_n}", board_tag=BTAG, pin=awr.pin(_ball))
+    for _n, _ball in ((1, "H1"), (2, "V9")):        # 0.22 µF at each VIOIN ball (checklist)
+        cap_to_gnd(d, "COMP_3V3", "220nF", ref=f"C_AWR_VIOIN{_n}", board_tag=BTAG, pin=awr.pin(_ball))
+    cap_to_gnd(d, "COMP_3V3", "2.2uF", ref="C_AWR_VIOIN_B", board_tag=BTAG, pin=awr.pin("H1"))
+
+    # Supply-ball decoupling per TI's xWR1843 hardware checklist (SPRACL2,
+    # SCH_checklist "Power inputs"); the 10 µF parts are the post-filter caps
+    # (C_AWR_1V3_PF, C_AWR_1V8_PF). "As close to the device as possible" for
+    # VIN_18BB / VCO / CLK.
+    def _ball(base, k=1):
+        try:
+            return awr.pin(f"{base}_{k}")
+        except KeyError:
+            return awr.pin(base)
+    for ref, rail, val, base, k in (
+            ("C_AWR_VDDIN_1", "AWR_1V2", "220nF", "VDDIN", 1),
+            ("C_AWR_VDDIN_2", "AWR_1V2", "220nF", "VDDIN", 2),
+            ("C_AWR_VDDIN_B", "AWR_1V2", "2.2uF", "VDDIN", 3),
+            ("C_AWR_VNWA", "AWR_1V2", "100nF", "VNWA", 1),
+            ("C_AWR_VIN_SRAM", "AWR_1V2", "100nF", "VIN_SRAM", 1),
+            ("C_AWR_13RF1", "AWR_1V3", "220nF", "VIN_13RF1", 1),
+            ("C_AWR_13RF2", "AWR_1V3", "220nF", "VIN_13RF2", 1),
+            ("C_AWR_18BB_1", "AWR_1V8", "220nF", "VIN_18BB", 1),
+            ("C_AWR_18BB_2", "AWR_1V8", "220nF", "VIN_18BB", 2),
+            ("C_AWR_18VCO", "AWR_1V8", "220nF", "VIN_18VCO", 1),
+            ("C_AWR_18CLK", "AWR_1V8", "220nF", "VIN_18CLK", 1),
+            ("C_AWR_VIOIN18", "AWR_1V8", "220nF", "VIOIN_18", 1),
+            ("C_AWR_VIOIN18DIFF", "AWR_1V8", "220nF", "VIOIN_18DIFF", 1)):
+        cap_to_gnd(d, rail, val, ref=ref, board_tag=BTAG, pin=_ball(base, k))
 
     # Internal-regulator outputs — decouple to GND, never driven
     for net, base in (("VBGAP", "VBGAP"),
@@ -4149,6 +4203,8 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "GND")    .connect(tmr_ldo.pin("EP"))       # heat sink → GND (DS)
     _net(d, "TMR_VDD").connect(tmr_ldo.pin("OUT"))
     cap_to_gnd(d, "TMR_VDD", "1uF", ref="C_TMR_LDO", board_tag=_MAG_TAG, pin=tmr_ldo.pin("OUT"))
+    cap_to_gnd(d, "BAT_RAW", "1uF", ref="C_TMR_LDO_IN", board_tag=_MAG_TAG,
+               pin=tmr_ldo.pin("IN"))                    # DS: CIN ≥ 1.0 µF (input stability)
     tmr = add_rr123_1h02_612(d, ref="U_MAG_SHELF", board_tag=_MAG_TAG)
     _net(d, "TMR_VDD")    .connect(tmr.pin("VDD"))
     _net(d, "GND")        .connect(tmr.pin("GND"))

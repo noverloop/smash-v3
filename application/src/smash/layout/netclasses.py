@@ -167,10 +167,30 @@ def classes() -> dict:
 _KEY = dict(width="track_width", clearance="clearance", diff_gap="diff_pair_gap")
 
 
+# Enforced (DRC) clearance. KiCad applies class clearance to PADS as well as
+# tracks, so anything above the fab minimum flags fine-pitch pins of the same
+# IC; only HV (a physical creepage requirement) is enforced wider. The class
+# `clearance` above is the routing spacing (guidance, NET_CLASSES.md).
+ENFORCED_MIN = 0.075
+
+
+def enforced_clearance(name: str) -> float:
+    return ENFORCED_MIN
+
+
+# HV creepage applies to the routing (tracks, vias, zones), not to the pins
+# inside a vendor land pattern: a custom rule next to every project.
+DRU = """(version 1)
+(rule "HV_33V routing clearance (IPC-2221B B4, 31-50 V, coated)"
+  (condition "A.NetClass == 'HV_33V' && A.Type != 'Pad' && B.Net != A.Net")
+  (constraint clearance (min 0.13mm)))
+"""
+
+
 def kicad_classes() -> list[dict]:
     out = []
     for name, c in CLASSES.items():
-        k = {"name": name, "clearance": c["clearance"], "track_width": c["width"],
+        k = {"name": name, "clearance": enforced_clearance(name), "track_width": c["width"],
              "via_diameter": 0.45, "via_drill": 0.2, "microvia_diameter": 0.25,
              "microvia_drill": 0.15, "diff_pair_width": c["width"],
              "diff_pair_gap": c.get("diff_gap", 0.15)}
@@ -195,6 +215,7 @@ def write_project_classes(pro_path, net_names) -> None:
     ns["netclass_patterns"] = pats
     ns.setdefault("meta", {"version": 3})
     pro.write_text(json.dumps(data, indent=2) + "\n")
+    pro.with_suffix(".kicad_dru").write_text(DRU)
 
 
 def pcb_net_names(pcb_path) -> list[str]:
@@ -229,7 +250,11 @@ def report_md(net_names) -> str:
                  f"| {r['diff90'][0]:.3f} / {r['diff90'][1]:.2f} |")
     L += ["", "Inner layers: 0.075 mm is the minimum track, so 55 Ω inner = 0.075 mm (≈ 51.5 Ω) and "
           "100 Ω inner pairs = 0.075 mm / 0.20 mm gap.", "",
-          "## Classes", "", "| Class | Width outer / inner | Clearance | Target | Rule |",
+          "## Classes", "",
+          "Spacing = routing spacing to other nets (guidance; KiCad enforces 0.075 mm for every "
+          "class; HV_33V's 0.13 mm is enforced on tracks, vias and zones by the project's "
+          "`.kicad_dru`, not on pins inside a land pattern).", "",
+          "| Class | Width outer / inner | Spacing | Target | Rule |",
           "|---|---|---|---|---|"]
     for name, c in CLASSES.items():
         w = f"{c['width']:.3f}" + (f" / {c['inner_width']:.3f}" if "inner_width" in c else "")
