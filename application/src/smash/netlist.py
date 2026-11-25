@@ -108,6 +108,11 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         # below 0.9 µF stays in 0603.
         return add_capacitor_x7r_0805_kemet_mil, 1
     if farads <= 10.1e-6:
+        # "4.7uF/LV" = a 4.7 µF position on a rail ≤ 3.6 V → one KEMET
+        # C0603C475K8PACTU 10 V X5R 0603 instead of 2 × 2.2 µF.
+        if value.upper().endswith("/LV") and abs(farads - 4.7e-6) < 1e-9:
+            from smash.parts.passives import add_capacitor_kemet_c0603c475k8pactu
+            return add_capacitor_kemet_c0603c475k8pactu, 1
         # (2026-11-23) "10uF/LV" = a 10 µF position on a rail ≤ 3.6 V → one
         # Samsung CL10A106KP8NNNC 10 V X5R 0603 (0.8 mm) instead of 5 × 2.2 µF.
         if value.upper().endswith("/LV") and abs(farads - 10e-6) < 1e-9:

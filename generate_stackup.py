@@ -1545,7 +1545,7 @@ def _fin_mcu_node(d: Design, *, board_tag: str) -> Chip:
         _net(d, "FIN_MCU_VDD11").connect(g.pin(f"VDD11_{k}"))
         cap_to_gnd(d, "FIN_MCU_VDD11", "2.2uF", ref=f"C_FIN_MCU_VDD11_{k}",
                    board_tag=board_tag, pin=g.pin(f"VDD11_{k}"))
-    cap_to_gnd(d, "3V3", "4.7uF", ref="C_FIN_MCU_SMPS_IN", board_tag=board_tag,
+    cap_to_gnd(d, "3V3", "4.7uF/LV", ref="C_FIN_MCU_SMPS_IN", board_tag=board_tag,
                pin=g.pin("VDDSMPS"))
     for k in (1, 2):
         cap_to_gnd(d, "3V3", "100nF", ref=f"C_FIN_MCU_VDD{k}", embedded_cap_absorbs=True,
@@ -1671,7 +1671,7 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     _net(d, "3V3").connect(fb.pin("1")); _net(d, "LR_VBAT").connect(fb.pin("2"))
     _net(d, "LR_VBAT").connect(lr.pin("VBAT"))
     cap_to_gnd(d, "LR_VBAT", "100nF", ref="C_LR_VBAT", board_tag=BTAG, pin=lr.pin("VBAT"))
-    cap_to_gnd(d, "LR_VBAT", "4.7uF", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
+    cap_to_gnd(d, "LR_VBAT", "4.7uF/LV", ref="C_LR_BULK", board_tag=BTAG, pin=lr.pin("VBAT"))
     # VPAX1 (regulator OUTPUT for the PAs) → VPAX2 (PA-regulator input).
     _net(d, "LR_VPAX").connect(lr.pin("VPAX1")); _net(d, "LR_VPAX").connect(lr.pin("VPAX2"))
     # LR2021 regulator rails are power nets: VBAT 3.3 V, VDCC 1.55 V typ
@@ -2154,7 +2154,7 @@ def build_fins_module(d: Design) -> None:
         for net_pin, drv_pin in (("AOUT1", "OUT1"), ("AOUT2", "OUT2"), ("BOUT1", "OUT3"), ("BOUT2", "OUT4")):
             _net(d, f"FIN{i}_{net_pin}").connect(drv.pin(drv_pin))
     # Local VM bulk (coil current pulses stay off the LGA lands).
-    cap_to_gnd(d, "COMP_5V_RAW", "10uF", ref="C_FIN_VM_BULK", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V_RAW", "22uF/HV", ref="C_FIN_VM_BULK", board_tag=BTAG)
 
     # Hall position sensor (fin-deploy reference)
     _hall_switch(d, ref="J_HALL_FIN", board_tag=BTAG, out_net="FIN_HALL",
@@ -2610,7 +2610,7 @@ def _build_activation_array(d: Design) -> None:
     res_between(d, "ACTIVATE_FREQ", "GND", "174k", ref="R_ACTIVATE_FREQ", board_tag=BT_BOOST)  # ≈600 kHz (2026-11-21: 176k is not E96 → 174k, +1 %)
     _net(d, "ACTIVATE_SS")    .connect(boost.pin("SS"))      # 5
     cap_to_gnd(d, "ACTIVATE_SS", "47nF", ref="C_ACTIVATE_SS", board_tag=BT_BOOST, pin=boost.pin("SS"))
-    cap_to_gnd(d, "COMP_5V_RAW", "10uF", ref="C_ACTIVATE_IN", board_tag=BT_BOOST, pin=boost.pin("VIN"))
+    cap_to_gnd(d, "COMP_5V_RAW", "22uF/HV", ref="C_ACTIVATE_IN", board_tag=BT_BOOST, pin=boost.pin("VIN"))
     # L_ACTIVATE: Vishay IHLP-2020BZ-01 10 µH — Isat 4.0 A typ (20 % drop),
     # heat rating 2.3 A (ΔT 40 K). In operation ≈ 0.94 A average / 1.29 A peak
     # (one 4 W sector at 33 V from a 5 V input); only a max-limit TPS61175
@@ -2764,7 +2764,7 @@ def build_camera_module(d: Design) -> None:
     _net(d, "CAM_VAA_2V8").connect(ldo.pin("5"))   # OUT
     ldo.dnp = True
     for c in (cap_to_gnd(d, "BAT_PROT", "1uF", ref="C_CAM_LDO_VAA_IN", board_tag=CT, pin=ldo.pin("1"))
-              + cap_to_gnd(d, "CAM_VAA_2V8", "4.7uF", ref="C_CAM_LDO_VAA_OUT", board_tag=CT,
+              + cap_to_gnd(d, "CAM_VAA_2V8", "4.7uF/LV", ref="C_CAM_LDO_VAA_OUT", board_tag=CT,
                            pin=ldo.pin("5"))):
         c.dnp = True
 
@@ -2803,7 +2803,7 @@ def build_camera_module(d: Design) -> None:
     _net(d, "CAM_LDO2V4").connect(cam.pin("H4"))
     cap_to_gnd(d, "CAM_CPNEG", "10uF/LV", ref="C_CAM_CPNEG", board_tag=CT, pin=cam.pin("A4"))   # 4-12 µF at −2 V
     cap_to_gnd(d, "CAM_CPPOS", "1uF", ref="C_CAM_CPPOS", board_tag=CT, pin=cam.pin("B9"))    # 0.47-1 µF at 3.55 V
-    cap_to_gnd(d, "CAM_VRT", "4.7uF", ref="C_CAM_VRT", board_tag=CT, pin=cam.pin("E9"))      # 2.4-5 µF at 2.5 V
+    cap_to_gnd(d, "CAM_VRT", "4.7uF/LV", ref="C_CAM_VRT", board_tag=CT, pin=cam.pin("E9"))      # 2.4-5 µF at 2.5 V
     cap_to_gnd(d, "CAM_LDO2V4", "470nF", ref="C_CAM_LDO2V4", board_tag=CT, pin=cam.pin("H4"))  # 0.1-1 µF
 
     # ── MIPI CSI-2, 2 lanes (DATA1 + DATA2; DATA3/4 unused) ──────────────────
@@ -3602,7 +3602,7 @@ def build_power_board(d: Design) -> None:
         _c = add_capacitor_grm21br61e226me44l(d, ref=f"C_BOOST_OUT1_{_k}", board_tag=BTAG, feature="bottom")
         _c.decouples = [(boost.ref, None)]
         _net(d, "COMP_5V_RAW").connect(_c.pin("1")); _net(d, "GND").connect(_c.pin("2"))
-    cap_to_gnd(d, "COMP_5V_RAW", "10uF",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
+    cap_to_gnd(d, "COMP_5V_RAW", "22uF/HV",  ref="C_BOOST_OUT2", board_tag=BTAG, pin=(boost.ref, None))
     cap_to_gnd(d, "COMP_5V_RAW", "100nF", ref="C_BOOST_OUT3",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=(boost.ref, None))
     # VOUT = 1.2 × (1 + R1/R2); DS: R2 = 113 k, R1 = 94 × (VOUT − 1.2) kΩ
@@ -3612,17 +3612,23 @@ def build_power_board(d: Design) -> None:
     res_between(d, "COMP_5V_FB", "GND",        "113k",
                 ref="R_BOOST_R2", board_tag=BTAG)
     # Loop compensation per DS "Compensating the Feedback Loop", worst case
-    # VIN 2.5 V / IOUT 1.5 A (RL 3.35 Ω), COUT_eff ≈ 40 µF, L 4.7 µH, η 0.9:
+    # VIN 2.5 V / IOUT 1.5 A (RL 3.35 Ω), L 4.7 µH, η 0.9. COUT_eff on
+    # COMP_5V_RAW ≈ 72 µF at 5 V: six GRM21BR61E226 25 V 22 µF (≈ 12 µF each
+    # at 5 V bias) — C_BOOST_OUT1 ×2 here, C_BOOST_OUT2, C_PWR_IN, C_ACTIVATE_IN
+    # and C_FIN_VM_BULK across the stack.
     # RHP zero Z3 = VIN²·2RL / (2π·VOUT²·L) ≈ 56 kHz → fC 8 kHz (< Z3/6);
-    # GDC = 3.4·η·VIN·RL/VOUT ≈ 5.1, P1 ≈ 2.4 kHz → GfC ≈ 1.45. Φm 60° split
-    # Φ1 40° (Type II) + Φ2 28° (phase lead) → a1 4.6, a2 2.77 →
-    # CC 1.5 nF, RC 60.4 k, CF 390 pF; RPL 68.1 k + CPL 47 pF across R1.
+    # GDC = 3.4·η·VIN·RL/VOUT ≈ 5.1, P1 = 2/(2π·RL·COUT) ≈ 1.32 kHz →
+    # GfC ≈ 0.83. Φm 60° split Φ1 40° (Type II) + Φ2 28° (phase lead) →
+    # a1 4.6, a2 2.77 → CC 855 pF (820 pF), RC 107 k, CF 238 pF (220 pF);
+    # RPL 68.1 k + CPL 47 pF across R1 (independent of COUT).
+    # COUT_eff 55-90 µF (bias / tolerance / temperature) moves fC ≈ 10-6.5 kHz,
+    # still < Z3/5.
     # ⚠ Verify with a Bode measurement on the bench (DS recommends it).
-    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "60.4k",
+    res_between(d, "COMP_5V_COMP", "COMP_5V_COMP_C", "107k",
                 ref="R_BOOST_COMP", board_tag=BTAG)
-    cap_to_gnd(d, "COMP_5V_COMP_C", "1.5nF",
+    cap_to_gnd(d, "COMP_5V_COMP_C", "820pF",
                ref="C_BOOST_COMP", board_tag=BTAG, pin=(boost.ref, None))
-    cap_to_gnd(d, "COMP_5V_COMP", "390pF",
+    cap_to_gnd(d, "COMP_5V_COMP", "220pF",
                ref="C_BOOST_COMP_F", board_tag=BTAG, pin=boost.pin("VC"))
     # (round 22) pinned to the C0G part — the 0402 factory would auto-pick X7R
     c_pl = add_capacitor_x7r_0402_kemet(d, ref="C_BOOST_PL", value="47pF", board_tag=BTAG,
@@ -3730,7 +3736,7 @@ def build_power_board(d: Design) -> None:
     # LDO1 → COMP_1V8_AON (factory 1.80 V, rank 1 = with BUCK4): MP25
     # VDDA18AON / PDR_ON / VDDA18USB — ST's MP25 mapping (DS14278 Table 1).
     _net(d, "COMP_1V8_AON").connect(pmic.pin("LDO1OUT"))
-    cap_to_gnd(d, "COMP_1V8_AON", "4.7uF", ref="C_PMIC_LDO1", board_tag=BTAG, pin=pmic.pin("LDO1OUT"))
+    cap_to_gnd(d, "COMP_1V8_AON", "4.7uF/LV", ref="C_PMIC_LDO1", board_tag=BTAG, pin=pmic.pin("LDO1OUT"))
 
     # Remaining LDOs (2, 4, 6-8) — decoupling caps on auto-named nets. LDO2
     # (3.3 V rank 4) and LDO4 (3.3 V rank 5) are ON in the factory NVM until
@@ -3738,7 +3744,7 @@ def build_power_board(d: Design) -> None:
     for n in (2, 4, 6, 7, 8):
         ldo_net = f"PMIC_LDO{n}_TERM"
         _net(d, ldo_net).connect(pmic.pin(f"LDO{n}OUT"))
-        cap_to_gnd(d, ldo_net, "4.7uF" if n in (2, 4) else "100nF", ref=f"C_PMIC_LDO{n}",
+        cap_to_gnd(d, ldo_net, "4.7uF/LV" if n in (2, 4) else "100nF", ref=f"C_PMIC_LDO{n}",
                    embedded_cap_absorbs=n not in (2, 4), board_tag=BTAG, pin=pmic.pin(f"LDO{n}OUT"))
     # LDO3 (the DDR sink-source terminator) is unused — DS Table 3 says
     # tie BOTH LDO3IN and LDO3OUT to VIN when not used (no output cap).
@@ -3779,7 +3785,7 @@ def build_power_board(d: Design) -> None:
 
     # INTLDO bypass — 4.7 µF per DS14278 Table 3 (pin 8) / Table 2 CINTLDO
     _net(d, "PMIC_INTLDO").connect(pmic.pin("INTLDO"))
-    cap_to_gnd(d, "PMIC_INTLDO", "4.7uF",
+    cap_to_gnd(d, "PMIC_INTLDO", "4.7uF/LV",
                ref="C_PMIC_INTLDO", board_tag=BTAG, pin=pmic.pin("INTLDO"))
 
     # Exposed pad
@@ -3815,7 +3821,7 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_1V35", "10uF/LV",  ref="C_PMIC_1V35_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_PMIC_1V35_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT6"))
-    cap_to_gnd(d, "COMP_2V8",  "4.7uF", ref="C_PMIC_2V8_1", board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
+    cap_to_gnd(d, "COMP_2V8",  "4.7uF/LV", ref="C_PMIC_2V8_1", board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
     cap_to_gnd(d, "COMP_2V8",  "100nF", ref="C_PMIC_2V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
 
@@ -4239,7 +4245,7 @@ def build_wakeup_board(d: Design) -> None:
     _cff3 = add_capacitor_c0g_0603_avx_sqcs(d, ref="C_PWR_FF", value="120pF", board_tag=_PWR_TAG,
                                             feature=_PWR_FACE, **_as_built_0402("120pF", "C0G/NP0"))
     _net(d, "3V3").connect(_cff3.pin("1")); _net(d, "PWR_3V3_FB").connect(_cff3.pin("2"))
-    cap_to_gnd(d, "COMP_5V_RAW", "10uF", ref="C_PWR_IN", board_tag=_PWR_TAG, feature=_PWR_FACE,
+    cap_to_gnd(d, "COMP_5V_RAW", "22uF/HV", ref="C_PWR_IN", board_tag=_PWR_TAG, feature=_PWR_FACE,
                pin=buck33.pin("VIN"))
     cap_to_gnd(d, "3V3", "22uF/LV", ref="COUT1", board_tag=_PWR_TAG, feature=_PWR_FACE, pin=(buck33.ref, None))
     cap_to_gnd(d, "3V3", "100nF", ref="COUT3",
@@ -4403,7 +4409,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "WBA_VDD11")  .connect(wba.pin("VDD11"))      # B11
     ind_between(d, "WBA_VLX", "WBA_VDD11", "2.2uH",
                 ref="L_WBA_SMPS", board_tag=BTAG)
-    cap_to_gnd(d, "WBA_VDD11", "4.7uF",
+    cap_to_gnd(d, "WBA_VDD11", "4.7uF/LV",
                ref="C_WBA_VDD11", board_tag=BTAG, pin=wba.pin("VDD11"))   # DS14127 Fig. 15: 4.7 µF
 
     # VDD decoupling — one 100 nF per pin + bulk. The embedded plane

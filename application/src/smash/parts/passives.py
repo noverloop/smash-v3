@@ -1248,3 +1248,27 @@ def add_capacitor_samsung_cl10a106kp8nnnc(design, ref: str, *, value: str = "10u
 
 
 add_capacitor_samsung_cl10a106kp8nnnc.array_value = "10uF"
+
+
+def add_capacitor_kemet_c0603c475k8pactu(design, ref: str, *, value: str = "4.7uF", **overrides) -> Chip:
+    """KEMET C0603C475K8PACTU — 4.7 µF 10 V X5R 0603, 0.8 mm (≈ 3.5 µF left
+    at 2.5 V, ≈ 2.8 µF at 3.3 V). One part per 4.7 µF position on rails
+    ≤ 3.6 V. Alternate: Murata GRM188R61A475KE15D (availability/
+    bom_alternates)."""
+    pn = "C0603C475K8PACTU"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_0603_1608Metric", size_mm=(1.6, 0.8),
+                         height_mm=0.8, pad_size=(0.85, 0.95), pad_pitch_mm=1.60,
+                         package_class="0603")
+    fields = dict(
+        manf="KEMET", manf_pn=pn, canonical_id=canonical_id(pn), name=pn,
+        value=value, description="KEMET 0603 X5R 4.7 µF 10 V, 0.8 mm", package="0603",
+        dielectric="X5R", size_mm=(1.6, 0.8), height_mm=0.8,
+        capacitance_f=parse_capacitance_f(value), voltage_rating_v=10.0, temp_range_c=(-55, 85),
+        weight_g=weight_g_for_passive("0603"), standards=["RoHS", "Pb-Free"], pins=_two_pin(),
+        footprint=fp,
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+add_capacitor_kemet_c0603c475k8pactu.array_value = "4.7uF"

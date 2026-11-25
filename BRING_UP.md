@@ -160,6 +160,12 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
   → REG_IN_MAIN; Q_ISO turns fully on with it (R_ISO_EN_PU);
   the LTC3124 starts (SD pulled up) → COMP_5V_RAW → 3V3 (U_PWR buck) → LR/XV/MAG
   rails; COMP_5V → PMIC turns on.
+- **LTC3124 loop check** (compensation computed for ≈ 72 µF effective on
+  COMP_5V_RAW: RC 107 k, CC 820 pF, CF 220 pF; crossover ≈ 8 kHz): bench at
+  2.5 V, step the COMP_5V_RAW load 0.2 → 1.2 A (electronic load on
+  TP_DEV_DBG_COMP_5V_RAW). Pass: ≤ 2 ringing cycles, overshoot ≤ 150 mV, no
+  oscillation at light load. A Bode injection across R_BOOST_R1 (10 Ω insert)
+  should show ≥ 45° phase margin; adjust RC / CC if not.
 - **Scope the PMIC sequence** on 4 channels at the strip test points:
   TP_DEV_DBG_COMP_3V3, _COMP_1V8_AON, _COMP_0V82, _COMP_1V8 (trigger on
   TP_DEV_DBG_COMP_5V). The rail monitor logs all PMIC rails at once (≈ 1 ms
