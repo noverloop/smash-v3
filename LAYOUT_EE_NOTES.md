@@ -81,6 +81,16 @@ radar / QPD), 39.7 mm with the camera nose.
   stays ≤ 1.75 mm (the compute bottom's 0.95 mm MPU/DDR decoupling sits within
   r 8.6). **The spacer is designed to 3.0 mm**: the parts as delivered still sit
   near the centre, over the compute decoupling — move them into the band.
+- **BGA escapes (MP25 on companion_compute, WBA55 on wakeup_board)** are
+  generated: every signal ball leaves its ball field — the outer rings on the
+  top layer (0.085 mm between balls, 0.12 mm stub just outside the
+  courtyard), the deeper ones through a via-in-pad microvia, a diagonal jog
+  on In1 and a staggered microvia onto In2. GND balls drop through
+  via-in-pad into In1; power balls get via-in-pad + a staggered microvia onto
+  In2, where each rail still needs its island and its buried drops to In4 /
+  the bottom-face decoupling. The MP25 land is 0.25 mm (ST AN5489 Fig. 20).
+  Each ball takes the shortest route out to the courtyard; route onward from
+  the stubs.
 - **Pre-routed copper is a starting point**: castellation escape stubs, the LDS
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came
@@ -89,8 +99,9 @@ radar / QPD), 39.7 mm with the camera nose.
   their net class before fab.**
 - **Net classes** (`NET_CLASSES.md`, also loaded in every `.kicad_pro` under
   Board Setup → Net Classes, assigned per net): layer plan (In1 / In3 / In6
-  GND, In4 power), fab rules (tracks 0.12 mm preferred / 0.10 mm minimum,
-  0.075 mm only to escape the fine-pitch BGAs / CSPs; microvias staggered,
+  GND, In4 power), fab rules (100 µm clearance, tracks 0.12 mm preferred /
+  0.10 mm minimum; 0.085 mm at 0.075 mm clearance only inside the fine-pitch
+  BGA / CSP courtyards; microvias staggered,
   never stacked and never on a buried via — both enforced by each project's
   `.kicad_dru`), controlled-impedance widths on the outer layers (50 Ω
   0.147 mm; DDR 55 Ω 0.12 mm; 100 Ω pairs 0.10 / 0.10 — closed-form targets,

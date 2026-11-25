@@ -25,7 +25,7 @@ _T = Z.table()
 # clearance = to other nets. Impedance classes give their target.
 CLASSES: dict[str, dict] = {
     "Default": dict(width=0.12, clearance=0.075,
-                    note="all other signals: 0.12 mm preferred, 0.10 mm minimum; 0.075 mm only "
+                    note="all other signals: 0.12 mm preferred, 0.10 mm minimum; 0.085 mm only "
                          "inside a fine-pitch BGA / CSP ball field (escape)."),
     "DDR_SE55": dict(width=_T["F.Cu"]["55"], inner_width=0.10, clearance=0.075, z="55 Ω SE ±10 %",
                      note="AN5489/AN5724: 55 Ω on the outer layers (0.12 mm). Inner segments at the "
@@ -184,8 +184,8 @@ def enforced_clearance(name: str) -> float:
 
 
 # Custom DRC rules next to every project (.kicad_dru). Fab rules (user):
-#   * tracks 0.12 mm preferred / 0.10 mm minimum; 0.075 mm only to escape a
-#     fine-pitch (≤ 0.5 mm) BGA / CSP — board minimum 0.075, raised to 0.10
+#   * tracks 0.12 mm preferred / 0.10 mm minimum; 0.085 mm only to escape a
+#     fine-pitch (≤ 0.5 mm) BGA / CSP — board minimum 0.085, raised to 0.10
 #     everywhere outside those parts' courtyards;
 #   * microvias are staggered, never stacked, and never land on a buried via;
 #   * HV creepage on the routing (tracks, vias, zones), not on the pins inside
@@ -194,9 +194,15 @@ _DRU_HEAD = """(version 1)
 (rule "HV_33V routing clearance (IPC-2221B B4, 31-50 V, coated)"
   (condition "A.NetClass == 'HV_33V' && A.Type != 'Pad' && B.Net != A.Net")
   (constraint clearance (min 0.13mm)))
-(rule "No stacked microvias; no microvia on a buried via"
+(rule "No stacked microvias; no microvia on a buried via (centres offset ≥ one land)"
   (condition "A.Via_Type == 'Micro' && (B.Via_Type == 'Micro' || B.Via_Type == 'Blind/buried')")
+  (constraint hole_to_hole (min 0.10mm)))
+(rule "Mechanical holes 0.25 mm wall to wall (NCAB advanced)"
+  (condition "A.Type == 'Via' && A.Via_Type != 'Micro' && B.Type == 'Via' && B.Via_Type != 'Micro'")
   (constraint hole_to_hole (min 0.25mm)))
+(rule "Mechanical hole to copper 0.20 mm"
+  (condition "A.Type == 'Via' && A.Via_Type != 'Micro'")
+  (constraint hole_clearance (min 0.20mm)))
 (rule "Through / buried via annular ring 0.10 mm"
   (condition "A.Type == 'Via' && A.Via_Type != 'Micro'")
   (constraint annular_width (min 0.10mm)))
@@ -228,9 +234,14 @@ def build_dru(pcb_text: str = "") -> str:
     refs = fine_pitch_array_refs(pcb_text) if pcb_text else []
     cond = "A.Type == 'Track'" + "".join(f" && !A.intersectsCourtyard('{r}')" for r in refs)
     note = ", ".join(refs) if refs else "none on this board"
+    out_tv = "(A.Type == 'Track' || A.Type == 'Via')" + "".join(
+        f" && !A.intersectsCourtyard('{r}')" for r in refs)
     return _DRU_HEAD + (f'(rule "Track ≥ 0.10 mm outside fine-pitch BGA escapes ({note})"\n'
                         f'  (condition "{cond}")\n'
-                        f'  (constraint track_width (min 0.10mm)))\n')
+                        f'  (constraint track_width (min 0.10mm)))\n'
+                        f'(rule "100 µm clearance outside fine-pitch BGA escapes ({note})"\n'
+                        f'  (condition "{out_tv} && B.Net != A.Net")\n'
+                        f'  (constraint clearance (min 0.10mm)))\n')
 
 
 def kicad_classes() -> list[dict]:
@@ -290,14 +301,17 @@ def report_md(net_names) -> str:
          "| In6.Cu (L7) | GND plane | — |",
          "| B.Cu (L8) | signals, pours | In6 GND |", "",
          "## Fab rules", "",
-         "- Tracks: 0.12 mm preferred, 0.10 mm minimum; 0.075 mm only to escape a fine-pitch "
-         "(≤ 0.5 mm) BGA / CSP (enforced by the project's `.kicad_dru` outside those courtyards).",
+         "- Tracks: 100 µm clearance and 0.12 mm preferred / 0.10 mm minimum width everywhere "
+         "outside the fine-pitch (≤ 0.5 mm) BGA / CSP courtyards; inside them 0.085 mm at "
+         "≥ 0.075 mm clearance (one track between two 0.25 mm lands). Both enforced by the "
+         "project's `.kicad_dru`.",
          "- Microvias: laser, L1→L2 / L2→L3 and L8→L7 / L7→L6, **staggered — never stacked**, and "
-         "never landing directly on a buried via (offset ≥ 0.25 mm hole-to-hole, enforced).",
+         "never landing directly on a buried via (centres offset by at least one 0.25 mm land, "
+         "i.e. ≥ 0.10 mm hole edge to hole edge — enforced).",
          "- Buried core vias L3→L6: 0.20 mm drill / 0.45 mm pad, resin-filled and capped; "
          "annular ring ≥ 0.10 mm on through and buried vias.",
          "- BGA pads: via-in-pad (filled, plated over, IPC-4761 VII) where the escape needs it.",
-         "- Hole-to-hole 0.25 mm; copper-to-edge 0.20 mm (castellations exempt); silk-to-pad 0.10 mm.",
+         "- Mechanical hole-to-hole 0.25 mm; copper-to-edge 0.20 mm (castellations exempt); silk-to-pad 0.10 mm.",
          "- Controlled impedance lives on the outer layers: at the 0.10 mm inner minimum the "
          "In2 / In5 striplines are ≈ 44 Ω SE and ≈ 86 Ω diff.", "",
          "## Controlled-impedance widths", "",

@@ -7005,6 +7005,9 @@ def _generate_config(name: str, board_set: set[str]) -> None:
         extra_locks.update(ref.get("placements", {}).get(bn, {}))
     place_design(d, panel, boards, extra_locks=extra_locks or None)
     _place_health_coil(d, boards)              # embedded beacon coil (copper only)
+    from smash.layout.bga_escape import escape_board as _escape_board
+    for _ref, _st in _escape_board(d, boards, BGA_ESCAPE_REFS).items():
+        print(f"  BGA escape {_ref} ({_st['board']}): {_st}")
     # Size each backbone spacer to the gap it bridges (placement-dependent, so
     # post-place); battery spacers keep their cell-length override.
     size_backbone_spacers(panel, boards)
@@ -7136,6 +7139,10 @@ def _generate_config(name: str, board_set: set[str]) -> None:
           + (f"; NON-CONFORMING: {len(_nonconform)}" if _nonconform else ""))
 
 
+# fine-pitch BGAs whose fan-out is generated (smash.layout.bga_escape)
+BGA_ESCAPE_REFS = ("U_WBA", "U_MPU", "U_FIN_MCU")
+
+
 def main() -> int:
     d = Design()
     _set_battery_mode("maximalist")  # triple — the 3-cell default (flip 2026-07-28)
@@ -7176,6 +7183,9 @@ def main() -> int:
     # ── place + export KiCad PCBs ────────────────────────────────────
     report = place_design(d, panel, boards)
     _place_health_coil(d, boards)              # embedded beacon coil (copper only)
+    from smash.layout.bga_escape import escape_board as _escape_board
+    for _ref, _st in _escape_board(d, boards, BGA_ESCAPE_REFS).items():
+        print(f"  BGA escape {_ref} ({_st['board']}): {_st}")
     # Size each backbone spacer to the gap it bridges (placement-dependent, so
     # post-place); battery spacers keep their cell-length override.
     _sized = size_backbone_spacers(panel, boards)

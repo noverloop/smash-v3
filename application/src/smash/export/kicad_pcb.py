@@ -121,15 +121,16 @@ def write_blank_drawing_sheet(pcb_path) -> None:
     pro.write_text(json.dumps({
         "board": {"design_settings": {"rules": {
             "min_clearance": 0.075,
-            # 0.075 only in fine-pitch BGA escapes; ≥ 0.10 elsewhere is a
-            # custom rule in the project's .kicad_dru (smash.layout.netclasses)
-            "min_track_width": 0.075,
+            # 0.085 only in fine-pitch BGA escapes (never below 80 µm); ≥ 0.10
+            # elsewhere is a custom rule in the project's .kicad_dru
+            "min_track_width": 0.085,
             "min_through_hole_diameter": 0.2,     # NCAB: mechanical 200 µm, resin filled
             "min_via_diameter": 0.45,
             "min_microvia_diameter": 0.25,
             "min_microvia_drill": 0.15,
             "min_via_annular_width": 0.05,        # microvia 0.25 / 0.15; through/buried 0.10 in .kicad_dru
-            "min_hole_to_hole": 0.25,             # NCAB advanced, different-net wall to wall
+            "min_hole_to_hole": 0.10,             # staggered microvias; mechanical 0.25 in .kicad_dru
+            "min_hole_clearance": 0.10,           # laser holes; mechanical 0.20 in .kicad_dru
             "min_copper_edge_clearance": 0.20,    # NCAB advanced pattern-to-edge
             "min_silk_clearance": 0.10,
         }}},
