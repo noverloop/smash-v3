@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "manf_pn": "DMN6075SQ-7",
+    "datasheet": "Diodes Inc. DMN6075SQ, DS41898 Rev. 2-2",
+    "datasheet_section": "Pin configuration (SOT23 top view); maximum ratings",
+    "package": "SOT23 2.9x1.3x1.10 max",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/DMN6075SQ-7/DMN6075SQ.pdf",
+    "notes": "Pins 1 G, 2 S, 3 D. VDSS 60 V, VGSS ±20 V.",
+    "height_max_mm": 1.1,
+    "operating_temp_c": [-55, 150]
+  },
+  "pins": [
+    {"num": "1", "name": "G", "type": "input", "aliases": ["Gate"], "voltage_range_v": [-20, 20]},
+    {"num": "2", "name": "S", "type": "io", "aliases": ["Source"]},
+    {"num": "3", "name": "D", "type": "io", "aliases": ["Drain"]}
+  ]
+}

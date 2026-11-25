@@ -4418,8 +4418,8 @@ def build_wakeup_board(d: Design) -> None:
                    pin=wba.pin(vdd_pin))
     # DS14127 Fig. 15 (SMPS scheme): VDD n × 100 nF + 10 µF; VDDA 100 nF + 1 µF;
     # VDDSMPS its own 10 µF; VDD11 4.7 µF
-    cap_to_gnd(d, "3V3_AON", "10uF", ref="C_WBA_BULK", board_tag=BTAG, pin=(wba.ref, None))
-    cap_to_gnd(d, "3V3_AON", "10uF", ref="C_WBA_SMPS_IN", board_tag=BTAG, pin=wba.pin("VDD_SMPS"))
+    cap_to_gnd(d, "3V3_AON", "10uF/LV", ref="C_WBA_BULK", board_tag=BTAG, pin=(wba.ref, None))
+    cap_to_gnd(d, "3V3_AON", "10uF/LV", ref="C_WBA_SMPS_IN", board_tag=BTAG, pin=wba.pin("VDD_SMPS"))
     cap_to_gnd(d, "3V3_AON", "1uF", ref="C_WBA_VDDA_1U", board_tag=BTAG, pin=wba.pin("VDDA"))
 
     # NRST network — 10 kΩ pull-up + 100 nF to GND (RM0497 §6.3.5).
