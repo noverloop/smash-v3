@@ -49,3 +49,15 @@ def test_project_file_carries_classes(tmp_path):
     assert {c["name"] for c in ns["classes"]} >= {"Default", "PWR_PACK", "DDR_SE55", "RF_50"}
     pats = {p["pattern"]: p["netclass"] for p in ns["netclass_patterns"]}
     assert pats == {"BAT_PROT": "PWR_PACK", "DDR3L_A0": "DDR_SE55"}
+
+
+def test_dru_rules_follow_the_fab_rules():
+    blk = ('(kicad_pcb\n\t(footprint "x:BGA"\n\t\t(property "Reference" "U1")\n'
+           + "".join(f'\t\t(pad "{i}" smd circle (at {0.5 * (i % 6)} {0.5 * (i // 6)}) (size 0.25 0.25))\n'
+                     for i in range(36)) + "\t)\n)")
+    assert N.fine_pitch_array_refs(blk) == ["U1"]
+    dru = N.build_dru(blk)
+    assert "intersectsCourtyard('U1')" in dru and "track_width (min 0.10mm)" in dru
+    assert "Micro" in dru and "hole_to_hole" in dru          # no stacked microvias
+    assert "HV_33V" in dru
+    assert N.CLASSES["Default"]["width"] == 0.12

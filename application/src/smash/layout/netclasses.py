@@ -24,22 +24,26 @@ _T = Z.table()
 # width = outer-layer width (F.Cu / B.Cu); inner_width where it differs.
 # clearance = to other nets. Impedance classes give their target.
 CLASSES: dict[str, dict] = {
-    "Default": dict(width=0.10, clearance=0.075,
-                    note="all other signals; 75 µm clearance (NCAB advanced HDI)"),
-    "DDR_SE55": dict(width=_T["F.Cu"]["55"], inner_width=0.075, clearance=0.075, z="55 Ω SE ±10 %",
-                     note="AN5489/AN5724: 55 Ω (inner 0.075 mm min track ≈ 51.5 Ω). Spacing S-3S "
+    "Default": dict(width=0.12, clearance=0.075,
+                    note="all other signals: 0.12 mm preferred, 0.10 mm minimum; 0.075 mm only "
+                         "inside a fine-pitch BGA / CSP ball field (escape)."),
+    "DDR_SE55": dict(width=_T["F.Cu"]["55"], inner_width=0.10, clearance=0.075, z="55 Ω SE ±10 %",
+                     note="AN5489/AN5724: 55 Ω on the outer layers (0.12 mm). Inner segments at the "
+                          "0.10 mm minimum are ≈ 44 Ω — keep them short (escape only) or sign them "
+                          "off with ST's DDR tool (drive / ODT, AN5723). Spacing S-3S "
                           "(S-2S fallback) outside the BGA fields, 0.075 inside. Match DQ/DM to byte "
                           "DQS ±1.42 mm, A/C to CK ±3.55 mm, DQS to CK ±12.07 mm (incl. MP25 package "
                           "lengths); switchback tuning only."),
     "DDR_DIFF100": dict(width=_T["F.Cu"]["diff100"][0], diff_gap=_T["F.Cu"]["diff100"][1],
-                        inner_width=0.075, inner_diff_gap=0.20, clearance=0.15, z="100 Ω diff ±10 %",
-                        note="DDR CK / DQS pairs: constant gap, no intra-pair equalisation (AN5724 §6.2)."),
+                        clearance=0.15, z="100 Ω diff ±10 %",
+                        note="DDR CK / DQS pairs, outer layers only (inner pairs reach ≈ 86 Ω at "
+                             "0.10 mm): constant gap, no intra-pair equalisation (AN5724 §6.2)."),
     "CSI_DIFF100": dict(width=_T["F.Cu"]["diff100"][0], diff_gap=_T["F.Cu"]["diff100"][1],
-                        inner_width=0.075, inner_diff_gap=0.20, clearance=0.20, z="100 Ω diff ±10 %",
-                        note="MIPI CSI-2 D-PHY: intra-pair ≤ 0.1 mm, lane-to-clock ≤ 1 mm; "
+                        clearance=0.20, z="100 Ω diff ±10 %",
+                        note="MIPI CSI-2 D-PHY, outer layers only: intra-pair ≤ 0.1 mm, lane-to-clock ≤ 1 mm; "
                              "continuous GND reference, no layer change without GND vias."),
-    "RF_50": dict(width=_T["F.Cu"]["50"], inner_width=_T["In2.Cu"]["50"], clearance=0.25, z="50 Ω SE",
-                  note="outer layers over In1/In6 GND (grounded-coplanar acceptable with ≥ 0.25 mm "
+    "RF_50": dict(width=_T["F.Cu"]["50"], clearance=0.25, z="50 Ω SE",
+                  note="outer layers only, over In1/In6 GND (grounded-coplanar acceptable with ≥ 0.25 mm "
                        "gap); GND via fence ≤ λ/20 (≈ 1.5 mm at 5 GHz); no vias in the RF path "
                        "except at the castellation feed."),
     "RF_DIFF100": dict(width=_T["F.Cu"]["diff100"][0], diff_gap=_T["F.Cu"]["diff100"][1],
@@ -47,11 +51,12 @@ CLASSES: dict[str, dict] = {
                        note="LTC5552 IF port to the NCS1-292+ balun."),
     "CAN_PAIR": dict(width=0.15, diff_gap=0.15, clearance=0.15, z="≈ 120 Ω diff (short stub, not critical)",
                      note="EXT_CAN_P/N: route as a tightly coupled pair to the crown contacts."),
-    "CLK_50": dict(width=_T["F.Cu"]["50"], inner_width=_T["In2.Cu"]["50"], clearance=0.20, z="50 Ω SE",
-                   note="clocks and the fast flash buses (OSPI NAND, radar QSPI): 3W to other "
+    "CLK_50": dict(width=_T["F.Cu"]["50"], inner_width=0.10, clearance=0.20, z="50 Ω SE outer",
+                   note="clocks and the fast flash buses (OSPI NAND, radar QSPI): 50 Ω outer; inner "
+                        "0.10 mm (≈ 44 Ω) is acceptable for these short, source-terminated runs; 3W to other "
                         "signals, no stubs, series R at the source; flash data within ±2 mm of its "
                         "clock."),
-    "ANALOG_HIZ": dict(width=0.10, clearance=0.20,
+    "ANALOG_HIZ": dict(width=0.12, clearance=0.20,
                        note="high-impedance / precision nodes (piezo charge node, QPD TIA inputs, "
                             "loop filters, feedback dividers, crystals, ZQ/REXT): short, guard with "
                             "GND, keep away from SW nodes and clocks."),
@@ -178,13 +183,54 @@ def enforced_clearance(name: str) -> float:
     return ENFORCED_MIN
 
 
-# HV creepage applies to the routing (tracks, vias, zones), not to the pins
-# inside a vendor land pattern: a custom rule next to every project.
-DRU = """(version 1)
+# Custom DRC rules next to every project (.kicad_dru). Fab rules (user):
+#   * tracks 0.12 mm preferred / 0.10 mm minimum; 0.075 mm only to escape a
+#     fine-pitch (≤ 0.5 mm) BGA / CSP — board minimum 0.075, raised to 0.10
+#     everywhere outside those parts' courtyards;
+#   * microvias are staggered, never stacked, and never land on a buried via;
+#   * HV creepage on the routing (tracks, vias, zones), not on the pins inside
+#     a vendor land pattern.
+_DRU_HEAD = """(version 1)
 (rule "HV_33V routing clearance (IPC-2221B B4, 31-50 V, coated)"
   (condition "A.NetClass == 'HV_33V' && A.Type != 'Pad' && B.Net != A.Net")
   (constraint clearance (min 0.13mm)))
+(rule "No stacked microvias; no microvia on a buried via"
+  (condition "A.Via_Type == 'Micro' && (B.Via_Type == 'Micro' || B.Via_Type == 'Blind/buried')")
+  (constraint hole_to_hole (min 0.25mm)))
+(rule "Through / buried via annular ring 0.10 mm"
+  (condition "A.Type == 'Via' && A.Via_Type != 'Micro'")
+  (constraint annular_width (min 0.10mm)))
 """
+
+
+def fine_pitch_array_refs(pcb_text: str, max_pitch_mm: float = 0.55) -> list[str]:
+    """References of area-array footprints (BGA / CSP / WLCSP) whose ball
+    pitch is ≤ 0.5 mm: ≥ 16 pads, interior pads present, nearest-neighbour
+    pitch ≤ max_pitch_mm."""
+    refs = []
+    for blk in re.split(r"\n\t\(footprint ", pcb_text)[1:]:
+        m = re.search(r'\(property "Reference" "([^"]+)"', blk)
+        pads = [(float(x), float(y)) for x, y in
+                re.findall(r'\(pad "[^"]*" smd \w+\s*\(at ([-\d.]+) ([-\d.]+)', blk)]
+        if not m or len(pads) < 16:
+            continue
+        xs = sorted({round(x, 3) for x, _ in pads}); ys = sorted({round(y, 3) for _, y in pads})
+        interior = [q for q in pads if xs[0] < round(q[0], 3) < xs[-1] and ys[0] < round(q[1], 3) < ys[-1]]
+        if len(interior) < 4 or len(xs) < 4 or len(ys) < 4:
+            continue
+        pitch = min(abs(b - a) for a, b in zip(xs, xs[1:]))
+        if pitch <= max_pitch_mm:
+            refs.append(m.group(1))
+    return sorted(set(refs))
+
+
+def build_dru(pcb_text: str = "") -> str:
+    refs = fine_pitch_array_refs(pcb_text) if pcb_text else []
+    cond = "A.Type == 'Track'" + "".join(f" && !A.intersectsCourtyard('{r}')" for r in refs)
+    note = ", ".join(refs) if refs else "none on this board"
+    return _DRU_HEAD + (f'(rule "Track ≥ 0.10 mm outside fine-pitch BGA escapes ({note})"\n'
+                        f'  (condition "{cond}")\n'
+                        f'  (constraint track_width (min 0.10mm)))\n')
 
 
 def kicad_classes() -> list[dict]:
@@ -215,7 +261,8 @@ def write_project_classes(pro_path, net_names) -> None:
     ns["netclass_patterns"] = pats
     ns.setdefault("meta", {"version": 3})
     pro.write_text(json.dumps(data, indent=2) + "\n")
-    pro.with_suffix(".kicad_dru").write_text(DRU)
+    pcb = pro.with_suffix(".kicad_pcb")
+    pro.with_suffix(".kicad_dru").write_text(build_dru(pcb.read_text() if pcb.exists() else ""))
 
 
 def pcb_net_names(pcb_path) -> list[str]:
@@ -242,14 +289,25 @@ def report_md(net_names) -> str:
          "| In5.Cu (L6) | signals (stripline) | In4 PWR / In6 GND |",
          "| In6.Cu (L7) | GND plane | — |",
          "| B.Cu (L8) | signals, pours | In6 GND |", "",
+         "## Fab rules", "",
+         "- Tracks: 0.12 mm preferred, 0.10 mm minimum; 0.075 mm only to escape a fine-pitch "
+         "(≤ 0.5 mm) BGA / CSP (enforced by the project's `.kicad_dru` outside those courtyards).",
+         "- Microvias: laser, L1→L2 / L2→L3 and L8→L7 / L7→L6, **staggered — never stacked**, and "
+         "never landing directly on a buried via (offset ≥ 0.25 mm hole-to-hole, enforced).",
+         "- Buried core vias L3→L6: 0.20 mm drill / 0.45 mm pad, resin-filled and capped; "
+         "annular ring ≥ 0.10 mm on through and buried vias.",
+         "- BGA pads: via-in-pad (filled, plated over, IPC-4761 VII) where the escape needs it.",
+         "- Hole-to-hole 0.25 mm; copper-to-edge 0.20 mm (castellations exempt); silk-to-pad 0.10 mm.",
+         "- Controlled impedance lives on the outer layers: at the 0.10 mm inner minimum the "
+         "In2 / In5 striplines are ≈ 44 Ω SE and ≈ 86 Ω diff.", "",
          "## Controlled-impedance widths", "",
          "| Layer | 50 Ω | 55 Ω | 100 Ω diff (w / gap) | 90 Ω diff (w / gap) |",
          "|---|---|---|---|---|"]
     for layer, r in _T.items():
         L.append(f"| {layer} | {r['50']:.3f} | {r['55']:.3f} | {r['diff100'][0]:.3f} / {r['diff100'][1]:.2f} "
                  f"| {r['diff90'][0]:.3f} / {r['diff90'][1]:.2f} |")
-    L += ["", "Inner layers: 0.075 mm is the minimum track, so 55 Ω inner = 0.075 mm (≈ 51.5 Ω) and "
-          "100 Ω inner pairs = 0.075 mm / 0.20 mm gap.", "",
+    L += ["", f"Inner layers are listed for reference only: at the 0.10 mm minimum track they give "
+          f"{Z.z0('In2.Cu', 0.10):.0f} Ω SE and {Z.zdiff('In2.Cu', 0.10, 0.20):.0f} Ω diff (0.20 mm gap).", "",
           "## Classes", "",
           "Spacing = routing spacing to other nets (guidance; KiCad enforces 0.075 mm for every "
           "class; HV_33V's 0.13 mm is enforced on tracks, vias and zones by the project's "

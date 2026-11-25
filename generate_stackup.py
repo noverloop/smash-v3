@@ -824,9 +824,9 @@ def build_companion_compute(d: Design) -> None:
     # A/C + data mapping = ST's AL (10×10) DDR3L template VERBATIM
     # (Research/STM32MP25xxAx/STM32MP25xxAL/1DDR3L_Memory_length_equalization_
     # in_mm_for_STM32MP25xxAL (10x10)_Template.xlsx, BALL NAME → NET NAME).
-    # UNROUTED (user): the DDR4 pre-route (smash.layout.ddr_route, mined from
-    # ST's routed DDR4 reference) does not carry over — the layout EE routes
-    # the DDR3L with ST's length template (CLK ±3.55 mm A/C window, DQS ±1.42).
+    # Unrouted: the layout EE routes the DDR3L with ST's length template
+    # (CLK ±3.55 mm A/C window, DQS ±1.42) under the NCAB fab rules
+    # (smash.layout.netclasses).
     ddr = add_mt41k256m16tw_107_ptr(d, ref="U_DDR", board_tag=BTAG,
                                     manf_pn="MT41K256M16TW-107 IT:P",
                                     name="MT41K256M16TW-107 IT:P", value="MT41K256M16TW-107 IT:P",

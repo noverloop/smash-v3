@@ -89,10 +89,13 @@ radar / QPD), 39.7 mm with the camera nose.
   their net class before fab.**
 - **Net classes** (`NET_CLASSES.md`, also loaded in every `.kicad_pro` under
   Board Setup → Net Classes, assigned per net): layer plan (In1 / In3 / In6
-  GND, In4 power), controlled-impedance widths for this stack-up (50 Ω
-  0.147 mm outer / 0.080 mm inner; DDR 55 Ω 0.12 mm outer / 0.075 mm inner;
-  100 Ω pairs 0.10 / 0.10 outer, 0.075 / 0.20 inner — closed-form targets,
-  have the fab tune them), DDR length matching (DQ/DM to DQS ±1.42 mm, A/C to
+  GND, In4 power), fab rules (tracks 0.12 mm preferred / 0.10 mm minimum,
+  0.075 mm only to escape the fine-pitch BGAs / CSPs; microvias staggered,
+  never stacked and never on a buried via — both enforced by each project's
+  `.kicad_dru`), controlled-impedance widths on the outer layers (50 Ω
+  0.147 mm; DDR 55 Ω 0.12 mm; 100 Ω pairs 0.10 / 0.10 — closed-form targets,
+  have the fab tune them; the inner layers give ≈ 44 Ω at 0.10 mm, so keep
+  impedance-controlled runs outside), DDR length matching (DQ/DM to DQS ±1.42 mm, A/C to
   CK ±3.55 mm, DQS to CK ±12.07 mm), RF / clock / high-impedance analog / HV
   (0.13 mm, 33 V) / pack-current classes. Inner copper is 18 µm: carry the
   pack path on outer-layer pours.
