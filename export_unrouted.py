@@ -537,6 +537,11 @@ def main() -> int:
               + read(NOTES).split("\n", 1)[1].lstrip("\n"))
     else:
         warn.append(f"no {NOTES.name}: layout notes not exported")
+    for f in ("NET_CLASSES.md", "DECOUPLING_MAP.csv", "DECOUPLING_GAPS.csv"):
+        if (DIST / f).exists():
+            shutil.copy2(DIST / f, dst / f)
+        else:
+            warn.append(f"no dist/{f}: run generate_stackup.py")
     # (2026-11-25, user) the notes also go INTO the boards, beside the outline,
     # where the layout EE actually reads them
     if NOTES.exists():

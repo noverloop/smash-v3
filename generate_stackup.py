@@ -7241,6 +7241,13 @@ def main() -> int:
     print(f"Canonical netlist written to {out.relative_to(REPO)} "
           f"({summary['n_parts']} parts, {summary['n_nets']} nets)")
 
+    # Layout handoff: net classes (also in every .kicad_pro) + decoupling map.
+    from smash.layout import netclasses as _nc, decoupling as _dc
+    (_DIST / "NET_CLASSES.md").write_text(_nc.report_md([n.name for n in d.nets]))
+    _dcs = _dc.write(d, boards, _DIST)
+    print(f"  NET_CLASSES.md + DECOUPLING_MAP.csv: {_dcs['caps']} caps {_dcs['status']}, "
+          f"{_dcs['rails_without_cap']} IC rail(s) without an assigned cap (DECOUPLING_GAPS.csv)")
+
     # Whole-system schematic (documentation projection of the same netlist).
     sch_dir = _DIST / "schematic"
     shutil.rmtree(sch_dir, ignore_errors=True)

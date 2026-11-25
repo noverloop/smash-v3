@@ -144,6 +144,10 @@ def write_blank_drawing_sheet(pcb_path) -> None:
         },
         "pcbnew": {"page_layout_descr_file": "empty.kicad_wks"},
     }, indent=2) + "\n")
+    # net classes (widths / clearances / impedance) + per-net assignment
+    from smash.layout import netclasses
+    if pcb.exists():
+        netclasses.write_project_classes(pro, netclasses.pcb_net_names(pcb))
     hide_drawing_sheet(pcb)
 
 

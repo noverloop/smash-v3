@@ -85,8 +85,24 @@ radar / QPD), 39.7 mm with the camera nose.
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came
   from Freerouting with ONE rule (100 µm / 75 µm, 0.45/0.20 via) — all nets at
-  4 mil including ACTIVATE_HV (33 V) and BAT_RAW: **re-derive power widths per
-  net class before fab.**
+  4 mil including ACTIVATE_HV (33 V) and BAT_RAW: **re-route those nets to
+  their net class before fab.**
+- **Net classes** (`NET_CLASSES.md`, also loaded in every `.kicad_pro` under
+  Board Setup → Net Classes, assigned per net): layer plan (In1 / In3 / In6
+  GND, In4 power), controlled-impedance widths for this stack-up (50 Ω
+  0.147 mm outer / 0.080 mm inner; DDR 55 Ω 0.12 mm outer / 0.075 mm inner;
+  100 Ω pairs 0.10 / 0.10 outer, 0.075 / 0.20 inner — closed-form targets,
+  have the fab tune them), DDR length matching (DQ/DM to DQS ±1.42 mm, A/C to
+  CK ±3.55 mm, DQS to CK ±12.07 mm), RF / clock / high-impedance analog / HV
+  (0.13 mm, 33 V) / pack-current classes. Inner copper is 18 µm: carry the
+  pack path on outer-layer pours.
+- **Decoupling map** (`DECOUPLING_MAP.csv`): every capacitor with the IC pin it
+  serves and its distance rule (≤ 220 nF within 1.5 mm of the pin, ≤ 4.7 µF
+  within 3 mm, bulk within 6 mm of the body; under-BGA on the opposite face
+  counts). The column `status` is measured on the delivered placement, which
+  packs by area and does not yet pull capacitors to their pins — treat every
+  `far` row as a placement to fix. `DECOUPLING_GAPS.csv` lists IC supply rails
+  with no assigned capacitor.
 - **Peak currents for widths** (battery sim, 2.6 V end-of-mission pack): the pack
   path BAT_RAW → R_BAT*_ISO → Q_ISO → BAT_PROT → QMAIN → REG_IN_MAIN → LTC3124
   (all on power_board) carries 1.8 A in descent, 4.4 A for chirp + cutter, 6.5 A
