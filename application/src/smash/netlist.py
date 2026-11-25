@@ -123,6 +123,12 @@ def _cap_factory_for_value(value: str, *, force_c0g: bool = False):
         if value.upper().endswith("/LV") and abs(farads - 22e-6) < 1e-9:
             from smash.parts.passives import add_capacitor_samsung_cl10a106kp8nnnc
             return add_capacitor_samsung_cl10a106kp8nnnc, 2
+        # "22uF/HV" = one bulk position on a 4-5.5 V rail → one Murata
+        # GRM21BR61E226ME44L 25 V X5R 0805 (≈ 10-12 µF left at 5 V), in place
+        # of 5 × 2.2 µF 0603 (≈ 6 µF left).
+        if value.upper().endswith("/HV") and abs(farads - 22e-6) < 1e-9:
+            from smash.parts.passives import add_capacitor_grm21br61e226me44l
+            return add_capacitor_grm21br61e226me44l, 1
         return add_capacitor_tantalum_3528_kemet_t491, 1
     # (2026-11-21) orderable W-case polymers where the T528 value is not made
     if abs(farads - 470e-6) < 1e-9:

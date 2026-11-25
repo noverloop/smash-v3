@@ -779,10 +779,10 @@ def build_companion_compute(d: Design) -> None:
     res_between(d, "COMP_3V3", "BOOT0", "4.7k", ref="R_MPU_BOOT0", board_tag=BTAG)   # default = NAND boot; vs 2 × 30-50 k BOOT pull-downs ≥ 2.43 V > VIH 2.31 V
 
     # Bulk decoupling on supply rails
-    cap_to_gnd(d, "COMP_5V",  "10uF",  ref="C_MPU_5V",   board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V",  "22uF/HV",  ref="C_MPU_5V",   board_tag=BTAG)
     cap_to_gnd(d, "COMP_5V",  "100nF", ref="C_MPU_5V2",
                embedded_cap_absorbs=True, board_tag=BTAG)
-    cap_to_gnd(d, "COMP_3V3", "10uF",  ref="C_MPU_33",   board_tag=BTAG)
+    cap_to_gnd(d, "COMP_3V3", "10uF/LV",  ref="C_MPU_33",   board_tag=BTAG)
     cap_to_gnd(d, "COMP_3V3", "100nF", ref="C_MPU_33b",
                embedded_cap_absorbs=True, board_tag=BTAG)
 
@@ -869,8 +869,8 @@ def build_companion_compute(d: Design) -> None:
     for n in range(1, 7):
         cap_to_gnd(d, "COMP_1V35", "100nF", ref=f"C_DDR_VDD{n}",
                    embedded_cap_absorbs=True, board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_1V35", "10uF", ref="C_DDR_BULK1", board_tag=BTAG, pin=(ddr.ref, None))
-    cap_to_gnd(d, "COMP_1V35", "10uF", ref="C_DDR_BULK2", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V35", "10uF/LV", ref="C_DDR_BULK1", board_tag=BTAG, pin=(ddr.ref, None))
+    cap_to_gnd(d, "COMP_1V35", "10uF/LV", ref="C_DDR_BULK2", board_tag=BTAG, pin=(ddr.ref, None))
 
 
 def build_radar_module(d: Design) -> None:
@@ -911,7 +911,7 @@ def build_radar_module(d: Design) -> None:
     res_between(d, "AWR_1V0_FB", "GND",        "100k",
                 ref="R_AWR_FB2", board_tag=BTAG)
 
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "BAT_PROT", "22uF/HV",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
     cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG, pin=buck.pin("VIN"))
     cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG, pin=(buck.ref, None))
     cap_to_gnd(d, "AWR_1V0",   "100nF", ref="C_AWR_1V0_2",
@@ -925,7 +925,7 @@ def build_radar_module(d: Design) -> None:
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
     # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
 
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
+    cap_to_gnd(d, "AWR_1V8", "10uF/LV",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
@@ -1077,7 +1077,7 @@ def build_radar_module_awr2e44p(d: Design) -> None:
                 ref="R_AWR_FB1", board_tag=BTAG)
     res_between(d, "AWR_1V0_FB", "GND",        "100k",
                 ref="R_AWR_FB2", board_tag=BTAG)
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
+    cap_to_gnd(d, "BAT_PROT", "22uF/HV",  ref="C_AWR_BUCK_IN1", board_tag=BTAG, pin=buck.pin("VIN"))
     cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2", board_tag=BTAG, pin=buck.pin("VIN"))
     cap_to_gnd(d, "AWR_1V0",   "22uF",  ref="C_AWR_1V0_1",    board_tag=BTAG, pin=(buck.ref, None))
     cap_to_gnd(d, "AWR_1V0",   "100nF", ref="C_AWR_1V0_2",
@@ -1089,7 +1089,7 @@ def build_radar_module_awr2e44p(d: Design) -> None:
     _net(d, "RADAR_EN").connect(ldo18.pin("EN"))
     _net(d, "AWR_1V8")  .connect(ldo18.pin("VOUT"))
     # (2026-11-22) XC6220 SOT-25 has no exposed pad (LDL112 EP tie removed)
-    cap_to_gnd(d, "AWR_1V8", "10uF",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
+    cap_to_gnd(d, "AWR_1V8", "10uF/LV",  ref="C_AWR_1V8_1", board_tag=BTAG, pin=ldo18.pin("VOUT"))
     cap_to_gnd(d, "AWR_1V8", "100nF", ref="C_AWR_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=ldo18.pin("VOUT"))
 
@@ -1310,9 +1310,9 @@ def build_radar_module_awr1843aop(d: Design) -> None:
                pin=fb_1v8.pin("2"))
 
     # Shared input decoupling on always-on BAT_PROT (DS: 10 µF per buck input)
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN1",
+    cap_to_gnd(d, "BAT_PROT", "22uF/HV",  ref="C_AWR_BUCK_IN1",
                feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
-    cap_to_gnd(d, "BAT_PROT", "10uF",  ref="C_AWR_BUCK_IN3",
+    cap_to_gnd(d, "BAT_PROT", "22uF/HV",  ref="C_AWR_BUCK_IN3",
                feature="bottom", board_tag=BTAG, pin=ldo18.pin("VIN"))
     cap_to_gnd(d, "BAT_PROT", "100nF", ref="C_AWR_BUCK_IN2",
                feature="bottom", board_tag=BTAG, pin=[buck12.pin("VIN"), buck13.pin("VIN")])
@@ -1374,7 +1374,7 @@ def build_radar_module_awr1843aop(d: Design) -> None:
     cap_to_gnd(d, "AWR_VOUT_14APLL",  "1uF",   ref="C_AWR_14APLL",  board_tag=BTAG, pin=(awr.ref, "VOUT_14APLL"))
     cap_to_gnd(d, "AWR_VOUT_14SYNTH", "1uF",   ref="C_AWR_14SYNTH", board_tag=BTAG, pin=(awr.ref, "VOUT_14SYNTH"))
     cap_to_gnd(d, "AWR_VOUT_PA",      "220nF", ref="C_AWR_VOUT_PA", board_tag=BTAG, pin=(awr.ref, None))  # 3 VOUT_PA balls
-    cap_to_gnd(d, "AWR_VOUT_PA",      "10uF",  ref="C_AWR_VOUT_PA_BULK", board_tag=BTAG, pin=(awr.ref, None))
+    cap_to_gnd(d, "AWR_VOUT_PA",      "10uF/LV",  ref="C_AWR_VOUT_PA_BULK", board_tag=BTAG, pin=(awr.ref, None))
 
     # Grounds (VSS ×22 + VSSA ×53). VNWA is on the 1.2 V tie above.
     # VPP (V2, eFuse programming supply) is left unconnected, as on the
@@ -1919,7 +1919,7 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     lo = add_adf4351bcpz_rl7(d, ref="U_XV_LO", board_tag=BTAG, feature=F)
     fb = add_blm18pg221sn1d(d, ref="FB_XV_LO", board_tag=BTAG, feature=F)
     _net(d, "3V3").connect(fb.pin("1")); _net(d, "XV_LO_3V3").connect(fb.pin("2"))
-    cap_to_gnd(d, "XV_LO_3V3", "10uF", ref="C_XV_LO_BULK", board_tag=BTAG)
+    cap_to_gnd(d, "XV_LO_3V3", "10uF/LV", ref="C_XV_LO_BULK", board_tag=BTAG)
     for pn in ("AVDD", "DVDD", "SDVDD", "VP", "VVCO", "VVCO_2"):
         _net(d, "XV_LO_3V3").connect(lo.pin(pn))
         cap_to_gnd(d, "XV_LO_3V3", "100nF", ref=f"C_XV_LO_{pn}", board_tag=BTAG, pin=lo.pin(pn))
@@ -2020,7 +2020,7 @@ def _build_transverter(d: Design, BTAG: str, *, face: str = "rf") -> None:
     R("XV_5V", "XV_PA_VGAIN", "22k", "R_XV_PA_VG1")
     R("XV_PA_VGAIN", "GND", "15k", "R_XV_PA_VG2")
     _net(d, "XV_PA_VGAIN").connect(pa.pin("VGAIN"))
-    cap_to_gnd(d, "XV_5V", "10uF", ref="C_XV_PA_BULK1", board_tag=BTAG)
+    cap_to_gnd(d, "XV_5V", "22uF/HV", ref="C_XV_PA_BULK1", board_tag=BTAG)
     cap_to_gnd(d, "XV_5V", "100nF", ref="C_XV_PA_CHOKE", board_tag=BTAG)
 
     # ── XV_5V: P-FET load switch off COMP_5V (on only for S4 TX) ────
@@ -2505,7 +2505,7 @@ def build_activation_interface(d: Design) -> None:
     # decouples the coil's FEED (pin 1, on BAT_PROT) — not the FET drain,
     # which sits on HEALTH_COIL_D. The coil is added post-place
     # (_place_health_coil), so it is referenced by (ref, pin).
-    cap_to_gnd(d, "BAT_PROT", "10uF", ref="C_HEALTH_COIL",
+    cap_to_gnd(d, "BAT_PROT", "22uF/HV", ref="C_HEALTH_COIL",
                board_tag="activation_interface", pin=("L_HEALTH_COIL", "1"))
 
     _build_activation_array(d)
@@ -3595,7 +3595,7 @@ def build_power_board(d: Design) -> None:
     l_boost_b = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP_B", board_tag=BTAG)
     _net(d, "COMP_5V_SWB").connect(l_boost_b.pin("1"))
     _net(d, "REG_IN_MAIN").connect(l_boost_b.pin("2"))
-    cap_to_gnd(d, "REG_IN_MAIN", "10uF", ref="C_BOOST_IN", board_tag=BTAG, pin=boost.pin("VIN"))
+    cap_to_gnd(d, "REG_IN_MAIN", "22uF/HV", ref="C_BOOST_IN", board_tag=BTAG, pin=boost.pin("VIN"))
     # (2026-11-22, height round 16) 47 µF polymer → 2 × 22 µF 25 V 0805 (1.25 mm)
     from smash.parts.passives import add_capacitor_grm21br61e226me44l
     for _k in (1, 2):
@@ -3633,7 +3633,7 @@ def build_power_board(d: Design) -> None:
     # LC filter: COMP_5V_RAW (fins, noisy) → COMP_5V (PMIC, clean).
     ind_between(d, "COMP_5V_RAW", "COMP_5V", "1uH",
                 ref="L_PMIC_FILT", board_tag=BTAG)   # TMS-1R0, Isat 2.7 A (was bogus WE-KI 0402)
-    cap_to_gnd(d, "COMP_5V", "10uF", ref="C_PMIC_5V_FILT", board_tag=BTAG)
+    cap_to_gnd(d, "COMP_5V", "22uF/HV", ref="C_PMIC_5V_FILT", board_tag=BTAG)
 
     # Companion-3V3 LDO (U_COMP_33) REMOVED — the two 3.3 V rails are unified.
     # The companion's 3.3 V loads (MP25 VDD-IO + SPI-NAND) now draw from the
@@ -3812,7 +3812,7 @@ def build_power_board(d: Design) -> None:
     cap_to_gnd(d, "COMP_1V8",  "22uF/LV",  ref="C_PMIC_1V8_1", board_tag=BTAG, pin=pmic.pin("VOUT5"))
     cap_to_gnd(d, "COMP_1V8",  "100nF", ref="C_PMIC_1V8_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT5"))
-    cap_to_gnd(d, "COMP_1V35", "10uF",  ref="C_PMIC_1V35_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
+    cap_to_gnd(d, "COMP_1V35", "10uF/LV",  ref="C_PMIC_1V35_1", board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_1V35", "100nF", ref="C_PMIC_1V35_2",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=pmic.pin("VOUT6"))
     cap_to_gnd(d, "COMP_2V8",  "4.7uF", ref="C_PMIC_2V8_1", board_tag=BTAG, pin=pmic.pin("LDO5OUT"))
@@ -4697,7 +4697,7 @@ def build_wakeup_board(d: Design) -> None:
     # DS9012 §"Application hints": 100 nF ceramic + 10 µF bulk at pin 14
     cap_to_gnd(d, "3V3", "100nF", ref="C_HACC1",
                embedded_cap_absorbs=True, board_tag=_HACC_TAG, pin=acc.pin("VDD"))
-    cap_to_gnd(d, "3V3", "10uF",  ref="C_HACC2", board_tag=_HACC_TAG, pin=acc.pin("VDD"))
+    cap_to_gnd(d, "3V3", "10uF/LV",  ref="C_HACC2", board_tag=_HACC_TAG, pin=acc.pin("VDD"))
 
     # ── 3 test points post-build (per system.py wakeup_board block end) ──
     tp_bat = _add_testpoint(d, ref="TP_BAT", board_tag=BTAG)
