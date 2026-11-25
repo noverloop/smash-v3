@@ -45,10 +45,10 @@ ANTENNA_SECTOR_DEG = (105.0, 255.0)
 BOARD_MID_Z_MM = {          # = the generated stack (test_antenna_sim_stack)
     "aft_end_board": 0.434,
     "activation_interface": 23.902,
-    "wakeup_board": 27.27,   # activation↔wakeup 2.5 mm (SC-59 FETs on activation, 2026-11-24)
-    "power_board": 30.738,   # wakeup↔power 2.6 mm
-    "companion_compute": 35.006,   # power↔compute 3.4 mm
-    "radar_module": 38.874,   # compute↔radar 3.0 mm
+    "wakeup_board": 27.77,   # activation↔wakeup 3.0 mm (3 mm minimum gap)
+    "power_board": 31.638,   # wakeup↔power 3.0 mm
+    "companion_compute": 35.506,   # power↔compute 3.0 mm (matched height zone)
+    "radar_module": 39.374,   # compute↔radar 3.0 mm
 }
 CORE_BOARDS = ("aft_end_board", "activation_interface",
                "wakeup_board", "power_board", "companion_compute")

@@ -1,0 +1,13 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_ESD_* R30A         PESD5V0L4UW,115              |   84307    8w    0.32 Malaysia  |    3180 10.0w    0.31 Malaysia  |  266065    8w    0.36 Malaysia  | 
+U_ESD_* R30B         DF5A5.6LJE,LM                |    6994   16w    0.27 Thailand  |                        - |    2727   16w    0.30 Thailand  | 
+U_ESD_* R30C         PESD5V0L4UF,115              |   10000   53w    0.51 Malaysia  |       0 54.0w    0.51 Malaysia  |    9950   30w    0.42 Malaysia  | 
+U_ESD_* R30D         VESD05A5A-HSF-GS08           |   13890    9w    0.73 China     |   14955 12.0w    0.74 China     |   14834   11w    0.82 China     | 
+D_EXT_VIN_TVS R30E   PESD6V3S1ULYL                |    4551   53w    0.26 China     |    4271 54.0w    0.26 Malaysia  |       0   30w    0.04 -         | 
+D_EXT_VIN_TVS R30F   DF2S8.2FS,L3M                |   31231   20w    0.14 Thailand  |    6327 22.0w    0.14 Thailand  |   29909   20w    0.18 Thailand  | 
+D_EXT_VIN_TVS R30G   PESD8V0S1ULSYL               |   19836   53w    0.28 Malaysia  |       0 54.0w    0.24 China     |   28490   30w    0.29 Malaysia  | 
+D_ACT_COL*_TVS R30H  PESD36VS1ULSYL               |   10000   53w    0.26 Malaysia/ |       0 54.0w    0.26 China     |   29984   30w    0.29 Malaysia  | 
+D_ACT_COL*_TVS R30I  PESD36VS1UL,315              |    3068   53w    0.26 Malaysia  |       0 54.0w    0.29 Malaysia  |       0   30w    0.26 Malaysia  | 
+D_ACT_COL*_TVS R30J  SMF36A-E3-08                 |  103012   11w    0.53 Taiwan    |   24016 61.0w    0.58 China     |   54354   25w    0.61 China     | 
+
+Digi-Key rows not in the upload:

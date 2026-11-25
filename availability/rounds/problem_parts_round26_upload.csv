@@ -1,0 +1,7 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+GRM31CC72A475KE11L,Murata,3,C_ACTIVATE_OUT R26A,"4.7 uF 100 V X7R 1206 1.6 mm; replaces C3216X7R2A475K160AC (0 stock)"
+CGA5L1X7R2A475K160AC,TDK,3,C_ACTIVATE_OUT R26B,"4.7 uF 100 V X7R 1206 1.6 mm, AEC-Q200"
+GRM31CZ72A475KE11L,Murata,3,C_ACTIVATE_OUT R26C,"4.7 uF 100 V X7R 1206 (check thickness)"
+"PMPB15XP,115",Nexperia,3,Q_ISO R26D,"-12 V logic-level P-FET DFN2020MD-6; COO + stock"
+PMPB15XPH,Nexperia,3,Q_ISO R26E,"same part, other packing code"
+BLM18SG121TN1D,Murata,2,FB_AWR R26F,"ferrite bead 120 R 3 A 0603 0.5 mm; COO + stock"

@@ -6,7 +6,8 @@
     "package": "S-Mini (SC-59 / SOT-346), 2.9 x 1.5 body, 2.5 lead span, 1.1 +0.2/-0.1 high, 0.95 pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=35718&prodName=SSM3K7002KF",
-    "notes": "Top view: pins 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top centre. VDSS 60 V, VGSS ±20 V, ID 400 mA. Gate has a series resistor + G-S ESD diode internally. AEC-Q101."
+    "notes": "Top view: pins 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top centre. VDSS 60 V, VGSS ±20 V, ID 400 mA. Gate has a series resistor + G-S ESD diode internally. AEC-Q101. [height] 1.3 mm max: DS p.7 S-Mini package dimensions: 1.1 +0.2/-0.1.",
+    "height_max_mm": 1.3
   },
   "pins": [
     {

@@ -661,14 +661,14 @@ BATT_CHANNEL_LINK_W_MM = 1.5
 # bent across the headroom to the P_CELL_CONTACTS pads on fin_ble.
 BATT_CELL_LENGTH_MM = 21.0
 # (2026-11-15) CLOSED FLOOR under the cells: they stand on it, and its
-# underside carries a shallow POCKET for the launch piezo (Ø10 × 0.4 disc on
+# underside carries a shallow POCKET for the launch piezo (Ø10 × 0.5 disc on
 # aft_end's top, on the spin axis) + its comparator column (0402s + X2SON).
 # (2026-11-23, user) The floor is a SEPARATE 7075 PLATE: the holder is open at
 # the aft end, the pre-wired cells slide in from below into the built tower,
 # the plate closes it, then aft_end + the aft cap go on and the cap's M2 screws
 # clamp cap / aft_end / plate into the holder's taps. Same 1.2 mm, same pockets.
 BATT_FLOOR_MM = 1.2
-BATT_PZ_POCKET_DEPTH_MM = 0.6
+BATT_PZ_POCKET_DEPTH_MM = 0.7                   # Ø10 × 0.5 disc + 0.2 part clearance (0.5 mm 7075 web)
 BATT_PZ_DISC_POCKET_R_MM = 5.4                  # Ø10 disc + 0.4 radial clearance
 BATT_PZ_SLOT_MM = (4.6, -2.4, 10.4, 2.4)        # comparator column slot (x0, y0, x1, y1)
 # (2026-11-23) MAX9064 UCSP-4 is 0.69 mm (> the 0.6 mm pocket): a local 1.8 mm □
@@ -706,6 +706,78 @@ STANDOFF_R_MM = RING_R_IN_MM - 2 * RING_CLEARANCE_MM - STANDOFF_D_MM / 2.0   # k
 # 30° clear of the boards' Ø3 potting hole at 135° (r 13) and of the sleeve
 # seams at 105/285°.
 STANDOFF_ANGLES_DEG = (75.0, 165.0, 255.0, 345.0)
+
+
+# (2026-11-25, user) LOBE POCKETS: the holder block's top between the cells
+# (it does not bear on activation_interface — only the r 16-17 edge ring
+# does) is pocketed so that board's BOTTOM can carry parts up to
+# BATT_LOBE_PART_MAX_MM there. Silkscreen-only information for the layout EE
+# (activation_interface B.SilkS); the placer does not use it.
+BATT_LOBE_PART_MAX_MM = 1.5
+BATT_LOBE_POCKET_DEPTH_MM = round(BATT_LOBE_PART_MAX_MM + BATT_PART_CLEARANCE_MM - BATT_HEADROOM_MM, 2)
+BATT_LOBE_WALL_MM = 0.5          # 7075 left round the cell cavity, channel and grooves
+BATT_LOBE_MIN_AREA_MM2 = 4.0
+
+
+def lobe_pockets() -> list:
+    """Shapely polygons of the holder-top lobe pockets (physical frame): inside
+    the edge ring's clearance, outside the cell cavity / potting channel and
+    link slot / + wire grooves by BATT_LOBE_WALL_MM."""
+    import math
+    from shapely.geometry import Point, LineString
+    from shapely.ops import unary_union
+    keep = [battery_holder_cavity().buffer(BATT_LOBE_WALL_MM)]
+    cx, cy = _batt_channel_xy()
+    keep.append(Point(cx, cy).buffer(BATT_CHANNEL_D_MM / 2.0 + BATT_LOBE_WALL_MM))
+    la = math.radians(BATT_CHANNEL_LINK_CELL_DEG)
+    bx, by = BATT_CLUSTER_R_MM * math.cos(la), BATT_CLUSTER_R_MM * math.sin(la)
+    keep.append(LineString([(cx, cy), (bx, by)]).buffer(BATT_CHANNEL_LINK_W_MM / 2.0 + BATT_LOBE_WALL_MM))
+    for x, y in cell_wire_pads_xy():
+        keep.append(Point(x, y).buffer(WIRE_GROOVE_D_MM / 2.0 + BATT_LOBE_WALL_MM))
+    # r 15.3: ≥ 0.5 mm of wall to the sleeve's alignment-rib groove (r ≥ 15.9 at 285°)
+    area = Point(0, 0).buffer(BATT_TOP_RING_R_IN_MM - 0.7, 128).difference(unary_union(keep))
+    geoms = list(getattr(area, "geoms", [area]))
+    return [g.simplify(0.02) for g in geoms if g.area >= BATT_LOBE_MIN_AREA_MM2]
+
+
+BATT_LOBE_NOTCH_W_MM = 1.0
+
+
+def lobe_flow_notches() -> list:
+    """(2026-11-25, user) Potting paths into the lobe pockets: full-pocket-depth
+    notches through their 0.5 mm walls. One FILL notch at each lobe's inner tip,
+    along its bisector into the cusp where the two neighbouring bores meet (the
+    cell cavity's centre column pots full height from the channel); two VENT
+    notches near the outer end, one into each neighbouring bore (onto the
+    headroom over the cell tops), so air leaves as the potting rises."""
+    import math
+    from shapely.geometry import Point, LineString
+    out = []
+    cells = [(BATT_CLUSTER_R_MM * math.cos(math.radians(a)),
+              BATT_CLUSTER_R_MM * math.sin(math.radians(a))) for a in BATT_CELL_ANGLES_DEG]
+    w = BATT_LOBE_NOTCH_W_MM / 2.0
+    for lob in lobe_pockets():
+        th = math.atan2(lob.centroid.y, lob.centroid.x)
+        u = (math.cos(th), math.sin(th))
+        r_tip = min(math.hypot(x, y) for x, y in lob.exterior.coords)
+        r_cusp = BATT_CLUSTER_R_MM * math.cos(math.radians(60.0))     # bores touch here
+        out.append(LineString([(u[0] * (r_cusp - 0.3), u[1] * (r_cusp - 0.3)),
+                               (u[0] * (r_tip + 0.6), u[1] * (r_tip + 0.6))]).buffer(w, cap_style=2))
+        near = sorted(cells, key=lambda c: math.hypot(c[0] - lob.centroid.x, c[1] - lob.centroid.y))[:2]
+        r_vent = max(math.hypot(x, y) for x, y in lob.exterior.coords) - 2.0
+        ring = Point(0, 0).buffer(r_vent).exterior
+        for cx, cy in near:
+            pts = lob.exterior.intersection(ring)
+            pts = list(getattr(pts, "geoms", [pts]))
+            if not pts:
+                continue
+            q = min(pts, key=lambda pp: math.hypot(pp.x - cx, pp.y - cy))
+            dx, dy = cx - q.x, cy - q.y
+            n = math.hypot(dx, dy) or 1.0
+            a = (q.x - dx / n * 0.6, q.y - dy / n * 0.6)                 # 0.6 into the lobe
+            b = (q.x + dx / n * (BATT_LOBE_WALL_MM + 0.6), q.y + dy / n * (BATT_LOBE_WALL_MM + 0.6))
+            out.append(LineString([a, b]).buffer(w, cap_style=2))
+    return out
 
 
 def battery_holder_cavity():
@@ -788,7 +860,9 @@ def _poly_extrude(cq, poly, h, z0=0.0):
 # (2026-11-20) + an ANNULUS for the parachute matrix's 16 steering diodes
 # (BAS40-02L, 0.39 mm tall) on aft_end's top at r 6.4: same 0.6 mm depth; the
 # floor keeps 0.6 mm over the 2 mm span (~130 MPa under the cells' setback).
-BATT_DIODE_RING_MM = (7.2, 9.0)
+# (2026-11-25, user) widened inward to r 6.2: the crown ESD arrays + TVSs share
+# it (0.5 mm web over the band — re-check in the tower FEA).
+BATT_DIODE_RING_MM = (6.2, 9.0)
 
 
 # (2026-11-21, user: "all potted") a POTTING GROOVE joins the floor-underside
@@ -887,6 +961,10 @@ def _battery_holder_body(cq, h, with_plate: bool = True):
                                                   CAP_SCREW_R_MM * math.sin(a))
                         .circle(HOLDER_TAP_DRILL_MM / 2.0).extrude(HOLDER_TAP_DEPTH_MM)
                         .translate((0, 0, f)))
+    # lobe pockets in the block's top face (parts on activation_interface's bottom)
+    zt = f + hc
+    for lob in lobe_pockets() + lobe_flow_notches():
+        body = body.cut(_poly_extrude(cq, lob, BATT_LOBE_POCKET_DEPTH_MM, z0=zt - BATT_LOBE_POCKET_DEPTH_MM))
     if with_plate:
         body = body.union(_battery_floor_plate(cq))
     return body
@@ -903,7 +981,11 @@ def _write_floor_plate(cq, out_dir, res) -> None:
         "# battery_floor_plate — gap hardware (generated)\n\n"
         "Kind: battery_holder floor. Material: 7075-T6 aluminium, hard anodised.\n"
         f"Geometry: Ø{2*BATT_HOLDER_R_OUT_MM:.0f} × {BATT_FLOOR_MM:g} mm plate under the open holder; "
-        f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (comparator sub-pocket {BATT_PZ_COMP_POCKET_DEPTH_MM:g} mm; piezo disc + comparator column + "
+        f"underside pocket {BATT_PZ_POCKET_DEPTH_MM:g} mm (Ø{2 * BATT_PZ_DISC_POCKET_R_MM:g} centre + annulus r "
+        f"{BATT_DIODE_RING_MM[0]:g}–{BATT_DIODE_RING_MM[1]:g}, leaving a {BATT_FLOOR_MM - BATT_PZ_POCKET_DEPTH_MM:.1f} mm web — "
+        "R 0.2 mm inside corner radius at the pocket floor's edges (stress relief — the local FEA "
+        "puts the peak there); keep the pocket fill void-free (it supports the web); "
+        f"comparator sub-pocket {BATT_PZ_COMP_POCKET_DEPTH_MM:g} mm; piezo disc + comparator column + crown ESD parts + "
         f"steering-diode annulus + potting groove to the channel exit); Ø{CELL_PIN_HOLE_D_MM:g} − pin "
         f"holes on the cell axes; Ø{WIRE_HOLE_D_MM:g} + wire holes under the bore grooves; Ø"
         f"{BATT_CHANNEL_D_MM:g} potting channel; Ø2.2 clearance holes for the aft cap's M2 screws; "
@@ -1037,7 +1119,11 @@ def write_gap_hardware(boards: dict, chain: list, out_dir) -> list:
                     f"{BATT_CELL_LENGTH_MM:g} mm cell block a 1 mm edge ring (r "
                     f"{BATT_TOP_RING_R_IN_MM:g}–{BATT_HOLDER_R_OUT_MM:g}) over the "
                     f"{BATT_HEADROOM_MM:g} mm headroom under activation_interface (its bottom "
-                    "face carries no parts); open at the aft end (closed by the battery_floor_plate): the "
+                    f"face carries parts ≤ {BATT_LOBE_PART_MAX_MM:g} mm only over the LOBE POCKETS: "
+                    f"{len(lobe_pockets())} pockets {BATT_LOBE_POCKET_DEPTH_MM:g} mm deep in the block's top "
+                    f"face between the cells, each with {BATT_LOBE_NOTCH_W_MM:g} mm potting notches through "
+                    "its walls — a fill notch at the inner tip into the cells' centre column and two vents "
+                    "into the neighbouring bores; see the STEP); open at the aft end (closed by the battery_floor_plate): the "
                     "pre-wired Tadiran /P cells slide in from below — − pins through the plate "
                     f"into aft_end PTHs, + pins trimmed with an AWG 30 wire soldered flat and laid in a "
                     f"Ø{WIRE_GROOVE_D_MM:g} groove in each bore wall (cell angle "

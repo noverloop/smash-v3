@@ -29,15 +29,14 @@ _DSC1001_NOTE = """\
 Datasheet extras (Microchip DSC1001/3/4, family doc shared with all
 frequencies in this family). MEMS oscillator family.
 
-This factory: **DSC1001CI5-008.0000**
-  DSC1001 : standard output drive (vs DSC1003=25 pF / DSC1004=40 pF)
-  C       : Industrial temperature -40 to +85 °C
-            (B = Commercial -20..+70, I = Industrial -40..+85,
-             E = Ext. Industrial -40..+105)
-  C       : 3.2 × 2.5 mm CDFN; I: -40..+85 °C; 5: ±10 ppm (DS20005529B p21)
-  5       : CDFN/DFN 2.5 × 2.0 × 0.85 mm package
-            (other options 3.2×2.5, 5.0×3.2, 7.0×5.0 mm)
-  008.0000: 8.000 MHz output frequency
+Ordering code DSC1001 C I 5 - fff.ffff [T] (DS20005529B product ID):
+  DSC1001 : standard output drive (vs DSC1003 = 25 pF / DSC1004 = 40 pF)
+  C       : package — C = 3.2 × 2.5 mm CDFN, D = 2.5 × 2.0 mm
+  I       : temperature — I = −40..+85 °C (E = −40..+105, L = −40..+125)
+  5       : stability — 5 = ±10 ppm, 1 = ±50 ppm
+  fff.ffff: output frequency in MHz (e.g. 032.0000)
+  T       : tape and reel (none = cut tape / tube)
+
 
 Features (datasheet p1):
   Frequency range : 1 MHz to 150 MHz   (family-wide)
@@ -199,9 +198,9 @@ def add_dsc1001ci5_032_0000(design, ref: str, **overrides) -> Chip:
     """
     fields = dict(
         manf="Microchip",
-        manf_pn="DSC1001CI5-032.0000",
-        canonical_id="dsc1001ci5_032_0000",
-        name="DSC1001CI5-032.0000",
+        manf_pn="DSC1001CI5-032.0000T",      # reel code: the stocked one (Mouser + Digi-Key)
+        canonical_id="dsc1001ci5_032_0000t",
+        name="DSC1001CI5-032.0000T",
         value="DSC1001CI5-032.0000",
         description=(
             "32 MHz MEMS oscillator, ±10 ppm, V_DD=1.7..3.6 V, "
@@ -540,5 +539,38 @@ def add_sit1533ai_h4_dcc_32_768e(design, ref: str, **overrides) -> Chip:
         ),
         note="LSE source for the STM32MP25 (OSC32_IN, bypass mode).",
     )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_cx2016sa40000d0gsscc(design, ref: str, **overrides) -> Chip:
+    """Kyocera CX2016SA40000D0GSSCC — 40 MHz quartz crystal, fundamental,
+    CL 8 pF, ±15 ppm at 25 °C, ±50 ppm over −40…+125 °C, ESR 50 Ω max, drive
+    10 µW typ / 200 µW max, C0 2 pF max, AEC-Q200, 2.0 × 1.6 × 0.45 mm
+    (CX2016SA catalog sheet). Pins 1 and 3 = crystal, 2 and 4 = GND (lid);
+    land = the catalog's recommended pattern (0.9 × 0.8 pads at 1.4 × 1.1).
+    Meets the AWR1843AOP crystal table (SWRS236C Table 6-5: 40 MHz, CL 5-12 pF,
+    ESR ≤ 50 Ω, ±200 ppm total). QUARTZ: no shock rating is published — the
+    radar keeps the SiT1602B MEMS footprint as the DNP alternative."""
+    pn = "CX2016SA40000D0GSSCC"
+    pads = [Pad(num=n, position_mm=(x, y), size_mm=(0.9, 0.8))             # y-up top view
+            for n, x, y in (("1", -0.7, -0.55), ("2", 0.7, -0.55), ("3", 0.7, 0.55), ("4", -0.7, 0.55))]
+    w, h, c = 2.0, 1.6, 0.15
+    fp = Footprint(name="Kyocera_CX2016SA", package_class="XTAL-2016-4", pads=pads,
+                   body_outline=[(-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2), (-w / 2, -h / 2)],
+                   courtyard=[(-1.15 - c, -0.95 - c), (1.15 + c, -0.95 - c), (1.15 + c, 0.95 + c),
+                              (-1.15 - c, 0.95 + c), (-1.15 - c, -0.95 - c)],
+                   size_mm=(2.0, 1.6), height_mm=0.50, source="datasheet",
+                   note="Kyocera CX2016SA catalog recommended land pattern")
+    pins = [Pin(num="1", name="XTAL1", aliases=["X1"], type="passive"),
+            Pin(num="2", name="GND", type="ground"),
+            Pin(num="3", name="XTAL2", aliases=["X2"], type="passive"),
+            Pin(num="4", name="GND_2", type="ground")]
+    fields = dict(manf="Kyocera", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value="40MHz",
+                  description="40 MHz crystal, 8 pF, ±15/±50 ppm, 50 Ω, AEC-Q200, 2016",
+                  datasheet=datasheet_ref(pn, f"{pn}.pdf"), package="2016 4-pad ceramic",
+                  size_mm=(2.0, 1.6), height_mm=0.50, temp_range_c=(-40, 125),
+                  standards=["AEC-Q200", "RoHS"], pins=pins, footprint=fp,
+                  note="Second source: Diodes FW4000044Q (TI AWR1843AOPEVM Y1, 40 MHz ±10 ppm 8 pF 50 Ω 2016).")
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

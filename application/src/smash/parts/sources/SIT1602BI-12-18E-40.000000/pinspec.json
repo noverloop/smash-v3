@@ -6,7 +6,12 @@
     "package": "4L PQFN 2.5 x 2.0 x 0.75 mm (package code '1'); recommended land: 1.1 x 1.0 pads at 1.9 (long axis) x 1.5 (short axis) centre spacing",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.sitime.com/datasheet/SiT1602",
-    "notes": "Decode: B = revision, I = -40..85 C, '-' = default drive, '1' = 2.5x2.0, '2' = +/-25 ppm, '18' = 1.8 V +/-10%, 'E' = output enable, no packing suffix = bulk. 40 MHz is a listed standard frequency."
+    "notes": "Decode: B = revision, I = -40..85 C, '-' = default drive, '1' = 2.5x2.0, '2' = +/-25 ppm, '18' = 1.8 V +/-10%, 'E' = output enable, no packing suffix = bulk. 40 MHz is a listed standard frequency. height_max_mm [DS p10 2.5x2.0 outline: A 0.700/0.750/0.800] [temp] DS Table 1 Electrical Characteristics: Operating Temperature Range T_use −40…+85 °C (Industrial, 'I')",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -17,13 +22,31 @@
         "OE/ST#/NC",
         "STANDBY#"
       ],
-      "note": "H = output on, L = output high-Z. Use a pull-up of 10 kOhm or less if not driven; internal 50-150 kOhm. VIH 70% Vdd, VIL 30% Vdd"
+      "note": "H = output on, L = output high-Z. Use a pull-up of 10 kOhm or less if not driven; internal 50-150 kOhm. VIH 70% Vdd, VIL 30% Vdd [DS Table 2 note 1 p2: in OE mode a pull-up <= 10 kOhm is recommended if not externally driven; to float the pin use the NC option] [DS Table 1 p2: input pull-up impedance 50-150 kΩ (OE high or low); VIH 70 % Vdd, VIL 30 % Vdd]",
+      "connect": "defined",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          150
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "2",
       "name": "GND",
       "type": "ground",
-      "aliases": []
+      "aliases": [],
+      "connect": "gnd",
+      "note": "[DS Table 2 p2: electrical ground]"
     },
     {
       "num": "3",
@@ -41,7 +64,8 @@
         1.62,
         1.98
       ],
-      "note": "0.1 uF or more between VDD and GND required"
+      "note": "0.1 uF or more between VDD and GND required [DS Table 2 p2: power supply; note 2: >= 0.1 uF VDD-GND required]",
+      "connect": "supply"
     }
   ]
 }

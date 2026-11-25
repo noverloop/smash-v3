@@ -164,7 +164,7 @@ class TestDSC1001CI5_008:
         assert fp.package_class == "CDFN-4 (3.2×2.5)"
         assert len(fp.pads) == 4
         assert fp.size_mm == (2.5, 3.2)
-        assert fp.height_mm == pytest.approx(0.85)
+        assert fp.height_mm == pytest.approx(0.9)    # datasheet max (stack uses max heights)
 
     def test_standards(self):
         s = self.q.standards

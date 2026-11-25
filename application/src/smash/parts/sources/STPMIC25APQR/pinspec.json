@@ -6,7 +6,12 @@
     "package": "VQFN 56L 6.5x6.5x0.9 mm, 0.4 mm pitch, EP 4.50 typ (pin 57)",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/STPMIC25APQR/STPMIC25APQR.pdf",
-    "notes": "A variant: VIO/BUCK4 programmed 3.3 V. Abs max: VIN/BUCKxIN/VLX/LDOxIN/PONKEYn/VBUS 6.5 V; VIO + digital pins 4.2 V; INTLDO 2 V; VOUT1/2/3/6 3 V; VOUT4/5/7, LDOxOUT, VREFDDR 5 V. 'unused' = DS 'Not used pin connection' column."
+    "notes": "A variant: VIO/BUCK4 programmed 3.3 V. Abs max: VIN/BUCKxIN/VLX/LDOxIN/PONKEYn/VBUS 6.5 V; VIO + digital pins 4.2 V; INTLDO 2 V; VOUT1/2/3/6 3 V; VOUT4/5/7, LDOxOUT, VREFDDR 5 V. 'unused' = DS 'Not used pin connection' column. height_max_mm [DS14278 Table 109 p133: A 0.80/0.85/0.90] [temp] DS Table 5 Thermal characteristics: TA operating ambient −40…+105 °C",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      105
+    ]
   },
   "pins": [
     {
@@ -16,43 +21,69 @@
       "aliases": [
         "PONKEYN"
       ],
-      "note": "Active low, internal pull-up; unused: floating"
+      "note": "Active low, internal pull-up; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 8 p12: PONKEYn VIL 0.3×VIN, VIH 0.7×VIN; RPU 80-140 kΩ to VIN, active by default (§5.3.1 p43)] [Table 4 p8: PONKEYn −0.5 to +6.5 V]",
+      "unused": "open",
+      "io_domain": "11",
+      "max_v": 6.5,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          80,
+          140
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "2",
       "name": "LDO8OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "3",
       "name": "LDO78IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "4",
       "name": "LDO7OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "5",
       "name": "LDO6OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "6",
       "name": "LDO56IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "7",
       "name": "LDO5OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "8",
@@ -64,127 +95,156 @@
       "num": "9",
       "name": "GNDLDO",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "10",
       "name": "AGND",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "11",
       "name": "VIN",
       "type": "power",
-      "note": "Main input (LDO4, VREF)"
+      "note": "Main input (LDO4, VREF) [DS14278 Table 3 p6-7 not-used-pin column: VIN (main power input)]",
+      "connect": "supply"
     },
     {
       "num": "12",
       "name": "VBUS",
       "type": "input",
-      "note": "USB input; unused: floating"
+      "note": "USB input; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VBUS −0.5 to +6.5 V]",
+      "unused": "open",
+      "max_v": 6.5
     },
     {
       "num": "13",
       "name": "LDO4OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "14",
       "name": "LDO1OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "15",
       "name": "LDO12IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "16",
       "name": "LDO2OUT",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "17",
       "name": "VOUT4",
       "type": "analog",
-      "note": "Buck4 feedback; unused: floating"
+      "note": "Buck4 feedback; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT4/5/7 −0.5 to +5 V]",
+      "unused": "open",
+      "max_v": 5.0
     },
     {
       "num": "18",
       "name": "PGND4",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "19",
       "name": "VLX4",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "20",
       "name": "BUCK4IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "21",
       "name": "VOUT3",
       "type": "analog",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT1/2/3/6 −0.5 to +3 V]",
+      "unused": "open",
+      "max_v": 3.0
     },
     {
       "num": "22",
       "name": "PGND3",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "23",
       "name": "VLX3",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "24",
       "name": "BUCK3IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "25",
       "name": "BUCK2IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "26",
       "name": "VLX2",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "27",
       "name": "PGND2",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "28",
       "name": "VOUT2",
       "type": "analog",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT1/2/3/6 −0.5 to +3 V]",
+      "unused": "open",
+      "max_v": 3.0
     },
     {
       "num": "29",
       "name": "VIO",
       "type": "power",
-      "note": "I/O supply for all digital pins except WAKEUPn/PONKEYn; abs max 4.2 V"
+      "note": "I/O supply for all digital pins except WAKEUPn/PONKEYn; abs max 4.2 V [DS14278 Table 3 p6-7 not-used-pin column: VIO]",
+      "connect": "supply"
     },
     {
       "num": "30",
@@ -193,7 +253,25 @@
       "aliases": [
         "WAKEUPN"
       ],
-      "note": "Active low, internal pull-up; unused: floating"
+      "note": "Active low, internal pull-up; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 8 p12: WAKEUPn VIL 0.3×VINTLDO, VIH 0.7×VINTLDO; RPU 2500-5500 kΩ to VINTLDO, active by default (§5.3.2 p44)] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V]",
+      "unused": "open",
+      "io_domain": "8",
+      "max_v": 4.2,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          2500,
+          5500
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "31",
@@ -202,7 +280,26 @@
       "aliases": [
         "RSTN"
       ],
-      "note": "Bidirectional, internal pull-up"
+      "note": "Bidirectional, internal pull-up [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V] [DS14278 §5.3.3 p44: open-drain output, RPU to VIO; Table 8 p12: RSTn RPU 50-120 kΩ, VIH 0.7×VIO, VIL 0.3×VIO]",
+      "unused": "open",
+      "io_domain": "29",
+      "max_v": 4.2,
+      "open_drain": true,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          120
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "32",
@@ -211,151 +308,250 @@
       "aliases": [
         "INTN"
       ],
-      "note": "Active low, internal pull-up"
+      "note": "Active low, internal pull-up [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V] [DS14278 §5.3.4 p44: open-drain output, RPU to VIO; Table 8 p12: INTn RPU 50-120 kΩ]",
+      "unused": "open",
+      "io_domain": "29",
+      "max_v": 4.2,
+      "open_drain": true,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          120
+        ]
+      }
     },
     {
       "num": "33",
       "name": "SCL",
       "type": "input",
-      "note": "unused: VIO"
+      "note": "unused: VIO [DS14278 Table 3 p6-7 not-used-pin column: VIO] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V]",
+      "unused": "supply",
+      "io_domain": "29",
+      "max_v": 4.2
     },
     {
       "num": "34",
       "name": "SDA",
       "type": "io",
-      "note": "unused: VIO"
+      "note": "unused: VIO [DS14278 Table 3 p6-7 not-used-pin column: VIO] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V]",
+      "unused": "supply",
+      "io_domain": "29",
+      "max_v": 4.2
     },
     {
       "num": "35",
       "name": "VOUT5",
       "type": "analog",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT4/5/7 −0.5 to +5 V]",
+      "unused": "open",
+      "max_v": 5.0
     },
     {
       "num": "36",
       "name": "PGND5",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "37",
       "name": "VLX5",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "38",
       "name": "BUCK5IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "39",
       "name": "BUCK1IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "40",
       "name": "VLX1",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "41",
       "name": "PGND1",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "42",
       "name": "VOUT1",
       "type": "analog",
-      "note": "abs max 3 V; unused: floating"
+      "note": "abs max 3 V; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT1/2/3/6 −0.5 to +3 V]",
+      "unused": "open",
+      "max_v": 3.0
     },
     {
       "num": "43",
       "name": "LDO3IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "44",
       "name": "LDO3OUT",
       "type": "output",
-      "note": "unused: VIN (per DS)"
+      "note": "unused: VIN (per DS) [DS14278 Table 3 p6-7 not-used-pin column: LDO3OUT to VIN when unused]",
+      "unused": "supply"
     },
     {
       "num": "45",
       "name": "VREFDDR",
       "type": "output",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "46",
       "name": "VOUT6",
       "type": "analog",
-      "note": "abs max 3 V; unused: floating"
+      "note": "abs max 3 V; unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT1/2/3/6 −0.5 to +3 V]",
+      "unused": "open",
+      "max_v": 3.0
     },
     {
       "num": "47",
       "name": "PGND6",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "48",
       "name": "VLX6",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "49",
       "name": "BUCK6IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "50",
       "name": "BUCK7IN",
       "type": "power",
-      "note": "unused: VIN"
+      "note": "unused: VIN [DS14278 Table 3 p6-7 not-used-pin column: VIN when unused]",
+      "connect": "supply",
+      "unused": "supply"
     },
     {
       "num": "51",
       "name": "VLX7",
       "type": "passive",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating]",
+      "unused": "open"
     },
     {
       "num": "52",
       "name": "PGND7",
       "type": "ground",
-      "note": "Connect to GND"
+      "note": "Connect to GND [DS14278 Table 3 p6-7 not-used-pin column: GND]",
+      "connect": "gnd"
     },
     {
       "num": "53",
       "name": "VOUT7",
       "type": "analog",
-      "note": "unused: floating"
+      "note": "unused: floating [DS14278 Table 3 p6-7 not-used-pin column: Floating] [DS14278 Table 4 p8: VOUT4/5/7 −0.5 to +5 V]",
+      "unused": "open",
+      "max_v": 5.0
     },
     {
       "num": "54",
       "name": "PWRCTRL3",
       "type": "input",
-      "note": "Internal pull-up (default)/pull-down; unused: VIO or GND"
+      "note": "Internal pull-up (default)/pull-down; unused: VIO or GND [DS14278 Table 3 p6-7 not-used-pin column: VIO or GND] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V] [DS14278 Table 8 p12: PWRCTRLx RPU 50-120 kΩ to VIO, active by default (§5.3.5 p44); VIH 0.7×VIO, VIL 0.3×VIO]",
+      "unused": "defined",
+      "io_domain": "29",
+      "max_v": 4.2,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          120
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "55",
       "name": "PWRCTRL2",
       "type": "input",
-      "note": "unused: VIO or GND"
+      "note": "unused: VIO or GND [DS14278 Table 3 p6-7 not-used-pin column: VIO or GND] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V] [DS14278 Table 8 p12: PWRCTRLx RPU 50-120 kΩ to VIO, active by default (§5.3.5 p44); VIH 0.7×VIO, VIL 0.3×VIO]",
+      "unused": "defined",
+      "io_domain": "29",
+      "max_v": 4.2,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          120
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "56",
       "name": "PWRCTRL1",
       "type": "input",
-      "note": "unused: VIO or GND"
+      "note": "unused: VIO or GND [DS14278 Table 3 p6-7 not-used-pin column: VIO or GND] [DS14278 Table 8 p12: VIL/VIH referenced to VIO] [DS14278 Table 4 p8: VIO, SDA, SCL, RSTn, PWRCTRLx, INTn, WAKEUPn −0.5 to +4.2 V] [DS14278 Table 8 p12: PWRCTRLx RPU 50-120 kΩ to VIO, active by default (§5.3.5 p44); VIH 0.7×VIO, VIL 0.3×VIO]",
+      "unused": "defined",
+      "io_domain": "29",
+      "max_v": 4.2,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          50,
+          120
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "57",
@@ -364,7 +560,8 @@
       "aliases": [
         "EP"
       ],
-      "note": "Exposed pad; must be connected to ground"
+      "note": "Exposed pad; must be connected to ground [DS14278 Table 3 p7: exposed pad to be connected to ground]",
+      "connect": "gnd"
     }
   ]
 }

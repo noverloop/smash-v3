@@ -6,7 +6,12 @@
     "package": "X2SON-4 DMR 1.1x1.4x0.4, EP",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "Unrouted/20261124/datasheets/DRV5032FCDBZT.pdf (family DS, includes AJ/DMR)",
-    "notes": "AJ: omnipolar, open-drain, 20 Hz; BOP ±4/±7/±9.5 mT min/typ/max."
+    "notes": "AJ: omnipolar, open-drain, 20 Hz; BOP ±4/±7/±9.5 mT min/typ/max. height_max_mm [DS DMR0004A outline: X2SON 0.4 mm max height] [temp] DS 6.3 Recommended Operating Conditions: TA −40…85 °C",
+    "height_max_mm": 0.4,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -17,33 +22,40 @@
         1.65,
         5.5
       ],
-      "note": ">=0.1 uF ceramic to GND"
+      "note": ">=0.1 uF ceramic to GND [DS SLVSDC7H Table 5-1 p3: 1.65-5.5 V supply]",
+      "connect": "supply"
     },
     {
       "num": "2",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5-1 p3: ground reference]"
     },
     {
       "num": "3",
       "name": "NC",
       "type": "nc",
-      "note": "Not connected to silicon; float or GND; solder for mechanical support"
+      "note": "Not connected to silicon; float or GND; solder for mechanical support [DS Table 5-1 p3: no-connect, leave floating or tied to ground; solder for mechanical support]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "4",
       "name": "OUT",
       "type": "output",
-      "note": "Open-drain (AJ): needs pull-up; VO 0-5.5 V"
+      "note": "Open-drain (AJ): needs pull-up; VO 0-5.5 V [DS §7.3.2.3: AJ open-drain output, an external pullup resistor must be used] [DS §7.3.2.3: AJ open-drain, external pull-up required]",
+      "connect": "defined",
+      "open_drain": true
     },
     {
       "num": "5",
       "name": "EP",
-      "type": "nc",
+      "type": "passive",
       "aliases": [
         "Thermal Pad"
       ],
-      "note": "No-connect; float or GND; solder it"
+      "note": "No-connect; float or GND; solder it [DS Table 5-1 p3: no-connect, leave floating or tied to ground; solder for mechanical support]",
+      "connect": "open_or_gnd"
     }
   ]
 }

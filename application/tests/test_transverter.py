@@ -90,7 +90,7 @@ def test_lo_drives_the_mixer_lo_from_the_shared_tcxo(design):
     # reference = the LR2021 TCXO output, AC-coupled
     assert _other_end(design, "C_XV_LO_REF", "LR_TCXO_OUT") == _net(design, lo, "REFIN")
     # RFOUTA+ → 100 pF → π pad → 100 pF → LO
-    pad_i = _other_end(design, "C_XV_LO_OUTP", _net(design, lo, "RFOUTA+"))
+    pad_i = _other_end(design, "C_XV_LO_OUT_P", _net(design, lo, "RFOUTA+"))
     pad_o = _other_end(design, "R_XV_LO_PAD2", pad_i)
     assert _other_end(design, "C_XV_MIX_LO", pad_o) == _net(design, mix, "LO")
     assert _net(design, mix, "GND_7") == _gnd(design)              # LTC5552 pin 8 (LTC5549's X2)
@@ -141,14 +141,17 @@ def test_tx_chain_pad_pa_and_switched_5v(design):
         assert r.value == val
     vg = _net(design, pa, "VGAIN")
     assert vg in _two_ended(design, _chip(design, "R_XV_PA_VG1"))
-    # XV_5V: MCP1640D (true output disconnect) enabled by WBA PB7, off by default
-    bst = _chip(design, "U_XV_BOOST")
-    assert bst.manf_pn == "MCP1640D-I/MC"       # DFN-8 (2026-11-20); tube code (2026-11-22)
-    assert _net(design, bst, "VOUTP") == _net(design, bst, "VOUTS") == "XV_5V"
-    assert _net(design, bst, "VIN") in _names(design, "REG_IN_MAIN")   # (2026-11-22) off the 3V3 budget
-    en = _net(design, bst, "EN")
-    assert en == "XV_PA_EN" == _net(design, _chip(design, "U_WBA"), "PB7")
-    assert _two_ended(design, _chip(design, "R_XV_PA_EN_PD")) == {en, _gnd(design)}
+    # XV_5V: P-FET switch off COMP_5V (the LTC3124 5 V), gate pulled to source
+    # (off by default), pulled low by an N-FET from WBA PB7 (XV_PA_EN)
+    hs, ls = _chip(design, "Q_XV_PA_SW"), _chip(design, "Q_XV_PA_SW_LS")
+    assert _net(design, hs, "S") in _names(design, "COMP_5V") and _net(design, hs, "D") == "XV_5V"
+    g = _net(design, hs, "G")
+    assert _two_ended(design, _chip(design, "R_XV_PA_SW_PU")) == {g, _net(design, hs, "S")}
+    assert _two_ended(design, _chip(design, "R_XV_PA_SW_G")) == {g, _net(design, ls, "D")}   # 22 k soft start
+    assert _two_ended(design, _chip(design, "C_XV_PA_SW_G")) == {g, "XV_5V"}                 # Miller cap G-D
+    assert _net(design, ls, "S") == _gnd(design)
+    assert _net(design, ls, "G") == "XV_PA_EN" == _net(design, _chip(design, "U_WBA"), "PB7")
+    assert _two_ended(design, _chip(design, "R_XV_PA_EN_G_PD")) == {"XV_PA_EN", _gnd(design)}
     assert design.net_by_name("XV_5V").voltage_v == 5.0
 
 
@@ -175,7 +178,7 @@ def test_antenna_side_reaches_ant_hf_s4_on_wakeup(design):
 
 def test_transverter_lives_on_wakeup(design):
     refs = [c for c in design.chips if c.ref.startswith("U_XV_") or c.ref == "U_LR_IFSW"]
-    assert len(refs) == 8
+    assert len(refs) == 7          # LO, mixer, PA, LNA, 2 T/R switches + IF switch (PA rail is a switch)
     assert {c.board_tag for c in refs} == {"wakeup_board"}
 
 

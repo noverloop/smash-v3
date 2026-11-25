@@ -6,7 +6,8 @@
     "package": "CST3C 0.6 x 0.8 x 0.38 (+0.02/-0.03) mm; terminals 1,2 0.15x0.2 at 0.35 pitch, terminal 3 0.5x0.2, row spacing 0.5",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=29855&prodName=SSM3K35CTC",
-    "notes": "Bottom view: 1 (G) top-left, 2 (S) top-right, 3 (D) wide terminal on the opposite edge → top view mirrored. VDSS 20 V, VGSS ±10 V, ID 250 mA. G-S protection diode + gate resistor internal. No recommended land in the datasheet."
+    "notes": "Bottom view: 1 (G) top-left, 2 (S) top-right, 3 (D) wide terminal on the opposite edge → top view mirrored. VDSS 20 V, VGSS ±10 V, ID 250 mA. G-S protection diode + gate resistor internal. No recommended land in the datasheet. [height_max_mm: DS p8 Package Dimensions height 0.38 +0.02/-0.03]",
+    "height_max_mm": 0.4
   },
   "pins": [
     {

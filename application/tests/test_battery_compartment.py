@@ -175,7 +175,7 @@ def test_no_cu_coins_anywhere(built):
 
 
 def test_piezo_disc_smd_no_pocket(built):
-    """The Steminc SMD10T04R111 disc reflows flat on fin_ble_board's TOP
+    """The PI Ceramic PIC181 wrap-around disc reflows flat on fin_ble_board's TOP
     face (the disc + comparator column swapped off the saturated aft_end
     top in the 2026-07-31 stack reorder). TOP (nose-facing) is the hard
     mechanical rule: rapid deceleration loads the ceramic in COMPRESSION against
@@ -190,8 +190,8 @@ def test_piezo_disc_smd_no_pocket(built):
     pl = _placement(boards["aft_end_board"], "P_PIEZO")   # 2026-11-15: holder-floor pocket
     assert pl is not None and pl.face == "top"
     assert pl.position_mm == (0.0, 0.0)          # locked on the spin axis
-    assert pl.item.footprint.name == "PiezoDisc_SMD10T04R111"
-    assert pl.item.height_mm == pytest.approx(0.4)
+    assert pl.item.footprint.name == "PiezoDisc_PIC181_D10T05_Wrap"
+    assert pl.item.height_mm == pytest.approx(0.5)
 
 
 def test_piezo_disc_never_aft_facing(built):
@@ -313,16 +313,25 @@ def test_piezo_cluster_sits_in_the_holder_floor_pocket():
     import json, pathlib
     from shapely.geometry import box
     from smash.export.spacer_step import piezo_pocket, BATT_PZ_POCKET_DEPTH_MM
-    from smash.parts.mechanical import add_piezo_disc_smd10t04r111
+    from smash.parts.mechanical import add_piezo_disc_pic181_d10t05
     from smash import Design
     L = json.loads((pathlib.Path(__file__).parents[1] / "src/smash/data/locked_placements.json").read_text())
     pk = piezo_pocket()
     assert L["P_PIEZO"]["position_mm"] == [0.0, 0.0] and L["P_PIEZO"]["face"] == "top"
-    disc = add_piezo_disc_smd10t04r111(Design(), ref="P")
+    disc = add_piezo_disc_pic181_d10t05(Design(), ref="P")
     assert disc.height_mm < BATT_PZ_POCKET_DEPTH_MM
     for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_COMP_DIV", "U_COMP_PZ", "C_COMP_PZ"):
         x, y = L[ref]["position_mm"]
         assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref
+    # crown ESD parts: their real body (+ 0.1 mm) inside the pocket
+    body = {"U_ESD_AFT": (1.0, 1.45), "D_EXT_VIN_TVS": (1.0, 0.6), "D_ACT_COL": (1.0, 0.6)}
+    for ref in (*(f"U_ESD_AFT{k}" for k in range(1, 8)), "D_EXT_VIN_TVS",
+                *(f"D_ACT_COL{c}_TVS" for c in range(4))):
+        x, y = L[ref]["position_mm"]
+        w, h = next(v for k, v in body.items() if ref.startswith(k))
+        if round(L[ref].get("rotation_deg", 0)) % 180 == 90:
+            w, h = h, w
+        assert pk.contains(box(x - w / 2 - 0.1, y - h / 2 - 0.1, x + w / 2 + 0.1, y + h / 2 + 0.1)), ref
 
 
 def test_floor_pocket_is_potted_through_the_channel():

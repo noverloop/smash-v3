@@ -27,7 +27,7 @@ from smash.export.model_height import footprint_height_mm
 from smash.layout.placer.grid import placement_extents_mm
 
 SPACER_CLEARANCE_MM = 0.3        # gap margin over the stacked-component height
-SPACER_MIN_THICKNESS_MM = 2.0    # practical floor (via aspect / potting / handling)
+SPACER_MIN_THICKNESS_MM = 3.0    # standard minimum gap between boards (potting flow, handling)
 _FLAT_PREFIXES = ("J_", "P_", "TP_", "SP")
 
 
@@ -120,6 +120,17 @@ def size_backbone_spacers(
                       f"NOSE_SLOT_GAP_MM {NI.NOSE_SLOT_GAP_MM} — sleeves would not align",
                       file=_sys.stderr)
             t = max(t, NI.NOSE_SLOT_GAP_MM)             # (2026-11-21) one frame for every sleeve
+        zoned = ZONED_GAPS_MM.get((lower.name, upper.name))
+        if zoned is not None:
+            # matched height zone (layout information on User.Comments): the
+            # layout EE moves the tall parts into the band; the gap is designed
+            # to the zone, not to the current placement
+            t = max(zoned, floor)
         b.thickness_override_mm = t
         sized[name] = t
     return sized
+
+
+# (lower, upper) → designed gap (mm) for gaps with a matched height zone
+# (generate_stackup.HEIGHT_ZONES): set by the zone rule, not by the placement
+ZONED_GAPS_MM = {("power_board", "companion_compute"): 3.0}

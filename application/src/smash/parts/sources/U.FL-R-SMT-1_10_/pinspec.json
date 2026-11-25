@@ -5,8 +5,13 @@
     "datasheet_section": "p3 Recommended PCB mounting pattern",
     "package": "U.FL receptacle 3x2.6 mm",
     "verified_from_pdf": "application/src/smash/parts/sources/U.FL-R-SMT-1_10_/U.FL_catalog_Hirose.pdf",
-    "notes": "Footprint pad 3 = SIG (1.0x1.05 centre pad); pads 1, 2 = GND (1.0x2.2 shell tabs, 1.9 mm apart).",
-    "verified_by": "library check 2026-11-24"
+    "notes": "Footprint pad 3 = SIG (1.0x1.05 centre pad); pads 1, 2 = GND (1.0x2.2 shell tabs, 1.9 mm apart). [height_max_mm: Hirose U.FL catalog p3 U.FL-R-SMT-1 drawing: body height 1.25 (nominal, no tolerance given; mated height 2.0 max with 1.9 mm plugs, 2.5 max with 2.4 mm plugs)] [temp] DS Product Specifications: operating temperature range -40..+90 degC",
+    "verified_by": "library check 2026-11-24",
+    "height_max_mm": 1.25,
+    "operating_temp_c": [
+      -40,
+      90
+    ]
   },
   "pins": [
     {

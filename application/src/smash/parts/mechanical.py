@@ -218,84 +218,66 @@ def add_cell_solder_tab(design, ref: str = "P_CELL_TAB", **overrides) -> Chip:
 
 
 # ═════════════════════════════════════════════════════════════════════════
-# SMD10T04R111 — Steminc Ø10×0.4 PZT disc, the aft piezo shock/launch sensor
+# PI Ceramic PIC181 Ø10 × 0.5 mm wrap-around disc — the aft piezo shock/launch sensor
 # ═════════════════════════════════════════════════════════════════════════
 
-def add_piezo_disc_smd10t04r111(design, ref: str = "P_PIEZO",
-                                **overrides) -> Chip:
-    """Steminc SMD10T04R111 — Ø10 × 0.4 mm bare PZT disc (SM111, Navy
-    Type I hard PZT, Curie ~320 °C) with WRAP-AROUND electrode ("R"
-    config): both terminals on one face, so the disc reflows onto two
-    SMD pads like any chip — no leads, no glue, no milled pocket (the
-    pocket existed to recess the old CEB-21018 brass diaphragm and give
-    it flex room; a rigid bonded disc needs neither).
+def add_piezo_disc_pic181_d10t05(design, ref: str = "P_PIEZO", **overrides) -> Chip:
+    """PI Ceramic piezo disc, PIC181 (hard PZT, EN 50324-1 class 100,
+    DOD-STD-1376A Type I), Ø10 × 0.5 mm, WRAP-AROUND contact, fired silver
+    (PI catalog CAT125E "Disks with special electrodes": OD 10, TH 0.5).
+    Made by PI Ceramic GmbH, Lederhose, Germany. Ordered direct from PI
+    (order code from the quote).
 
-    Sits on `aft_end_board`'s TOP face on the spin
-    axis = the battery-compartment floor in single-cell mode, so it
-    joins the cells' In52/Sn48 118 °C step (PZT must never see a SAC
-    reflow — depoling risk above ~Curie/2) and is potted with them.
+    Both terminals on one face, so the disc reflows onto two SMD pads like
+    any chip. Sits on `aft_end_board`'s TOP face on the spin axis, in the
+    floor plate's underside pocket; joins the cells' In52/Sn48 118 °C step
+    (Curie 330 °C: never SAC reflow — depoling above ~Curie/2) and is
+    potted with them.
 
-    Sensing: bonded-compression mode. V ≈ d33·ρ·a·t²/ε — thickness²,
-    diameter-independent, compared with the 0.30 V comparator
-    threshold under rapid deceleration. Static capacitance 2100 pF ±15 % → 1 MΩ bleed gives a
-    ~75 Hz high-pass corner (launch edge passes clean).
+    Sensing: bonded-compression mode, V ≈ g33·ρ·a·t² (thickness²,
+    diameter-independent). PIC181: ρ 7.85 g/cm³, d33 265 pC/N, g33
+    23 mV·m/N, ε33/ε0 1200 (CAT125E material table) → ~0.44 mV/g at
+    t = 0.5 mm: the 0.30 V comparator threshold at ~680 g. Static
+    capacitance ≈ 1.67 nF → 1 MΩ bleed gives a ~95 Hz high-pass corner.
 
     Pad map:
       pad 1 = MAIN (bottom electrode)          → `PIEZO_P`
       pad 2 = WRAP (top electrode, wrapped)    → GND
 
-    ⚠ The wrap-electrode strip geometry below is a conservative
-    placeholder — confirm against the Steminc spec sheet before fab
-    (there is no datasheet; per-model drawings are on request)."""
-    part = "SMD10T04R111"
-    fp = _project_footprint(
-        part, "PiezoDisc_SMD10T04R111",
-        package_class="Piezo disc Ø10×0.4 mm, wrap-around electrode (SMD)",
-        size_mm=(10.0, 10.0),
-        height_mm=0.4,
-        note="2 SMD pads under the Ø10 disc: main electrode (centre-offset "
-             "Ø5 round) + wrap strip (2.5×1.6 at the east rim). Electrode "
-             "split per Steminc R config — verify strip position against "
-             "the factory drawing before fab.",
+    ⚠ The wrap-strip land position is a placeholder — confirm against PI
+    Ceramic's electrode drawing (with the quote) before fab."""
+    part, pdir = "PIC181 disc OD10 TH0.5 wrap-around", "PIC181_D10_T05_WRAP"
+    fp_mod = src(pdir, "PiezoDisc_PIC181_D10T05_Wrap.kicad_mod")
+    fp = Footprint(
+        name="PiezoDisc_PIC181_D10T05_Wrap",
+        package_class="Piezo disc Ø10×0.5 mm, wrap-around contact (SMD)",
+        pads=pads_from_kicad_mod(fp_mod),
+        size_mm=(10.0, 10.0), height_mm=0.5,
+        source="project (PI Ceramic CAT125E wrap-around disc; land per electrode split)",
+        note="2 SMD pads under the Ø10 disc: main electrode (centre-offset Ø5 round) + wrap "
+             "strip (2.5×1.6 at the east rim). Verify the strip against PI's drawing.",
     )
-    # The .kicad_mod draws the body/courtyard as fp_circle, which
-    # outline_polygon doesn't parse — set the round outlines here (same
-    # pattern as the NFC coil factory) so footprint_bbox_mm sees the FULL
-    # Ø10 disc, not just the pad cluster: the spacer chip-clearance cut and
-    # the LGA land packing both key on that bbox (the rigid disc must not
-    # be pressed by the spacer ring).
+    # round outlines (fp_circle is not parsed by outline_polygon): the FULL Ø10
+    # disc must be in the bbox for the spacer chip-clearance cut / LGA packing
     _Rb, _Rc = 5.0, 5.25
-    fp.body_outline = [(_Rb * math.cos(math.radians(a)),
-                        _Rb * math.sin(math.radians(a)))
+    fp.body_outline = [(_Rb * math.cos(math.radians(a)), _Rb * math.sin(math.radians(a)))
                        for a in range(0, 360, 10)]
-    fp.courtyard = [(_Rc * math.cos(math.radians(a)),
-                     _Rc * math.sin(math.radians(a)))
+    fp.courtyard = [(_Rc * math.cos(math.radians(a)), _Rc * math.sin(math.radians(a)))
                     for a in range(0, 360, 10)]
     pins = _pins_from_pads(fp, name_map={"1": "MAIN", "2": "WRAP"})
     fields = dict(
-        manf="Steminc", manf_pn="SMD10T04R111",
-        name="SMD10T04R111",
-        description=(
-            "Steminc piezo ceramic disc Ø10 × 0.4 mm, SM111 (Navy I hard "
-            "PZT), wrap-around electrode — SMD-mount launch/impact shock "
-            "sensor, 2100 pF, 5 MHz thickness resonance"
-        ),
-        datasheet=None,                 # Steminc publishes no datasheet for this disc
-        package="Bare PZT disc Ø10×0.4, both electrodes one face",
-        size_mm=(10.0, 10.0), height_mm=0.4,
-        pins=pins,
-        footprint=fp,
-        note=(
-            "MAIN electrode feeds the sense node (R_COMP_SER → TLV3691 "
-            "launch-detect comparator, same tile); WRAP (top electrode, "
-            "brought around) ties to GND. A piezoelectric accelerometer — "
-            "reads rapid deceleration (+g) and impact (−g); complements the "
-            "H3LIS331 high-G accel (quantitative but I²C — no µs-class "
-            "hardware edge). In-Sn solder only: SAC reflow risks depoling "
-            "the PZT and exceeds nothing else but joins the battery-close "
-            "step. Listed 2 pc/set at Steminc; Ø5 SMD05T04R411 is the "
-            "drop-in fallback if unavailable."
-        ),
+        manf="PI Ceramic", manf_pn=part, name="PIC181-D10-T0.5-WRAP",
+        description=("PI Ceramic piezo disc Ø10 × 0.5 mm, PIC181 hard PZT (Navy I), "
+                     "wrap-around contact — SMD-mount launch/impact shock sensor, ~1.67 nF"),
+        datasheet=datasheet_ref(pdir, "PI_CAT125E_Piezoelectric_Ceramic_Products.pdf"),
+        package="Bare PZT disc Ø10×0.5, both electrodes one face",
+        size_mm=(10.0, 10.0), height_mm=0.5,
+        temp_range_c=(-55, 165),          # ~Curie/2 operating limit (Curie 330 °C)
+        pins=pins, footprint=fp,
+        note=("MAIN electrode feeds the sense node (R_COMP_SER → MAX9064 launch-detect "
+              "comparator, same tile); WRAP ties to GND. Complements the H3LIS331 high-g "
+              "accel (quantitative, I²C) with a µs-class hardware edge. In-Sn solder only. "
+              "Ordered direct from PI Ceramic (Germany)."),
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

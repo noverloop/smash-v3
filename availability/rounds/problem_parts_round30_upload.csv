@@ -1,0 +1,11 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+"PESD5V0L4UW,115",Nexperia,8,U_ESD_* R30A,"4-line unidirectional ESD array SOT665 1.6x1.6x0.6 mm; VRWM 5 V; please confirm COO (assembly site) and lifecycle"
+"DF5A5.6LJE,LM",Toshiba,8,U_ESD_* R30B,"4-line ESD array ESV (SOT-553) 1.6x1.6x0.6 mm; VZ 5.3-6.0 V; 8 pF; please confirm COO and lifecycle"
+"PESD5V0L4UF,115",Nexperia,8,U_ESD_* R30C,"4-line unidirectional ESD array SOT886 1.45x1.0x0.5 mm; VRWM 5 V; please confirm COO and lifecycle"
+VESD05A5A-HSF-GS08,Vishay,7,U_ESD_* R30D,"5-line ESD array LLP75-6L 1.6x1.6x0.6 mm; VRWM 5 V; please confirm COO, lifecycle and second-distributor stock"
+PESD6V3S1ULYL,Nexperia,1,D_EXT_VIN_TVS R30E,"unidirectional ESD/TVS VRWM 6.3 V DFN1006-2 (SOD882); please confirm COO"
+"DF2S8.2FS,L3M",Toshiba,1,D_EXT_VIN_TVS R30F,"unidirectional ESD diode VRWM 6.5 V SOD-923; please confirm COO"
+PESD8V0S1ULSYL,Nexperia,1,D_EXT_VIN_TVS R30G,"unidirectional ESD/TVS VRWM 8 V DFN1006BD-2 (SOD882BD); please confirm COO"
+PESD36VS1ULSYL,Nexperia,4,D_ACT_COL*_TVS R30H,"unidirectional ESD diode VRWM 36 V DFN1006BD-2 (SOD882BD); please confirm COO"
+"PESD36VS1UL,315",Nexperia,4,D_ACT_COL*_TVS R30I,"unidirectional ESD diode VRWM 36 V DFN1006-2 (SOD882); please confirm COO and stock at each distributor"
+SMF36A-E3-08,Vishay,4,D_ACT_COL*_TVS R30J,"TVS VRWM 36 V SMF (DO-219AB) 1.08 mm max; please confirm COO"

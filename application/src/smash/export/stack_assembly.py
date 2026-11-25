@@ -90,7 +90,7 @@ def _solder_for_step(upper_name: str) -> tuple[str, str]:
                 "activation_interface — the LAST step before the battery "
                 "compartment is potted. SAC305's ~245 °C reflow would exceed "
                 "the TLM-1520 cells' 150 °C limit. The P_PIEZO PZT disc "
-                "(Steminc SMD10T04R111, aft_end top — nose-facing, so rapid "
+                "(PI Ceramic PIC181 Ø10 × 0.5, aft_end top — nose-facing, so rapid "
                 "deceleration loads the ceramic in compression) is also attached in this "
                 "step: SAC temperatures risk depoling the ceramic; it pots "
                 "with the cells.")

@@ -263,7 +263,12 @@ def res_between(design: Design,
       ref:     defaults to "R_<n1>_<n2>".
       intent:  human description.
     """
-    r = add_resistor_0402_vishay(
+    size = overrides.pop("size", "0402")
+    if size == "0603":
+        from smash.parts.passives import add_resistor_0603_vishay as _fac
+    else:
+        _fac = add_resistor_0402_vishay
+    r = _fac(
         design,
         ref=ref or f"R_{n1.replace('-', '_')}_{n2.replace('-', '_')}",
         value=value, **overrides,
@@ -304,7 +309,9 @@ def ind_between(design: Design,
         add_inductor_tms201210alm_tdk,
     )
     l_h = parse_inductance_h(value)
-    if family == "auto" and abs(l_h - 1.3e-9) < 1e-12:      # (2026-11-21) not in WE-KI/WE-MK
+    if family == "auto" and abs(l_h - 0.7e-9) < 1e-12:      # below the WE-KI range
+        from smash.parts.passives import add_inductor_murata_lqg15wh0n7b02d as factory
+    elif family == "auto" and abs(l_h - 1.3e-9) < 1e-12:    # (2026-11-21) not in WE-KI/WE-MK
         from smash.parts.passives import add_inductor_murata_lqg15hs1n3s02d as factory
     elif family == "auto" and abs(l_h - 1.8e-9) < 1e-12:    # (2026-11-21) not in WE-KI
         # (2026-11-22) 744784018A lots are China → Murata LQG15HS1N8S02D

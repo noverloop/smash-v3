@@ -6,7 +6,8 @@
     "package": "SOT-23F, 2.9 x 1.8 body, 2.4 span, 0.8 (+0.08/-0.05) high, 0.95 pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=59199&prodName=SSM3J372R",
-    "notes": "Top view: 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top. P-ch, VDSS -30 V, VGSS -12/+6 V, ID -6 A. AEC-Q101."
+    "notes": "Top view: 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top. P-ch, VDSS -30 V, VGSS -12/+6 V, ID -6 A. AEC-Q101. height_max_mm [DS p8 package dimensions: 0.8 +0.08/−0.05]",
+    "height_max_mm": 0.88
   },
   "pins": [
     {

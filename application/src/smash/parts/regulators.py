@@ -530,7 +530,7 @@ def add_tps61175pwpr(design, ref: str, **overrides) -> Chip:
             Pin(num="8",  name="COMP",  type="io"),
             Pin(num="9",  name="FB",    type="input"),
             Pin(num="10", name="FREQ",  type="input"),
-            Pin(num="11", name="NC",    type="nc",
+            Pin(num="11", name="NC",    type="reserved",
                 note="datasheet: 'Reserved pin. Must connect this pin to ground.'"),
             Pin(num="12", name="PGND_1", type="ground"),
             Pin(num="13", name="PGND_2", type="ground"),

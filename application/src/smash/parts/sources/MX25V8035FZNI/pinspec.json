@@ -6,7 +6,12 @@
     "package": "8-WSON 6x5x0.8 mm, 1.27 mm pitch, exposed pad D1 3.4 x E1 4.0 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.macronix.com/Lists/Datasheet/Attachments/8979/MX25V8035F,%202.5V,%208Mb,%20v1.5.pdf",
-    "notes": "ZN = 8-WSON 6x5, I = -40..85 C. RESET# option removed (rev 0.04): pin 7 is HOLD#/SIO3 only. VCC 2.3-3.6 V."
+    "notes": "ZN = 8-WSON 6x5, I = -40..85 C. RESET# option removed (rev 0.04): pin 7 is HOLD#/SIO3 only. VCC 2.3-3.6 V. [height] 0.8 mm max: DS §18-4 WSON 6x5 table: A max 0.80. [temp] DS Table 15 Absolute Maximum Ratings: ambient operating (Industrial) −40…85 °C; Ordering MX25V8035FZNI",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -35,7 +40,8 @@
         "WP#",
         "SIO2"
       ],
-      "note": "internal pull-up only while the pin is physically unconnected; disabled once wired, so drive or pull it if connected"
+      "note": "internal pull-up only while the pin is physically unconnected; disabled once wired, so drive or pull it if connected; [connect] DS §4 Pin Description note: internal pull-up active only while WP#/SIO2 is physically unconnected",
+      "unused": "open"
     },
     {
       "num": "4",
@@ -43,7 +49,9 @@
       "type": "ground",
       "aliases": [
         "VSS"
-      ]
+      ],
+      "connect": "gnd",
+      "note": "[connect] DS §4 Pin Description: GND"
     },
     {
       "num": "5",
@@ -70,7 +78,8 @@
         "HOLD#",
         "SIO3"
       ],
-      "note": "same pull-up rule as WP#; no RESET# function on this part"
+      "note": "same pull-up rule as WP#; no RESET# function on this part; [connect] DS §4 Pin Description note: internal pull-up active only while HOLD#/SIO3 is physically unconnected",
+      "unused": "open"
     },
     {
       "num": "8",
@@ -82,14 +91,17 @@
       "voltage_range_v": [
         2.3,
         3.6
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect] DS §4 Pin Description: VCC power supply"
     },
     {
       "num": "9",
       "name": "EP",
       "type": "passive",
       "aliases": [],
-      "note": "exposed pad: leave floating or connect to the same GND as pin 4 only; no other net; avoid vias/traces under it (§18-4 note)"
+      "note": "exposed pad: leave floating or connect to the same GND as pin 4 only; no other net; avoid vias/traces under it (§18-4 note); [connect] DS §18-4 note (p78): leave EP floating or connect to the same ground as GND pin; no other net",
+      "connect": "open_or_gnd"
     }
   ]
 }

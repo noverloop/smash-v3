@@ -6,19 +6,36 @@
     "package": "HVSON8 SOT782-1, 3x3x0.85 mm, 0.65 mm pitch, EP 2.40x1.60 nom",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.nxp.com/docs/en/data-sheet/TJA1462.pdf",
-    "notes": "Same SOT782-1 land/symbol as TJA1462BTK; the A variant has VIO on pin 5 (B: n.c.). EP has no pin number in the DS; ours = 9."
+    "notes": "Same SOT782-1 land/symbol as TJA1462BTK; the A variant has VIO on pin 5 (B: n.c.). EP has no pin number in the DS; ours = 9. height_max_mm [DS Fig. 15 p25 SOT782-1: A max 1.00] [temp] DS Table 6 Limiting values: Tvj virtual junction −40…+150 °C (no ambient range given)",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      150
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {
       "num": "1",
       "name": "TXD",
-      "type": "input"
+      "type": "input",
+      "io_domain": "5",
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          20,
+          80
+        ]
+      },
+      "note": "[DS Table 8 p16: TXD/STB VIH 0.7VIO, VIL 0.3VIO; RXD IOH at VIO−0.4 V (TJA1462A)] [DS Table 6 p13: TXD, STB −0.3 to +6 V (6-7 V for 20 s lifetime)] [DS Table 8 p16: Rpu 20-80 kΩ; §7.3.2 p11: pull-ups active in all states]"
     },
     {
       "num": "2",
       "name": "GND",
       "type": "ground",
-      "note": "Must be soldered to board ground (Table 4 note 2)."
+      "note": "Must be soldered to board ground (Table 4 note 2). [DS Table 4 note 2 p6: GND pin must be soldered to board ground]",
+      "connect": "gnd"
     },
     {
       "num": "3",
@@ -28,12 +45,15 @@
         4.5,
         5.5
       ],
-      "note": "5 V supply."
+      "note": "5 V supply. [DS Table 4 p6: 5 V supply voltage input]",
+      "connect": "supply"
     },
     {
       "num": "4",
       "name": "RXD",
-      "type": "output"
+      "type": "output",
+      "io_domain": "5",
+      "note": "[DS Table 8 p16: TXD/STB VIH 0.7VIO, VIL 0.3VIO; RXD IOH at VIO−0.4 V (TJA1462A)]"
     },
     {
       "num": "5",
@@ -43,7 +63,8 @@
         2.95,
         5.5
       ],
-      "note": "I/O level supply (TJA1462A only)."
+      "note": "I/O level supply (TJA1462A only). [DS Table 4 p6: VIO supply for I/O level adapter (TJA1462A)]",
+      "connect": "supply"
     },
     {
       "num": "6",
@@ -52,7 +73,10 @@
       "voltage_range_v": [
         -36,
         40
-      ]
+      ],
+      "io_domain": "3",
+      "max_v": 40,
+      "note": "[DS Table 6 p13: CANH, CANL −36 to +40 V; Table 8 p16: VTXsym 0.9-1.1 VCC]"
     },
     {
       "num": "7",
@@ -61,19 +85,40 @@
       "voltage_range_v": [
         -36,
         40
-      ]
+      ],
+      "io_domain": "3",
+      "max_v": 40,
+      "note": "[DS Table 6 p13: CANH, CANL −36 to +40 V; Table 8 p16: VTXsym 0.9-1.1 VCC]"
     },
     {
       "num": "8",
       "name": "STB",
       "type": "input",
-      "note": "Standby control, active-HIGH."
+      "note": "Standby control, active-HIGH. [DS Table 8 p16: TXD/STB VIH 0.7VIO, VIL 0.3VIO; RXD IOH at VIO−0.4 V (TJA1462A)] [DS Table 6 p13: TXD, STB −0.3 to +6 V (6-7 V for 20 s lifetime)] [DS Table 8 p16: Rpu 20-80 kΩ; §7.3.2 p11: pull-ups active in all states]",
+      "io_domain": "5",
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          20,
+          80
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "9",
       "name": "EP",
       "type": "ground",
-      "note": "Die ground is connected to the GND pin and EP; recommended to solder to board ground."
+      "note": "Die ground is connected to the GND pin and EP; recommended to solder to board ground. [DS Table 4 note 2 p6: die ground on GND pin and EP; recommended to solder EP to board ground]",
+      "connect": "gnd"
     }
   ]
 }

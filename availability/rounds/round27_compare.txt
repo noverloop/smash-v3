@@ -1,0 +1,24 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_XV_BOOST R27A      MCP1640BT-I/MC               |    9989    9w    0.72 Thailand  |  167070 27.0w    0.68 United St |   14902   19w    0.81 Thailand  | 
+U_XV_BOOST R27B      MCP1640B-I/MC                |   46446    9w    0.72 Malaysia  |       0     w    0.00 United St |     192    4w    0.81 Thailand  | 
+U_BOOST R27C         MCP1640CT-I/MC               |       0   16w    0.72 Thailand  |   61225  7.0w    0.68 Thailand  |    3369   23w    0.81 Thailand  | 
+U_BOOST R27D         MCP1640C-I/MC                |      45   16w    0.72 Malaysia  |   61225  7.0w    0.68 Thailand  |     670   24w    0.81 Thailand  | 
+Y_LR_TCXO_MEMS R27E  SiT5356AECFQ-33N0-32.000000T |                        - |                        - |                        - | 
+Y_LR_TCXO_MEMS R27F  SiT5356AECFQ-33N0-32.000000Y |                        - |                        - |                        - | 
+Y_MPU_HSE R27G       SIT1602BI-12-18E-40.000000   |                        - |                        - |       0   12w    2.40 Thailand  | 
+Y_MPU_HSE R27H       SIT1602BI-12-18E-40.000000G  |       0    6w    1.83 Thailand  |       0 14.0w    0.81 Malaysia  |       0   12w    2.40 Thailand  | New at Mouser
+Y_MPU_HSE R27I       SIT1602BI-12-18E-40.000000E  |                        - |       0 14.0w    0.65 Malaysia  |       0   12w    2.40 Thailand  | 
+Y_WBA_HSE R27J       DSC1001CI5-032.0000          |     717   16w    1.17 Thailand  |                        - |       0   34w    1.54 Thailand  | 
+Y_WBA_HSE R27K       DSC1001CI5-032.0000T         |    1000   16w    0.00 Thailand  |                        - |     522   34w    1.54 Thailand  | 
+U_AON_LDO R27L       S-1318D33-A4T2U4             |    5214   16w    1.71 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_AON_LDO R27M       S-1318A33-A4T2U4             |       0   16w    0.00 Japan     |                        - |    7488   16w    1.90 Japan     | 
+U_AON_LDO R27N       S-1318B33-A4T2U4             |       0   16w    0.00 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_FIN_MCU R27O       STM32U545REI6Q               |       0   30w    7.97 Taiwan    |       0 32.0w    7.99 Taiwan    |    2802   30w    8.98 Taiwan    | 
+U_AWR_FLASH R27P     MX25V8035FZNI                |                        - |       3 35.0w    1.45 Taiwan    |    9678   52w    1.32 Taiwan    | 
+U_ACTIVATE_BOOST R27 TPS61175PWPR                 |    4696   26w    4.01 Taiwan/Ta |       0     w    0.00 Taiwan    |       0   26w    4.43 Japan     | 
+U_ACTIVATE_BOOST R27 TPS61175PWP                  |    1145   26w    4.60 Taiwan/Ta |       0 16.0w    4.50 Taiwan    |     482   26w    5.53 Japan     | 
+C_BOOST_OUT R27S     GRM21BR61E226ME44L           |       0   53w    0.64 Japan     |  111755 13.0w    0.34 Japan     |       0   17w    0.36 Japan     | 
+C_BOOST_OUT R27T     C2012X5R1E226M125AB          |                        - |                        - |                        - | 
+T_XV_IF R27U         NCS1-292+                    |       0   17w    1.46 Taiwan    |                        - |    1909   16w    1.64 Taiwan    | 
+
+Digi-Key rows not in the upload:

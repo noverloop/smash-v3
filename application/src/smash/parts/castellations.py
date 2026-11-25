@@ -613,9 +613,26 @@ def castellation_contract(design, panel, boards, plug_groups=None,
 # on a test point. Allocated AFTER every lane, only at angles no lane uses at
 # that board, so they never move a lane.
 DEBUG_CASTELLATIONS = {
-    "radar_module": ("AWR_TCK", "AWR_TMS", "AWR_TDI", "AWR_SOP0", "AWR_DBG_GPIO"),
-    # wakeup_board: on-tile test points instead (no edge room outside the antenna keep-outs)
-    "power_board": ("PMIC_NRST", "PMIC_WAKEUP"),      # the STPMIC25 sits on power_board
+    "radar_module": ("AWR_TCK", "AWR_TMS", "AWR_TDI", "AWR_SOP0", "AWR_DBG_GPIO",
+                     "AWR_1V2", "AWR_1V3", "AWR_1V8"),
+    # wakeup_board, power_board: no edge room outside the S1/S4 keep-outs and the
+    # lanes; their local nets are probed on component pads (BRING_UP.md).
+    # camera_module has no castellations (flex-connected).
+    "activation_interface": ("MAG_1V8", "TMR_VDD"),
+}
+# Bring-up test points for rails / control lines that already cross boards: the dev panel puts
+# a test point at the end of that rail's castellation stub on the named board
+# (no new castellation). Board-local rails are in DEBUG_CASTELLATIONS above.
+RAIL_TEST_POINTS = {
+    "COMP_3V3": "power_board", "COMP_1V8_AON": "power_board", "COMP_0V82": "power_board",
+    "COMP_0V9": "power_board", "COMP_1V8": "power_board", "COMP_1V35": "power_board",
+    "COMP_2V8": "power_board", "COMP_5V": "power_board", "COMP_5V_RAW": "power_board",
+    "REG_IN_MAIN": "power_board", "ACTIVATE_HV": "power_board",
+    # bring-up control / handshake lines that cross boards (BRING_UP.md):
+    "COMP_OUT": "activation_interface", "IR_WAKE": "radar_module",
+    "PWR_HOLD": "companion_compute", "PMIC_PWR_OK": "power_board",
+    "ACTIVATE_BOOST_EN": "power_board", "MAIN_SW_GATE": "power_board",
+    "RADAR_EN": "radar_module",
 }
 DEBUG_MIN_SEP_STEPS = 2      # debug pads ≥ 2 lane pitches apart (room for the dev test points)
 
@@ -780,7 +797,13 @@ def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
                  if t_tan is not None else None)
 
         def ok(it, q):
-            good = (q in tooth_set) if it[1] == "T" else m_ok[q]
+            if it[1] == "T":
+                # a cap lane that ALSO lands on the aft board (crown ESD there)
+                # gets an aft castellation at its tooth: keep it ≥ one lane pitch
+                # off the fixed GND / feed castellations, like the aft-only lanes
+                good = q in tooth_set and (m_ok[q] or aft not in lanes[it[2]].get("boards", []))
+            else:
+                good = m_ok[q]
             if good and wid(it) > 0.4:
                 lim = jog_max if it[1] == "M" else t_max
                 if lim is not None:

@@ -6,22 +6,74 @@
     "package": "WSON-6 (DRV, 2.00 × 2.00 mm)",
     "verified_by": "Anthropic 2026-05-27",
     "verified_from_pdf": "application/src/smash/parts/sources/TMP117MAIDRVR/TMP117MAIDRVR.pdf",
-    "notes": "Two package variants in datasheet: WSON-6 (DRV, used here) and DSBGA-6 (YBG). This pinspec is for the DRV (WSON) variant only."
+    "notes": "Two package variants in datasheet: WSON-6 (DRV, used here) and DSBGA-6 (YBG). This pinspec is for the DRV (WSON) variant only. [height_max_mm: SNOSD82D DRV0006B outline: WSON 0.8 mm max height] [temp] DS 6.3 Recommended Operating Conditions: TA −55…150 °C",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
   },
   "pins": [
-    { "num": "1", "name": "SCL",   "type": "input",
-      "note": "Serial clock (I²C). Datasheet Table 5-1 type=I." },
-    { "num": "2", "name": "GND",   "type": "ground" },
-    { "num": "3", "name": "ALERT", "type": "output",
-      "note": "Over-temperature alert / data-ready signal. Open-drain — requires pullup." },
-    { "num": "4", "name": "ADD0",  "type": "input",
-      "note": "Address select. Connect to GND, V+, SDA, or SCL to pick I²C addr 0x48-0x4B." },
-    { "num": "5", "name": "V+",    "type": "power",
-      "voltage_range_v": [1.8, 5.5],
-      "note": "Supply voltage. Datasheet §6 Power Supply: 1.8 V to 5.5 V over -55 to +150 °C (1.7 V minimum allowed for -55 to +70 °C only). Typical 3.3 V." },
-    { "num": "6", "name": "SDA",   "type": "io",
-      "note": "Serial data, open-drain bidirectional. Requires pullup." },
-    { "num": "7", "name": "EP", "aliases": ["ThermalPad"], "type": "ground",
-      "note": "Exposed thermal pad — connect to GND for thermal dissipation." }
+    {
+      "num": "1",
+      "name": "SCL",
+      "type": "input",
+      "note": "Serial clock (I²C). Datasheet Table 5-1 type=I. [max_v: SNOSD82D §6.1 Abs Max SCL, SDA, ALERT, ADD0 -0.3..6 V (independent of V+; §6.3 VI/O 0..5.5 V)]",
+      "max_v": 6.0
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: SNOSD82D Table 5-1: ground]"
+    },
+    {
+      "num": "3",
+      "name": "ALERT",
+      "type": "output",
+      "note": "Over-temperature alert / data-ready signal. Open-drain — requires pullup. [connect rule: SNOSD82D §8.2.1: 'The ALERT pin can be left floating or connected to ground when not in use'] [max_v: SNOSD82D §6.1 Abs Max SCL, SDA, ALERT, ADD0 -0.3..6 V (independent of V+; §6.3 VI/O 0..5.5 V); open_drain: Table 5-1 ALERT open-drain output, requires pullup]",
+      "unused": "open_or_gnd",
+      "max_v": 6.0,
+      "open_drain": true
+    },
+    {
+      "num": "4",
+      "name": "ADD0",
+      "type": "input",
+      "note": "Address select. Connect to GND, V+, SDA, or SCL to pick I²C addr 0x48-0x4B. [connect rule: SNOSD82D Table 5-1: ADD0 'Connect to GND, V+, SDA, or SCL'] [max_v: SNOSD82D §6.1 Abs Max SCL, SDA, ALERT, ADD0 -0.3..6 V (independent of V+; §6.3 VI/O 0..5.5 V)]",
+      "connect": "defined",
+      "max_v": 6.0
+    },
+    {
+      "num": "5",
+      "name": "V+",
+      "type": "power",
+      "voltage_range_v": [
+        1.8,
+        5.5
+      ],
+      "note": "Supply voltage. Datasheet §6 Power Supply: 1.8 V to 5.5 V over -55 to +150 °C (1.7 V minimum allowed for -55 to +70 °C only). Typical 3.3 V. [connect rule: SNOSD82D Table 5-1: supply voltage]",
+      "connect": "supply"
+    },
+    {
+      "num": "6",
+      "name": "SDA",
+      "type": "io",
+      "note": "Serial data, open-drain bidirectional. Requires pullup. [connect rule: SNOSD82D Table 5-1: SDA requires a pullup resistor] [max_v: SNOSD82D §6.1 Abs Max SCL, SDA, ALERT, ADD0 -0.3..6 V (independent of V+; §6.3 VI/O 0..5.5 V); open_drain: Table 5-1 SDA open-drain output, requires pullup]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "open_drain": true
+    },
+    {
+      "num": "7",
+      "name": "EP",
+      "aliases": [
+        "ThermalPad"
+      ],
+      "type": "ground",
+      "note": "Exposed thermal pad — connect to GND for thermal dissipation. [connect rule: SNOSD82D §8.2.x / layout: thermal pad not connected to device ground, TI recommends leaving it unsoldered; if soldered 'it must be left floating or grounded']",
+      "connect": "open_or_gnd"
+    }
   ]
 }

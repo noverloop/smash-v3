@@ -176,3 +176,39 @@ def add_mill_max_5849(design, ref: str, **overrides) -> Chip:
                 package="locating pin", height_mm=6.5, size_mm=(1.98, 1.98), manf="Mill-Max",
                 description="PCB locating pin Ø1.5 mm, 6.5 mm above flange, solder tail",
                 ring_courtyard=True, **overrides)
+
+
+def add_ads7138irter(design, ref: str, **overrides) -> Chip:
+    """TI ADS7138IRTER — 8-channel 12-bit SAR ADC, I²C, WQFN-16 3 × 3 mm
+    (RTE0016C, 0.8 mm max). Land per TI 4219117/B example board layout:
+    16 × 0.6 × 0.24 pads at 0.5 pitch, 2.8 mm centre-to-centre, EP 1.68 sq.
+    Pins per DS Pin Functions (SBAS976A): 1-6 AIN2..AIN7, 7 AVDD (also the
+    reference), 8 DECAP, 9 GND, 10 DVDD, 11 ADDR, 12 ALERT, 13 SCL, 14 SDA,
+    15 AIN0, 16 AIN1, EP → GND. Inputs 0…AVDD (abs max AVDD + 0.3). Dev
+    strip rail monitor (bring-up)."""
+    from smash.state import Pad
+    pads = []
+    for k, y in enumerate((0.75, 0.25, -0.25, -0.75)):          # smash y-UP, CCW from pin 1 (top-left)
+        pads.append(Pad(num=str(1 + k), position_mm=(-1.4, y), size_mm=(0.6, 0.24), shape="rect"))
+        pads.append(Pad(num=str(5 + k), position_mm=(-y, -1.4), size_mm=(0.24, 0.6), shape="rect"))
+        pads.append(Pad(num=str(9 + k), position_mm=(1.4, -y), size_mm=(0.6, 0.24), shape="rect"))
+        pads.append(Pad(num=str(13 + k), position_mm=(y, 1.4), size_mm=(0.24, 0.6), shape="rect"))
+    pads.append(Pad(num="17", position_mm=(0.0, 0.0), size_mm=(1.68, 1.68), shape="rect"))
+    fp = Footprint(name="TI_RTE0016C_WQFN16_3x3", package_class="WQFN-16 3x3 + EP",
+                   pads=sorted(pads, key=lambda p: int(p.num)),
+                   body_outline=[(-1.5, -1.5), (1.5, -1.5), (1.5, 1.5), (-1.5, 1.5)],
+                   courtyard=[(-2.0, -2.0), (2.0, -2.0), (2.0, 2.0), (-2.0, 2.0)],
+                   pitch_mm=0.5, size_mm=(3.0, 3.0), height_mm=0.8, source="datasheet")
+    names = {1: "AIN2", 2: "AIN3", 3: "AIN4", 4: "AIN5", 5: "AIN6", 6: "AIN7", 7: "AVDD",
+             8: "DECAP", 9: "GND", 10: "DVDD", 11: "ADDR", 12: "ALERT", 13: "SCL", 14: "SDA",
+             15: "AIN0", 16: "AIN1", 17: "EP"}
+    types = {"AVDD": "power", "DVDD": "power", "GND": "ground", "EP": "ground", "DECAP": "passive",
+             "ADDR": "analog", "ALERT": "output", "SCL": "input", "SDA": "io"}
+    pins = [Pin(num=str(n), name=nm, type=types.get(nm, "analog")) for n, nm in names.items()]
+    fields = dict(manf="Texas Instruments", manf_pn="ADS7138IRTER", canonical_id=canonical_id("ADS7138IRTER"),
+                  name="ADS7138IRTER", value="ADS7138", package="WQFN-16 (3×3)",
+                  description="8-ch 12-bit SAR ADC, I²C, WQFN-16 3×3", size_mm=(3.0, 3.0), height_mm=0.8,
+                  datasheet="application/src/smash/parts/sources/ADS7138IRTER/ADS7138.pdf",
+                  pins=pins, footprint=fp, note="Dev-strip rail monitor (BRING_UP.md).")
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

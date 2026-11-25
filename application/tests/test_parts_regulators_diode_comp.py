@@ -228,7 +228,7 @@ class TestTPS61175:
         # DS p3-4: "Reserved pin. Must connect this pin to ground."
         nc = self.q.pin("11")
         assert nc.name == "NC"
-        assert nc.type == "nc"
+        assert nc.type == "reserved"      # must go to GND, so not a no-connect
         assert "must connect" in (nc.note or "").lower()
 
     def test_dual_sw_pins(self):

@@ -45,6 +45,7 @@ HEALTH_COIL_DUTY = 0.03   # est: 3-30 Hz keying, ~1 ms pulses
 DESCENT = [
     Load("WBA55 run (BLE)", "3V3_AON", 10e-3, "old"),
     Load("LR2021 IF drive + sensors + MCUs", "3V3", 50e-3, "user"),
+    Load("LR2021 TCXO SiT5356 (on with the LR2021 XOSC)", "3V3", 53e-3, "DS Idd max"),
     Load("XV LO ADF4351", "3V3", 125e-3, "user"),
     Load("XV mixer LTC5552", "3V3", 132e-3, "user"),
     Load("XV PA GRF5126 (TX keyed)", "XV_5V", 110e-3, "user / DS"),

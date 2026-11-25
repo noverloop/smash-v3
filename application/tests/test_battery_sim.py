@@ -16,24 +16,18 @@ def test_cell_model_matches_datasheet_capacity(row):
     assert abs(sim - ds) / ds < 0.03
 
 
-def test_boost_is_constant_power_and_passes_through_above_vout():
-    ld = [Load("x", "3V3", 0.30)]
-    lo, hi = solve_tree(ld, 3.0), solve_tree(ld, 3.6)
+def test_3v3_is_a_buck_behind_the_5v_boost():
+    ld = [Load("x", "3V3", 0.40)]
+    lo, hi = solve_tree(ld, 2.6), solve_tree(ld, 3.6)
     assert lo.i_bat > hi.i_bat                          # sagging cell -> more current
-    bypass = solve_tree(ld, 4.0)                        # >= 3.87 V: MCP1640 passes VIN
-    assert bypass.convs["U_BOOST"].mode == "bypass"
-    assert bypass.i_bat == pytest.approx(0.30, rel=0.01)
+    assert lo.convs["U_PWR"].v_in == pytest.approx(5.03) and not lo.flags()
+    assert lo.convs["U_COMP_BOOST"].mode == "reg"
 
 
-def test_mcp1640_bypass_abs_max_is_flagged():
-    t = solve_tree([Load("x", "3V3", 0.45)], 4.0)
-    assert any("bypass" in f for f in t.flags())
-
-
-def test_transverter_pa_boost_draws_from_battery_not_3v3():
+def test_transverter_pa_switch_draws_from_the_5v_boost():
     t = solve_tree([Load("PA", "XV_5V", 0.11)], 3.6)
-    assert t.convs["U_XV_BOOST"].v_in == 3.6
-    assert t.convs["U_BOOST"].mode == "off"
+    assert t.convs["U_XV_PA_SW"].v_in == pytest.approx(5.03)
+    assert t.convs["U_COMP_BOOST"].i_out == pytest.approx(0.11)
 
 
 def test_aon_ldo_dropout_is_not_a_failure_while_wba_has_headroom():

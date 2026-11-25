@@ -175,6 +175,12 @@ def add_awr1843aop(design, ref: str, *, secure: bool = False, **overrides) -> Ch
             "mechanical drawing before fab."
         ),
     )
+    # VPP (V2) = eFuse programming supply, used only at TI's fuse programming:
+    # the AWR1843AOPEVM (sprr429 RevB, sheet 4) leaves it on test point TP11,
+    # unconnected. "reserved" = may float (or reach a TP).
+    for p in fields["pins"]:
+        if p.name == "VPP":
+            p.type = "reserved"
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
 

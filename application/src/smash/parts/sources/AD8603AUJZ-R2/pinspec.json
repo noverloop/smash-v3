@@ -6,7 +6,12 @@
     "package": "5-lead TSOT UJ-5 (MO-193-AB), body 2.90 x 1.60 mm, 0.95 mm pitch, 2.80 mm lead span, 1.00 mm max height",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/AD8603AUJZ-R2/AD8603-AD8607-AD8609-family.pdf",
-    "notes": "Single supply 1.8-5 V or dual +/-0.9 to +/-2.5 V. Abs max supply 6 V; input GND to VS; differential input +/-6 V. -40..125 C. Branding A0X, reel of 250."
+    "notes": "Single supply 1.8-5 V or dual +/-0.9 to +/-2.5 V. Abs max supply 6 V; input GND to VS; differential input +/-6 V. -40..125 C. Branding A0X, reel of 250. [height] 1.0 mm max: DS Rev.D Fig.48 UJ-5: 1.00 MAX. [temp] DS Table 3 Absolute Maximum Ratings + Ordering Guide (AD8603AUJZ-R2 -40 to +125 degC)",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
   },
   "pins": [
     {
@@ -55,7 +60,9 @@
       "voltage_range_v": [
         1.8,
         5.0
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect] DS Rev.D Fig.1/pin config: V+ supply"
     }
   ]
 }

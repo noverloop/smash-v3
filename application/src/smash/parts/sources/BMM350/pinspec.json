@@ -6,20 +6,28 @@
     "package": "WLCSP-9 1.28x1.28x0.54, 0.4 mm pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmm350-ds001.pdf",
-    "notes": "Top view (laser side): column A left, B middle, C right; row 1 bottom, 3 top; A1 bottom-left at the pin-1 dot. VDD abs max 2.0 V."
+    "notes": "Top view (laser side): column A left, B middle, C right; row 1 bottom, 3 top; A1 bottom-left at the pin-1 dot. VDD abs max 2.0 V. [height_max_mm: DS Fig. 10 package height 0.5 ±0.04] [temp] DS Table 4 Absolute maximum ratings: Operating (active operation) −40…+85 °C; electrical spec TA −40…+85 °C",
+    "height_max_mm": 0.54,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
       "num": "A1",
       "name": "INT",
       "type": "output",
-      "note": "Interrupt output"
+      "note": "Interrupt output [io_domain B3: DS Table 1 VDDIO = I/O domain supply; INT drive OD/push-pull selectable via INT_CTRL.int_od §5.5.3]",
+      "io_domain": "B3"
     },
     {
       "num": "A2",
       "name": "SDA",
       "type": "io",
-      "note": "I2C/I3C data"
+      "note": "I2C/I3C data [io_domain B3: DS Table 1 VDDIO = I/O domain supply; open_drain: §9 I2C SDA open drain (push-pull only in I3C data phase)]",
+      "io_domain": "B3",
+      "open_drain": true
     },
     {
       "num": "A3",
@@ -28,18 +36,31 @@
       "aliases": [
         "SCL"
       ],
-      "note": "I2C/I3C clock"
+      "note": "I2C/I3C clock [io_domain B3: DS Table 1 VDDIO = I/O domain supply]",
+      "io_domain": "B3"
     },
     {
       "num": "B1",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS §6 pin table: GND]"
     },
     {
       "num": "B2",
       "name": "ADSEL",
       "type": "input",
-      "note": "Connect to GND (0x14) or VDDIO (0x15); must not float"
+      "note": "Connect to GND (0x14) or VDDIO (0x15); must not float [connect rule: DS §6 pin table + §7 I2C address: connect ADSEL to GND or VDDIO; 'must not be left floating'] [io_domain B3: DS Table 1 VDDIO = I/O domain supply; vih/vil: DS Table 12 Vih_si ≥80 %VDDIO, Vil_si ≤20 %VDDIO]",
+      "connect": "defined",
+      "io_domain": "B3",
+      "vih": [
+        0.8,
+        "frac"
+      ],
+      "vil": [
+        0.2,
+        "frac"
+      ]
     },
     {
       "num": "B3",
@@ -49,7 +70,8 @@
         1.72,
         3.6
       ],
-      "note": "100 nF decoupling"
+      "note": "100 nF decoupling [connect rule: DS §6 pin table: supply pin]",
+      "connect": "supply"
     },
     {
       "num": "C1",
@@ -59,7 +81,8 @@
         1.72,
         1.98
       ],
-      "note": "Abs max 2.0 V; 100 nF decoupling"
+      "note": "Abs max 2.0 V; 100 nF decoupling [connect rule: DS §6 pin table: supply pin]",
+      "connect": "supply"
     },
     {
       "num": "C2",
@@ -71,7 +94,8 @@
       "num": "C3",
       "name": "BYPASS",
       "type": "ground",
-      "note": "Connect to ground"
+      "note": "Connect to ground [connect rule: DS §6 pin table: 'Connect to ground']",
+      "connect": "gnd"
     }
   ]
 }

@@ -1,0 +1,9 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+C_ACTIVATE_OUT R26A  GRM31CC72A475KE11L           |       0   53w    1.41 Japan     |   28972 19.0w    1.37 Japan     |  426415   17w    0.76 Japan     | 
+C_ACTIVATE_OUT R26B  CGA5L1X7R2A475K160AC         |  148647   24w    0.87 Japan     |       0 35.0w    1.05 Japan     |      69   36w    0.98 Japan     | 
+C_ACTIVATE_OUT R26C  GRM31CZ72A475KE11L           |       0   53w    1.40 Japan     |   19021 13.0w    0.75 Japan     |       0   17w    0.87 Japan     | 
+Q_ISO R26D           PMPB15XP,115                 |       0   53w    0.58 Malaysia  |    2991 22.0w    0.56 Malaysia  |       0   20w    0.15 Malaysia  | 
+Q_ISO R26E           PMPB15XPH                    |    2635   53w    0.93 Malaysia  |    2991 22.0w    0.56 Malaysia  |       0   20w    0.15 China     | 
+FB_AWR R26F          BLM18SG121TN1D               |  487277   22w    0.20 Japan     |       0 17.0w    0.13 Japan     |  192743   29w    0.23 Japan     | 
+
+Digi-Key rows not in the upload:

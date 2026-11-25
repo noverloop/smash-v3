@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "manf_pn": "CX2016SA40000D0GSSCC",
+    "datasheet": "Kyocera CX2016SA crystal unit catalog sheet (as of October 2026)",
+    "datasheet_section": "Specifications table; Table 1 ESR; Dimensions; Connection (top view); Recommended land pattern",
+    "package": "2.0x1.6 mm 4-pad ceramic, 0.45 +/-0.05 (0.50 max)",
+    "verified_by": "verified 2026-11-25 (Claude, from the PDF)",
+    "verified_from_pdf": "application/src/smash/parts/sources/CX2016SA40000D0GSSCC/CX2016SA40000D0GSSCC.pdf",
+    "notes": "40 MHz fundamental, CL 8 pF, +/-15 ppm at 25 C, +/-50 ppm over -40..+125 C, ESR 50 ohm max (40-60 MHz), drive 10 uW typ / 200 uW max, C0 2 pF max, AEC-Q200. Pins 1 and 3 = crystal, 2 and 4 = GND (lid). No shock rating published.",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
+  },
+  "pins": [
+    {"num": "1", "name": "XTAL1", "type": "passive", "aliases": ["X1"]},
+    {"num": "2", "name": "GND", "type": "ground", "aliases": []},
+    {"num": "3", "name": "XTAL2", "type": "passive", "aliases": ["X2"]},
+    {"num": "4", "name": "GND_2", "type": "ground", "aliases": []}
+  ]
+}

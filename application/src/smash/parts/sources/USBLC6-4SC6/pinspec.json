@@ -6,7 +6,13 @@
     "package": "SOT23-6L",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "~/Downloads/DS_usblc6-4.pdf (st.com)",
-    "notes": "Flow-through pairs I/O1-I/O4 and I/O2-I/O3. VBUS-GND breakdown 6-10 V; VRM 5.25 V."
+    "notes": "Flow-through pairs I/O1-I/O4 and I/O2-I/O3. VBUS-GND breakdown 6-10 V; VRM 5.25 V. height_max_mm [DS Table 3 p11 SOT23-6L: A 1.45 max] [temp] DS Table 1 Absolute ratings: Tj operating junction −40…+125 °C",
+    "height_max_mm": 1.45,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {
@@ -18,7 +24,8 @@
       "num": "2",
       "name": "GND",
       "type": "ground",
-      "note": "Short path to the GND plane."
+      "note": "Short path to the GND plane. [DS §2.3 p5: GND pin to GND plane, short track]",
+      "connect": "gnd"
     },
     {
       "num": "3",
@@ -34,7 +41,8 @@
       "num": "5",
       "name": "VBUS",
       "type": "power",
-      "note": "Connect to VBUS/VCC (protects VBUS; needed for the clamp reference)."
+      "note": "Connect to VBUS/VCC (protects VBUS; needed for the clamp reference). [DS §2.2/2.3 p4-5: VBUS pin connected to VCC (rail-to-rail clamp reference), short track]",
+      "connect": "supply"
     },
     {
       "num": "6",

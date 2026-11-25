@@ -20,7 +20,7 @@ from smash.sim.battery.cells import CellModel, aging_loss_frac
 from smash.sim.battery.power_tree import Converter, Load, TreeState, converters, solve_tree
 
 YEAR_S = 365.25 * 24 * 3600
-R_WIRING = 0.05       # Q_ISO + QMAIN Rds(on) + interconnect lump, ohms
+R_WIRING = 0.06       # Q_ISO + QMAIN (2 x PMPB15XP on power_board, ~20 mOhm each at -2.5 V) + 3 cell lanes in parallel + GND return (est 20 mOhm), ohms
 V_SOLVE_FLOOR = 1.0
 
 

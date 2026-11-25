@@ -6,25 +6,34 @@
     "package": "PG-TSLP-6-4, 0.7x1.1x0.31 mm, 0.4 mm pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/BGS12P2L6E6327XTSA1/BGS12P2L6.pdf",
-    "notes": "CTRL 0: RFin-RF1, CTRL 1: RFin-RF2. No DC allowed on any RF port (abs max VRFDC = 0 V; DC path exists between switched paths)."
+    "notes": "CTRL 0: RFin-RF1, CTRL 1: RFin-RF2. No DC allowed on any RF port (abs max VRFDC = 0 V; DC path exists between switched paths). height_max_mm [DS Table 12 p10: H = 0.31 +0.01/−0.02 mm] [temp] DS Table 3 Operation Ranges: TA −40…85 °C",
+    "height_max_mm": 0.32,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "RF2",
       "type": "io",
-      "note": "no DC (abs max 0 V) — DC-block"
+      "note": "no DC (abs max 0 V) — DC-block [DS Table 2 p3: max DC voltage on RF ports VRFDC = 0 V]",
+      "max_v": 0
     },
     {
       "num": "2",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 10 p8: Ground]"
     },
     {
       "num": "3",
       "name": "RF1",
       "type": "io",
-      "note": "no DC (abs max 0 V) — DC-block"
+      "note": "no DC (abs max 0 V) — DC-block [DS Table 2 p3: max DC voltage on RF ports VRFDC = 0 V]",
+      "max_v": 0
     },
     {
       "num": "4",
@@ -34,7 +43,8 @@
         1.65,
         3.4
       ],
-      "note": "abs max 3.6 V"
+      "note": "abs max 3.6 V [DS Table 10 p8: Supply voltage]",
+      "connect": "supply"
     },
     {
       "num": "5",
@@ -43,7 +53,8 @@
       "aliases": [
         "RFIN"
       ],
-      "note": "RF common; no DC"
+      "note": "RF common; no DC [DS Table 2 p3: max DC voltage on RF ports VRFDC = 0 V]",
+      "max_v": 0
     },
     {
       "num": "6",
@@ -53,7 +64,15 @@
         -0.3,
         3.4
       ],
-      "note": "VIL ≤ 0.45 V, VIH ≥ 1.0 V (≤ VDD); do not float"
+      "note": "VIL ≤ 0.45 V, VIH ≥ 1.0 V (≤ VDD); do not float [DS Table 3 p4: VCtrl,H 1.0 V min, VCtrl,L 0.45 V max]",
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.45,
+        "abs"
+      ]
     }
   ]
 }

@@ -5,8 +5,13 @@
     "datasheet_section": "p2 Pad connections + outline/land (case GE0805C-1)",
     "package": "GE0805C-1 LTCC 2.01x1.24x0.84 mm, 6 pads 0.66 pitch",
     "verified_from_pdf": "application/src/smash/parts/sources/NCS1-292P/NCS1-292+.pdf",
-    "notes": "Top view: 1-2-3 bottom row L->R, 6-5-4 top row. Pads 2, 3, 4 are DC-connected internally (secondary centre-tapped to pad 2).",
-    "verified_by": "library check 2026-11-24"
+    "notes": "Top view: 1-2-3 bottom row L->R, 6-5-4 top row. Pads 2, 3, 4 are DC-connected internally (secondary centre-tapped to pad 2). height_max_mm [DS p2 outline: C = .033 ±.009 in → 0.042 in = 1.07 mm max] [temp] DS Maximum Ratings: Operating Temperature −40…85 °C",
+    "verified_by": "library check 2026-11-24",
+    "height_max_mm": 1.07,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -26,7 +31,7 @@
         "GND",
         "DC FEED"
       ],
-      "note": "GND or DC feed + RF GND; DC-connected to pads 3/4"
+      "note": "GND or DC feed + RF GND; DC-connected to pads 3/4 [DS p2 Pad connections: GND or DC FEED + RF GND (no single connect value)]"
     },
     {
       "num": "3",
@@ -53,7 +58,8 @@
       "aliases": [
         "NOT USED"
       ],
-      "note": "Not used: GND externally"
+      "note": "Not used: GND externally [DS p2 Pad connections: NOT USED (GND externally)]",
+      "connect": "gnd"
     },
     {
       "num": "6",

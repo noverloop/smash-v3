@@ -91,7 +91,7 @@ BUSES: dict[str, list[list[str]]] = {
 # chip ref → nets used as interrupt inputs (EXTI)
 INTERRUPTS: dict[str, list[str]] = {
     "U_MPU": ["MAG_DRDY", "IMU1_INT", "IMU2_INT", "IMU3_INT", "H3LIS_INT1", "AWR_DRDY",
-              "AWR_FAULT", "COMP_OUT", "WBA_HCI_IRQ", "TMP1_ALERT", "PMIC_PWR_OK"],
+              "AWR_FAULT", "COMP_OUT_MPU", "WBA_HCI_IRQ", "TMP1_ALERT", "PMIC_PWR_OK"],
     "U_WBA": ["LR_IRQ", "LR_BUSY", "MAG_WAKE_N", "IR_WAKE"],
 }
 EXTI_PER_LINE = {"U_MPU": 2}          # MP25: EXTI1 + EXTI2 (DS14285 §3.21); others: 1
@@ -127,8 +127,11 @@ def cubemx_signals(xml: Path) -> dict:
 
 
 def _net(p):
+    """Net name, with the crown-protection series-R suffix (NET__MPU / __WBA /
+    __FIN: the MCU side of R_ESD_*) folded back onto the signal it carries."""
     n = p.net
-    return getattr(n, "name", n)
+    n = getattr(n, "name", n)
+    return re.sub(r"__(MPU|WBA|FIN)$", "", n) if isinstance(n, str) else n
 
 
 def _gpio(name: str) -> tuple | None:

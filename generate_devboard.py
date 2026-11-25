@@ -71,6 +71,7 @@ def build_design():
     _AFT_CAP_REFS = [c.ref for c in d.chips if getattr(c, "board_tag", None) == G.AFT_CAP]
     removed = [b.ref for b in list(d.batteries) if remove_component(d, b.ref)]
     locks = build_diag(d)
+    G._protect_external_lines(d)          # same crown ESD arrays + MCU series R as the tower
     from smash.parts.coo import apply_coo
     from smash.parts.orderable import apply_orderable
     apply_orderable(d)                    # (2026-11-22) generic passives → orderable MPNs
@@ -150,7 +151,7 @@ def build_diag(d) -> dict:
                                            add_stm32u535cbu6, add_wurth_61304021121,
                                            add_wurth_691137710002, add_pac1941t_1e_4mx)
     from smash.parts.leds import add_ltst_c190gkt, add_ltst_c190krkt
-    from smash.parts.mosfets import add_buk6d120_60px
+    from smash.parts.mosfets import add_pmpb15xp
     from smash.parts.mechanical import add_pogo_pad
     N = lambda name: G._net(d, name)
     T = dict(board_tag=DIAG)
@@ -178,6 +179,9 @@ def build_diag(d) -> dict:
     ldo = add_ldl112pv33r(d, ref="U_DEV_LDO", **T)
     N("DEV_VBUS").connect(ldo.pin("VIN")); N(V3).connect(ldo.pin("VOUT"))
     next(n for n in d.nets if n.name == V3).voltage_v = 3.3   # (2026-11-21) for the electrical rules
+    for _nm, _v in (("DEV_VBUS", 5.0), (V3, 3.3)):
+        _n = next(n for n in d.nets if n.name == _nm)
+        _n.kind, _n.voltage_v = "power", _v
     N("DEV_VBUS").connect(ldo.pin("EN")); N("GND").connect(ldo.pin("GND"))
     N("GND").connect(ldo.pin("EP"))                                  # thermal pad
     cap_to_gnd(d, "DEV_VBUS", "1uF", ref="C_DEV_LDO_IN", **T)
@@ -221,6 +225,8 @@ def build_diag(d) -> dict:
         "PC14-OSC32_IN": "DEV_LED_ACT", "PC15-OSC32_OUT": "DEV_INA_ALERT_N",
         # seat sense (2026-11-22: moved off PA13/PA14 = the probe's own SWD)
         "PB0": "TWR_SEAT_1", "PB1": "TWR_SEAT_2", "PB2": "TWR_SEAT_3",
+        # why a power path dropped: input protection fault, 5.9 V / 4.37 V cut-offs
+        "PA15": "DEV_INPROT_FAULT", "PB10": "DEV_OVP", "PC13": "DEV_OVP_FLAT",
         "PA13": "DEV_MCU_SWDIO", "PA14": "DEV_MCU_SWCLK",
     }
     for pn, net in pinmap.items():
@@ -270,10 +276,38 @@ def build_diag(d) -> dict:
     # (2026-11-22, user) a real bench input: Würth 2-pole terminal block (was
     # two pogo test pads). Emulates the cells (≈ 3.0-4.0 V) on the metered path.
     tb = add_wurth_691137710002(d, ref="J_DEV_BENCH", **T)
-    N("DEV_BENCH").connect(tb.pin("1")); N("GND").connect(tb.pin("2"))
+    N("DEV_BENCH_IN").connect(tb.pin("1")); N("GND").connect(tb.pin("2"))
+    # INPUT PROTECTION: LTC4365 + two back-to-back 60 V N-FETs (common source)
+    # between the terminal and everything else. Reversed leads (to −40 V) and
+    # anything outside ≈ 2.5-6.5 V disconnect in ~1 µs — the P-FET switches and
+    # the tower behind them never see it. UV/OV divider 806k / 124k / 76.8k:
+    # UV 0.5 V at ≈ 2.5 V, OV 0.5 V at ≈ 6.5 V (the 5.9 V U_DEV_OVP trips first).
+    from smash.parts.protection import add_ltc4365its8
+    from smash.parts.mosfets import add_dmn6075sq_7
+    pc = add_ltc4365its8(d, ref="U_DEV_INPROT", **T)
+    qa = add_dmn6075sq_7(d, ref="Q_DEV_INPROT_A", **T)
+    qb = add_dmn6075sq_7(d, ref="Q_DEV_INPROT_B", **T)
+    N("DEV_BENCH_IN").connect(qa.pin("D")); N("DEV_INPROT_S").connect(qa.pin("S"))
+    N("DEV_INPROT_S").connect(qb.pin("S")); N("DEV_BENCH").connect(qb.pin("D"))
+    N("DEV_INPROT_G").connect(qa.pin("G")); N("DEV_INPROT_G").connect(qb.pin("G"))
+    N("DEV_BENCH_IN").connect(pc.pin("VIN")); N("DEV_BENCH").connect(pc.pin("VOUT"))
+    N("DEV_INPROT_G").connect(pc.pin("GATE")); N("GND").connect(pc.pin("GND"))
+    res_between(d, "DEV_BENCH_IN", "DEV_INPROT_SHDN", "100k", ref="R_DEV_INPROT_SHDN", **T)   # DS: ≥ 100 k if VIN can go negative
+    N("DEV_INPROT_SHDN").connect(pc.pin("SHDN"))
+    res_between(d, "DEV_BENCH_IN", "DEV_INPROT_UV", "806k", ref="R_DEV_INPROT_1", **T)
+    res_between(d, "DEV_INPROT_UV", "DEV_INPROT_OV", "124k", ref="R_DEV_INPROT_2", **T)
+    res_between(d, "DEV_INPROT_OV", "GND", "76.8k", ref="R_DEV_INPROT_3", **T)
+    N("DEV_INPROT_UV").connect(pc.pin("UV")); N("DEV_INPROT_OV").connect(pc.pin("OV"))
+    N("DEV_INPROT_FAULT").connect(pc.pin("FAULT"))
+    res_between(d, V3, "DEV_INPROT_FAULT", "10k", ref="R_DEV_INPROT_FLT", **T)
+    led_f = add_ltst_c190krkt(d, ref="D_DEV_LED_INPROT", **T)          # red: input fault (FAULT sinks)
+    res_between(d, V3, "D_DEV_LED_INPROT_A", "1k", ref="R_DEV_LED_INPROT", **T)
+    N("D_DEV_LED_INPROT_A").connect(led_f.pin("A")); N("DEV_INPROT_FAULT").connect(led_f.pin("K"))
+    cap_to_gnd(d, "DEV_BENCH", "47uF", ref="C_DEV_BENCH", **T)        # local reservoir after the protection
     # one metered feed (bench → 10 mΩ shunt → DEV_FEED), switched to the
     # SOCKET (a real tower) or the FLAT tower (the tiles) — never both
-    res_between(d, "DEV_BENCH", "DEV_FEED", "10m", ref="R_DEV_SH", **T)
+    res_between(d, "DEV_BENCH", "DEV_FEED", "10m", ref="R_DEV_SH", manf="Panasonic", manf_pn="ERJ-2LWFR010X",
+                description="10 mΩ 1 % 0402 current-sense, 0.2 W", **T)
     # (2026-11-22, round 20) INA228 → PAC1941T-1E/4MX (channel 1 on the shunt;
     # ±100 mV FSR = 10 A at 10 mΩ). ADDRSEL → GND. FIRMWARE: pin 1 powers up as
     # the SLOW input (pulled high here → 8 SPS) until set to ALERT1.
@@ -302,7 +336,9 @@ def build_diag(d) -> dict:
     # BAT_RAW) for the flat tower — the two outputs are never on together.
     for tag, out_net, en in (("TWR", "TWR_EXT_VIN", "DEV_TWR_PWR_EN"),
                              ("FLAT", "BAT_RAW", "DEV_FLAT_PWR_EN")):
-        qp = add_buk6d120_60px(d, ref=f"Q_DEV_{tag}_PWR", **T)   # (2026-11-22) DMP6110 → BUK6D120
+        # PMPB15XP: logic-level, fully on at the 3.0 V flat feed; V_DS/V_GS ±12 V →
+        # bench supply ≤ 10 V (5.6 V tower / 3.0-4.0 V flat)
+        qp = add_pmpb15xp(d, ref=f"Q_DEV_{tag}_PWR", **T)
         for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
             N(out_net).connect(qp.pin(dp))
         for sp in ("S_1", "S_2"):
@@ -311,10 +347,55 @@ def build_diag(d) -> dict:
         res_between(d, "DEV_FEED", f"DEV_{tag}_PWR_G", "100k", ref=f"R_DEV_{tag}_PWR_H", **T)
         qn = add_ru1j002yntcl(d, ref=f"Q_DEV_{tag}_PWR_LS", **T)
         src = "GND" if tag == "TWR" else "DEV_FLAT_PWR_SRC"  # flat supply: seat-interlocked
-        N(f"DEV_{tag}_PWR_G").connect(qn.pin("3")); N(src).connect(qn.pin("2"))
-        N(en).connect(qn.pin("1"))
-        res_between(d, en, "GND", "100k", ref=f"R_DEV_{tag}_PWR_PD", **T)
+        N(f"DEV_{tag}_PWR_GD").connect(qn.pin("3")); N(src).connect(qn.pin("2"))
+        # the MCU drives the low-side gate through 1 k so the hardware overrides
+        # (seat lines, overvoltage cut-off) can pull it low whatever firmware does
+        lsg = f"DEV_{tag}_PWR_LSG"
+        N(lsg).connect(qn.pin("1"))
+        # soft start: 4.7 k gate drive + 22 nF gate-drain (Miller) → the P-FET
+        # ramps the output over ≈ 1 ms instead of µs into the tower's bulk caps
+        _gd = f"DEV_{tag}_PWR_GD"
+        res_between(d, _gd, f"DEV_{tag}_PWR_G", "4.7k", ref=f"R_DEV_{tag}_PWR_GS", **T)
+        cap_to_gnd(d, f"DEV_{tag}_PWR_G", "22nF", gnd_net=out_net, ref=f"C_DEV_{tag}_PWR_SS", **T)
+        res_between(d, en, lsg, "1k", ref=f"R_DEV_{tag}_PWR_S", **T)
+        res_between(d, lsg, "GND", "100k", ref=f"R_DEV_{tag}_PWR_PD", **T)
+        if tag == "TWR":
+            # tower power only with ALL three seat teeth touching: any open seat
+            # line (pulled up to 3V3) turns its N-FET on and holds the gate low
+            for k in (1, 2, 3):
+                qs = add_ru1j002yntcl(d, ref=f"Q_DEV_TWR_SEAT{k}", **T)
+                N(lsg).connect(qs.pin("3")); N("GND").connect(qs.pin("2"))
+                N(f"TWR_SEAT_{k}").connect(qs.pin("1"))
     seat_interlock("DEV_FLAT_PWR_SRC", "PWR")              # flat supply off while seated
+    # HARDWARE OVERVOLTAGE CUT-OFF: DEV_FEED above ≈ 5.9 V (374k/100k into the
+    # MAX9117's 1.252 V reference) turns both power paths off, whatever the
+    # firmware does — a mis-set bench supply never reaches the tower's BAT_PROT
+    # converters (6 V abs max) or Q_ISO (±12 V).
+    from smash.parts.protection import add_max9117exk
+    ovp = add_max9117exk(d, ref="U_DEV_OVP", **T)
+    N(V3).connect(ovp.pin("VCC")); N("GND").connect(ovp.pin("VEE"))
+    N("DEV_OVP_IN").connect(ovp.pin("IN+")); N("DEV_OVP").connect(ovp.pin("OUT"))
+    res_between(d, "DEV_FEED", "DEV_OVP_IN", "374k", ref="R_DEV_OVP1", **T)
+    res_between(d, "DEV_OVP_IN", "GND", "100k", ref="R_DEV_OVP2", **T)
+    cap_to_gnd(d, "DEV_OVP_IN", "1nF", ref="C_DEV_OVP_IN", **T)
+    cap_to_gnd(d, V3, "100nF", ref="C_DEV_OVP_VCC", **T)
+    # the flat tower has no diode drop: its own cut-off at ≈ 4.37 V (249k/100k)
+    ovp2 = add_max9117exk(d, ref="U_DEV_OVP_FLAT", **T)
+    N(V3).connect(ovp2.pin("VCC")); N("GND").connect(ovp2.pin("VEE"))
+    N("DEV_OVP_FLAT_IN").connect(ovp2.pin("IN+")); N("DEV_OVP_FLAT").connect(ovp2.pin("OUT"))
+    res_between(d, "DEV_FEED", "DEV_OVP_FLAT_IN", "249k", ref="R_DEV_OVP_FLAT1", **T)
+    res_between(d, "DEV_OVP_FLAT_IN", "GND", "100k", ref="R_DEV_OVP_FLAT2", **T)
+    cap_to_gnd(d, "DEV_OVP_FLAT_IN", "1nF", ref="C_DEV_OVP_FLAT_IN", **T)
+    cap_to_gnd(d, V3, "100nF", ref="C_DEV_OVP_FLAT_VCC", **T)
+    for sig in ("DEV_OVP", "DEV_OVP_FLAT"):                              # red: that cut-off tripped
+        led_o = add_ltst_c190krkt(d, ref=f"D_DEV_LED_{sig[4:]}", **T)
+        res_between(d, sig, f"D_DEV_LED_{sig[4:]}_A", "1k", ref=f"R_DEV_LED_{sig[4:]}", **T)
+        N(f"D_DEV_LED_{sig[4:]}_A").connect(led_o.pin("A")); N("GND").connect(led_o.pin("K"))
+    for tag, sig in (("TWR", "DEV_OVP"), ("FLAT", "DEV_OVP_FLAT")):
+        qo = add_ru1j002yntcl(d, ref=f"Q_DEV_OVP_{tag}", **T)
+        N(f"DEV_{tag}_PWR_LSG").connect(qo.pin("3")); N("GND").connect(qo.pin("2"))
+        N(sig).connect(qo.pin("1"))
+    # the 5.9 V comparator also drives the flat path (anything above it is above 4.37 V too)
 
     # ── bus switches → tower debug lines (enabled only once the tower's VDD is seen) ──
     chans = [("MP25_SWDIO", "SWDIO"), ("MP25_SWCLK", "SWCLK"), ("MP25_NRST", "NRST"),
@@ -369,7 +450,7 @@ def build_diag(d) -> dict:
 
     # ── aft fixture: one spring pin per tower aft contact (same contact map) ──
     fx, fy = FIXTURE_CENTRE
-    to_twr = {"3V3_AON": "TWR_VDD", "BAT_RAW": "TWR_BAT_RAW", "EXT_VIN": "TWR_EXT_VIN",
+    to_twr = {"VDD_SENSE": "TWR_VDD", "EXT_VIN": "TWR_EXT_VIN",
               "EXT_CAN_P": "TWR_CAN_P",
               "EXT_CAN_N": "TWR_CAN_N", "FLEX_GND": "GND"}
     seats = seat_teeth()
@@ -392,7 +473,8 @@ def build_diag(d) -> dict:
     # probe does not already use, once for a real tower in the fixture
     # (TWR_*) and once for the flat tower on this board (its own nets).
     used = {"CONS_RX", "CONS_TX", "SWO", "NRST", "SWCLK", "SWDIO", "WBA_NRST", "WBA_SWCLK",
-            "WBA_SWDIO", "FIN_NRST", "FIN_SWCLK", "FIN_SWDIO", "CAN_P", "CAN_N", "VDD", "BAT_RAW"}
+            "WBA_SWDIO", "FIN_NRST", "FIN_SWCLK", "FIN_SWDIO", "CAN_P", "CAN_N", "VDD",
+            "EXT_VIN1"}          # supply pin: never on a signal header (it sat next to BOOT0)
     brk = sorted(((label, net) for tooth, _a, net, label, role in aft_contacts()
                   if role == "signal" and label not in used and tooth not in seats),
                  key=lambda x: x[0])
@@ -423,6 +505,14 @@ def build_diag(d) -> dict:
         led = add_ltst_c190gkt(d, ref=f"D_DEV_SEAT{k}", **T)
         res_between(d, V3, f"D_DEV_SEAT{k}_A", "1k", ref=f"R_DEV_SEAT{k}_LED", **T)
         N(f"D_DEV_SEAT{k}_A").connect(led.pin("A")); N(f"TWR_SEAT_{k}").connect(led.pin("K"))
+    # the seat spring pins are exposed: ESD array on the three seat lines (they
+    # drive unprotected RU1J gates and the probe MCU); 4th channel grounded
+    from smash.parts.protection import add_pesd5v0l4uf
+    esd_seat = add_pesd5v0l4uf(d, ref="U_DEV_SEAT_ESD", **T)
+    N("GND").connect(esd_seat.pin("GND")); N("GND").connect(esd_seat.pin("GND_2"))
+    for k in (1, 2, 3):
+        N(f"TWR_SEAT_{k}").connect(esd_seat.pin(f"IO{k}"))
+    N("GND").connect(esd_seat.pin("IO4"))
 
     # ── buttons ────────────────────────────────────────────────────────────
     btns = (("S_DEV_MP25_RST", "NRST", "GND"), ("S_DEV_WBA_RST", "WBA_NRST", "GND"),
@@ -452,12 +542,57 @@ def build_diag(d) -> dict:
 
     # ── debug castellations (board-local debug nets): a test point at the end
     # of each escape stub, just outside the tile (positions: tile_layout) ──
-    from smash.parts.castellations import DEBUG_CASTELLATIONS
-    for _b, nets in DEBUG_CASTELLATIONS.items():
-        for net in nets:
-            if any(n.name == net for n in d.nets):
-                tp = add_pogo_pad(d, ref=f"TP_DEV_DBG_{net}", manf_pn=None, **T)
-                N(net).connect(tp.pin("1"))
+    from smash.parts.castellations import DEBUG_CASTELLATIONS, RAIL_TEST_POINTS
+    for net in [n for nets in DEBUG_CASTELLATIONS.values() for n in nets] + list(RAIL_TEST_POINTS):
+        if any(n.name == net for n in d.nets) and not any(c.ref == f"TP_DEV_DBG_{net}" for c in d.chips):
+            tp = add_pogo_pad(d, ref=f"TP_DEV_DBG_{net}", manf_pn=None, **T)
+            N(net).connect(tp.pin("1"))
+
+    # ── rail monitor: 3 × ADS7138 (8-ch 12-bit, I²C1 with the PAC1941) log every
+    # reachable rail + the power handshake lines at each bring-up stage. AVDD =
+    # DEV_3V3 is the reference (FSR 3.3 V). Each input: series / divider into
+    # 10 nF at the pin (τ ≈ 0.5–1 ms). Rails ≤ 3.3 V: 100 k series (no DC load);
+    # above: dividers (main-state rails only, no standby load). ──
+    from smash.parts.devboard import add_ads7138irter
+    MON = (  # (addr R to GND, [(net, top, bottom or None)] × 8)
+        ("11k", [("COMP_3V3", "100k", None), ("COMP_1V8_AON", "100k", None),
+                 ("COMP_0V82", "100k", None), ("COMP_0V9", "100k", None),
+                 ("COMP_1V8", "100k", None), ("COMP_1V35", "100k", None),
+                 ("COMP_2V8", "100k", None), ("COMP_5V", "100k", "100k")]),
+        ("33k", [("COMP_5V_RAW", "100k", "100k"), ("REG_IN_MAIN", "100k", "100k"),
+                 ("3V3", "100k", None), ("3V3_AON", "100k", None),
+                 ("TMR_VDD", "100k", None), ("MAG_1V8", "100k", None),
+                 ("ACTIVATE_HV", "1M", "82k"), ("AWR_1V2", "100k", None)]),
+        ("100k", [("AWR_1V3", "100k", None), ("AWR_1V8", "100k", None),
+                  ("PMIC_PWR_OK", "100k", None), ("PWR_HOLD", "100k", None),
+                  ("RADAR_EN", "100k", None),
+                  ("BAT_PROT", "100k", "100k"),     # vs the bench / BAT_RAW: Q_ISO drop (body diode = 0.6 V)
+                  ("NRST", "100k", None),           # MP25 / PMIC reset: logs every restart (rule #32)
+                  ("XV_5V", "100k", "100k")]),      # PA switch + its soft start
+    )
+    for k, (addr, chans) in enumerate(MON, start=1):
+        adc = add_ads7138irter(d, ref=f"U_DEV_MON{k}", **T)
+        N(V3).connect(adc.pin("AVDD")); N(V3).connect(adc.pin("DVDD"))
+        N("GND").connect(adc.pin("GND")); N("GND").connect(adc.pin("EP"))
+        N("DEV_I2C_SCL").connect(adc.pin("SCL")); N("DEV_I2C_SDA").connect(adc.pin("SDA"))
+        cap_to_gnd(d, V3, "1uF", ref=f"C_DEV_MON{k}_AVDD", **T)
+        cap_to_gnd(d, V3, "1uF", ref=f"C_DEV_MON{k}_DVDD", **T)
+        cap_to_gnd(d, f"DEV_MON{k}_DECAP", "1uF", ref=f"C_DEV_MON{k}_DECAP", **T)
+        N(f"DEV_MON{k}_DECAP").connect(adc.pin("DECAP"))
+        res_between(d, f"DEV_MON{k}_ADDR", "GND", addr, ref=f"R_DEV_MON{k}_ADDR", **T)
+        N(f"DEV_MON{k}_ADDR").connect(adc.pin("ADDR"))          # 0x11 / 0x12 / 0x13 (DS Table 2)
+        for ch, (net, top, bot) in enumerate(chans):
+            pin = adc.pin(f"AIN{ch}")
+            if net is None or not any(n.name == net for n in d.nets):
+                N("GND").connect(pin)                            # spare input
+                continue
+            ain = f"DEV_MON{k}_AIN{ch}"
+            res_between(d, net, ain, top, ref=f"R_DEV_MON{k}_{ch}", **T)
+            if bot:
+                res_between(d, ain, "GND", bot, ref=f"R_DEV_MON{k}_{ch}_B", **T)
+            cap_to_gnd(d, ain, "10nF", ref=f"C_DEV_MON{k}_{ch}", **T)
+            N(ain).connect(pin)
+        # ALERT (pin 12) unused: open (DS: open-drain output)
 
     # ── logic-analyzer header: the inter-tile buses, tapped off the channel ──
     # (outside every tile: the tap is join copper, scrap after depaneling).
@@ -582,7 +717,7 @@ _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
               "companion_compute", "radar_module", "qpd_module", "camera_module")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
-PROG_W_MM = 84.0               # programming-board strip (left edge = board edge: USB-C): breakout + logic-analyzer headers right of the USB-C, clear of the strip fiducial
+PROG_W_MM = 118.0              # programming-board strip (left edge = board edge: USB-C): breakout + logic-analyzer headers right of the USB-C, clear of the strip fiducial
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
 # (2026-11-21, user) 4 tabs, none where the bus crosses: the bus passes a
 # fully cut stretch of the slot (|y| ≤ channel/2 + margin stays open)
@@ -600,8 +735,68 @@ MOUSE_BITE_D_MM, MOUSE_BITES = 0.5, 3
 
 
 _LANE_CONTRACT: dict = {}
-DEBUG_TP_R_MM = (20.8, 23.0)   # debug test points (Ø2 pogo pads), alternating radius
-_DEBUG_TP_R: dict = {}         # net → its test point's radius (the stub ends there)
+_DEBUG_TP_R: dict = {}         # (board, castellation pad) → stub way points [(radius, Δangle°)] past the pad
+_FAN_PTS: list = []            # panel (x, y) of every fanned-out test point / shunt part
+_FAN_SEGS: list = []           # panel fan-out stub segments
+
+
+# Per-tile current shunts (bring-up): on the dev panel each consumer tile's copy
+# of a main rail is its own net <RAIL>__<TILE>, joined to the channel bus
+# through a sense resistor (0.1 Ω, or SHUNT_OVERRIDES) at the end of that tile's castellation stub,
+# with a test point either side. Panel only: the tower boards keep the rail.
+SHUNT_RAILS = {"BAT_PROT": "power_board", "3V3": "power_board",
+               "COMP_5V": "power_board", "COMP_3V3": "power_board"}
+SHUNT_PN = ("Panasonic", "ERJ-2BSFR10X")          # 0.1 Ω 1 % 0402, 1/6 W
+# Shunts whose tile peak would overload 0.1 Ω: the radar's BAT_PROT carries its
+# bucks in DESCENT + chirp, ≈1.1–1.3 A at a 2.5–3.0 V pack (sim/battery/loads.py)
+# → 0.1 Ω = 175 mW / 132 mV; 10 mΩ = 17 mW / 13 mV.
+SHUNT_OVERRIDES = {("BAT_PROT", "radar_module"):
+                   ("10m", "Panasonic", "ERJ-2LWFR010X", "0.01 Ω 1 % 0402")}
+_SHUNTS: dict = {}                                 # (tile, rail) → split net name
+
+
+def _tile_tag(b: str) -> str:
+    return {"aft_end_board": "AFT", "activation_interface": "ACT", "wakeup_board": "WAKE",
+            "power_board": "PWR", "companion_compute": "COMP", "radar_module": "RADAR",
+            "qpd_module": "QPD", "camera_module": "CAM"}[b]
+
+
+def _add_tile_shunts(d) -> None:
+    from smash.parts.mechanical import add_pogo_pad
+    from smash.state.net import Net
+    from smash.netlist import res_between
+    T = dict(board_tag=DIAG)
+    for rail, src in SHUNT_RAILS.items():
+        old = d.net_by_name(rail)
+        if old is None:
+            continue
+        for b in TILE_ORDER:
+            cast = next((c for c in d.chips if c.ref == f"J_CAST_{b}"), None)
+            if b == src or cast is None or not any(p.name.split("@")[0] == rail for p in cast.pins):
+                continue
+            new = f"{rail}__{_tile_tag(b)}"
+            refs = {c.ref for c in d.chips if c.board_tag == b} | {cast.ref}
+            moved = [k for k in old.pins if k[0] in refs]
+            if not moved:
+                continue
+            old.pins[:] = [k for k in old.pins if k[0] not in refs]
+            d.nets.append(Net(name=new, kind=old.kind, voltage_v=old.voltage_v))
+            nn = d.net_by_name(new)
+            for ref, num in moved:
+                nn.pins.append((ref, num))
+                for p in d.chip_by_ref(ref).pins:
+                    if p.num == num:
+                        p.net = new
+            tag = new.replace("__", "_")
+            val, manf, mpn, desc = SHUNT_OVERRIDES.get(
+                (rail, b), ("100m", *SHUNT_PN, "0.1 Ω 1 % 0402"))
+            r = res_between(d, new, rail, val, ref=f"R_DEV_SH_{tag}",
+                            manf=manf, manf_pn=mpn,
+                            description=f"{desc} current-sense (dev panel, per tile)", **T)
+            for side, net in (("T", new), ("B", rail)):
+                tp = add_pogo_pad(d, ref=f"TP_DEV_SH_{tag}_{side}", manf_pn=None, **T)
+                d.connect(net, tp.pin("1"))
+            _SHUNTS[(b, rail)] = new
 
 
 def tower_placements(d) -> dict:
@@ -625,6 +820,22 @@ def tower_placements(d) -> dict:
     global _LANE_CONTRACT
     _LANE_CONTRACT, *_ = place_castellations(d, panel, boards, connect=lambda net, pin: G._net(d, net).connect(pin),
                         cone_exits=G._CONE_EXITS)
+    # a dev test point needs its castellation stub on the named board: drop the
+    # ones whose net got no pad there (no route out of a tile otherwise)
+    from smash.parts.castellations import RAIL_TEST_POINTS
+    padded = {(b, n) for b, its in (_LANE_CONTRACT.get("debug") or {}).items() for _a, n in its}
+    for c in list(d.chips):
+        if not c.ref.startswith("TP_DEV_DBG_"):
+            continue
+        net = c.ref.removeprefix("TP_DEV_DBG_")
+        b = RAIL_TEST_POINTS.get(net)
+        cast = next((x for x in d.chips if x.ref == f"J_CAST_{b}"), None) if b else None
+        ok = (any(p.name.split("@")[0] == net for p in cast.pins) if cast
+              else any(n == net for _b, n in padded))
+        if not ok:
+            print(f"  WARN: {c.ref}: no castellation pad for {net} — test point dropped")
+            remove_component(d, c.ref)
+    _add_tile_shunts(d)
     import math
     from smash.parts.castellations import board_fold_transforms, _local_xy
     from smash.export import nose_interface as NI
@@ -749,29 +960,126 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                           # = mirror_x∘R(−φ), so the stored angle turns the other way
                           "rotation_deg": round((r + (phi if face == "top" else -phi)) % 360, 3),
                           "face": face}
-        # debug castellations: test point radially outside the pad, staggered
+        # debug castellations, rail test points and per-tile shunts: each stub
+        # runs radially out past the cut line, then fans out to a free spot
+        # (clear of the neighbours' items and stubs, the other tiles, the
+        # fiducials and the bus channel); a shunt is TP | resistor | TP in line
         cast = next((c for c in d.chips if c.ref == f"J_CAST_{name}"), None)
         if cast is not None:
-            dbg = []
+            from smash.parts.castellations import RAIL_TEST_POINTS
+            items, seen_net = [], set()
             for pin, pad in zip(cast.pins, cast.footprint.pads):
                 net = pin.name.split("@")[0]
-                if any(c.ref == f"TP_DEV_DBG_{net}" for c in d.chips):
-                    dbg.append((math.atan2(pad.position_mm[1], pad.position_mm[0]), net, pad))
+                if net in seen_net:
+                    continue
+                if (name, net) in _SHUNTS:
+                    tag = _SHUNTS[(name, net)].replace("__", "_")
+                    chain = [(f"TP_DEV_SH_{tag}_T", 0.0), (f"R_DEV_SH_{tag}", 2.6), (f"TP_DEV_SH_{tag}_B", 5.2)]
+                elif (net not in RAIL_TEST_POINTS          # lane nets: their TP sits on the strip
+                      and any(c.ref == f"TP_DEV_DBG_{net}" for c in d.chips)):
+                    chain = [(f"TP_DEV_DBG_{net}", 0.0)]
+                else:
+                    continue
+                seen_net.add(net)
+                px, py = pad.position_mm
+                a = math.degrees(math.atan2(*reversed(rot(px, py))))
+                items.append((a, pad, chain))
             fc = TILE_BOX_MM / 2 - 1.5                    # the tile's local fiducials (box corners)
             fids = [(cx + sx * fc, cy + sy * fc) for sx in (-1, 1) for sy in (-1, 1)]
-            placed_tp = []                                # (x, y) of this tile's test points
-            for j, (_a, net, pad) in enumerate(sorted(dbg)):
-                px, py = pad.position_mm
-                for rr in (DEBUG_TP_R_MM[j % 2], DEBUG_TP_R_MM[(j + 1) % 2], 25.2, 27.4):
-                    k_ = rr / math.hypot(px, py)
-                    X, Y = rot(px * k_, py * k_)
-                    if (all(math.hypot(cx + X - fx_, cy + Y - fy_) > 3.0 for fx_, fy_ in fids)
-                            and all(math.hypot(cx + X - qx, cy + Y - qy) > 2.6 for qx, qy in placed_tp)):
+            others = [(xs + j * P / 2, row_y if j % 2 == 0 else -row_y)
+                      for j in range(n) if j != k]
+            r0 = LDS_STUB_R_MM + 0.4                      # the fan-out starts here
+            pol = lambda rr, ang: (cx + rr * math.cos(math.radians(ang)),
+                                   cy + rr * math.sin(math.radians(ang)))
+
+            def seg_d(p, a_, b_):
+                (x0, y0), (x1, y1) = a_, b_
+                L2 = (x1 - x0) ** 2 + (y1 - y0) ** 2 or 1e-9
+                t = max(0.0, min(1.0, ((p[0] - x0) * (x1 - x0) + (p[1] - y0) * (y1 - y0)) / L2))
+                return math.hypot(p[0] - x0 - t * (x1 - x0), p[1] - y0 - t * (y1 - y0))
+
+            def seg_seg(a_, b_, c_, d_):
+                cr = lambda o, p_, q_: (p_[0] - o[0]) * (q_[1] - o[1]) - (p_[1] - o[1]) * (q_[0] - o[0])
+                if (cr(a_, b_, c_) * cr(a_, b_, d_) < 0) and (cr(c_, d_, a_) * cr(c_, d_, b_) < 0):
+                    return 0.0                            # proper crossing
+                return min(seg_d(a_, c_, d_), seg_d(b_, c_, d_), seg_d(c_, a_, b_), seg_d(d_, a_, b_))
+            item_pads = {str(it[1].num) for it in items}
+            ends = []                                     # every other stub's end on this tile (+ its join via)
+            for pad in cast.footprint.pads:
+                if str(pad.num) not in item_pads:
+                    qx, qy = rot(*pad.position_mm)
+                    rq = math.hypot(qx, qy) or 1.0
+                    ends.append((cx + qx / rq * LDS_STUB_R_MM, cy + qy / rq * LDS_STUB_R_MM))
+            starts = [(it[0], pol(r0, it[0])) for it in items]     # every item's fan-out start
+            # (+ where a shunt would sit in line if it cannot fan out)
+            starts += [(it[0], pol(rr, it[0])) for it in items if len(it[2]) > 1
+                       for rr in (LDS_STUB_R_MM + 0.1, LDS_STUB_R_MM + 0.6, LDS_STUB_R_MM + 1.1)]
+            # nest the arcs: items nearest the channel's flanks go first (inner
+            # radius, short swing); those facing the channel straight on go last,
+            # over them on a larger radius
+            chan = -90.0 if cy > 0 else 90.0
+            adiff = lambda u, v: abs(((u - v + 180.0) % 360.0) - 180.0)
+            for a, pad, chain in sorted(items, key=lambda it: -adiff(it[0], chan)):
+                s0 = pol(r0, a)
+                best = None
+                cands = []
+                for Rm in (21.0, 22.6, 24.2, 25.8, 27.4, 29.0, 30.6):
+                    for dd in range(0, 151, 3):
+                        for sg in ((1, -1) if dd else (1,)):
+                            cands.append((Rm, a + sg * dd))
+                cands.sort(key=lambda t: (abs(t[1] - a) * t[0] * math.pi / 180 + 0.5 * (t[0] - 21.0)))
+                for Rm, b in cands:
+                    s1 = pol(Rm, a)
+                    nseg = max(1, math.ceil(abs(b - a) / 8.0))     # arc at Rm in ≤ 8° chords
+                    arc = [a + (b - a) * j / nseg for j in range(1, nseg + 1)]
+                    pts = [pol(Rm + off, b) for _r, off in chain]
+                    wp = [s0, s1] + [pol(Rm, t) for t in arc]
+                    path = list(zip(wp, wp[1:])) + ([(pts[0], pts[-1])] if len(chain) > 1 else [])
+                    obst = [q for a_, q in starts if a_ != a] + ends
+                    ok = (all(math.hypot(x - fx_, y - fy_) > 3.0 for x, y in pts for fx_, fy_ in fids)
+                          and all(abs(y) > CHANNEL_MM / 2 + 1.5 and abs(y) < H / 2 - 2.0
+                                  and abs(x) < W / 2 - 2.0 for x, y in pts)
+                          and all(seg_d(o, *sg_) > 21.0 for o in others for sg_ in path[1:])
+                          and all(abs(q[1]) > CHANNEL_MM / 2 + 0.8 for sg_ in path[1:] for q in sg_)
+                          and all(seg_d(q, *sg_) > 1.5 for q in _FAN_PTS for sg_ in path)
+                          and all(math.hypot(x - q[0], y - q[1]) > 2.6 for x, y in pts for q in _FAN_PTS)
+                          and all(seg_seg(*sg_, *o) > 0.45 for sg_ in path for o in _FAN_SEGS)
+                          and all(seg_d(pt, *o) > 1.5 for pt in pts for o in _FAN_SEGS)
+                          and all(seg_d(q, *sg_) > 0.6 for q in obst for sg_ in path)
+                          and all(math.hypot(x - q[0], y - q[1]) > 1.6 for x, y in pts for q in obst))
+                    if ok:
+                        best = (Rm, b, pts, path)
                         break
-                placed_tp.append((cx + X, cy + Y))
-                locks[f"TP_DEV_DBG_{net}"] = {"position_mm": [round(cx + X, 4), round(cy + Y, 4)],
-                                               "rotation_deg": 0, "face": "top"}
-                _DEBUG_TP_R[net] = rr
+                if best is None and len(chain) > 1:
+                    # a shunt facing the channel: the 0402 alone, in line at the
+                    # stub end (probe across its pads); its test points go
+                    rc = LDS_STUB_R_MM + 0.6
+                    x, y = pol(rc, a)
+                    locks[chain[1][0]] = {"position_mm": [round(x, 4), round(y, 4)],
+                                          "rotation_deg": round(a % 360, 3), "face": "top"}
+                    for ref in (chain[0][0], chain[2][0]):
+                        remove_component(d, ref)
+                    _FAN_PTS.append((x, y))
+                    _DEBUG_TP_R[(name, str(pad.num))] = [(rc - 0.48, 0.0)]
+                    print(f"  note: {chain[1][0]} in line at the stub end (no room for its test points)")
+                    continue
+                if best is None:
+                    print(f"  WARN: no free spot outside {name} for {chain[0][0]} — dropped")
+                    remove_component(d, chain[0][0])
+                    continue
+                Rm, b, pts, path = best
+                nseg = max(1, math.ceil(abs(b - a) / 8.0))
+                arc = [(b - a) * j / nseg for j in range(1, nseg + 1)]
+                for (ref, _off), (x, y) in zip(chain, pts):
+                    locks[ref] = {"position_mm": [round(x, 4), round(y, 4)],
+                                  "rotation_deg": round(b % 360, 3) if ref.startswith("R_") else 0,
+                                  "face": "top"}
+                    _FAN_PTS.append((x, y))
+                _FAN_SEGS.extend(path)
+                # the stub's way points (radius, panel angle offset from the pad)
+                way = [(Rm, 0.0)] + [(Rm, t) for t in arc] + (
+                    [(Rm + chain[1][1] - 0.5, b - a)] if len(chain) > 1 else [])
+                _DEBUG_TP_R[(name, str(pad.num))] = [(r0, 0.0)] + way
         if m:
             m["holes"] = [(rot(*pos), hd, pl, tg) for pos, hd, pl, tg in m["holes"]]
             m["silk"] = [(ly, [rot(*p) for p in pts], lb) for ly, pts, lb in m.get("silk", [])]
@@ -1038,12 +1346,19 @@ def add_lds_stubs(pcb) -> int:
             if not 16.0 < r < 18.0:
                 continue
             ux, uy = (x - fx) / r, (y - fy) / r
-            rs = _DEBUG_TP_R.get(net, LDS_STUB_R_MM)       # debug pads: on to the test point
-            ex, ey = fx + ux * rs, fy + uy * rs
-            u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/lds/{m[1]}/{pm[1]}")
-            segs.append(f'\t(segment\n\t\t(start {x:.4f} {y:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
-                        f'\t\t(width {LDS_STUB_W_MM})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
-                        f'\t\t(uuid "{u}")\n\t)')
+            board = re.sub(r"\d+$", "", m[1].removeprefix("J_CAST_"))
+            # debug / rail / shunt pads: on to their fanned-out part (way points)
+            way = _DEBUG_TP_R.get((board, pm[1])) or [(LDS_STUB_R_MM, 0.0)]
+            pts = [(x, y)]
+            for rs, dd in way:                                  # Δ = visual CCW (KiCad y down)
+                cd, sd = math.cos(math.radians(dd)), math.sin(math.radians(dd))
+                vx, vy = ux * cd + uy * sd, -ux * sd + uy * cd
+                pts.append((fx + vx * rs, fy + vy * rs))
+            for j, ((sx_, sy_), (ex, ey)) in enumerate(zip(pts, pts[1:])):
+                u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/lds/{m[1]}/{pm[1]}" + (f"/{j}" if j else ""))
+                segs.append(f'\t(segment\n\t\t(start {sx_:.4f} {sy_:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
+                            f'\t\t(width {LDS_STUB_W_MM})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
+                            f'\t\t(uuid "{u}")\n\t)')
     end = txt.rstrip().rfind(")")
     pcb.write_text(txt[:end] + "\n".join(segs) + "\n" + txt[end:])
     return len(segs)
@@ -1249,7 +1564,20 @@ def write_panel_variant(pcb, lay) -> dict:
         "- J_DEV_HF_S1 / J_DEV_HF_S4 (u.FL) sit on the slot side of the feed matches: into 50 Ω, "
         "conducted S1 levels read ≈ 3.3 dB low at 2.44 GHz, S4 ≈ 0.7 dB at 4.7 GHz.\\n"
         "- MP25 BOOT0: S_DEV_MP25_BOOT or probe PB13, through U_DEV_BUSSW3 / "
-        "U_DEV_FLATSW3 (enabled with the other debug lines).\\n")
+        "U_DEV_FLATSW3 (enabled with the other debug lines).\\n"
+        "- Bring-up test points (BRING_UP.md). Rails and control lines that have a sleeve "
+        "lane: TP_DEV_DBG_<net> on the programmer strip, reached over the channel bus. "
+        "Board-local debug nets: TP_DEV_DBG_<net> at the end of their castellation stub, "
+        "outside the tile. TP_DEV_DBG_ACTIVATE_HV carries 33 V.\\n"
+        "- Per-tile current shunts: on the panel, each consumer tile's copy of BAT_PROT, "
+        "3V3, COMP_5V and COMP_3V3 is its own net <RAIL>__<TILE>, joined to the channel "
+        "bus through R_DEV_SH_<RAIL>_<TILE> (0.1 Ω 0402; 10 mΩ on R_DEV_SH_BAT_PROT_RADAR, which carries up to ≈1.3 A) at the end of that tile's stub; "
+        "TP_DEV_SH_..._T (tile side) / _B (bus side) either side where there is room, "
+        "otherwise probe across the resistor. The bus via joins at the resistor's outer "
+        "pad. Lift a shunt to isolate a tile. The tower boards keep the plain rail name.\\n"
+        "- Rail monitor U_DEV_MON1-3 (ADS7138, I²C1 0x11 / 0x12 / 0x13): series 100 k "
+        "(dividers above 3.3 V) into 10 nF at each input; the inputs are clamped to "
+        "DEV_3V3, so keep the strip powered while the tower is.\\n")
     return {"n_slots": len(polys), "n_tabs": ntab, "n_bites": len(bites), "fab": fab}
 
 
@@ -1293,6 +1621,7 @@ def main() -> int:
     lay = tile_layout(d, section, set(locks))
     removed += drop_aft_cap(d)
     section.update({c.ref: c.board_tag for c in d.chips if c.ref.startswith("J_CAST_")})
+    section.update({c.ref: DIAG for c in d.chips if c.ref.startswith(("R_DEV_SH_", "TP_DEV_SH_"))})
     dx, dy = lay["fixture"][0] - FIXTURE_CENTRE[0], lay["fixture"][1] - FIXTURE_CENTRE[1]
     for e in locks.values():                              # fixture pins move with the fixture
         e["position_mm"] = [round(e["position_mm"][0] + dx, 4), round(e["position_mm"][1] + dy, 4)]

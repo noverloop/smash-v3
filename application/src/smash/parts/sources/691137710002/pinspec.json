@@ -5,8 +5,13 @@
     "datasheet_section": "p1 dimensions + recommended hole pattern",
     "package": "2-pole terminal block 5.00 mm, pins 0.7x1.0, holes Ø1.3",
     "verified_from_pdf": "application/src/smash/parts/sources/691137710002/691137710002.pdf",
-    "notes": "Recommended hole Ø1.3 (pin diagonal 1.22 mm).",
-    "verified_by": "library check 2026-11-24"
+    "notes": "Recommended hole Ø1.3 (pin diagonal 1.22 mm). [height_max_mm: DS p1 side view body height 11.5 ±0.1 above seating (pins 3.6 below)] [temp] DS WE spec 'Properties' table: Operating Temperature -30 up to +110 °C",
+    "verified_by": "library check 2026-11-24",
+    "height_max_mm": 11.6,
+    "operating_temp_c": [
+      -30,
+      110
+    ]
   },
   "pins": [
     {

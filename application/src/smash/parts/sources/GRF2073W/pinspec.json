@@ -6,7 +6,13 @@
     "package": "DFN-8 2.0x2.0x0.75 mm, EP 0.60x1.20",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/GRF2073W/GRF2073W.pdf",
-    "notes": "EP is 'PKG BASE' in the DS; footprint number 9."
+    "notes": "EP is 'PKG BASE' in the DS; footprint number 9. [height] 0.8 mm max: DS p23 package dimensions side view: 0.750 ±0.050. [temp] DS Recommended Operating Conditions: Operating Temperature TPKG BASE −40…105 °C (package base)",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      105
+    ],
+    "operating_temp_basis": "case"
   },
   "pins": [
     {
@@ -25,25 +31,29 @@
       "num": "3",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; connect to GND (recommended)"
+      "note": "no internal connection; connect to GND (recommended); [connect] DS p3 Pin Assignments: GND/NC, no internal connection, GND recommended",
+      "connect": "open_or_gnd"
     },
     {
       "num": "4",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; connect to GND (recommended)"
+      "note": "no internal connection; connect to GND (recommended); [connect] DS p3 Pin Assignments: GND/NC, no internal connection, GND recommended",
+      "connect": "open_or_gnd"
     },
     {
       "num": "5",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; connect to GND (recommended)"
+      "note": "no internal connection; connect to GND (recommended); [connect] DS p3 Pin Assignments: GND/NC, no internal connection, GND recommended",
+      "connect": "open_or_gnd"
     },
     {
       "num": "6",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; connect to GND (recommended)"
+      "note": "no internal connection; connect to GND (recommended); [connect] DS p3 Pin Assignments: GND/NC, no internal connection, GND recommended",
+      "connect": "open_or_gnd"
     },
     {
       "num": "7",
@@ -62,7 +72,8 @@
       "num": "8",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; connect to GND (recommended)"
+      "note": "no internal connection; connect to GND (recommended); [connect] DS p3 Pin Assignments: GND/NC, no internal connection, GND recommended",
+      "connect": "open_or_gnd"
     },
     {
       "num": "9",
@@ -72,7 +83,8 @@
         "EP",
         "PKG BASE"
       ],
-      "note": "DC/RF ground + heat sink; multiple 8 mil vias"
+      "note": "DC/RF ground + heat sink; multiple 8 mil vias; [connect] DS p3 Pin Assignments: PKG BASE = GND (DC/RF ground, heat sink)",
+      "connect": "gnd"
     }
   ]
 }

@@ -6,7 +6,12 @@
     "package": "8-lead DFN 2x3x0.9 mm (MC), 0.5 mm pitch, EP = pin 9",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/MCP1640CT-I_MC/MCP1640-family_DS20002234E.pdf",
-    "notes": "C = PWM/PFM, input-to-output bypass in shutdown. -I = -40..+85 C."
+    "notes": "C = PWM/PFM, input-to-output bypass in shutdown. -I = -40..+85 C. [height_max_mm: DS20002234E p25 C04-123C Overall Height A max 1.00] [temp] DS 1.0 Absolute Maximum Ratings: ambient temp with power applied −40…+85 °C (TJ −40…+125 °C)",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -19,19 +24,30 @@
       "num": "2",
       "name": "SGND",
       "type": "ground",
-      "note": "Connect externally to PGND"
+      "note": "Connect externally to PGND [connect rule: DS20002234E §3.2/§3.3: SGND and PGND connected externally (ground)]",
+      "connect": "gnd"
     },
     {
       "num": "3",
       "name": "PGND",
       "type": "ground",
-      "note": "Connect externally to SGND"
+      "note": "Connect externally to SGND [connect rule: DS20002234E §3.2/§3.3: SGND and PGND connected externally (ground)]",
+      "connect": "gnd"
     },
     {
       "num": "4",
       "name": "EN",
       "type": "input",
-      "note": "High >90 % VIN, low <20 % VIN"
+      "note": "High >90 % VIN, low <20 % VIN [io_domain/vih/vil: DS Table 1-1 EN VIH ≥90 % of VIN, VIL ≤20 % of VIN; abs max EN ≤ max(VOUT,VIN), 6.5 V to GND]",
+      "io_domain": "8",
+      "vih": [
+        0.9,
+        "frac"
+      ],
+      "vil": [
+        0.2,
+        "frac"
+      ]
     },
     {
       "num": "5",
@@ -47,13 +63,15 @@
         2.0,
         5.5
       ],
-      "note": "Connect externally to VOUTS"
+      "note": "Connect externally to VOUTS [connect rule: DS20002234E §3.6/§3.7: in 2x3 DFN, VOUTP and VOUTS are connected externally]",
+      "connect": "same_as:7"
     },
     {
       "num": "7",
       "name": "VOUTS",
       "type": "power",
-      "note": "Output sense; connect externally to VOUTP"
+      "note": "Output sense; connect externally to VOUTP [connect rule: DS20002234E §3.6/§3.7: in 2x3 DFN, VOUTS and VOUTP are connected externally]",
+      "connect": "same_as:6"
     },
     {
       "num": "8",
@@ -63,13 +81,15 @@
         0.35,
         5.5
       ],
-      "note": "0.65 V typ / 0.8 V max start-up; >=4.7 uF"
+      "note": "0.65 V typ / 0.8 V max start-up; >=4.7 uF [connect rule: DS20002234E §3.8: connect the input voltage source to VIN]",
+      "connect": "supply"
     },
     {
       "num": "9",
       "name": "EP",
       "type": "ground",
-      "note": "No internal connection; must be connected to VSS (same potential as SGND/PGND)"
+      "note": "No internal connection; must be connected to VSS (same potential as SGND/PGND) [connect rule: DS20002234E Table 3-1 'EP must be connected to VSS' + §3.9 same potential as SGND/PGND]",
+      "connect": "gnd"
     }
   ]
 }

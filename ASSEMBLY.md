@@ -101,8 +101,8 @@ in your quotation.
 7. Per-tile finishing:
    - **camera_module:** bond the 0.5 mm aluminium heat spreader with a
      thermally conductive epoxy (proposed: Master Bond EP30AN-1).
-   - **aft_end_board:** attach the Ø10 × 0.4 mm piezo disc (Steminc
-     SMD10T04R111) with **In52/Sn48** (liquidus 118 °C) — the last solder step
+   - **aft_end_board:** attach the Ø10 × 0.5 mm piezo disc (PI Ceramic
+     PIC181, wrap-around contact) with **In52/Sn48** (liquidus 118 °C) — the last solder step
      on that board; it sits in the battery floor plate's pocket.
    - (proposed) silicone buffer coat (§3.2).
 8. Pack per tile in ESD packaging, with the test record.
@@ -165,12 +165,18 @@ out. Inspect it before stacking.
    soldered flat), into the holder bores from the open aft end (on top).
    **From here on the cells are live and nothing may exceed 85 °C.**
 4. **Floor plate**, then **aft_end_board** (piezo attached; − pins and + wires
-   through its PTHs). Solder the cell leads on its aft face (on top) with
-   In52/Sn48 (low-temperature iron, heat-sinked leads).
+   through its PTHs). **Before soldering**, check each cell: + wire to its − pin
+   reads +3.6 V (a reversed cell puts BAT_RAW at −3.6 V, below the LDOs'
+   −0.3 V limit, and the other two cells drive it through 2 × 0.2 Ω). Solder
+   the cell leads on its aft face (on top) with In52/Sn48 (low-temperature
+   iron, heat-sinked leads), then check BAT_RAW (R_BAT*_ISO) reads 3.6 V.
 5. **Aft cap** (hard-anodised 7075 disc with the PEEK-LDS crown overmoulded
    on its rim; the disc backs aft_end over its whole face and its access
    holes sit over the clamp tabs and centre pads): 3 × M2 × 6 ISO 14580 A2-70
    low-head screws clamp cap → aft_end → floor plate into the holder's M2 taps.
+   **ESD control while fitting the nichrome restraint wires** (wrist strap,
+   ionizer, grounded tools): the clamp tabs reach the cutter's column FETs
+   (40 V), and their 36 V TVSs only clamp to ≈ 58-80 V on a strike.
 6. **Sleeve vias, still on the fixture:**
     - Laser-drill each via (CO2 laser, Ø0.3-0.4 mm) through the centre of its
       LDS pad and the sleeve wall; the CO2 laser stops on the castellation

@@ -135,12 +135,12 @@ def test_hf_chain_feeds_slot_s1_through_the_owner_switch(design):
 
 def test_ble_shares_slot_s1_by_default(design):
     """S3 merged into S1 (2026-11-17): BLE → DC block → owner switch RF1, the
-    pull-down default; switch on 3V3_AON (BLE works with 3V3 off), CTRL from
+    pull-down default; switch on 3V3 (both radios run only in Ready), CTRL from
     LR2021 DIO9."""
     blk = _chip(design, "C_BLE_DCBLK")
     sw = _chip(design, "U_ANTSW_S1")
     assert _two_ended(design, blk) == {"BLE_RF", _net(design, sw, "RF1")}
-    assert _net(design, sw, "VDD") in _names(design, "3V3_AON")
+    assert _net(design, sw, "VDD") in _names(design, "3V3")
     ctrl = _net(design, sw, "CTRL")
     assert ctrl == _net(design, _chip(design, "U_LR"), "DIO9") == "ANTSW_S1_LR"
     pd = _chip(design, "R_ANTSW_S1_PD")

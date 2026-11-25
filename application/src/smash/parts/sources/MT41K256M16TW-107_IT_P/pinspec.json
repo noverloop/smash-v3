@@ -1,109 +1,613 @@
 {
   "_meta": {
-      "manf_pn": "MT41K256M16TW-107 IT:P",
-      "datasheet": "Micron 4Gb_DDR3L.pdf Rev. Q 12/17 (4Gb x4/x8/x16 DDR3L SDRAM)",
-      "datasheet_section": "Figure 7 (96-ball FBGA x16, top view) + Table 4 (x16 ball descriptions) + DC operating conditions (VDD/VDDQ 1.283-1.45 V)",
-      "package": "VFBGA-96 8×14 mm, 0.8 mm pitch (package code TW, Rev. P die)",
-      "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
-      "verified_from_pdf": "application/src/smash/parts/sources/MT41K256M16TW-107_PTR/MT41K256M16TW-107_P_TR.pdf",
-      "notes": "Same ball map for MT41K256M16TW-107:P (factory default PN, sources/MT41K256M16TW-107_PTR) and the flight IT:P (industrial). Row-A balls carry the factory's BALL_ prefix (A1..A9 collide with address-pin names; exports strip it). Table 4 prints VDD/VDDQ '1.5V ±0.075V' (DDR3 mode); the DDR3L range on p.1 is what the design uses."
+    "manf_pn": "MT41K256M16TW-107 IT:P",
+    "datasheet": "Micron 4Gb_DDR3L.pdf Rev. Q 12/17 (4Gb x4/x8/x16 DDR3L SDRAM)",
+    "datasheet_section": "Figure 7 (96-ball FBGA x16, top view) + Table 4 (x16 ball descriptions) + DC operating conditions (VDD/VDDQ 1.283-1.45 V)",
+    "package": "VFBGA-96 8×14 mm, 0.8 mm pitch (package code TW, Rev. P die)",
+    "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
+    "verified_from_pdf": "application/src/smash/parts/sources/MT41K256M16TW-107_PTR/MT41K256M16TW-107_P_TR.pdf",
+    "notes": "Same ball map for MT41K256M16TW-107:P (factory default PN, sources/MT41K256M16TW-107_PTR) and the flight IT:P (industrial). Row-A balls carry the factory's BALL_ prefix (A1..A9 collide with address-pin names; exports strip it). Table 4 prints VDD/VDDQ '1.5V ±0.075V' (DDR3 mode); the DDR3L range on p.1 is what the design uses. [temp] DS Table 5 Absolute Maximum Ratings: TC operating case temperature, Industrial (IT) −40…95 °C",
+    "operating_temp_c": [
+      -40,
+      95
+    ],
+    "operating_temp_basis": "case"
   },
   "pins": [
-    {"num": "BALL_A1", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "BALL_A2", "name": "DQ13", "type": "io"},
-    {"num": "BALL_A3", "name": "DQ15", "type": "io"},
-    {"num": "BALL_A7", "name": "DQ12", "type": "io"},
-    {"num": "BALL_A8", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "BALL_A9", "name": "VSS", "type": "ground"},
-    {"num": "B1", "name": "VSSQ", "type": "ground"},
-    {"num": "B2", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "B3", "name": "VSS", "type": "ground"},
-    {"num": "B7", "name": "UDQS#", "type": "io"},
-    {"num": "B8", "name": "DQ14", "type": "io"},
-    {"num": "B9", "name": "VSSQ", "type": "ground"},
-    {"num": "C1", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "C2", "name": "DQ11", "type": "io"},
-    {"num": "C3", "name": "DQ9", "type": "io"},
-    {"num": "C7", "name": "UDQS", "type": "io"},
-    {"num": "C8", "name": "DQ10", "type": "io"},
-    {"num": "C9", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "D1", "name": "VSSQ", "type": "ground"},
-    {"num": "D2", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "D3", "name": "UDM", "type": "input"},
-    {"num": "D7", "name": "DQ8", "type": "io"},
-    {"num": "D8", "name": "VSSQ", "type": "ground"},
-    {"num": "D9", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "E1", "name": "VSS", "type": "ground"},
-    {"num": "E2", "name": "VSSQ", "type": "ground"},
-    {"num": "E3", "name": "DQ0", "type": "io"},
-    {"num": "E7", "name": "LDM", "type": "input"},
-    {"num": "E8", "name": "VSSQ", "type": "ground"},
-    {"num": "E9", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "F1", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "F2", "name": "DQ2", "type": "io"},
-    {"num": "F3", "name": "LDQS", "type": "io"},
-    {"num": "F7", "name": "DQ1", "type": "io"},
-    {"num": "F8", "name": "DQ3", "type": "io"},
-    {"num": "F9", "name": "VSSQ", "type": "ground"},
-    {"num": "G1", "name": "VSSQ", "type": "ground"},
-    {"num": "G2", "name": "DQ6", "type": "io"},
-    {"num": "G3", "name": "LDQS#", "type": "io"},
-    {"num": "G7", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "G8", "name": "VSS", "type": "ground"},
-    {"num": "G9", "name": "VSSQ", "type": "ground"},
-    {"num": "H1", "name": "VREFDQ", "type": "analog", "voltage_range_v": [0.628, 0.74], "note": "0.49-0.51 × VDDQ (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input)"},
-    {"num": "H2", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "H3", "name": "DQ4", "type": "io"},
-    {"num": "H7", "name": "DQ7", "type": "io"},
-    {"num": "H8", "name": "DQ5", "type": "io"},
-    {"num": "H9", "name": "VDDQ", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "= VDD, 1.283-1.45 V (DDR3L)"},
-    {"num": "J1", "name": "NC", "type": "nc", "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"},
-    {"num": "J2", "name": "VSS", "type": "ground"},
-    {"num": "J3", "name": "RAS#", "type": "input"},
-    {"num": "J7", "name": "CK", "type": "input"},
-    {"num": "J8", "name": "VSS", "type": "ground"},
-    {"num": "J9", "name": "NC", "type": "nc", "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"},
-    {"num": "K1", "name": "ODT", "type": "input"},
-    {"num": "K2", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "K3", "name": "CAS#", "type": "input"},
-    {"num": "K7", "name": "CK#", "type": "input"},
-    {"num": "K8", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "K9", "name": "CKE", "type": "input"},
-    {"num": "L1", "name": "NC", "type": "nc", "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"},
-    {"num": "L2", "name": "CS#", "type": "input"},
-    {"num": "L3", "name": "WE#", "type": "input"},
-    {"num": "L7", "name": "A10/AP", "type": "input", "aliases": ["A10", "AP"]},
-    {"num": "L8", "name": "ZQ", "type": "analog", "note": "External 240 Ω (RZQ) to VSSQ for output-driver calibration"},
-    {"num": "L9", "name": "NC", "type": "nc", "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"},
-    {"num": "M1", "name": "VSS", "type": "ground"},
-    {"num": "M2", "name": "BA0", "type": "input"},
-    {"num": "M3", "name": "BA2", "type": "input"},
-    {"num": "M7", "name": "NC", "type": "nc", "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"},
-    {"num": "M8", "name": "VREFCA", "type": "analog", "voltage_range_v": [0.628, 0.74], "note": "0.49-0.51 × VDD (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input). Must be held at all times incl. self refresh"},
-    {"num": "M9", "name": "VSS", "type": "ground"},
-    {"num": "N1", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "N2", "name": "A3", "type": "input"},
-    {"num": "N3", "name": "A0", "type": "input"},
-    {"num": "N7", "name": "A12/BC#", "type": "input", "aliases": ["A12", "BC#"]},
-    {"num": "N8", "name": "BA1", "type": "input"},
-    {"num": "N9", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "P1", "name": "VSS", "type": "ground"},
-    {"num": "P2", "name": "A5", "type": "input"},
-    {"num": "P3", "name": "A2", "type": "input"},
-    {"num": "P7", "name": "A1", "type": "input"},
-    {"num": "P8", "name": "A4", "type": "input"},
-    {"num": "P9", "name": "VSS", "type": "ground"},
-    {"num": "R1", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "R2", "name": "A7", "type": "input"},
-    {"num": "R3", "name": "A9", "type": "input"},
-    {"num": "R7", "name": "A11", "type": "input"},
-    {"num": "R8", "name": "A6", "type": "input"},
-    {"num": "R9", "name": "VDD", "type": "power", "voltage_range_v": [1.283, 1.45], "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"},
-    {"num": "T1", "name": "VSS", "type": "ground"},
-    {"num": "T2", "name": "RESET#", "type": "input", "note": "Active-low CMOS input referenced to VSS (not VREF)"},
-    {"num": "T3", "name": "A13", "type": "input"},
-    {"num": "T7", "name": "A14", "type": "input"},
-    {"num": "T8", "name": "A8", "type": "input"},
-    {"num": "T9", "name": "VSS", "type": "ground"}
+    {
+      "num": "BALL_A1",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "BALL_A2",
+      "name": "DQ13",
+      "type": "io"
+    },
+    {
+      "num": "BALL_A3",
+      "name": "DQ15",
+      "type": "io"
+    },
+    {
+      "num": "BALL_A7",
+      "name": "DQ12",
+      "type": "io"
+    },
+    {
+      "num": "BALL_A8",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "BALL_A9",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "B1",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "B2",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "B3",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "B7",
+      "name": "UDQS#",
+      "type": "io"
+    },
+    {
+      "num": "B8",
+      "name": "DQ14",
+      "type": "io"
+    },
+    {
+      "num": "B9",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "C1",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "C2",
+      "name": "DQ11",
+      "type": "io"
+    },
+    {
+      "num": "C3",
+      "name": "DQ9",
+      "type": "io"
+    },
+    {
+      "num": "C7",
+      "name": "UDQS",
+      "type": "io"
+    },
+    {
+      "num": "C8",
+      "name": "DQ10",
+      "type": "io"
+    },
+    {
+      "num": "C9",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "D1",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "D2",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "D3",
+      "name": "UDM",
+      "type": "input"
+    },
+    {
+      "num": "D7",
+      "name": "DQ8",
+      "type": "io"
+    },
+    {
+      "num": "D8",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "D9",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "E1",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "E2",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "E3",
+      "name": "DQ0",
+      "type": "io"
+    },
+    {
+      "num": "E7",
+      "name": "LDM",
+      "type": "input"
+    },
+    {
+      "num": "E8",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "E9",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "F1",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "F2",
+      "name": "DQ2",
+      "type": "io"
+    },
+    {
+      "num": "F3",
+      "name": "LDQS",
+      "type": "io"
+    },
+    {
+      "num": "F7",
+      "name": "DQ1",
+      "type": "io"
+    },
+    {
+      "num": "F8",
+      "name": "DQ3",
+      "type": "io"
+    },
+    {
+      "num": "F9",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "G1",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "G2",
+      "name": "DQ6",
+      "type": "io"
+    },
+    {
+      "num": "G3",
+      "name": "LDQS#",
+      "type": "io"
+    },
+    {
+      "num": "G7",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "G8",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "G9",
+      "name": "VSSQ",
+      "type": "ground"
+    },
+    {
+      "num": "H1",
+      "name": "VREFDQ",
+      "type": "analog",
+      "voltage_range_v": [
+        0.628,
+        0.74
+      ],
+      "note": "0.49-0.51 × VDDQ (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input)"
+    },
+    {
+      "num": "H2",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "H3",
+      "name": "DQ4",
+      "type": "io"
+    },
+    {
+      "num": "H7",
+      "name": "DQ7",
+      "type": "io"
+    },
+    {
+      "num": "H8",
+      "name": "DQ5",
+      "type": "io"
+    },
+    {
+      "num": "H9",
+      "name": "VDDQ",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+    },
+    {
+      "num": "J1",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"
+    },
+    {
+      "num": "J2",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "J3",
+      "name": "RAS#",
+      "type": "input"
+    },
+    {
+      "num": "J7",
+      "name": "CK",
+      "type": "input"
+    },
+    {
+      "num": "J8",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "J9",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"
+    },
+    {
+      "num": "K1",
+      "name": "ODT",
+      "type": "input"
+    },
+    {
+      "num": "K2",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "K3",
+      "name": "CAS#",
+      "type": "input"
+    },
+    {
+      "num": "K7",
+      "name": "CK#",
+      "type": "input"
+    },
+    {
+      "num": "K8",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "K9",
+      "name": "CKE",
+      "type": "input"
+    },
+    {
+      "num": "L1",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"
+    },
+    {
+      "num": "L2",
+      "name": "CS#",
+      "type": "input"
+    },
+    {
+      "num": "L3",
+      "name": "WE#",
+      "type": "input"
+    },
+    {
+      "num": "L7",
+      "name": "A10/AP",
+      "type": "input",
+      "aliases": [
+        "A10",
+        "AP"
+      ]
+    },
+    {
+      "num": "L8",
+      "name": "ZQ",
+      "type": "analog",
+      "note": "External 240 Ω (RZQ) to VSSQ for output-driver calibration"
+    },
+    {
+      "num": "L9",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"
+    },
+    {
+      "num": "M1",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "M2",
+      "name": "BA0",
+      "type": "input"
+    },
+    {
+      "num": "M3",
+      "name": "BA2",
+      "type": "input"
+    },
+    {
+      "num": "M7",
+      "name": "NC",
+      "type": "nc",
+      "note": "No connect: leave unconnected (no connection to the DRAM or other balls)"
+    },
+    {
+      "num": "M8",
+      "name": "VREFCA",
+      "type": "analog",
+      "voltage_range_v": [
+        0.628,
+        0.74
+      ],
+      "note": "0.49-0.51 × VDD (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input). Must be held at all times incl. self refresh"
+    },
+    {
+      "num": "M9",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "N1",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "N2",
+      "name": "A3",
+      "type": "input"
+    },
+    {
+      "num": "N3",
+      "name": "A0",
+      "type": "input"
+    },
+    {
+      "num": "N7",
+      "name": "A12/BC#",
+      "type": "input",
+      "aliases": [
+        "A12",
+        "BC#"
+      ]
+    },
+    {
+      "num": "N8",
+      "name": "BA1",
+      "type": "input"
+    },
+    {
+      "num": "N9",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "P1",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "P2",
+      "name": "A5",
+      "type": "input"
+    },
+    {
+      "num": "P3",
+      "name": "A2",
+      "type": "input"
+    },
+    {
+      "num": "P7",
+      "name": "A1",
+      "type": "input"
+    },
+    {
+      "num": "P8",
+      "name": "A4",
+      "type": "input"
+    },
+    {
+      "num": "P9",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "R1",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "R2",
+      "name": "A7",
+      "type": "input"
+    },
+    {
+      "num": "R3",
+      "name": "A9",
+      "type": "input"
+    },
+    {
+      "num": "R7",
+      "name": "A11",
+      "type": "input"
+    },
+    {
+      "num": "R8",
+      "name": "A6",
+      "type": "input"
+    },
+    {
+      "num": "R9",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.283,
+        1.45
+      ],
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+    },
+    {
+      "num": "T1",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "T2",
+      "name": "RESET#",
+      "type": "input",
+      "note": "Active-low CMOS input referenced to VSS (not VREF)"
+    },
+    {
+      "num": "T3",
+      "name": "A13",
+      "type": "input"
+    },
+    {
+      "num": "T7",
+      "name": "A14",
+      "type": "input"
+    },
+    {
+      "num": "T8",
+      "name": "A8",
+      "type": "input"
+    },
+    {
+      "num": "T9",
+      "name": "VSS",
+      "type": "ground"
+    }
   ]
 }

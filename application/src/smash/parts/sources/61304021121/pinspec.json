@@ -5,8 +5,13 @@
     "datasheet_section": "p1 dimensions + recommended hole pattern",
     "package": "2x20 THT header 2.54 mm, Ø1.10 holes",
     "verified_from_pdf": "application/src/smash/parts/sources/61304021121/61304021121.pdf",
-    "notes": "Pin 1 and 2 across the two rows; odd pins on one row, even on the other.",
-    "verified_by": "library check 2026-11-24"
+    "notes": "Pin 1 and 2 across the two rows; odd pins on one row, even on the other. height_max_mm height above board = insulator 2.54±0.15 + pin 6.0±0.20, worst case 8.89 mm [DS p1 dimensions] [temp] DS WE spec 'Properties' table: Operating Temperature -40 up to +105 °C",
+    "verified_by": "library check 2026-11-24",
+    "height_max_mm": 8.89,
+    "operating_temp_c": [
+      -40,
+      105
+    ]
   },
   "pins": [
     {

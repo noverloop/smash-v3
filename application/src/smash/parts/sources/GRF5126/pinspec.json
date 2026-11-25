@@ -6,14 +6,21 @@
     "package": "QFN-16 3.0x3.0x0.85 mm, EP 1.70 SQ",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/GRF5126/GRF5126.pdf",
-    "notes": "EP = 'PKG BASE', footprint number 17. VDD rec. 3-5.5 V, abs max 6 V."
+    "notes": "EP = 'PKG BASE', footprint number 17. VDD rec. 3-5.5 V, abs max 6 V. height_max_mm [DS p19 package outline: 0.85±0.05] [temp] DS Recommended Operating Conditions: Operating Temperature TPKG BASE −40…115 °C (measured on package base)",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      115
+    ],
+    "operating_temp_basis": "case"
   },
   "pins": [
     {
       "num": "1",
       "name": "GND",
       "type": "ground",
-      "note": "internally grounded; MUST be grounded with a via at the pin"
+      "note": "internally grounded; MUST be grounded with a via at the pin [DS p2 Pin Assignments: internally grounded, must be grounded with a via at the pin]",
+      "connect": "gnd"
     },
     {
       "num": "2",
@@ -25,7 +32,8 @@
       "num": "3",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "4",
@@ -35,37 +43,43 @@
         3.0,
         5.5
       ],
-      "note": "via inductor + bypass; RF present on pin"
+      "note": "via inductor + bypass; RF present on pin [DS p2 Pin Assignments: pull up to VDD through an inductor (DC bias, RF present) - net is choke-fed, not the rail itself]",
+      "connect": "defined"
     },
     {
       "num": "5",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "6",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "7",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "8",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "9",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "10",
@@ -78,31 +92,52 @@
         3.0,
         5.5
       ],
-      "note": "VDD through RF choke"
+      "note": "VDD through RF choke [DS p2 Pin Assignments: VDD must be applied through an RF choke to this pin]",
+      "connect": "defined"
     },
     {
       "num": "11",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "12",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "13",
       "name": "VBIAS2",
       "type": "input",
-      "note": "resistor to common VDD sets IDDQ2; < 0.2 V disables stage 2"
+      "note": "resistor to common VDD sets IDDQ2; < 0.2 V disables stage 2 [DS p2 Pin Assignments: connect via resistor to common VDD (sets IDDQ); < 0.2 V disables the stage] [DS p6: VBIAS2 logic VIH 1.5 V min, VIL 0.2 V max]",
+      "connect": "defined",
+      "vih": [
+        1.5,
+        "abs"
+      ],
+      "vil": [
+        0.2,
+        "abs"
+      ]
     },
     {
       "num": "14",
       "name": "VBIAS1",
       "type": "input",
-      "note": "resistor to common VDD sets IDDQ1; < 0.2 V disables stage 1"
+      "note": "resistor to common VDD sets IDDQ1; < 0.2 V disables stage 1 [DS p2 Pin Assignments: connect via resistor to common VDD (sets IDDQ); < 0.2 V disables the stage] [DS p6: VBIAS1 logic VIH 1.5 V min, VIL 0.2 V max]",
+      "connect": "defined",
+      "vih": [
+        1.5,
+        "abs"
+      ],
+      "vil": [
+        0.2,
+        "abs"
+      ]
     },
     {
       "num": "15",
@@ -112,13 +147,23 @@
         0,
         2.5
       ],
-      "note": "≥ 1.0 V (to 2.5 V) high gain, ≤ 0.5 V low gain — do not tie to 5 V"
+      "note": "≥ 1.0 V (to 2.5 V) high gain, ≤ 0.5 V low gain — do not tie to 5 V [DS p2 Pin Assignments: set >= 1.0 V (to 2.5 V) high gain or <= 0.5 V low gain] [DS p6: VGAIN logic VIH 1.0 V min, VIL 0.5 V max]",
+      "connect": "defined",
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.5,
+        "abs"
+      ]
     },
     {
       "num": "16",
       "name": "GND/NC",
       "type": "passive",
-      "note": "no internal connection; GND recommended"
+      "note": "no internal connection; GND recommended [DS p2 Pin Assignments: no internal connection, may be left unconnected or grounded (ground recommended)]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "17",
@@ -128,7 +173,8 @@
         "EP",
         "PKG BASE"
       ],
-      "note": "DC/RF ground + heat sink; multiple 8 mil vias"
+      "note": "DC/RF ground + heat sink; multiple 8 mil vias [DS p2 Pin Assignments: PKG BASE provides DC + RF ground and heat sink; multiple 8-mil vias]",
+      "connect": "gnd"
     }
   ]
 }

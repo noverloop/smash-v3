@@ -6,7 +6,12 @@
     "package": "DFN2020MD-6 (SOT1220), 2 x 2 x 0.65 max, 0.65 pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/BUK6D120-60PX/BUK6D120-60P.pdf",
-    "notes": "P-channel, VDS -60 V, VGS ±20 V. Top view: 1-2-3 down the left side, 4-5-6 up the right, pad 7 (large drain) toward pins 1/6, pad 8 (small source) between pins 3 and 4."
+    "notes": "P-channel, VDS -60 V, VGS ±20 V. Top view: 1-2-3 down the left side, 4-5-6 up the right, pad 7 (large drain) toward pins 1/6, pad 8 (small source) between pins 3 and 4. [height] 0.65 mm max: DS Fig.18 SOT1220 table: A max 0.65. [temp] DS Table 5 Limiting values: Tamb −55…175 °C (Tj −55…175 °C)",
+    "height_max_mm": 0.65,
+    "operating_temp_c": [
+      -55,
+      175
+    ]
   },
   "pins": [
     {

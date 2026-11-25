@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "manf_pn": "PESD2CANFD24V-QBZ",
+    "datasheet": "Nexperia PESD2CANFD24V-QB product data sheet (30 September 2020)",
+    "datasheet_section": "Table 2 pinning; Tables 5-6; Fig 12 SOT8015 outline; Fig 13 reflow footprint",
+    "package": "DFN1110D-3 (SOT8015) 1.1x1.0x0.48 (0.50 max), side-wettable flanks",
+    "verified_by": "verified 2026-11-25 (Claude, from the PDF)",
+    "verified_from_pdf": "application/src/smash/parts/sources/PESD2CANFD24V-QBZ/PESD2CANFD24V-QBZ.pdf",
+    "notes": "Two bidirectional ESD diodes for a CAN bus pair: pin 1 K1, pin 2 K2 to CANH/CANL, pin 3 CC (common) to GND. VRWM 24 V, VBR 25.5-35.5 V, Cd 6 pF max, IEC 61000-4-2 contact 23 kV. QBZ = reel ordering code of type PESD2CANFD24V-QB. The pin-3 land is a T (two copper pads, both numbered 3).",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K1",
+      "type": "passive",
+      "aliases": [
+        "CATHODE1"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "K2",
+      "type": "passive",
+      "aliases": [
+        "CATHODE2"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "CC",
+      "type": "passive",
+      "aliases": [
+        "COMMON"
+      ]
+    }
+  ]
+}

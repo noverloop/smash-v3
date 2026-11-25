@@ -6,7 +6,12 @@
     "package": "TO-8 6-pin hermetic, cap dia 15.40 +/-0.2, height 4.50, leads dia 0.45 x 12.7 min; 2 rows of 3 at 2.54 pitch, rows 10.16 apart",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "Research/MT03-092.pdf",
-    "notes": "Common-cathode quad photodiode; cathode = pin 2 = backside butt weld (the can sits at cathode potential). Peak response 950 nm; ~0.2 A/W at 1064 nm (p3 curve). VBR >= 50 V; Cj 140 pF @0 V, 25 pF @10 V per quadrant. Operating temperature -40..+85 C; lead soldering 260 C for 5 s, >= 3 mm from the body."
+    "notes": "Common-cathode quad photodiode; cathode = pin 2 = backside butt weld (the can sits at cathode potential). Peak response 950 nm; ~0.2 A/W at 1064 nm (p3 curve). VBR >= 50 V; Cj 140 pF @0 V, 25 pF @10 V per quadrant. Operating temperature -40..+85 C; lead soldering 260 C for 5 s, >= 3 mm from the body. [height_max_mm: DS p2 Package Dimensions: 4.50 from window cap to base, tolerance ±0.15] [temp] DS Absolute Maximum Ratings: Topr −40…+85 °C",
+    "height_max_mm": 4.65,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {

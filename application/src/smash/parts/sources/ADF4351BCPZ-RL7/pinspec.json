@@ -6,32 +6,49 @@
     "package": "32-lead LFCSP 5x5x0.75 mm, CP-32-7, EP 3.10 SQ nom",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/ADF4351BCPZ/ADF4351BCPZ.pdf",
-    "notes": "-RL7 = reel of ADF4351BCPZ, same CP-32-7. AVDD=DVDD=VVCO=SDVDD=VP must all be equal (3.0-3.6 V)."
+    "notes": "-RL7 = reel of ADF4351BCPZ, same CP-32-7. AVDD=DVDD=VVCO=SDVDD=VP must all be equal (3.0-3.6 V). height_max_mm [DS p28 CP-32-7 outline: 0.80 max] [temp] DS Table 3 Absolute Maximum Ratings + Ordering Guide (ADF4351BCPZ-RL7 −40 to +85 °C)",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "CLK",
       "type": "input",
-      "note": "SPI clock, high-Z CMOS"
+      "note": "SPI clock, high-Z CMOS [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD]",
+      "io_domain": "28"
     },
     {
       "num": "2",
       "name": "DATA",
       "type": "input",
-      "note": "SPI data, high-Z CMOS"
+      "note": "SPI data, high-Z CMOS [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD]",
+      "io_domain": "28"
     },
     {
       "num": "3",
       "name": "LE",
       "type": "input",
-      "note": "load enable, high-Z CMOS"
+      "note": "load enable, high-Z CMOS [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD]",
+      "io_domain": "28"
     },
     {
       "num": "4",
       "name": "CE",
       "type": "input",
-      "note": "low = power-down, CP three-state; do not float"
+      "note": "low = power-down, CP three-state; do not float [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD] [DS p3 Logic Inputs: VINH 1.5 V min, VINL 0.6 V max]",
+      "io_domain": "28",
+      "vih": [
+        1.5,
+        "abs"
+      ],
+      "vil": [
+        0.6,
+        "abs"
+      ]
     },
     {
       "num": "5",
@@ -47,23 +64,29 @@
         3.0,
         3.6
       ],
-      "note": "charge-pump supply, must equal AVDD; decouple at pin"
+      "note": "charge-pump supply, must equal AVDD; decouple at pin [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "7",
       "name": "CPOUT",
       "type": "analog",
-      "note": "charge-pump output to loop filter"
+      "note": "charge-pump output to loop filter [DS Table 5 p7: VP = charge-pump power supply; CPOUT provides ±ICP]",
+      "io_domain": "6"
     },
     {
       "num": "8",
       "name": "CPGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "9",
       "name": "AGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "10",
@@ -73,36 +96,45 @@
         3.0,
         3.6
       ],
-      "note": "must equal DVDD"
+      "note": "must equal DVDD [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "11",
       "name": "AGNDVCO",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "12",
       "name": "RFOUTA+",
       "type": "output",
-      "note": "open-collector style: needs pull-up/choke to VVCO (Fig 38), DC-block"
+      "note": "open-collector style: needs pull-up/choke to VVCO (Fig 38), DC-block [DS p13 Output Stage: unused complementary output must be terminated with a circuit similar to the used output; p27 Output Matching: unused output can be terminated or combined via balun] [DS p13 Output Stage: collectors of NPN differential pair, shunt inductor to VVCO; p27: 50 Ω/inductor to VVCO]",
+      "unused": "terminate",
+      "open_drain": true,
+      "io_domain": "16"
     },
     {
       "num": "13",
       "name": "RFOUTA-",
       "type": "output",
-      "note": "as RFOUTA+; terminate if unused"
+      "note": "as RFOUTA+; terminate if unused [DS p13 Output Stage: unused complementary output must be terminated with a circuit similar to the used output; p27 Output Matching: unused output can be terminated or combined via balun] [DS p13 Output Stage: collectors of NPN differential pair, shunt inductor to VVCO; p27: 50 Ω/inductor to VVCO]",
+      "unused": "terminate",
+      "open_drain": true,
+      "io_domain": "16"
     },
     {
       "num": "14",
       "name": "RFOUTB+",
       "type": "output",
-      "note": "aux output; terminate if unused"
+      "note": "aux output; terminate if unused [DS p13: if the auxiliary output stage is not used it can be powered down (register); no termination requirement stated for RFOUTB±, aux usable only if primary outputs enabled]"
     },
     {
       "num": "15",
       "name": "RFOUTB-",
       "type": "output",
-      "note": "aux output; terminate if unused"
+      "note": "aux output; terminate if unused [DS p13: if the auxiliary output stage is not used it can be powered down (register); no termination requirement stated for RFOUTB±, aux usable only if primary outputs enabled]"
     },
     {
       "num": "16",
@@ -112,7 +144,8 @@
         3.0,
         3.6
       ],
-      "note": "must equal AVDD"
+      "note": "must equal AVDD [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "17",
@@ -122,12 +155,15 @@
         3.0,
         3.6
       ],
-      "note": "must equal AVDD"
+      "note": "must equal AVDD [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "18",
       "name": "AGNDVCO",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "19",
@@ -144,7 +180,9 @@
     {
       "num": "21",
       "name": "AGNDVCO",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "22",
@@ -168,18 +206,30 @@
       "num": "25",
       "name": "LD",
       "type": "output",
-      "note": "lock detect, high = locked"
+      "note": "lock detect, high = locked [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD]",
+      "io_domain": "28"
     },
     {
       "num": "26",
       "name": "PDBRF",
       "type": "input",
-      "note": "low mutes RF outputs; do not float"
+      "note": "low mutes RF outputs; do not float [DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD] [DS p3 Logic Inputs: VINH 1.5 V min, VINL 0.6 V max]",
+      "io_domain": "28",
+      "vih": [
+        1.5,
+        "abs"
+      ],
+      "vil": [
+        0.6,
+        "abs"
+      ]
     },
     {
       "num": "27",
       "name": "DGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "28",
@@ -189,23 +239,29 @@
         3.0,
         3.6
       ],
-      "note": "must equal AVDD"
+      "note": "must equal AVDD [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "29",
       "name": "REFIN",
       "type": "input",
-      "note": "CMOS, threshold AVDD/2, 100 kΩ; may be AC-coupled; 0.7 Vpp-AVDD"
+      "note": "CMOS, threshold AVDD/2, 100 kΩ; may be AC-coupled; 0.7 Vpp-AVDD [DS Table 5 p8: REFIN threshold AVDD/2; p3 sensitivity 0.7 V p-p to AVDD]",
+      "io_domain": "10"
     },
     {
       "num": "30",
       "name": "MUXOUT",
-      "type": "output"
+      "type": "output",
+      "io_domain": "28",
+      "note": "[DS p3 Logic Outputs VOH = DVDD−0.4; Table 3 p5 digital I/O ≤ VDD+0.3; all supplies must equal AVDD]"
     },
     {
       "num": "31",
       "name": "SDGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 5 p7-8: ground return pin]"
     },
     {
       "num": "32",
@@ -215,7 +271,8 @@
         3.0,
         3.6
       ],
-      "note": "must equal AVDD"
+      "note": "must equal AVDD [DS Table 5 p7-8: supply pin, 3.0-3.6 V, must equal AVDD]",
+      "connect": "supply"
     },
     {
       "num": "33",
@@ -224,7 +281,8 @@
       "aliases": [
         "Exposed Pad"
       ],
-      "note": "must be connected to GND"
+      "note": "must be connected to GND [DS Table 5 p8: EP must be connected to GND]",
+      "connect": "gnd"
     }
   ]
 }

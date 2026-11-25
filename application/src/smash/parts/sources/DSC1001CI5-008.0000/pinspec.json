@@ -3,23 +3,68 @@
     "manf_pn": "DSC1001CI5-008.0000",
     "datasheet": "Microchip DS20005529B (2017)",
     "datasheet_section": "Figure 5-1 (Test Circuit pin numbering) + §4.1 (Standby Function)",
-    "package": "SOT-23-5",
+    "package": "CDFN-4 3.2x2.5x0.85 mm (code C)",
     "verified_by": "Anthropic 2026-05-27",
     "verified_from_pdf": "application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
-    "notes": "DSC1001 family is a 1-150 MHz MEMS oscillator. This pinspec is for the -008.0000 variant (8 MHz). SOT-23-5 (I5) package: the 5th lead is functionally absent — Microchip's pin table uses 4 numbered pins."
+    "notes": "DSC1001 family is a 1-150 MHz MEMS oscillator. This pinspec is for the -008.0000 variant (8 MHz). SOT-23-5 (I5) package: the 5th lead is functionally absent — Microchip's pin table uses 4 numbered pins. [height] 0.9 mm max: DS p.16 CDFN3225-4LD-PL-1 side view: 0.85 ±0.05. [temp] DS Recommended Operating Conditions / Temperature Ranges: TA −40…+85 °C (Ordering Option I)",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
-    { "num": "1", "name": "STANDBY#", "type": "input",
-      "aliases": ["STANDBY", "STB", "OE#"],
-      "voltage_range_v": [-0.3, 5.5],
-      "note": "Per §4.1 Table: High level = Output ON; Open (NC) = Output ON (internal pull-up); Low level = high-Z. Tie to VDD for always-on." },
-    { "num": "2", "name": "GND",      "type": "ground" },
-    { "num": "3", "name": "OUT",      "type": "output",
+    {
+      "num": "1",
+      "name": "STANDBY#",
+      "type": "input",
+      "aliases": [
+        "STANDBY",
+        "STB",
+        "OE#"
+      ],
+      "voltage_range_v": [
+        -0.3,
+        5.5
+      ],
+      "note": "Per §4.1 Table: High level = Output ON; Open (NC) = Output ON (internal pull-up); Low level = high-Z. Tie to VDD for always-on.; [connect] DS §4.1 table: STANDBY# open (no connect) = output ON; [enrich] DS Elec. Char. Table: input logic high 0.75 x VDD min, low 0.25 x VDD max",
+      "unused": "open",
+      "vih": [
+        0.75,
+        "frac"
+      ],
+      "vil": [
+        0.25,
+        "frac"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Table 2-1/2-2: GND"
+    },
+    {
+      "num": "3",
+      "name": "OUT",
+      "type": "output",
       "frequency_hz": 8000000,
-      "note": "Nominal 8 MHz LVCMOS output (this variant). Initial tolerance ±20 ppm, total ±50 ppm over -40..+85 °C." },
-    { "num": "4", "name": "VDD",      "type": "power",
-      "aliases": ["V_DD"],
-      "voltage_range_v": [1.8, 3.63],
-      "note": "Vdd 1.8 to 3.63 V per datasheet Electrical Characteristics." }
+      "note": "Nominal 8 MHz LVCMOS output (this variant). Initial tolerance ±20 ppm, total ±50 ppm over -40..+85 °C."
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "aliases": [
+        "V_DD"
+      ],
+      "voltage_range_v": [
+        1.7,
+        3.6
+      ],
+      "note": "Vdd 1.8 to 3.63 V per datasheet Electrical Characteristics.; [connect] DS Table 2-1/2-2: VDD supply",
+      "connect": "supply"
+    }
   ]
 }

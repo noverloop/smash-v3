@@ -156,7 +156,7 @@ from smash.parts.usb import (
 from smash.parts.mechanical import (
     add_cellattach_3x2_tlm1520,
     add_cell_contacts_3,
-    add_piezo_disc_smd10t04r111,
+    add_piezo_disc_pic181_d10t05,
     add_pogo_pad,
     add_mechanical_spacer_34mm,
     add_nfc_antenna_flex_27x50,
@@ -274,7 +274,7 @@ __all__ = [
     # project-built custom footprints (mechanical / connector / antenna)
     "add_cellattach_3x2_tlm1520",
     "add_cell_contacts_3",
-    "add_piezo_disc_smd10t04r111",
+    "add_piezo_disc_pic181_d10t05",
     "add_pogo_pad",
     "add_mechanical_spacer_34mm",
     "add_nfc_antenna_flex_27x50",

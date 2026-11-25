@@ -67,6 +67,35 @@ _BLANK_WKS = (
 )
 
 
+_PRL_VISIBLE = [
+    "vias", "footprint_text", "footprint_anchors", "ratsnest", "grid",
+    "footprints_front", "footprints_back", "footprint_values", "footprint_references",
+    "tracks", "drc_errors", "bitmaps", "pads", "zones", "drc_warnings",
+    "drc_exclusions", "locked_item_shadows", "conflict_shadows", "shapes",
+    "board_outline_area", "ly_points",
+]   # KiCad's defaults without "drawing_sheet"
+
+
+def hide_drawing_sheet(pcb_path) -> pathlib.Path:
+    """Hide the drawing sheet (the page outline KiCad draws even with a blank
+    sheet template) in the project's local settings `<stem>.kicad_prl`:
+    create it, or drop "drawing_sheet" from an existing one's visible items."""
+    prl = pathlib.Path(pcb_path).with_suffix(".kicad_prl")
+    data = {}
+    if prl.exists():
+        try:
+            data = json.loads(prl.read_text())
+        except ValueError:
+            data = {}
+    board = data.setdefault("board", {})
+    vis = board.get("visible_items")
+    board["visible_items"] = ([v for v in vis if v != "drawing_sheet"] if isinstance(vis, list)
+                              else list(_PRL_VISIBLE))
+    data.setdefault("meta", {"filename": prl.name, "version": 5})
+    prl.write_text(json.dumps(data, indent=2) + "\n")
+    return prl
+
+
 def write_blank_drawing_sheet(pcb_path) -> None:
     """Suppress the drawing sheet (frame + title block) for a generated
     `.kicad_pcb`. Writes a shared blank `empty.kicad_wks` in the board's
@@ -115,6 +144,7 @@ def write_blank_drawing_sheet(pcb_path) -> None:
         },
         "pcbnew": {"page_layout_descr_file": "empty.kicad_wks"},
     }, indent=2) + "\n")
+    hide_drawing_sheet(pcb)
 
 
 def _uid(*parts: str) -> str:

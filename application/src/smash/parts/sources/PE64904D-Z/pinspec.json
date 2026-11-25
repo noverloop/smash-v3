@@ -6,25 +6,34 @@
     "package": "10-lead QFN 2x2x0.45 mm, no exposed pad, MSL3",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.psemi.com/pdf/datasheets/pe64904ds.pdf",
-    "notes": "PE64904D-Z is the only order code listed. Shunt 1.14-5.10 pF, series 0.60-4.60 pF, 32 states. No land pattern in the DS."
+    "notes": "PE64904D-Z is the only order code listed. Shunt 1.14-5.10 pF, series 0.60-4.60 pF, 32 states. No land pattern in the DS. [height] 0.5 mm max: DS Fig.21 package drawing: A max 0.500. [temp] DS Table 2 Recommended operating conditions: TOP −40…+85 °C",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "RF-",
       "type": "io",
-      "note": "tie to pin 2; solidly grounded in shunt configuration"
+      "note": "tie to pin 2; solidly grounded in shunt configuration; [connect] DS Table 9 note 1: tie RF- pins 1 and 2 together",
+      "connect": "same_as:2"
     },
     {
       "num": "2",
       "name": "RF-",
       "type": "io",
-      "note": "tie to pin 1"
+      "note": "tie to pin 1; [connect] DS Table 9 note 1: tie RF- pins 1 and 2 together",
+      "connect": "same_as:1"
     },
     {
       "num": "3",
       "name": "DGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Table 9: DGND ground"
     },
     {
       "num": "4",
@@ -34,7 +43,8 @@
         2.3,
         3.6
       ],
-      "note": "abs max 4.0 V"
+      "note": "abs max 4.0 V; [connect] DS Table 9: VDD supply voltage",
+      "connect": "supply"
     },
     {
       "num": "5",
@@ -44,7 +54,8 @@
         0,
         3.6
       ],
-      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V; [enrich] DS Table 1 abs max: voltage on any DC input -0.3..4.0 V",
+      "max_v": 4.0
     },
     {
       "num": "6",
@@ -54,7 +65,16 @@
         0,
         3.6
       ],
-      "note": "latch enable; VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+      "note": "latch enable; VIH ≥ 1.2 V, VIL ≤ 0.57 V; [enrich] DS Table 1 abs max: any DC input -0.3..4.0 V; Table 2: control VIH 1.2 V min, VIL 0.57 V max",
+      "max_v": 4.0,
+      "vih": [
+        1.2,
+        "abs"
+      ],
+      "vil": [
+        0.57,
+        "abs"
+      ]
     },
     {
       "num": "7",
@@ -64,25 +84,29 @@
         0,
         3.6
       ],
-      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V"
+      "note": "VIH ≥ 1.2 V, VIL ≤ 0.57 V; [enrich] DS Table 1 abs max: voltage on any DC input -0.3..4.0 V",
+      "max_v": 4.0
     },
     {
       "num": "8",
       "name": "RF+",
       "type": "io",
-      "note": "tie to pin 9"
+      "note": "tie to pin 9; [connect] DS Table 9 note 2: tie RF+ pins 8 and 9 together",
+      "connect": "same_as:9"
     },
     {
       "num": "9",
       "name": "RF+",
       "type": "io",
-      "note": "tie to pin 8"
+      "note": "tie to pin 8; [connect] DS Table 9 note 2: tie RF+ pins 8 and 9 together",
+      "connect": "same_as:8"
     },
     {
       "num": "10",
       "name": "GND",
       "type": "ground",
-      "note": "RF ground"
+      "note": "RF ground; [connect] DS Table 9: GND RF ground",
+      "connect": "gnd"
     }
   ]
 }

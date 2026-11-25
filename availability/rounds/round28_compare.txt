@@ -1,0 +1,17 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+P_PIEZO R28A         PKGS-00LDP1-R                |       0     w    0.00 Thailand  |                        - |       0   11w    0.00 Thailand  | Obsolete Obsolete
+P_PIEZO R28B         PKGS-00MXF2P1-R              |                        - |                        - |                        - | 
+P_PIEZO R28C         PSCE242K-R090C               |                        - |                        - |       0   15w    0.00 Japan     | Obsolete
+P_PIEZO R28D         7BB-12-9                     |       0     w    0.00 Thailand/ |    3487 12.0w    1.01 China     |       0   15w    0.00 Thailand  | Obsolete Obsolete
+U_AWR_FLASH R28E     SST26VF080A-104I/MF          |     489   15w    1.50 Taiwan/Ch |       0  6.0w    1.20 Thailand  |     167    4w    1.58 Taiwan    | 
+C_BOOST_OUT R28F     EMK212BBJ226MG-T             |       0   21w    0.47 Japan     |   15572 18.0w    0.12 Malaysia  |   32237   22w    0.53 Malaysia  | 
+C_BOOST_OUT R28G     GRM21BR61C226ME44L           |       0   53w    0.62 Japan     |       0 13.0w    0.60 Japan     |       0   17w    0.36 Japan     | 
+C_BOOST_OUT R28H     CL21A226MAQNNNE              |       0     w    0.00 Philippin |                        - |       0   28w    0.00 China     | End of Life Obsolete
+Y_LR_TCXO_MEMS R28I  SiT5356AECFQ-33N0-32.000000  |                        - |                        - |                        - | 
+Y_LR_TCXO_MEMS R28J  SiT5356AECFQ-33N0-32.000000X |                        - |                        - |                        - | 
+P_PIEZO R28K         AB1070B                      |     590   17w    1.13 China     |     296 19.0w    1.11 China     |       0   25w    1.30 China     | 
+P_PIEZO R28L         AB1070B-LW150-R              |    1061   17w    1.16 China     |      42 19.0w    1.14 China     |    1539   25w    1.33 China     | 
+P_PIEZO R28M         AB1290B-LW100-R              |     333   17w    1.92 China     |     198 19.0w    1.88 China     |    1217   25w    2.30 China     | 
+P_PIEZO R28N         AB1541B-LW100-R              |    4048   17w    1.42 China     |      81 19.0w    1.27 China     |    1576   25w    1.76 China     | 
+
+Digi-Key rows not in the upload:

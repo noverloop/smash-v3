@@ -6,7 +6,12 @@
     "package": "VSSOP-8 (DGK) 3x3 mm body, 4.9 mm lead span, 0.65 mm pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.ti.com/lit/ds/symlink/ina241a.pdf",
-    "notes": "A2 = gain 20 V/V. Top mark 2U7B."
+    "notes": "A2 = gain 20 V/V. Top mark 2U7B. [height] 1.1 mm max: DS DGK0008A outline: 1.1 MAX. [temp] DS 6.3 Recommended Operating Conditions: TA −40…125 °C",
+    "height_max_mm": 1.1,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
   },
   "pins": [
     {
@@ -20,24 +25,29 @@
         -5,
         110
       ],
-      "note": "Load side of shunt (high-side). Abs max -20..120 V."
+      "note": "Load side of shunt (high-side). Abs max -20..120 V.; [enrich] DS §6.1 abs max: VIN+/VIN- common-mode -20..120 V, independent of VS",
+      "max_v": 120
     },
     {
       "num": "2",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Table 5-1: GND"
     },
     {
       "num": "3",
       "name": "REF2",
       "type": "input",
-      "note": "Connect to 0 V..VS; do not float."
+      "note": "Connect to 0 V..VS; do not float.; [connect] DS Table 5-1: REF2 connect to 0 V..VS",
+      "connect": "defined"
     },
     {
       "num": "4",
       "name": "NC",
       "type": "reserved",
-      "note": "Reserved — datasheet: connect to ground."
+      "note": "Reserved — datasheet: connect to ground.; [connect] DS Table 5-1: NC reserved, connect to ground",
+      "connect": "gnd"
     },
     {
       "num": "5",
@@ -51,13 +61,16 @@
       "voltage_range_v": [
         2.7,
         20
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect] DS Table 5-1: VS power supply 2.7-20 V"
     },
     {
       "num": "7",
       "name": "REF1",
       "type": "input",
-      "note": "Connect to 0 V..VS; do not float."
+      "note": "Connect to 0 V..VS; do not float.; [connect] DS Table 5-1: REF1 connect to 0 V..VS",
+      "connect": "defined"
     },
     {
       "num": "8",
@@ -67,7 +80,8 @@
         -5,
         110
       ],
-      "note": "Bus side of shunt (high-side)."
+      "note": "Bus side of shunt (high-side).; [enrich] DS §6.1 abs max: VIN+/VIN- common-mode -20..120 V, independent of VS",
+      "max_v": 120
     }
   ]
 }

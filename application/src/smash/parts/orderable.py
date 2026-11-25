@@ -61,6 +61,9 @@ def resolve(mpn: str) -> tuple[str, str] | None:
         v = m[1]
         special = {"0": "CRCW04020000Z0ED", "10m": "WFCP0402R0100FE66", "200m": "RCWE0402R200FKEA"}
         return (special.get(v) or f"CRCW0402{_rcode(_ohms(v))}FKED"), "Vishay"
+    m = re.match(r"CRCW0603 ([\d.]+[kKM]?) 1% e3", mpn)
+    if m:
+        return f"CRCW0603{_rcode(_ohms(m[1]))}FKEA", "Vishay"
     m = re.match(r"C0402 X7R ([\d.]+[pnu]F)", mpn)
     if m:
         f = _farads(m[1])

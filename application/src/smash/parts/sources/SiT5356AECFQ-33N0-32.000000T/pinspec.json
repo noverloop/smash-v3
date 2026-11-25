@@ -6,7 +6,12 @@
     "package": "10L ceramic QFN 5.0x3.2x0.95 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.sitime.com/datasheet/SiT5356",
-    "notes": "Decode: A rev, E -40..105 °C, C clipped sinewave, F 5.0x3.2, Q ±0.1 ppm, 33 = 3.3 V ±10%, N = pin 1 No Connect (TCXO mode), T = 3k reel. TCXO mode: no I2C, so pins 2/5/10 are NC. NC pins may float; layout guide recommends grounding them. IDD 44 typ / 53 max mA."
+    "notes": "Decode: A rev, E -40..105 °C, C clipped sinewave, F 5.0x3.2, Q ±0.1 ppm, 33 = 3.3 V ±10%, N = pin 1 No Connect (TCXO mode), T = 3k reel. TCXO mode: no I2C, so pins 2/5/10 are NC. NC pins may float; layout guide recommends grounding them. IDD 44 typ / 53 max mA. [height_max_mm: SiT5356 p37 Package Size Total Thickness A max 1.060] [temp] DS Table 1 Operating Temperature Range: −40…+105 °C ambient, Extended Industrial (decoder 'E')",
+    "height_max_mm": 1.06,
+    "operating_temp_c": [
+      -40,
+      105
+    ]
   },
   "pins": [
     {
@@ -16,7 +21,8 @@
       "aliases": [
         "OE/NC/VC"
       ],
-      "note": "'N' option: no connect, H/L/open no effect"
+      "note": "'N' option: no connect, H/L/open no effect [connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "2",
@@ -25,18 +31,22 @@
       "aliases": [
         "SCL/NC"
       ],
-      "note": "NC in TCXO mode"
+      "note": "NC in TCXO mode [connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "3",
       "name": "NC",
-      "type": "nc"
+      "type": "nc",
+      "connect": "open_or_gnd",
+      "note": "[connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]"
     },
     {
       "num": "4",
       "name": "GND",
       "type": "ground",
-      "note": "multiple vias under GND pin"
+      "note": "multiple vias under GND pin [connect rule: SiT5356 Table 13: 'Connect to ground']",
+      "connect": "gnd"
     },
     {
       "num": "5",
@@ -45,7 +55,8 @@
       "aliases": [
         "A0/NC"
       ],
-      "note": "NC in TCXO mode"
+      "note": "NC in TCXO mode [connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "6",
@@ -60,12 +71,16 @@
     {
       "num": "7",
       "name": "NC",
-      "type": "nc"
+      "type": "nc",
+      "connect": "open_or_gnd",
+      "note": "[connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]"
     },
     {
       "num": "8",
       "name": "NC",
-      "type": "nc"
+      "type": "nc",
+      "connect": "open_or_gnd",
+      "note": "[connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]"
     },
     {
       "num": "9",
@@ -75,7 +90,8 @@
         2.97,
         3.63
       ],
-      "note": "44 mA typ / 53 mA max; 0.1 µF within 1-2 mm + 10 µF required; abs max 4 V"
+      "note": "44 mA typ / 53 mA max; 0.1 µF within 1-2 mm + 10 µF required; abs max 4 V [connect rule: SiT5356 Table 13: 'Connect to power supply' (+ note 10: 0.1 uF || 10 uF required)]",
+      "connect": "supply"
     },
     {
       "num": "10",
@@ -84,7 +100,8 @@
       "aliases": [
         "SDA/NC"
       ],
-      "note": "NC in TCXO mode"
+      "note": "NC in TCXO mode [connect rule: SiT5356 Table 13 note 11: NC pins can be left floating (H/L/open no effect); p37 Layout Guidelines recommend connecting all NC pins to the ground plane]",
+      "connect": "open_or_gnd"
     }
   ]
 }

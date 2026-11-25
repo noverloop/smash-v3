@@ -1,0 +1,199 @@
+project,footprint,step_file,offset_x_mm,offset_y_mm,offset_z_mm,rot_x_deg,rot_y_deg,rot_z_deg
+"Smash (tower)","ABLIC_HSNT-4-1010","3dmodels/S-1318D33-A4T2U4.step",0,0,0,-90,0,0
+"Smash (tower)","BGA180C80P18X18_1500X1500X96","3dmodels/AWR1843ARBGALPQ1.stp",0.37,-0.37,1.4,-180,0,0
+"Smash (tower)","BGA4C50P2X2_100X100X69","3dmodels/MAX9064EBS_TG45.stp",0,0,0,0,0,0
+"Smash (tower)","BGA59C50P8X8_500X500X60","3dmodels/STM32WBA55UGI7.stp",0,0,0,0,0,0
+"Smash (tower)","BGA64C50P8X8_500X500X60","3dmodels/STM32U545REI6Q.stp",0,0,0,0,0,0
+"Smash (tower)","BGA6C40P2X3_80X120X50","3dmodels/TPS62088YFPR.stp",0,0,0,0,0,0
+"Smash (tower)","BGA74C80P9X10_890X1030X220","3dmodels/VB1943CAJX_1.stp",0,0,0,-90,0,0
+"Smash (tower)","BGA96C80P9X16_800X1400X120","3dmodels/MT41K256M16TW-107_PTR.stp",0,0,0,0,0,0
+"Smash (tower)","BGA9C40P3X3_128X128X54","3dmodels/BMM350.step",0,0,0,-90,0,0
+"Smash (tower)","BLM18SP221SN1B","3dmodels/BLM18PG221SN1D.stp",0.8,0,0.4,-90,0,-90
+"Smash (tower)","BUK6D12060PX","3dmodels/BUK6D120-60PX.stp",-1.52,0.86,1.28,90,0,90
+"Smash (tower)","Capacitor_SMD_C_0402_1005Metric","3dmodels/C_0402_1005Metric.step",0,0,0,0,0,0
+"Smash (tower)","Capacitor_SMD_C_0603_1608Metric","3dmodels/C_0603_1608Metric.step",0,0,0,0,0,0
+"Smash (tower)","Capacitor_SMD_C_0805_2012Metric","3dmodels/C_0805_2012Metric.step",0,0,0,0,0,0
+"Smash (tower)","Capacitor_SMD_C_1206_3216Metric","(no 3D model)",,,,,,
+"Smash (tower)","Capacitor_Tantalum_SMD_CP_EIA-3528-12_Kemet-T","3dmodels/Capacitor_Tantalum_SMD.3dshapes.step",0,0,0,0,0,0
+"Smash (tower)","Castellations_activation_interface","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_aft_end_board","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_camera_module","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_companion_compute","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_power_board","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_qpd_module","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_radar_module","(no 3D model)",,,,,,
+"Smash (tower)","Castellations_wakeup_board","(no 3D model)",,,,,,
+"Smash (tower)","CellLead_PTH_Pin_D1","(no 3D model)",,,,,,
+"Smash (tower)","CellLead_PTH_Wire_D0.8","(no 3D model)",,,,,,
+"Smash (tower)","Ceramic_QFN_5032_10pins","3dmodels/SiT5356AECFQ-33N0-20.000000.stp",0,0,0,0,0,0
+"Smash (tower)","Clamp_Tab_D1.6mm","(no 3D model)",,,,,,
+"Smash (tower)","DFN8_2x2_GRF2073W_DS","3dmodels/GRF2073W.stp",0,0,0,0,0,0
+"Smash (tower)","DRV5032AJDMRR","3dmodels/DRV5032AJDMRR.stp",0,0,0,0,0,0
+"Smash (tower)","DSC1001CI50080000","3dmodels/DSC1001CI5-008.0000.stp",0,0,0,0,0,0
+"Smash (tower)","HealthCoil_8t_R13-15.5","(no 3D model)",,,,,,
+"Smash (tower)","INDPM5552X200N","3dmodels/IHLP2020BZER100M01.stp",-0.72,6.09,-2.43,-90,0,0
+"Smash (tower)","Inductor_SMD_L_0402_1005Metric","3dmodels/L_0402_1005Metric.step",0,0,0,0,0,0
+"Smash (tower)","Inductor_SMD_L_2012_2.0x1.25mm","3dmodels/L_0805_2012Metric.step",0,0,0,0,0,0
+"Smash (tower)","Infineon_TSLP-2-1","(no 3D model)",,,,,,
+"Smash (tower)","LGA-14_1","3dmodels/ISM330DLCTR.stp",0,0,0.43,0,0,0
+"Smash (tower)","LIS3DHTR (LGA-16)","3dmodels/H3LIS331DLTR.stp",0,0,0,90,-180,0
+"Smash (tower)","LQG15HS1N8S02D","3dmodels/LQG15HS1N8S02D.stp",0,0,0,0,0,0
+"Smash (tower)","LQG15WH0N7B02D","3dmodels/LQG15HS1N3S02D.stp",0,0,0,0,0,0
+"Smash (tower)","MT03_092_QPD_TO8","(no 3D model)",,,,,,
+"Smash (tower)","NCS1292","3dmodels/NCS1-292P.stp",0,0,0,0,0,0
+"Smash (tower)","Nexperia_SOD882","(no 3D model)",,,,,,
+"Smash (tower)","Nexperia_SOT886","(no 3D model)",,,,,,
+"Smash (tower)","OSC_TG2016SMN_32.0000M-MCGNNM0","(no 3D model)",,,,,,
+"Smash (tower)","PG-TSLP-6-4","3dmodels/BGS12P2L6E6327XTSA1.stp",0,0,0,-90,0,0
+"Smash (tower)","PiezoDisc_PIC181_D10T05_Wrap","(no 3D model)",,,,,,
+"Smash (tower)","Pogo_Pad_D2.0mm","(no 3D model)",,,,,,
+"Smash (tower)","Pogo_Pad_S2.0mm","(no 3D model)",,,,,,
+"Smash (tower)","QFN16_3x3_GRF5126_DS","3dmodels/GRF5126.stp",0,0,0,-90,0,0
+"Smash (tower)","QFN40P650X650X90-57N-D","3dmodels/STPMIC25APQR.stp",0,0,0,0,0,0
+"Smash (tower)","QFN50P200X200X50-10N-D","3dmodels/PE64904C-Z.stp",0,0,0,0,0,0
+"Smash (tower)","QFN50P300X300X90-17N","(no 3D model)",,,,,,
+"Smash (tower)","QFN50P500X500X100-33N-D","3dmodels/LR2021IMLTRT.stp",0,0,0,0,0,0
+"Smash (tower)","QFN50P500X500X100-33N","3dmodels/ADF4351BCPZ.stp",0,0,0.05,-90,0,0
+"Smash (tower)","QFN_2520_4pins","3dmodels/SiT8008BI-12-33E-27.000000.stp",0,0,0.02,-90,0,-180
+"Smash (tower)","RB160VAM60","3dmodels/RB160VAM-60.stp",0,0,0,0,0,0
+"Smash (tower)","RR123-1H02-612","3dmodels/RR123-1H02-612.stp",0,0,0.01,-90,0,0
+"Smash (tower)","Resistor_SMD_R_0402_1005Metric","3dmodels/Resistor_SMD.3dshapes.step",0,0,0,0,0,0
+"Smash (tower)","Resistor_SMD_R_0603_1608Metric","(no 3D model)",,,,,,
+"Smash (tower)","SIT1533AIH4DCC32768E","3dmodels/SIT1533AI-H4-DCC-32.768E.stp",-0.17,0,0,-90,0,0
+"Smash (tower)","SODFL3517X110N","3dmodels/PNS40010AERX.stp",-1.21,1.89,-1.23,-90,0,0
+"Smash (tower)","SON127P600X500X80-9N-D","3dmodels/SST26VF080A-104I_MF.stp",0,0,0,0,0,0
+"Smash (tower)","SON127P800X600X65-8N","3dmodels/MT29F4G01ABAFDWB-IT_F.stp",0,0,0,-90,0,0
+"Smash (tower)","SON50P150X200X100-8N","3dmodels/TPS62822DLCR.stp",0,0,0,0,0,0
+"Smash (tower)","SON50P200X300X100-9N","3dmodels/MCP9808T-E_MC.step",0,0,0,-90,0,0
+"Smash (tower)","SON50P300X500X80-17N","3dmodels/LTC3124EDHC_TRPBF.stp",0,0,0,-90,0,90
+"Smash (tower)","SON65P300X300X100-9N-D","3dmodels/TJA1462BTK_0Z.stp",0,0,0.03,0,0,0
+"Smash (tower)","SOP65P640X120-15N","3dmodels/TPS61175PWPR.stp",0,0,0,0,0,0
+"Smash (tower)","SOT1220","3dmodels/PMPB15XP_115.stp",-1.52,0.86,1.28,90,0,90
+"Smash (tower)","SOT95P237X112-3N","3dmodels/NX7002AK_215.stp",0,0,0,0,0,0
+"Smash (tower)","SOT95P280X100-5N","3dmodels/AD8603AUJZ-R2.stp",0,0,0,0,0,0
+"Smash (tower)","SOT95P280X145-5N","3dmodels/LP5907MFX-2.8_NOPB.stp",0,0,0,0,0,0
+"Smash (tower)","SSM3J372RLF","3dmodels/SSM3J372R_LF.stp",0,0,0,0,0,0
+"Smash (tower)","SSM3J64CTCL3F","3dmodels/SSM3K35CTC_L3F.stp",0,0,0,0,0,-90
+"Smash (tower)","STM32MP255FAL3","3dmodels/STM32MP255FAL3.stp",0,0,0,0,0,0
+"Smash (tower)","TestPoint_TestPoint_Pad_D1.5mm","(no 3D model)",,,,,,
+"Smash (tower)","TestPoint_TestPoint_Pad_D1mm","(no 3D model)",,,,,,
+"Smash (tower)","Toshiba_SOD-923","(no 3D model)",,,,,,
+"Smash (tower)","UDB_VARIATIONA","3dmodels/LTC5549IUDB.stp",0,0,0,0,0,0
+"Smash (tower)","VEMD5110X01","3dmodels/VEMD5110X01.stp",0,0,0,0,0,0
+"Smash (tower)","VSMB1940X01","(no 3D model)",,,,,,
+"Smash (tower)","WE-MAPI_4020","3dmodels/74438356047.stp",0,0,2.1,-180,0,0
+"Smash (tower)","smash_mech_aft_cap_screw","(no 3D model)",,,,,,
+"Smash (tower)","smash_mech_potting","(no 3D model)",,,,,,
+"dev_board","0906015207614110","dev_board/3dmodels/0906-0-15-20-76-14-11-0.stp",0,0,-1.55,0,0,0
+"dev_board","5849000150000030","dev_board/3dmodels/5849-0-00-15-00-00-03-0.stp",0,0,-6.39,0,0,0
+"dev_board","ABLIC_HSNT-4-1010","dev_board/3dmodels/S-1318D33-A4T2U4.step",0,0,0,-90,0,0
+"dev_board","B3U-1000P","dev_board/3dmodels/B3U-1000P.stp",0,0,0,-90,0,0
+"dev_board","BGA180C80P18X18_1500X1500X96","dev_board/3dmodels/AWR1843ARBGALPQ1.stp",0.37,-0.37,1.4,-180,0,0
+"dev_board","BGA4C50P2X2_100X100X69","dev_board/3dmodels/MAX9064EBS_TG45.stp",0,0,0,0,0,0
+"dev_board","BGA59C50P8X8_500X500X60","dev_board/3dmodels/STM32WBA55UGI7.stp",0,0,0,0,0,0
+"dev_board","BGA64C50P8X8_500X500X60","dev_board/3dmodels/STM32U545REI6Q.stp",0,0,0,0,0,0
+"dev_board","BGA6C40P2X3_80X120X50","dev_board/3dmodels/TPS62088YFPR.stp",0,0,0,0,0,0
+"dev_board","BGA74C80P9X10_890X1030X220","dev_board/3dmodels/VB1943CAJX_1.stp",0,0,0,-90,0,0
+"dev_board","BGA96C80P9X16_800X1400X120","dev_board/3dmodels/MT41K256M16TW-107_PTR.stp",0,0,0,0,0,0
+"dev_board","BGA9C40P3X3_128X128X54","dev_board/3dmodels/BMM350.step",0,0,0,-90,0,0
+"dev_board","BLM18SP221SN1B","dev_board/3dmodels/BLM18PG221SN1D.stp",0.8,0,0.4,-90,0,-90
+"dev_board","BUK6D12060PX","dev_board/3dmodels/BUK6D120-60PX.stp",-1.52,0.86,1.28,90,0,90
+"dev_board","Capacitor_SMD_C_0402_1005Metric","dev_board/3dmodels/C_0402_1005Metric.step",0,0,0,0,0,0
+"dev_board","Capacitor_SMD_C_0603_1608Metric","dev_board/3dmodels/C_0603_1608Metric.step",0,0,0,0,0,0
+"dev_board","Capacitor_SMD_C_0805_2012Metric","dev_board/3dmodels/C_0805_2012Metric.step",0,0,0,0,0,0
+"dev_board","Capacitor_SMD_C_1206_3216Metric","(no 3D model)",,,,,,
+"dev_board","Capacitor_Tantalum_SMD_CP_EIA-3528-12_Kemet-T","dev_board/3dmodels/CP_EIA-3528-12_Kemet-T.step",0,0,0,0,0,0
+"dev_board","Capacitor_Tantalum_SMD_CP_EIA-7343-15_Kemet-W","dev_board/3dmodels/CP_EIA-7343-15_Kemet-W.step",0,0,0,0,0,0
+"dev_board","Castellations_activation_interface","(no 3D model)",,,,,,
+"dev_board","Castellations_aft_end_board","(no 3D model)",,,,,,
+"dev_board","Castellations_camera_module","(no 3D model)",,,,,,
+"dev_board","Castellations_companion_compute","(no 3D model)",,,,,,
+"dev_board","Castellations_power_board","(no 3D model)",,,,,,
+"dev_board","Castellations_qpd_module","(no 3D model)",,,,,,
+"dev_board","Castellations_radar_module","(no 3D model)",,,,,,
+"dev_board","Castellations_wakeup_board","(no 3D model)",,,,,,
+"dev_board","CellLead_PTH_Pin_D1","(no 3D model)",,,,,,
+"dev_board","CellLead_PTH_Wire_D0.8","(no 3D model)",,,,,,
+"dev_board","Ceramic_QFN_5032_10pins","dev_board/3dmodels/SiT5356AECFQ-33N0-20.000000.stp",0,0,0,0,0,0
+"dev_board","Clamp_Tab_D1.6mm","(no 3D model)",,,,,,
+"dev_board","DFN8_2x2_GRF2073W_DS","dev_board/3dmodels/GRF2073W.stp",0,0,0,0,0,0
+"dev_board","DRV5032AJDMRR","dev_board/3dmodels/DRV5032AJDMRR.stp",0,0,0,0,0,0
+"dev_board","DSC1001CI50080000","dev_board/3dmodels/DSC1001CI5-008.0000.stp",0,0,0,0,0,0
+"dev_board","HDRV40W64P254X254_2X20_5080X508X869P","(no 3D model)",,,,,,
+"dev_board","HealthCoil_8t_R13-15.5","(no 3D model)",,,,,,
+"dev_board","INDPM5552X200N","dev_board/3dmodels/IHLP2020BZER100M01.stp",-0.72,6.09,-2.43,-90,0,0
+"dev_board","Inductor_SMD_L_0402_1005Metric","dev_board/3dmodels/L_0402_1005Metric.step",0,0,0,0,0,0
+"dev_board","Inductor_SMD_L_2012_2.0x1.25mm","dev_board/3dmodels/L_0805_2012Metric.step",0,0,0,0,0,0
+"dev_board","Infineon_TSLP-2-1","(no 3D model)",,,,,,
+"dev_board","LEDC1608X90N","dev_board/3dmodels/LTST-C190GKT.stp",-0.02,0,0.14,-90,0,0
+"dev_board","LGA-14_1","dev_board/3dmodels/ISM330DLCTR.stp",0,0,0.43,0,0,0
+"dev_board","LIS3DHTR (LGA-16)","dev_board/3dmodels/H3LIS331DLTR.stp",0,0,0,90,-180,0
+"dev_board","LQG15HS1N8S02D","dev_board/3dmodels/LQG15HS1N8S02D.stp",0,0,0,0,0,0
+"dev_board","LQG15WH0N7B02D","dev_board/3dmodels/LQG15HS1N3S02D.stp",0,0,0,0,0,0
+"dev_board","MT03_092_QPD_TO8","(no 3D model)",,,,,,
+"dev_board","NCS1292","dev_board/3dmodels/NCS1-292P.stp",0,0,0,0,0,0
+"dev_board","Nexperia_SOD882","(no 3D model)",,,,,,
+"dev_board","Nexperia_SOT886","(no 3D model)",,,,,,
+"dev_board","OSC_TG2016SMN_32.0000M-MCGNNM0","(no 3D model)",,,,,,
+"dev_board","PG-TSLP-6-4","dev_board/3dmodels/BGS12P2L6E6327XTSA1.stp",0,0,0,-90,0,0
+"dev_board","PiezoDisc_PIC181_D10T05_Wrap","(no 3D model)",,,,,,
+"dev_board","Pogo_Pad_D2.0mm","(no 3D model)",,,,,,
+"dev_board","Pogo_Pad_S2.0mm","(no 3D model)",,,,,,
+"dev_board","QFN16_3x3_GRF5126_DS","dev_board/3dmodels/GRF5126.stp",0,0,0,-90,0,0
+"dev_board","QFN40P650X650X90-57N-D","dev_board/3dmodels/STPMIC25APQR.stp",0,0,0,0,0,0
+"dev_board","QFN50P200X200X50-10N-D","dev_board/3dmodels/PE64904C-Z.stp",0,0,0,0,0,0
+"dev_board","QFN50P300X300X90-17N-D","dev_board/3dmodels/PAC1941T-1E_4MX.stp",0,0,0,0,0,0
+"dev_board","QFN50P300X300X90-17N","(no 3D model)",,,,,,
+"dev_board","QFN50P500X500X100-33N-D","dev_board/3dmodels/LR2021IMLTRT.stp",0,0,0,0,0,0
+"dev_board","QFN50P500X500X100-33N","dev_board/3dmodels/ADF4351BCPZ.stp",0,0,0.05,-90,0,0
+"dev_board","QFN50P700X700X60-49N","dev_board/3dmodels/STM32U535CBU6.stp",0,0,0,0,0,0
+"dev_board","QFN_2520_4pins","dev_board/3dmodels/SiT8008BI-12-33E-27.000000.stp",0,0,0.02,-90,0,-180
+"dev_board","RB160VAM60","dev_board/3dmodels/RB160VAM-60.stp",0,0,0,0,0,0
+"dev_board","RR123-1H02-612","dev_board/3dmodels/RR123-1H02-612.stp",0,0,0.01,-90,0,0
+"dev_board","Resistor_SMD_R_0402_1005Metric","dev_board/3dmodels/Resistor_SMD.3dshapes.step",0,0,0,0,0,0
+"dev_board","Resistor_SMD_R_0603_1608Metric","(no 3D model)",,,,,,
+"dev_board","SAMESKY_UJ20-C-H-G-MSMT-1A-P16-TR-67","dev_board/3dmodels/UJ20-C-H-G-MSMT-1A-P16-TR-67.step",5.565,-6,-0.5,0,180,0
+"dev_board","SC70-5","(no 3D model)",,,,,,
+"dev_board","SHDR2W70P0X500_1X2_1000X750X1150P","dev_board/3dmodels/691137710002.stp",7.55,4.05,0,-90,0,-90
+"dev_board","SIT1533AIH4DCC32768E","dev_board/3dmodels/SIT1533AI-H4-DCC-32.768E.stp",-0.17,0,0,-90,0,0
+"dev_board","SODFL3517X110N","dev_board/3dmodels/PNS40010AERX.stp",-1.21,1.89,-1.23,-90,0,0
+"dev_board","SON127P600X500X80-9N-D","dev_board/3dmodels/SST26VF080A-104I_MF.stp",0,0,0,0,0,0
+"dev_board","SON127P800X600X65-8N","dev_board/3dmodels/MT29F4G01ABAFDWB-IT_F.stp",0,0,0,-90,0,0
+"dev_board","SON50P150X200X100-8N","dev_board/3dmodels/TPS62822DLCR.stp",0,0,0,0,0,0
+"dev_board","SON50P200X300X100-9N","dev_board/3dmodels/MCP9808T-E_MC.step",0,0,0,-90,0,0
+"dev_board","SON50P300X500X80-17N","dev_board/3dmodels/LTC3124EDHC_TRPBF.stp",0,0,0,-90,0,90
+"dev_board","SON65P300X300X100-9N-D","dev_board/3dmodels/TJA1462BTK_0Z.stp",0,0,0.03,0,0,0
+"dev_board","SON95P300X300X100-7N-D","dev_board/3dmodels/LDL112PV33R.stp",0,0,0,0,0,0
+"dev_board","SOP65P490X110-8N","dev_board/3dmodels/INA241A2IDGKR.stp",0,0,0,0,0,0
+"dev_board","SOP65P640X120-14N","dev_board/3dmodels/SN74CB3T3125PWR.stp",0,0,0,0,0,0
+"dev_board","SOP65P640X120-15N","dev_board/3dmodels/TPS61175PWPR.stp",0,0,0,0,0,0
+"dev_board","SOT1220","dev_board/3dmodels/PMPB15XP_115.stp",-1.52,0.86,1.28,90,0,90
+"dev_board","SOT95P237X112-3N","dev_board/3dmodels/NX7002AK_215.stp",0,0,0,0,0,0
+"dev_board","SOT95P280X100-5N","dev_board/3dmodels/AD8603AUJZ-R2.stp",0,0,0,0,0,0
+"dev_board","SOT95P280X145-5N","dev_board/3dmodels/LP5907MFX-2.8_NOPB.stp",0,0,0,0,0,0
+"dev_board","SOT95P280X145-6N","dev_board/3dmodels/USBLC6-4SC6.stp",0,0,0,0,0,0
+"dev_board","SOT96P240X110-3N","dev_board/3dmodels/DMN6075SQ-7.stp",0,0,0,0,0,0
+"dev_board","SOTFL65P210X105-3N","dev_board/3dmodels/RU1J002YNTCL.stp",0,0,0.01,0,0,90
+"dev_board","SSM3J372RLF","dev_board/3dmodels/SSM3J372R_LF.stp",0,0,0,0,0,0
+"dev_board","SSM3J64CTCL3F","dev_board/3dmodels/SSM3K35CTC_L3F.stp",0,0,0,0,0,-90
+"dev_board","STM32MP255FAL3","dev_board/3dmodels/STM32MP255FAL3.stp",0,0,0,0,0,0
+"dev_board","TI_RTE0016C_WQFN16_3x3","(no 3D model)",,,,,,
+"dev_board","TSOT-23-8","(no 3D model)",,,,,,
+"dev_board","TestPoint_TestPoint_Pad_D1.5mm","(no 3D model)",,,,,,
+"dev_board","TestPoint_TestPoint_Pad_D1mm","(no 3D model)",,,,,,
+"dev_board","Toshiba_SOD-923","(no 3D model)",,,,,,
+"dev_board","U.FL-R-SMT-1_10_","dev_board/3dmodels/U.FL-R-SMT-1_10_.stp",0,0.05,0,0,0,0
+"dev_board","UDB_VARIATIONA","dev_board/3dmodels/LTC5549IUDB.stp",0,0,0,0,0,0
+"dev_board","VEMD5110X01","dev_board/3dmodels/VEMD5110X01.stp",0,0,0,0,0,0
+"dev_board","VSMB1940X01","(no 3D model)",,,,,,
+"dev_board","WE-MAPI_4020","dev_board/3dmodels/74438356047.stp",0,0,2.1,-180,0,0
+"dev_board","smash_mech_activation_interface_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_aft_end_board_aft_cap_screw","(no 3D model)",,,,,,
+"dev_board","smash_mech_camera_module_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_companion_compute_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_fixture_collar","(no 3D model)",,,,,,
+"dev_board","smash_mech_mount","(no 3D model)",,,,,,
+"dev_board","smash_mech_power_board_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_qpd_module_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_radar_module_potting","(no 3D model)",,,,,,
+"dev_board","smash_mech_wakeup_board_potting","(no 3D model)",,,,,,

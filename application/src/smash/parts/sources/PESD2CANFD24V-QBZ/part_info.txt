@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PESD2CANFD24V-QBZ
+PartCategory=Diode ESD (Uni-directional)
+PackageCategory=Other
+PinCount=4
+Version=9.6
+Released=2020-12-11 12:06:20
+Downloaded=2026-11-25 15:53:00
+3D=Y

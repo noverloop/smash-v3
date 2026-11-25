@@ -1,0 +1,10 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+ESDALC6V1-5P6,STMicroelectronics,7,U_ESD_* R29A,"5-line ESD array SOT666; crown signal lanes (check COO: not the Shenzhen back-end)"
+"PESD5V0L5UV,115",Nexperia,7,U_ESD_* R29B,"pin-compatible alternate SOT666 (check COO)"
+ESD5Z6.0T5G,onsemi,1,D_EXT_VIN_TVS R29C,"TVS 6.0 V SOD-523 on EXT_VIN (check COO)"
+"PESD36VS1UL,315",Nexperia,4,D_ACT_COL*_TVS R29D,"ESD diode 36 V DFN1006-2 on the cutter columns (check COO)"
+"SSM3K339R,LF",Toshiba,4,Q_ACT_COL* R29E,"N-FET 40 V 2 A SOT-23F, 238 mOhm @ 2.5 V; cutter columns"
+ERJ-3BSFR20V,Panasonic,3,R_BAT*_ISO R29F,"0.2 Ohm 1 % 0.25 W 0603 per-cell resistor"
+UCR03EVPFLR200,ROHM,3,R_BAT*_ISO R29G,"0.2 Ohm 0.25 W 0603 alternate"
+MAX9117EXK+T,Analog Devices,1,U_DEV_OVP R29H,"comparator + reference SC70-5, dev board OVP"
+PMEG4005EPK,Nexperia,16,D_ACT_WIRE_* R29I,"0.5 A 40 V Schottky DFN1608D-2 (candidate for the wire diodes)"

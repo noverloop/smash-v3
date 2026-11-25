@@ -6,7 +6,12 @@
     "package": "4-bump UCSP B4+1, 1.0x1.0 mm, 0.5 mm pitch, 0.64±0.05 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/MAX9064EBS+TG45/MAX9060-MAX9064.pdf",
-    "notes": "MAX9064 = internal 0.2 V reference, NONINVERTING input, PUSH-PULL output: OUT high when IN > VREF (toc18). VREF 188/200/212 mV @25C, 185-215 mV over -40..85C; VHYS ±0.9 mV. 'T' = tape and reel, G45 = protective die coating."
+    "notes": "MAX9064 = internal 0.2 V reference, NONINVERTING input, PUSH-PULL output: OUT high when IN > VREF (toc18). VREF 188/200/212 mV @25C, 185-215 mV over -40..85C; VHYS ±0.9 mV. 'T' = tape and reel, G45 = protective die coating. height_max_mm [DS p11 UCSP outline: A 0.64±0.05] [temp] DS Absolute Maximum Ratings: Operating Temperature Range −40…+85 °C",
+    "height_max_mm": 0.69,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -26,7 +31,8 @@
         -0.3,
         5.5
       ],
-      "note": "Noninverting input vs internal 0.2 V. Input range independent of VCC; stays high-Z when VCC = 0. No ESD clamp to VCC. Abs max -0.3 to +6 V, ±20 mA."
+      "note": "Noninverting input vs internal 0.2 V. Input range independent of VCC; stays high-Z when VCC = 0. No ESD clamp to VCC. Abs max -0.3 to +6 V, ±20 mA. [DS p2 Abs Max: VCC, REF, IN to GND −0.3 V to +6 V; p7: input may exceed VCC]",
+      "max_v": 6.0
     },
     {
       "num": "B1",
@@ -39,7 +45,8 @@
         1.0,
         5.5
       ],
-      "note": "Bypass to GND with 0.1 µF."
+      "note": "Bypass to GND with 0.1 µF. [DS p7 Pin/Bump Description: power-supply voltage, bypass 0.1 uF]",
+      "connect": "supply"
     },
     {
       "num": "B2",
@@ -47,7 +54,9 @@
       "type": "ground",
       "aliases": [
         "V-"
-      ]
+      ],
+      "connect": "gnd",
+      "note": "[DS p7: GROUND]"
     }
   ]
 }

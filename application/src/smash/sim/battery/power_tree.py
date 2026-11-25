@@ -41,18 +41,14 @@ _PRE_R21: tuple[Converter, ...] = (   # the tree before the 2026-11-23 swaps
     Converter("U_AON_LDO", "BAT", "3V3_AON", "ldo", 3.3, iq_a=0.1e-6, dropout_v=0.25,
               v_out_min=1.8,   # WBA55 1.71 V, TLV3691 0.9 V
               basis="S-1318 nano-LDO (AON domain off BAT_RAW)"),
-    Converter("U_BOOST", "BAT", "BOOST_OUT", "boost", 3.87, eta=0.88, iq_a=19e-6,
-              vin_min=0.8, vin_uvlo=0.35, l_h=2.2e-6, f_hz=500e3,
-              i_sw_max_a=0.80, i_out_max_a=0.35, i_bypass_max_a=0.40,
-              basis="MCP1640C DS: 800 mA peak input limit (typ only), "
-                    "350 mA out typ @3.3->5.0 V, 400 mA bypass abs max"),
-    Converter("U_PWR", "BOOST_OUT", "3V3", "ldo", 3.3, iq_a=50e-6, dropout_v=0.35,
-              v_out_min=3.0,   # ADF4351 / LTC5552 3.0 V min class
-              i_out_max_a=1.2, basis="LDL112PV33R, 350 mV dropout @1.2 A"),
-    Converter("U_XV_BOOST", "BAT", "XV_5V", "boost", 4.95, eta=0.85, iq_a=19e-6,
-              vin_min=0.8, vin_uvlo=0.35, l_h=2.2e-6, f_hz=500e3,
-              i_sw_max_a=0.80, i_out_max_a=0.35,
-              basis="MCP1640D on REG_IN_MAIN (2026-11-22), PA 110 mA @ 4.95 V"),
+    # 3V3 = TPS62822 buck off the 5 V boost (U_PWR); the S4 PA rail = a P-FET
+    # switch off COMP_5V (modelled as a near-zero-dropout pass element)
+    Converter("U_PWR", "COMP_5V", "3V3", "buck", 3.3, eta=0.90, iq_a=4e-6,
+              vin_min=3.4, vin_uvlo=2.2, i_out_max_a=2.0,
+              basis="TPS62822DLC: VIN 2.4-5.5 V, 2 A, ILIM 2.7 A min (3V3 off COMP_5V_RAW)"),
+    Converter("U_XV_PA_SW", "COMP_5V", "XV_5V", "ldo", 5.03, iq_a=0.0, dropout_v=0.01,
+              v_out_min=4.5,
+              basis="SSM3J372R P-FET switch, ~0.05 ohm (PA 110 mA)"),
     Converter("U_COMP_BOOST", "BAT", "COMP_5V", "boost", 5.03, eta=0.88, iq_a=3.5e-3,
               vin_min=2.9, vin_uvlo=2.7, l_h=4.7e-6, f_hz=600e3,
               i_sw_max_a=3.0,

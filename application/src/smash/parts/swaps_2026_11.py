@@ -51,7 +51,8 @@ def add_dsc1001ci1_027_0000(design, ref: str, **overrides) -> Chip:
     """Microchip DSC1001CI1-027.0000 — same DSC1001 die, ±50 ppm grade."""
     from smash.parts.oscillators import add_dsc1001ci5_027_0000
     ov = _renumber("DSC1001CI5-027.0000", "DSC1001CI1-027.0000",
-                   note="looser stability grade, stocked at 2 suppliers")
+                   note="looser stability grade, stocked at 2 suppliers",
+                   description="27 MHz MEMS oscillator, ±50 ppm, V_DD=1.7..3.6 V, CDFN 3.2×2.5 mm 4-pad")
     ov.update(overrides)
     return add_dsc1001ci5_027_0000(design, ref, **ov)
 
@@ -257,7 +258,9 @@ def add_tc78h653ftg(design, ref: str, **overrides) -> Chip:
     the coil current is set by VM / winding R, firmware PWMs ENB to limit it.
     Generic IPC QFN-16 land (no vendor land); EP → GND."""
     pins = [Pin(num=str(n), name=nm, type=("ground" if nm.startswith(("GND", "EP")) else
-                                           "nc" if nm.startswith("NC") else "io"))
+                                           "nc" if nm.startswith("NC") else
+                                           "power" if nm == "VM" else
+                                           "output" if nm.startswith("OUT") else "input"))
             for n, nm in _TC78H653_PINS.items()]
     return _sam(design, ref, pn="TC78H653FTG,EL", part_dir="TC78H653FTG_EL",
                 mod="QFN50P300X300X90-17N.kicad_mod", package="P-VQFN16-0303 (3×3)",
@@ -406,10 +409,28 @@ def add_ssm3k7002kfu_lf(design, ref: str, **overrides) -> Chip:
                 note=f"33 V-position replacement for RU1J002YNTCL — {_WHY}.", **overrides)
 
 
+def add_nx7002ak_215(design, ref: str, **overrides) -> Chip:
+    """Nexperia NX7002AK,215 — N-FET 60 V, 190 mA (Tamb 25 °C) / 760 mA
+    peak, V_GSth 1.1-2.1 V, R_DS(on) 5.2 Ω max at V_GS 5 V, V_GS ±20 V,
+    SOT23 (TO-236AB) 2.9 × 2.5 × 1.1 mm max. Pins 1 G, 2 S, 3 D (DS Table 2).
+    For the 33 V activation / cutter positions (≤ 120 mA wire pulses) and the
+    health-coil driver (~0.13 A pulses at the 3.3 V gate drive). IPC
+    SOT95P237 land (= the DS reflow footprint, 0.95 mm pitch)."""
+    pins = [Pin(num="1", name="G", aliases=["Gate"], type="input"),
+            Pin(num="2", name="S", aliases=["Source"], type="io"),
+            Pin(num="3", name="D", aliases=["Drain"], type="io")]
+    return _sam(design, ref, pn="NX7002AK,215", part_dir="NX7002AK_215", mod="SOT95P237X112-3N.kicad_mod",
+                package="SOT23 (TO-236AB)", height_mm=1.1, size_mm=(2.9, 2.5), manf="Nexperia",
+                description="N-MOSFET 60 V 190 mA, logic-level, SOT23", pins=pins, ring_courtyard=True,
+                datasheet="application/src/smash/parts/sources/NX7002AK_215/NX7002AK_215.pdf",
+                note="Sourcing round 25: Mouser + Farnell + Digi-Key, Malaysia.", **overrides)
+
+
 def add_ihlp2020bzer100m01(design, ref: str, **overrides) -> Chip:
     """Vishay IHLP2020BZER100M01 — 10 µH ±20 %, IHLP-2020BZ-01, 5.49 × 5.18 ×
     2.0 mm. Replaces the XGL5020-822 on L_ACTIVATE (round 19: Mouser + Digi-Key
-    Mexico lots). CHECK Isat against the TPS61175 peak (DS: ~2.5-3 A class)."""
+    Mexico lots). Isat 4.0 A typ (20 % drop), heat rating 2.3 A: covers the
+    TPS61175's 1.29 A operating peak (electrical audit)."""
     pins = [Pin(num="1", name="1", type="passive"), Pin(num="2", name="2", type="passive")]
     return _sam(design, ref, pn="IHLP2020BZER100M01", part_dir="IHLP2020BZER100M01",
                 mod="INDPM5552X200N.kicad_mod", package="IHLP-2020BZ", height_mm=2.0,
@@ -533,6 +554,19 @@ def add_s1318d18_a4t2u4(design, ref: str, **overrides) -> Chip:
              name="S-1318D18-A4T2U4", value="1.8V",
              description="LDO 1.8 V 100 mA, 95 nA Iq, HSNT-4 1.0×1.0×0.4",
              note="1.8 V code of the S-1318 family (BMM350 VDD).")
+    f.update(overrides)
+    return add_s1318d33_a4t2u4(design, ref, **f)
+
+
+def add_s1318a18_a4t2u4(design, ref: str, **overrides) -> Chip:
+    """ABLIC S-1318A18-A4T2U4 — 1.8 V, A type (S-1318 DS Table 1: discharge
+    shunt + ON/OFF constant-current pull-down), same HSNT-4(1010) land and
+    pinout as the D type. With ON/OFF tied to VIN it draws 0.1 µA more (DS
+    Table 12 note 2) — on the Ready-only 3V3 rail, so not a shelf cost."""
+    f = dict(manf_pn="S-1318A18-A4T2U4", canonical_id=canonical_id("S-1318A18-A4T2U4"),
+             name="S-1318A18-A4T2U4", value="1.8V",
+             description="LDO 1.8 V 100 mA, 95 nA Iq, HSNT-4 1.0×1.0×0.4",
+             note="1.8 V A-type code of the S-1318 family (BMM350 VDD); sourcing round 25: Mouser + Digi-Key, Japan.")
     f.update(overrides)
     return add_s1318d33_a4t2u4(design, ref, **f)
 
@@ -691,9 +725,9 @@ def add_max9064ebs_tg45(design, ref: str, **overrides) -> Chip:
     INTERNAL 0.2 V threshold (one input), push-pull output, ~0.4 µA, 1.0-5.5 V.
     UCSP-4 2 × 2 bumps at 0.5 mm, 1.0 × 1.0 × 0.69 mm max (SamacSys
     BGA4C50P2X2_100X100X69). Bumps (SamacSys symbol): A1 OUT, A2 IN, B1 VCC,
-    B2 GND. Sourcing round 23 (2026-11-23): Farnell 5,300 + Digi-Key 9,626
-    Taiwan, Mouser 211 US. ⚠ Output polarity and threshold tolerance are from
-    the R23 search, not yet the datasheet — firmware picks the EXTI edge."""
+    B2 GND, matching the datasheet's "TOP VIEW (BUMPS ON BOTTOM)" (19-4105 Rev 11 p.1)
+    and pin table (p.7): noninverting input, push-pull output. Sourcing round 23
+    (2026-11-23): Farnell 5,300 + Digi-Key 9,626 Taiwan, Mouser 211 US."""
     pins = [Pin(num="A1", name="OUT", type="output"),
             Pin(num="A2", name="IN", aliases=["IN+"], type="input"),
             Pin(num="B1", name="VCC", aliases=["V+"], type="power"),

@@ -6,7 +6,12 @@
     "package": "TSSOP-14 (PW) 5.0x4.4 mm, 0.65 mm pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.ti.com/lit/ds/symlink/sn74cb3t3125.pdf",
-    "notes": "Datasheet Pin Functions table lists 8=3A, 9=3B, 11=4A, 12=4B, which contradicts its own PW/RGY top-view drawing and the standard '125 pinout (8=3B, 9=3A, 11=4B, 12=4A). Drawing followed. A/B are symmetric FET-switch terminals, so the consequence is naming only. Top mark KS125."
+    "notes": "Datasheet Pin Functions table lists 8=3A, 9=3B, 11=4A, 12=4B, which contradicts its own PW/RGY top-view drawing and the standard '125 pinout (8=3B, 9=3A, 11=4B, 12=4A). Drawing followed. A/B are symmetric FET-switch terminals, so the consequence is naming only. Top mark KS125. [height] 1.2 mm max: DS PW0014A outline: 1.2 MAX. [temp] DS 6.3 Recommended Operating Conditions: TA −40…85 °C",
+    "height_max_mm": 1.2,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -16,17 +21,32 @@
       "aliases": [
         "1OE"
       ],
-      "note": "Active-low; unused control inputs must be held at VCC or GND."
+      "note": "Active-low; unused control inputs must be held at VCC or GND.; [connect] DS §6.3 note (1): unused control inputs must be held at VCC or GND; [enrich] DS §6.1 abs max: control input -0.5..7 V; §6.3: VIH 2 V min (VCC 2.7-3.6 V; 1.7 V at VCC 2.3-2.7 V), VIL 0.7 V max (VCC 2.3-2.7 V; 0.8 V at VCC 2.7-3.6 V)",
+      "connect": "defined",
+      "unused": "defined",
+      "max_v": 7,
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.7,
+        "abs"
+      ]
     },
     {
       "num": "2",
       "name": "1A",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "3",
       "name": "1B",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "4",
@@ -35,32 +55,53 @@
       "aliases": [
         "2OE"
       ],
-      "note": "Do not float."
+      "note": "Do not float.; [connect] DS §6.3 note (1): unused control inputs must be held at VCC or GND; [enrich] DS §6.1 abs max: control input -0.5..7 V; §6.3: VIH 2 V min (VCC 2.7-3.6 V; 1.7 V at VCC 2.3-2.7 V), VIL 0.7 V max (VCC 2.3-2.7 V; 0.8 V at VCC 2.7-3.6 V)",
+      "connect": "defined",
+      "unused": "defined",
+      "max_v": 7,
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.7,
+        "abs"
+      ]
     },
     {
       "num": "5",
       "name": "2A",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "6",
       "name": "2B",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "7",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Pin Functions: GND"
     },
     {
       "num": "8",
       "name": "3B",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "9",
       "name": "3A",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "10",
@@ -69,17 +110,32 @@
       "aliases": [
         "3OE"
       ],
-      "note": "Do not float."
+      "note": "Do not float.; [connect] DS §6.3 note (1): unused control inputs must be held at VCC or GND; [enrich] DS §6.1 abs max: control input -0.5..7 V; §6.3: VIH 2 V min (VCC 2.7-3.6 V; 1.7 V at VCC 2.3-2.7 V), VIL 0.7 V max (VCC 2.3-2.7 V; 0.8 V at VCC 2.7-3.6 V)",
+      "connect": "defined",
+      "unused": "defined",
+      "max_v": 7,
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.7,
+        "abs"
+      ]
     },
     {
       "num": "11",
       "name": "4B",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "12",
       "name": "4A",
-      "type": "io"
+      "type": "io",
+      "max_v": 7,
+      "note": "[enrich] DS §6.1 abs max: switch I/O -0.5..7 V (recommended 0..5.5 V), independent of VCC"
     },
     {
       "num": "13",
@@ -88,7 +144,18 @@
       "aliases": [
         "4OE"
       ],
-      "note": "Do not float."
+      "note": "Do not float.; [connect] DS §6.3 note (1): unused control inputs must be held at VCC or GND; [enrich] DS §6.1 abs max: control input -0.5..7 V; §6.3: VIH 2 V min (VCC 2.7-3.6 V; 1.7 V at VCC 2.3-2.7 V), VIL 0.7 V max (VCC 2.3-2.7 V; 0.8 V at VCC 2.7-3.6 V)",
+      "connect": "defined",
+      "unused": "defined",
+      "max_v": 7,
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.7,
+        "abs"
+      ]
     },
     {
       "num": "14",
@@ -98,7 +165,8 @@
         2.3,
         3.6
       ],
-      "note": "0.1 µF bypass. I/O 0..5.5 V."
+      "note": "0.1 µF bypass. I/O 0..5.5 V.; [connect] DS Pin Functions: VCC supply voltage",
+      "connect": "supply"
     }
   ]
 }

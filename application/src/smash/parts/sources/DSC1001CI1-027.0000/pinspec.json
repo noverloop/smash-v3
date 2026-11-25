@@ -1,17 +1,57 @@
 {
   "_meta": {
-      "manf_pn": "DSC1001CI1-027.0000",
-      "datasheet": "Microchip DS20005529B (2017), DSC1001/3/4",
-      "datasheet_section": "Table 2-1 (CDFN pin functions) + §4.1 (standby function) + Recommended Operating Conditions + Product Identification System p.21",
-      "package": "CDFN-4 3.2×2.5×0.85 mm (package code C)",
-      "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
-      "verified_from_pdf": "application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
-      "notes": "Order code: C = 3.2×2.5 CDFN, I = -40..+85 °C, 1 = ±50 ppm, 027.0000 = 27 MHz. Camera EXTCLK (VB1943, CLK_RANGE 24.01-36 MHz). STANDBY# abs max is VDD + 0.3 V; the range below uses the 3.6 V VDD ceiling."
+    "manf_pn": "DSC1001CI1-027.0000",
+    "datasheet": "Microchip DS20005529B (2017), DSC1001/3/4",
+    "datasheet_section": "Table 2-1 (CDFN pin functions) + §4.1 (standby function) + Recommended Operating Conditions + Product Identification System p.21",
+    "package": "CDFN-4 3.2×2.5×0.85 mm (package code C)",
+    "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
+    "verified_from_pdf": "application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
+    "notes": "Order code: C = 3.2×2.5 CDFN, I = -40..+85 °C, 1 = ±50 ppm, 027.0000 = 27 MHz. Camera EXTCLK (VB1943, CLK_RANGE 24.01-36 MHz). STANDBY# abs max is VDD + 0.3 V; the range below uses the 3.6 V VDD ceiling. [temp] DS Recommended Operating Conditions / Temperature Ranges: TA −40…+85 °C (Ordering Option I)",
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
-    {"num": "1", "name": "STANDBY#", "type": "input", "aliases": ["STANDBY", "STB", "OE#"], "voltage_range_v": [-0.3, 3.9], "note": "High or open = output on (internal pull-up); low = output high-Z (§4.1). Abs max -0.3 V to VDD + 0.3 V"},
-    {"num": "2", "name": "GND", "type": "ground"},
-    {"num": "3", "name": "OUT", "type": "output", "frequency_hz": 27000000, "note": "27 MHz CMOS output, ±50 ppm total (stability code 1); load R > 10 kΩ, C ≤ 15 pF"},
-    {"num": "4", "name": "VDD", "type": "power", "aliases": ["V_DD"], "voltage_range_v": [1.7, 3.6], "note": "1.7-3.6 V (Recommended Operating Conditions)"}
+    {
+      "num": "1",
+      "name": "STANDBY#",
+      "type": "input",
+      "aliases": [
+        "STANDBY",
+        "STB",
+        "OE#"
+      ],
+      "voltage_range_v": [
+        -0.3,
+        3.9
+      ],
+      "note": "High or open = output on (internal pull-up); low = output high-Z (§4.1). Abs max -0.3 V to VDD + 0.3 V"
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "OUT",
+      "type": "output",
+      "frequency_hz": 27000000,
+      "note": "27 MHz CMOS output, ±50 ppm total (stability code 1); load R > 10 kΩ, C ≤ 15 pF"
+    },
+    {
+      "num": "4",
+      "name": "VDD",
+      "type": "power",
+      "aliases": [
+        "V_DD"
+      ],
+      "voltage_range_v": [
+        1.7,
+        3.6
+      ],
+      "note": "1.7-3.6 V (Recommended Operating Conditions)"
+    }
   ]
 }

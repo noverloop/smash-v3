@@ -257,6 +257,43 @@ def add_blm18pg221sn1d(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_blm18sg121tn1d(design, ref: str, **overrides) -> Chip:
+    """Murata BLM18SG121TN1D — chip ferrite bead for DC power lines (thin
+    type), 0603 (1608M) × 0.5 mm, 120 Ω ±25 % at 100 MHz, rated 3000 mA at
+    85 °C / 1000 mA at 125 °C, DCR ≤ 0.025 Ω (initial), 0.035 Ω after test.
+    Murata spec JENF243A-0003AN-01. Same BLM18 land as BLM18PG221SN1D.
+    Series element of the AWR 1.3 V / 1.8 V post-filters."""
+    pn = "BLM18SG121TN1D"
+    fp_mod = src("BLM18PG221SN1D", "BLM18SP221SN1B.kicad_mod")
+    fields = dict(
+        manf="Murata",
+        manf_pn=pn, canonical_id=canonical_id(pn),
+        name=pn,
+        value="120R@100MHz",
+        description="Chip ferrite bead, 120 Ω @ 100 MHz, 3 A, 25 mΩ, 0603 thin (BLM18SG)",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        package="0603 (1608M)",
+        size_mm=(1.6, 0.8),
+        height_mm=0.5,
+        temp_range_c=(-55, 125),
+        i_rms_a=3.0,
+        pins=_two_pin(),
+        footprint=Footprint(
+            name="BLM18SP221SN1B",
+            package_class="SMD-FerriteBead",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            size_mm=(1.6, 0.8), height_mm=0.5,
+            source="samacsys",
+        ),
+        note=("Rated 3000 mA at 85 °C, 1000 mA at 125 °C (derate between); "
+              "DCR 25 mΩ max initial / 35 mΩ after testing."),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ═════════════════════════════════════════════════════════════════════════
 # Family-parameterized factories — generic R/C/L positions
 # ═════════════════════════════════════════════════════════════════════════
@@ -339,6 +376,34 @@ def add_resistor_0402_vishay(design, ref: str, *, value: str, **overrides) -> Ch
             "0.5%-TCR positions a thin-film series (PNP / TNPW) would be "
             "more appropriate — separate factory."
         ),
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_resistor_0603_vishay(design, ref: str, *, value: str, **overrides) -> Chip:
+    """Vishay CRCW0603 thick-film chip resistor, 1 % tolerance, 0.1 W, 75 V,
+    1.6 × 0.8 × 0.45 (+0.1) mm (Vishay 20035, CRCW e3). For positions whose
+    pulse or continuous dissipation exceeds the 0402's 0.063 W."""
+    family = "Vishay_CRCW0402"          # same CRCW e3 datasheet
+    fp = _stock_smd_2pad(
+        name="Resistor_SMD:R_0603_1608Metric",
+        size_mm=(1.6, 0.8), height_mm=0.55,
+        pad_size=(0.8, 0.95), pad_pitch_mm=1.65,
+        package_class="0603",
+    )
+    fields = dict(
+        manf="Vishay", manf_pn=f"CRCW0603 {value} 1% e3", value=value,
+        name=f"R_0603_{value}",
+        description=f"Vishay CRCW0603 thick-film resistor, {value}, 1%, 0.1W, 75V",
+        datasheet=datasheet_ref(family, "vishay_crcw_e3.pdf"),
+        package="0603", size_mm=(1.6, 0.8), height_mm=0.55,
+        temp_range_c=(-55, 155), voltage_rating_v=75.0, power_rating_w=0.1,
+        resistance_ohm=parse_resistance_ohm(value), tolerance_pct=1.0,
+        weight_g=weight_g_for_passive("0603"), fab_country="DE",
+        standards=["RoHS", "Pb-Free", "Halogen-Free"],
+        pins=_two_pin(), footprint=fp,
+        note="CRCW0603 thick-film 0603 (power / pulse positions).",
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
@@ -750,9 +815,10 @@ def add_capacitor_svpf_25v_330uf_panasonic(design, ref: str, **overrides) -> Chi
 
 
 def add_inductor_we_ki_0402_wurth(design, ref: str, *, value: str, **overrides) -> Chip:
-    """Würth WE-KI 0402 multilayer ceramic inductor — 1.0 × 0.5 × 0.55 mm.
+    """Würth WE-KI 0402 wire-wound ceramic inductor (744765xxxA) — 1.0 × 0.5 × 0.55 mm.
 
-    RF range 1–120 nH, high-Q, SRF up to 12.5 GHz. Use for RF matching
+    RF range 1–120 nH, high-Q, SRF up to 12.5 GHz; I_R falls with L
+    (6.2 nH 760-850 mA, 22 nH 400-490 mA). Check SRF against the band. Use for RF matching
     + low-current signal-path 0402 positions. For switching-regulator
     inductors at higher current, use TMS201210ALM or 744043100.
     """
@@ -994,6 +1060,29 @@ def add_inductor_murata_lqg15hs1n8s02d(design, ref: str, *, value: str = "1.8nH"
     return design.add_chip(ref=ref, **fields)
 
 
+def add_inductor_murata_lqg15wh0n7b02d(design, ref: str, *, value: str = "0.7nH", **overrides) -> Chip:
+    """Murata LQG15WH0N7B02D — 0.7 nH ±0.1 nH multilayer 0402, AEC-Q200;
+    I_R 1200 mA, R_DC 0.03 Ω max, SRF ≥ 15 GHz (Murata spec sheet). The
+    GRF5126 VDD1 feed (EVB BOM M14 = 0.7 nH; the 4.4-5.0 GHz tune keeps it).
+    Same LQG15 land + 0402 body as LQG15HS1N8S02D, so it reuses that STEP."""
+    pn, lib = "LQG15WH0N7B02D", "LQG15HS1N8S02D"
+    fp_mod = src(lib, "LQG15WH0N7B02D.kicad_mod")
+    fp = Footprint(name=pn, package_class="0402", pads=pads_from_kicad_mod(fp_mod),
+                   body_outline=outline_polygon(fp_mod, "F.Fab"), courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+                   size_mm=(1.0, 0.5), height_mm=0.55, model_3d_path=datasheet_ref(lib, f"{lib}.stp"),
+                   source="samacsys").ensure_courtyard_clearance()
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Murata LQG15WH multilayer RF inductor 0402, 0.7 nH, 1.2 A", package="0402",
+        size_mm=(1.0, 0.5), height_mm=0.55, inductance_h=parse_inductance_h(value),
+        weight_g=weight_g_for_passive("0402"), standards=["RoHS", "Pb-Free", "AEC-Q200"],
+        pins=_two_pin(), footprint=fp,
+        note="GRF5126 VDD1 bias feed (XV PA). 0.7 nH per the Guerrilla EVB (M14).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 def add_capacitor_grm31cr60j476me19l(design, ref: str, *, value: str = "47uF", **overrides) -> Chip:
     """Murata GRM31CR60J476ME19L — 47 µF 6.3 V X5R 1206, 1.6 ± 0.2 mm. Two in
     parallel replace the 100 µF T520W107 polymer (China lots, 2026-11-22);
@@ -1032,9 +1121,11 @@ def _grm21_22u(design, ref, *, pn, volts, value="22uF", **overrides) -> Chip:
 
 
 def add_capacitor_grm21br61a226me44l(design, ref: str, *, value: str = "22uF", **overrides) -> Chip:
-    """Murata GRM21BR61A226ME44L — 22 µF 10 V X5R 0805, 1.25 mm max. Bank
-    element for the battery rails (BAT_RAW / BAT_PROT); ~50-60 % left at 4 V bias."""
-    return _grm21_22u(design, ref, pn="GRM21BR61A226ME44L", volts=10, value=value, **overrides)
+    """Murata GRM21BR61A226ME51L — 22 µF 10 V X5R 0805, 1.25 mm. Bank
+    element for the battery rails (BAT_RAW / BAT_PROT); ~50-60 % left at 4 V
+    bias. Second source TDK C2012X5R1A226M125AB (same size, availability/
+    bom_alternates). (Function name kept for its call sites.)"""
+    return _grm21_22u(design, ref, pn="GRM21BR61A226ME51L", volts=10, value=value, **overrides)
 
 
 add_capacitor_grm21br61a226me44l.array_value = "22uF"
@@ -1086,6 +1177,49 @@ def add_capacitor_tdk_c2012x7r1h225k125ac(design, ref: str, *, value: str = "2.2
         voltage_rating_v=50.0, temp_range_c=(-55, 125), weight_g=weight_g_for_passive("0805"),
         standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
         note="50 V 2.2 µF X7R on the 33 V rail; DC bias at 33 V leaves well under 2.2 µF.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_grm31cc72a475ke11l(design, ref: str, *, value: str = "4.7uF", **overrides) -> Chip:
+    """Murata GRM31CC72A475KE11L — 4.7 µF 100 V X7R 1206, 1.6 ±0.2 mm (height
+    modelled at the 1.8 mm max). TPS61175 output on the 33 V rail: three of
+    them keep ≥ 4.7 µF at 33 V (SLVS892F §7.3) without raising the stack (a
+    2.5 mm 1210 pair grew the power↔compute gap by 0.4 mm). Second source
+    TDK CGA5L1X7R2A475K160AC (same 1206 1.6 mm; availability/bom_alternates)."""
+    pn = "GRM31CC72A475KE11L"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_1206_3216Metric", size_mm=(3.2, 1.6),
+                         height_mm=1.8, pad_size=(1.15, 1.8), pad_pitch_mm=3.0,
+                         package_class="1206")
+    fields = dict(
+        manf="Murata", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="Murata 1206 X7R 4.7 µF 100 V, 1.6 mm", package="1206", dielectric="X7R",
+        size_mm=(3.2, 1.6), height_mm=1.8, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=100.0, temp_range_c=(-55, 125), weight_g=weight_g_for_passive("1206"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="100 V on the 33 V rail; three in parallel for ≥ 4.7 µF effective.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+def add_capacitor_tdk_c3225x7r2a475k230ab(design, ref: str, *, value: str = "4.7uF", **overrides) -> Chip:
+    """TDK C3225X7R2A475K230AB — 4.7 µF 100 V X7R 1210, 2.30 ±0.20 mm (height
+    modelled at the 2.5 mm max). TPS61175 output on the 33 V rail: at 33 V
+    (a third of the rating) a 100 V 1210 keeps ≈ 3 µF, so two meet the
+    datasheet's ≥ 4.7 µF output-capacitor minimum (SLVS892F §7.3)."""
+    pn = "C3225X7R2A475K230AB"
+    fp = _stock_smd_2pad(name="Capacitor_SMD:C_1210_3225Metric", size_mm=(3.2, 2.5),
+                         height_mm=2.5, pad_size=(1.05, 2.65), pad_pitch_mm=2.95,
+                         package_class="1210")
+    fields = dict(
+        manf="TDK", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=value,
+        description="TDK 1210 X7R 4.7 µF 100 V, 2.3 mm", package="1210", dielectric="X7R",
+        size_mm=(3.2, 2.5), height_mm=2.5, capacitance_f=parse_capacitance_f(value),
+        voltage_rating_v=100.0, temp_range_c=(-55, 125), weight_g=weight_g_for_passive("1210"),
+        standards=["RoHS", "Pb-Free"], pins=_two_pin(), footprint=fp,
+        note="100 V on the 33 V rail so DC bias keeps ≈ 3 µF each.",
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)

@@ -6,7 +6,12 @@
     "package": "HSNT-4(1010) 1.0x1.0x0.38, heat sink",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/S-1318D33-A4T2U4/S-1318_datasheet.pdf",
-    "notes": "PL004-A-P-SD top view: 4 TL, 3 TR, 1 BL, 2 BR; 1-2 and 4-3 are the 0.65 mm pairs; heat-sink bar runs parallel to them. D type: no discharge, no ON/OFF pull-down."
+    "notes": "PL004-A-P-SD top view: 4 TL, 3 TR, 1 BL, 2 BR; 1-2 and 4-3 are the 0.65 mm pairs; heat-sink bar runs parallel to them. D type: no discharge, no ON/OFF pull-down. [height_max_mm: S-1318 PL004-A-P-SD-1.1 HSNT-4 thickness 0.38 ±0.02] [temp] DS Table 9 Absolute Maximum Ratings: Topr operation ambient −40…+85 °C",
+    "height_max_mm": 0.4,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -24,7 +29,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: S-1318 Table 8: GND pin]"
     },
     {
       "num": "3",
@@ -33,7 +40,18 @@
         "EN"
       ],
       "type": "input",
-      "note": "Active H; D type has no pull-down - do not float; tie to VIN if unused (DS §3.2). Abs max 6.0 V"
+      "note": "Active H; D type has no pull-down - do not float; tie to VIN if unused (DS §3.2). Abs max 6.0 V [connect rule: S-1318 §3.2 (B/D type): ON/OFF not pulled down, 'do not use it in the floating status. When not using the ON/OFF pin, connect it to the VIN pin'] [max_v: S-1318 Table 9 VON/OFF VSS-0.3..VSS+6.0 V (independent of VIN); vih/vil: electrical characteristics VSH ≥1.0 V, VSL ≤0.25 V]",
+      "connect": "defined",
+      "unused": "same_as:4",
+      "max_v": 6.0,
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.25,
+        "abs"
+      ]
     },
     {
       "num": "4",
@@ -46,7 +64,8 @@
         1.7,
         5.5
       ],
-      "note": "Abs max 6.0 V"
+      "note": "Abs max 6.0 V [connect rule: S-1318 Table 8: input voltage pin]",
+      "connect": "supply"
     },
     {
       "num": "5",
@@ -55,7 +74,8 @@
         "heat sink"
       ],
       "type": "ground",
-      "note": "Connect to board at GND potential; not an electrode (Fig. 6 *1)"
+      "note": "Connect to board at GND potential; not an electrode (Fig. 6 *1) [connect rule: S-1318 Fig. 6 *1: connect the backside heat sink to the board and set its potential to GND]",
+      "connect": "gnd"
     }
   ]
 }

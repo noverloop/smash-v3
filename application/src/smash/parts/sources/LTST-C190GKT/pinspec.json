@@ -6,7 +6,12 @@
     "package": "0603 chip LED 1.6 x 0.8 x 0.8 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/LTST-C190GKT/LTST-C190GKT.pdf",
-    "notes": "Cathode terminal marked (notched/stepped terminal, p.1); tape cathode orientation p.7. Suggested pads 0.8 x 0.8, 2.3 overall. IF DC 30 mA, VR 5 V, -55..85 °C."
+    "notes": "Cathode terminal marked (notched/stepped terminal, p.1); tape cathode orientation p.7. Suggested pads 0.8 x 0.8, 2.3 overall. IF DC 30 mA, VR 5 V, -55..85 °C. [height_max_mm: DS p1 Package Dimensions height 0.80, general tolerance ±0.10] [temp] DS Absolute Maximum Ratings: Operating Temperature Range −55…+85 °C",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -55,
+      85
+    ]
   },
   "pins": [
     {

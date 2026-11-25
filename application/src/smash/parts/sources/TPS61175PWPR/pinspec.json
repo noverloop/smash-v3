@@ -6,7 +6,12 @@
     "package": "HTSSOP-14 PowerPAD (PWP) 5.0x4.4 mm, 0.65 mm pitch, thermal pad = pin 15",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/TPS61175PWPR/TPS61175.pdf",
-    "notes": "Our names use _1/_2/_3 suffixes for repeated SW/PGND."
+    "notes": "Our names use _1/_2/_3 suffixes for repeated SW/PGND. [height_max_mm: SLVS892F PWP0014K outline 4229706/B: 1.2 MAX] [temp] DS 6.3 Recommended Operating Conditions: TA −40…85 °C (TJ −40…125 °C)",
+    "height_max_mm": 1.2,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -16,7 +21,8 @@
       "aliases": [
         "SW_1"
       ],
-      "note": "Switch node"
+      "note": "Switch node [connect rule: SLVS892F Pin Functions p3: SW pins 1,2 are the switching node, both to the inductor]",
+      "connect": "same_as:2"
     },
     {
       "num": "2",
@@ -24,7 +30,9 @@
       "type": "passive",
       "aliases": [
         "SW_2"
-      ]
+      ],
+      "connect": "same_as:1",
+      "note": "[connect rule: SLVS892F Pin Functions p3: SW pins 1,2 are the switching node, both to the inductor]"
     },
     {
       "num": "3",
@@ -33,53 +41,81 @@
       "voltage_range_v": [
         2.9,
         18
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect rule: SLVS892F Pin Functions p3: connect VIN to a 2.9-18 V supply]"
     },
     {
       "num": "4",
       "name": "EN",
       "type": "input",
-      "note": "Below threshold >10 ms turns IC off"
+      "note": "Below threshold >10 ms turns IC off [max_v: SLVS892F §6.1 Abs Max EN -0.3..20 V; internal_pull: §6.5 Ren 400/800/1600 kΩ pull-down; vih/vil: §6.5 Venh ≥1.2 V, Venl ≤0.4 V (VIN 2.9-18 V)]",
+      "max_v": 20.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          400,
+          1600
+        ]
+      },
+      "vih": [
+        1.2,
+        "abs"
+      ],
+      "vil": [
+        0.4,
+        "abs"
+      ]
     },
     {
       "num": "5",
       "name": "SS",
       "type": "analog",
-      "note": "Soft-start capacitor to GND"
+      "note": "Soft-start capacitor to GND [max_v: SLVS892F §6.1 Abs Max SS -0.3..7 V]",
+      "max_v": 7.0
     },
     {
       "num": "6",
       "name": "SYNC",
       "type": "input",
-      "note": "If unused, tie to AGND (short trace)"
+      "note": "If unused, tie to AGND (short trace) [connect rule: SLVS892F Pin Functions p3: SYNC 'If not used, this pin should be tied to AGND'] [max_v: SLVS892F §6.1 Abs Max SYNC -0.3..7 V (logic: VSYNh ≥1.2 V, VSYNl ≤0.4 V)]",
+      "unused": "gnd",
+      "max_v": 7.0
     },
     {
       "num": "7",
       "name": "AGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: SLVS892F Pin Functions p3: signal ground]"
     },
     {
       "num": "8",
       "name": "COMP",
       "type": "analog",
-      "note": "RC compensation"
+      "note": "RC compensation [max_v: SLVS892F §6.1 Abs Max COMP -0.3..3 V]",
+      "max_v": 3.0
     },
     {
       "num": "9",
       "name": "FB",
-      "type": "analog"
+      "type": "analog",
+      "max_v": 3.0,
+      "note": "[max_v: SLVS892F §6.1 Abs Max FB -0.3..3 V]"
     },
     {
       "num": "10",
       "name": "FREQ",
       "type": "analog",
-      "note": "Resistor sets switching frequency"
+      "note": "Resistor sets switching frequency [max_v: SLVS892F §6.1 Abs Max FREQ -0.3..3 V]",
+      "max_v": 3.0
     },
     {
       "num": "11",
       "name": "NC",
       "type": "reserved",
-      "note": "Reserved pin. MUST connect to ground."
+      "note": "Reserved pin. MUST connect to ground. [connect rule: SLVS892F Pin Functions p3: reserved pin, 'Must connect this pin to ground']",
+      "connect": "gnd"
     },
     {
       "num": "12",
@@ -87,7 +123,9 @@
       "type": "ground",
       "aliases": [
         "PGND_1"
-      ]
+      ],
+      "connect": "gnd",
+      "note": "[connect rule: SLVS892F Pin Functions p3: power ground]"
     },
     {
       "num": "13",
@@ -95,7 +133,9 @@
       "type": "ground",
       "aliases": [
         "PGND_2"
-      ]
+      ],
+      "connect": "gnd",
+      "note": "[connect rule: SLVS892F Pin Functions p3: power ground]"
     },
     {
       "num": "14",
@@ -103,7 +143,9 @@
       "type": "ground",
       "aliases": [
         "PGND_3"
-      ]
+      ],
+      "connect": "gnd",
+      "note": "[connect rule: SLVS892F Pin Functions p3: power ground]"
     },
     {
       "num": "15",
@@ -113,7 +155,8 @@
         "EP",
         "ExposedPad"
       ],
-      "note": "Solder to analog ground; thermal vias"
+      "note": "Solder to analog ground; thermal vias [connect rule: SLVS892F Pin Functions p3: thermal pad soldered to analog ground]",
+      "connect": "gnd"
     }
   ]
 }

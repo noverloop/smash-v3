@@ -930,6 +930,53 @@ def add_bss138akm_qyl(design, ref: str, **overrides) -> Chip:
 
 
 # ═════════════════════════════════════════════════════════════════════════
+# Nexperia PMPB15XP — −12 V logic-level P-channel, DFN2020MD-6 (SOT1220)
+# ═════════════════════════════════════════════════════════════════════════
+
+def add_pmpb15xp(design, ref: str, **overrides) -> Chip:
+    """Nexperia PMPB15XP (order code PMPB15XP,115) — −12 V, 19 mΩ max at
+    V_GS = −4.5 V / 20 mΩ at −2.5 V / 33 mΩ at −1.8 V, V_GSth −0.47…−0.9 V,
+    8.2 A (T_a 25 °C, 6 cm² drain pad) P-channel trench MOSFET, 1.5 kV HBM
+    ESD, DFN2020MD-6 (SOT1220, 2 × 2 × 0.65 mm). Data sheet v.3 (2012-11-22).
+
+    The pack / bench path P-FET (Q_ISO, Q_DEV_*_PWR): fully enhanced at the
+    cell voltage (V_GS ≈ −3 V at end of life), where a 60 V part is not.
+    V_DS / V_GS ±12 V: the source rails here stay ≤ 5.6 V. Pins as the
+    BUK6D120-60PX (same SOT1220 land): 1, 2, 5, 6 + pad 7 drain, 3 gate,
+    4 + pad 8 source."""
+    pn, pd = "PMPB15XP,115", "PMPB15XP_115"
+    fp_mod = src(pd, "SOT1220.kicad_mod")
+    fields = dict(
+        manf="Nexperia", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value="PMPB15XP",
+        description="MOSFET P-Channel -12 V, 19 mOhm @ -4.5 V, 8.2 A, logic level, DFN2020MD-6 (0.65 mm)",
+        datasheet=datasheet_ref(pd, f"{pd}.pdf"),
+        standards=["RoHS"],
+        package="DFN2020MD-6 (SOT1220)",
+        size_mm=(2.0, 2.0), height_mm=0.65,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=12.0, i_rms_a=8.2, tj_max_c=150.0,
+        pins=build_pins(src(pd, f"{pd}.kicad_sym"),
+                        types={"G": "input", "S_1": "io", "S_2": "io",
+                               "D_1": "io", "D_2": "io", "D_3": "io", "D_4": "io", "D_5": "io"},
+                        aliases={"G": ["Gate"], "S_1": ["S", "Source"], "D_1": ["D", "Drain"]}),
+        footprint=Footprint(
+            name="SOT1220", package_class="DFN2020MD-6",
+            pads=pads_from_kicad_mod(fp_mod),
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=[],
+            pitch_mm=0.65, size_mm=(2.0, 2.0), height_mm=0.65,
+            model_3d_path=datasheet_ref(pd, "SOT1220.stp"),
+            model_rotate_deg=(90.0, 0.0, 90.0),
+            model_offset_mm=(-1.52, 0.86, 1.28),
+            source="samacsys",
+        ).ensure_courtyard_clearance(),
+        note="SOT1220 land per PMPB15XP DS Fig.19; pad ring courtyard.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
+# ═════════════════════════════════════════════════════════════════════════
 # Nexperia BUK6D120-60PX — −60 V P-channel, DFN2020MD-6 (SOT1220), 0.65 mm
 # ═════════════════════════════════════════════════════════════════════════
 

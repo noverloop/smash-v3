@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "manf_pn": "SSM3K339R,LF",
+    "datasheet": "Toshiba SSM3K339R Rev 1.0 (2014)",
+    "datasheet_section": "§5.1 electrical characteristics; package dimensions",
+    "package": "SOT-23F 2.9x2.4x0.88 max",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/SSM3K339R_LF/SSM3K339R_LF.pdf",
+    "notes": "Pins 1 G, 2 S, 3 D. VDSS 40 V, VGSS ±12 V, RDS(on) 238 mΩ max at 2.5 V.",
+    "height_max_mm": 0.88,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -12,
+        12
+      ]
+    },
+    {
+      "num": "2",
+      "name": "S",
+      "type": "io",
+      "aliases": [
+        "Source"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "D",
+      "type": "io",
+      "aliases": [
+        "Drain"
+      ]
+    }
+  ]
+}

@@ -6,7 +6,12 @@
     "package": "TFLGA-16L 3x3x1.0, 0.5 pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/H3LIS331DLTR/H3LIS331DLTR.pdf",
-    "notes": "Bottom view pin 1 top-right; top view: 1-5 left column downward, 6-8 bottom L->R, 9-13 right column upward, 14-16 top R->L."
+    "notes": "Bottom view pin 1 top-right; top view: 1-5 left column downward, 6-8 bottom L->R, 9-13 right column upward, 14-16 top R->L. [height_max_mm: DS9012 Fig. 12 TFLGA-16L Height [H] 1 max] [DS9012 §6.1 / Fig. 3 note: SCL, SDA and CS/SPC/SDI/SDO have internal pull-ups to Vdd_IO; no resistance value given, so no internal_pull field] [temp] DS 2.1 Table 2 Mechanical characteristics: Top −40…+85 °C",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -21,7 +26,8 @@
         1.71,
         3.7
       ],
-      "note": "Max Vdd+0.1 V"
+      "note": "Max Vdd+0.1 V [connect rule: DS9012 Table 1: power supply]",
+      "connect": "supply"
     },
     {
       "num": "2",
@@ -29,7 +35,9 @@
       "aliases": [
         "NC"
       ],
-      "type": "nc"
+      "type": "nc",
+      "connect": "open_or_gnd",
+      "note": "[connect rule: DS9012 Table 1: 'Not connected' (internally)]"
     },
     {
       "num": "3",
@@ -37,7 +45,9 @@
       "aliases": [
         "NC"
       ],
-      "type": "nc"
+      "type": "nc",
+      "connect": "open_or_gnd",
+      "note": "[connect rule: DS9012 Table 1: 'Not connected' (internally)]"
     },
     {
       "num": "4",
@@ -46,7 +56,9 @@
         "SCL",
         "SPC"
       ],
-      "type": "input"
+      "type": "input",
+      "io_domain": "1",
+      "note": "[io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO]"
     },
     {
       "num": "5",
@@ -54,7 +66,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS9012 Table 1: 0 V supply]"
     },
     {
       "num": "6",
@@ -64,7 +78,9 @@
         "SDI",
         "SDO"
       ],
-      "type": "io"
+      "type": "io",
+      "io_domain": "1",
+      "note": "[io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO]"
     },
     {
       "num": "7",
@@ -74,13 +90,33 @@
         "SA0"
       ],
       "type": "io",
-      "note": "I2C address LSB; do not float in I2C mode"
+      "note": "I2C address LSB; do not float in I2C mode [connect rule: DS9012 §6.1.1: SA0 connected to supply (LSB 1) or ground (LSB 0) sets the I2C address] [io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO; vih/vil: DS9012 Table 4 VIH ≥0.8·Vdd_IO, VIL ≤0.2·Vdd_IO]",
+      "connect": "defined",
+      "io_domain": "1",
+      "vih": [
+        0.8,
+        "frac"
+      ],
+      "vil": [
+        0.2,
+        "frac"
+      ]
     },
     {
       "num": "8",
       "name": "CS",
       "type": "input",
-      "note": "1 = I2C, 0 = SPI"
+      "note": "1 = I2C, 0 = SPI [connect rule: DS9012 §5 / §6: CS selects I2C(1)/SPI(0); 'When using the I2C, CS must be tied high'] [io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO; vih/vil: DS9012 Table 4 VIH ≥0.8·Vdd_IO, VIL ≤0.2·Vdd_IO]",
+      "connect": "defined",
+      "io_domain": "1",
+      "vih": [
+        0.8,
+        "frac"
+      ],
+      "vil": [
+        0.2,
+        "frac"
+      ]
     },
     {
       "num": "9",
@@ -88,7 +124,9 @@
       "aliases": [
         "INT 2"
       ],
-      "type": "output"
+      "type": "output",
+      "io_domain": "1",
+      "note": "[io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO]"
     },
     {
       "num": "10",
@@ -97,7 +135,8 @@
         "Reserved"
       ],
       "type": "reserved",
-      "note": "Connect to GND"
+      "note": "Connect to GND [connect rule: DS9012 Table 1: Reserved, 'Connect to GND']",
+      "connect": "gnd"
     },
     {
       "num": "11",
@@ -105,7 +144,9 @@
       "aliases": [
         "INT 1"
       ],
-      "type": "output"
+      "type": "output",
+      "io_domain": "1",
+      "note": "[io_domain 1: DS9012 Table 6 Vin on control pins -0.3..Vdd_IO+0.3; Table 4 VIH/VIL vs Vdd_IO]"
     },
     {
       "num": "12",
@@ -113,7 +154,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS9012 Table 1: 0 V supply]"
     },
     {
       "num": "13",
@@ -121,7 +164,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS9012 Table 1: 0 V supply]"
     },
     {
       "num": "14",
@@ -133,7 +178,9 @@
       "voltage_range_v": [
         2.16,
         3.6
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect rule: DS9012 Table 1: power supply]"
     },
     {
       "num": "15",
@@ -142,7 +189,8 @@
         "Reserved"
       ],
       "type": "reserved",
-      "note": "Connect to Vdd"
+      "note": "Connect to Vdd [connect rule: DS9012 Table 1: Reserved, 'Connect to Vdd']",
+      "connect": "same_as:14"
     },
     {
       "num": "16",
@@ -150,7 +198,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS9012 Table 1: 0 V supply]"
     }
   ]
 }

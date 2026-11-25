@@ -1,0 +1,12 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+U_ESD_* R29A         ESDALC6V1-5P6                |   97976   15w    0.59 China     |    1913 17.0w    0.51 China     |   26392   15w    0.67 China     | 
+U_ESD_* R29B         PESD5V0L5UV,115              |       0    8w    0.40 Malaysia  |    1619 10.0w    0.39 Malaysia  |   44770    8w    0.51 Malaysia  | Not Recommended for New Design
+D_EXT_VIN_TVS R29C   ESD5Z6.0T5G                  |       0   52w    0.19 Malaysia/ |       0 13.0w    0.03 China     |   22951   58w    0.22 China     | 
+D_ACT_COL*_TVS R29D  PESD36VS1UL,315              |    3068   53w    0.26 Malaysia  |       0 54.0w    0.29 Malaysia  |       0   30w    0.26 Malaysia  | 
+Q_ACT_COL* R29E      SSM3K339R,LF                 |  225622   20w    0.38 Thailand/ |    9131 16.0w    0.39 Thailand  |  307903   20w    0.43 Thailand  | 
+R_BAT*_ISO R29F      ERJ-3BSFR20V                 |   11894   15w    0.33 Japan     |    1694 24.0w    0.17 Japan     |   19292   15w    0.37 Japan     | 
+R_BAT*_ISO R29G      UCR03EVPFLR200               |    4063    8w    0.59 Philippin |       0 14.0w    0.34 Philippin |   93625    8w    0.66 Philippin | Not For New Designs
+U_DEV_OVP R29H       MAX9117EXK+T                 |    8787     w    2.09 Thailand  |    5837 12.0w    3.34 Thailand  |   21414   10w    3.73 Thailand  | 
+D_ACT_WIRE_* R29I    PMEG4005EPK                  |                        - |       0 54.0w    0.55 China     |                        - | 
+
+Digi-Key rows not in the upload:

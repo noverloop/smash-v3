@@ -196,8 +196,6 @@ def test_castellation_feed_ties_cpw_ground_to_the_board():
         assert strip.r_in > g.BOARD_R_MM
 
 
-@pytest.mark.xfail(strict=True, reason="the wakeup↔power gap is 2.6 mm: S3 moved there overlaps "
-                   "S1's feed ground; experimental variant, not in the design")
 def test_slot_gap_override_moves_s3_next_to_the_radio_board():
     m = cases.option_model("C2", S3_gap="wakeup_board", S3_dir=-1, feed="castellation",
                            skin="local")

@@ -6,14 +6,29 @@
     "package": "16-VQFN 3x3x0.9 mm (4MX), 0.5 mm pitch, EP 1.10 nom, wettable flanks",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/PAC1941T-1E_J6CX/PAC194X_datasheet_mchp.pdf",
-    "notes": "PAC1941-1: pins 7-10, 13, 14 not connected inside and MUST be grounded (Table 3-1 note 1)."
+    "notes": "PAC1941-1: pins 7-10, 13, 14 not connected inside and MUST be grounded (Table 3-1 note 1). [height_max_mm: DS20006543C p85 C04-508 Overall Height A max 0.90] [temp] DS Temperature Ranges table: Operating Temperature Range TA −40…+125 °C",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "SLOW/ALERT1",
       "type": "io",
-      "note": "Default SLOW input (high = 8 SPS); ALERT1/GPIO is open-drain and needs a pull-up."
+      "note": "Default SLOW input (high = 8 SPS); ALERT1/GPIO is open-drain and needs a pull-up. [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered); open_drain: §3.8 ALERT1/GPIO open-drain, pull-up to VDD; vih/vil: DC table Digital I/O (SLOW/ALERT) VIH ≥1.35 V, VIL ≤0.8 V]",
+      "max_v": 6.0,
+      "open_drain": true,
+      "vih": [
+        1.35,
+        "abs"
+      ],
+      "vil": [
+        0.8,
+        "abs"
+      ]
     },
     {
       "num": "2",
@@ -23,54 +38,68 @@
         2.7,
         5.5
       ],
-      "note": "100 nF bypass."
+      "note": "100 nF bypass. [connect rule: DS20006543C Table 3-1 / §3.5: positive power supply]",
+      "connect": "supply"
     },
     {
       "num": "3",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS20006543C Table 3-1: ground]"
     },
     {
       "num": "4",
       "name": "SCL",
       "type": "input",
-      "note": "Pull-up required."
+      "note": "Pull-up required. [connect rule: DS20006543C §3.4: SM_CLK requires an external pull-up (except HS mode with CMOS driver)] [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered)]",
+      "connect": "defined",
+      "max_v": 6.0
     },
     {
       "num": "5",
       "name": "SDA",
       "type": "io",
-      "note": "Open-drain, pull-up required."
+      "note": "Open-drain, pull-up required. [connect rule: DS20006543C Table 3-1 / §3.3: open-drain, requires a pull-up resistor] [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered); open_drain: Table 3-1 SDA open-drain, requires pull-up]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "open_drain": true
     },
     {
       "num": "6",
       "name": "ADDRSEL",
       "type": "analog",
-      "note": "Resistor to GND selects the address."
+      "note": "Resistor to GND selects the address. [connect rule: DS20006543C §6.1.1 Table 6-1: address set by a resistor to GND (0 Ω = GND) or tie to VDD; no open option] [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered)]",
+      "connect": "defined",
+      "max_v": 6.0
     },
     {
       "num": "7",
       "name": "SENSE3-",
-      "type": "nc",
-      "note": "PAC1941-1: not connected inside — must be grounded."
+      "type": "reserved",
+      "note": "PAC1941-1: not connected inside — must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "8",
       "name": "SENSE3+",
-      "type": "nc",
-      "note": "Must be grounded."
+      "type": "reserved",
+      "note": "Must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "9",
       "name": "SENSE4-",
-      "type": "nc",
-      "note": "Must be grounded."
+      "type": "reserved",
+      "note": "Must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "10",
       "name": "SENSE4+",
-      "type": "nc",
-      "note": "Must be grounded."
+      "type": "reserved",
+      "note": "Must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "11",
@@ -80,7 +109,9 @@
         0,
         9
       ],
-      "note": "Supply side of shunt; also VBUS sense."
+      "note": "Supply side of shunt; also VBUS sense. [connect rule: DS20006543C Table 3-1 Note 3: unused channel, connect SENSE+ and SENSE- to ground] [max_v: DS20006543C Abs Max: SENSE+/SENSE- -0.3..40 V; may be at 9 V with VDD = 0]",
+      "unused": "gnd",
+      "max_v": 40.0
     },
     {
       "num": "12",
@@ -90,37 +121,53 @@
         0,
         9
       ],
-      "note": "Load side of shunt."
+      "note": "Load side of shunt. [connect rule: DS20006543C Table 3-1 Note 3: unused channel, connect SENSE+ and SENSE- to ground] [max_v: DS20006543C Abs Max: SENSE+/SENSE- -0.3..40 V; may be at 9 V with VDD = 0]",
+      "unused": "gnd",
+      "max_v": 40.0
     },
     {
       "num": "13",
       "name": "SENSE2+",
-      "type": "nc",
-      "note": "Must be grounded."
+      "type": "reserved",
+      "note": "Must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "14",
       "name": "SENSE2-",
-      "type": "nc",
-      "note": "Must be grounded."
+      "type": "reserved",
+      "note": "Must be grounded. [connect rule: DS20006543C Table 3-1 Note 1: PAC1941-1 VQFN pins 7-10, 13, 14 not connected inside and must be grounded]",
+      "connect": "gnd"
     },
     {
       "num": "15",
       "name": "GPIO/ALERT2",
       "type": "io",
-      "note": "Open-drain; pull-up to VDD if used as an output."
+      "note": "Open-drain; pull-up to VDD if used as an output. [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered); open_drain: Table 3-1 ALERT2/GPIO open-drain]",
+      "max_v": 6.0,
+      "open_drain": true
     },
     {
       "num": "16",
       "name": "PWRDN",
       "type": "input",
-      "note": "Active-low power-down; do not float."
+      "note": "Active-low power-down; do not float. [max_v: DS20006543C Abs Max: any other pin to GND -0.3..6.0 V (independent of VDD; leakage spec powered or unpowered); vih/vil: DC table Digital I/O (PWRDN) VIH ≥1.3 V, VIL ≤0.6 V]",
+      "max_v": 6.0,
+      "vih": [
+        1.3,
+        "abs"
+      ],
+      "vil": [
+        0.6,
+        "abs"
+      ]
     },
     {
       "num": "17",
       "name": "EP",
       "type": "passive",
-      "note": "Not electrically connected; recommended to connect to GND."
+      "note": "Not electrically connected; recommended to connect to GND. [connect rule: DS20006543C §3.10: EP not electrically connected; 'recommended that you connect it to ground']",
+      "connect": "gnd"
     }
   ]
 }

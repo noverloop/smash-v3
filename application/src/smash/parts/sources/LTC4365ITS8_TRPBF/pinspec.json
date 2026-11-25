@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "manf_pn": "LTC4365ITS8#TRPBF",
+    "datasheet": "ADI LTC4365 Rev B",
+    "datasheet_section": "Pin Configuration (TS8); Pin Functions; TS8 package / recommended pad layout",
+    "package": "TSOT-23-8 2.9x1.6x1.0 max",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/LTC4365ITS8_TRPBF/LTC4365ITS8_TRPBF.pdf",
+    "notes": "1 VIN, 2 UV, 3 OV, 4 GND, 5 SHDN, 6 FAULT (open drain), 7 VOUT, 8 GATE. VIN \u221240\u202660 V protected.",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VIN",
+      "type": "power",
+      "aliases": []
+    },
+    {
+      "num": "2",
+      "name": "UV",
+      "type": "input",
+      "aliases": []
+    },
+    {
+      "num": "3",
+      "name": "OV",
+      "type": "input",
+      "aliases": []
+    },
+    {
+      "num": "4",
+      "name": "GND",
+      "type": "power",
+      "aliases": []
+    },
+    {
+      "num": "5",
+      "name": "SHDN",
+      "type": "input",
+      "aliases": []
+    },
+    {
+      "num": "6",
+      "name": "FAULT",
+      "type": "output",
+      "aliases": []
+    },
+    {
+      "num": "7",
+      "name": "VOUT",
+      "type": "input",
+      "aliases": []
+    },
+    {
+      "num": "8",
+      "name": "GATE",
+      "type": "output",
+      "aliases": []
+    }
+  ]
+}

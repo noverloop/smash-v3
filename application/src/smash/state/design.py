@@ -219,6 +219,27 @@ class Design:
                 )
         chip = Chip(ref=ref, manf_pn=manf_pn, footprint=footprint,
                     board_tag=board_tag, pins=pin_objs, **fields)
+        # Datasheet ground pins are typed "ground" (vendor symbols and older
+        # factories typed them "power" or left them untyped), so the
+        # pin-type ERC sees them on the ground net correctly.
+        if manf_pn:
+            from smash.parts._pinspec import load_pinspec
+            spec = load_pinspec(manf_pn)
+            if spec is not None:
+                gnd = {sp.num for sp in spec.pins if sp.type == "ground"}
+                for p in chip.pins:
+                    if str(p.num).removeprefix("BALL_") in gnd and p.type in (None, "power", "passive"):
+                        p.type = "ground"
+                # Placement / spacer sizing use the datasheet MAXIMUM package
+                # height (pinspec _meta.height_max_mm), never the nominal one.
+                from smash.validators.audits import _meta as _ps_meta
+                hmax = _ps_meta(manf_pn).get("height_max_mm")
+                if hmax:
+                    hmax = float(hmax)
+                    if chip.height_mm is None or chip.height_mm < hmax:
+                        chip.height_mm = hmax
+                    if chip.footprint is not None and (chip.footprint.height_mm or 0) < hmax:
+                        chip.footprint.height_mm = hmax
         # Layer in soft sourcing data (price, fab country, ...) from
         # smash/data/assumptions.json. Skipped if the Design was
         # constructed with `apply_assumptions=False` (tests asserting
@@ -570,7 +591,14 @@ class Design:
         if net_b is net_a:
             return NetHandle(self, net_a)
 
-        # Absorb b into a.
+        # Absorb b into a. The merged node keeps the stronger kind: a
+        # ground or power net merged into a plain signal net (e.g. a net
+        # created on the fly by merge_nets itself) stays ground/power —
+        # otherwise every ground-type pin on it reads as mis-wired.
+        if net_a.kind == "signal" and net_b.kind in ("ground", "power"):
+            net_a.kind = net_b.kind
+            if getattr(net_a, "voltage_v", None) is None:
+                net_a.voltage_v = getattr(net_b, "voltage_v", None)
         for ref_num in net_b.pins:
             if ref_num not in net_a.pins:
                 net_a.pins.append(ref_num)
@@ -1043,13 +1071,17 @@ def _v_typed_pin_must_be_connected(design: Design):
         for ref, num in n.pins:
             connected.add((ref, num))
     components = list(design.chips) + list(getattr(design, "batteries", [])) + list(getattr(design, "antennas", []))
+    from smash.validators.pinspec_rules import _raw_pins
     for c in components:
         if c.dnp:
             continue
+        # the datasheet's "unused" rule (pinspec) may allow the pin to float
+        may_float = {num for num, rp in (_raw_pins(c.manf_pn) if getattr(c, "manf_pn", None) else {}).items()
+                     if rp.get("unused") in ("open", "open_or_gnd") or rp.get("connect") in ("open", "open_or_gnd")}
         for p in c.pins:
             if (p.type or "") not in _PIN_TYPES_REQUIRING_NET:
                 continue
-            if (c.ref, p.num) in connected:
+            if (c.ref, p.num) in connected or str(p.num).removeprefix("BALL_") in may_float:
                 continue
             yield Issue(
                 severity="error",

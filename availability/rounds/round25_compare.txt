@@ -1,0 +1,17 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+Q_ACT_* +Q_HEALTH_CO NX7002AK,215                 |   58015   53w    0.12 Malaysia/ |  134549 54.0w    0.14 Malaysia  |  185188   30w    0.09 Malaysia  | 
+Q_ACT_* +Q_HEALTH_CO 2N7002BK,215                 |  518514   53w    0.17 Malaysia/ |   17029 54.0w    0.20 China     |  501887   30w    0.12 Japan     | 
+Q_ACT_* +Q_HEALTH_CO SSM3K7002BF,LF               |       0     w    0.00 Thailand  |                        - |       0   12w    0.00 Thailand  | Obsolete Obsolete
+Q_ACT_* +Q_HEALTH_CO 2N7002K-T1-E3                |       0     w    0.00 Thailand  |       0     w    0.00 Thailand  |       0   15w    0.00 Thailand  | Obsolete Obsolete
+U_MAG_LDO R25E       S-1318A18-A4T2U4             |    2124   16w    1.21 Japan     |                        - |    2128   16w    1.90 Japan     | 
+U_MAG_LDO R25F       S-1318B18-A4T2U4             |       0   16w    0.00 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_MAG_LDO R25G       S-1318C18-A4T2U4             |       0   16w    0.00 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_MAG_LDO R25H       TLV74118PDQNR                |   13172   26w    0.10 China/Chi |                        - |    5106   26w    0.11 China     | 
+U_MAG_LDO R25I       TLV74018PDQNR                |   18748   26w    0.14 China/Chi |                        - |   63280   26w    0.15 United St | 
+C_BAT_BULK* R25J     GRM21BR61A226ME51L           |       0   53w    0.26 China     |       0 13.0w    0.16 Japan     |   40328   17w    0.11 Japan     | 
+C_BAT_BULK* R25K     C2012X5R1A226M125AB          |     943   24w    0.38 Japan     |       1 19.0w    0.34 Japan     |       0   36w    0.24 Japan     | 
+C_BAT_BULK* R25L     LMK212BJ226MG-T              |       0     w    0.00 Japan     |    5072 13.0w    0.09 China     |  291385   21w    0.28 Malaysia  | Obsolete Not For New Designs
+C_BAT_BULK* R25M     C0805C226M8PACTU             |   85906   37w    0.65 China     |    6570 29.0w    0.45 Mexico    |   37863   22w    0.45 China     | 
+C_ACTIVATE_OUT_1+2 R C3216X7R2A475K160AC          |       0   24w    0.80 Japan/Jap |       0 54.0w    0.81 Japan     |       0   36w    0.90 Japan     | 
+
+Digi-Key rows not in the upload:

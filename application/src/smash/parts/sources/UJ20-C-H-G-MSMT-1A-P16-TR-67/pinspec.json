@@ -6,7 +6,12 @@
     "package": "USB-C 2.0 receptacle, horizontal mid-mount SMT, IP67, 12 SMD pads + 4 TH shell slots; PCB 1.0 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/UJ20-C-H-G-MSMT-1A-P16-TR-67/UJ20-C-H-G-MSMT-1A-P16-TR-67.pdf",
-    "notes": "USB2-only: no A2/A3/A10/A11/B2/B3/B10/B11. Power contacts paired on shared pads. Rated 20 Vdc; 5 A total on power pins; CC 1.25 A; signals 0.25 A each."
+    "notes": "USB2-only: no A2/A3/A10/A11/B2/B3/B10/B11. Power contacts paired on shared pads. Rated 20 Vdc; 5 A total on power pins; CC 1.25 A; signals 0.25 A each. [height] 4.5 mm max: DS p.2 mechanical drawing side view: overall 4.30 incl. sealing flange, X.XX tolerance ±0.20; mid-mount, part of this height lies below the PCB top surface. [temp] DS Specifications table: operating temperature −45…85 °C",
+    "height_max_mm": 4.5,
+    "operating_temp_c": [
+      -45,
+      85
+    ]
   },
   "pins": [
     {

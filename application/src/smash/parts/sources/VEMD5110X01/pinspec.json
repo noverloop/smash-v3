@@ -6,7 +6,12 @@
     "package": "SMD top-view 4 x 5 x 0.9±0.1 mm, 4 terminals + exposed pad",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://www.vishay.com/docs/84204/vemd5110x01.pdf",
-    "notes": "Datasheet does not number pads; numbers are our footprint's. Bottom view: two cathode terminals on one short edge, anode + NC on the other (anode right, NC left in bottom view → anode left, NC right in top view). Exposed pad (cathode) and a tie bar are electrically cathode; recommended footprint has NO land for the exposed pad. Recommended lands 4 x (1.55 x 1.0), 4.1 x 5.2 overall, 1.0 gap. AEC-Q101, MSL 4."
+    "notes": "Datasheet does not number pads; numbers are our footprint's. Bottom view: two cathode terminals on one short edge, anode + NC on the other (anode right, NC left in bottom view → anode left, NC right in top view). Exposed pad (cathode) and a tie bar are electrically cathode; recommended footprint has NO land for the exposed pad. Recommended lands 4 x (1.55 x 1.0), 4.1 x 5.2 overall, 1.0 gap. AEC-Q101, MSL 4. [height_max_mm: Doc 84204 p4 Package Dimensions 0.9 ±0.1] [temp] DS Absolute Maximum Ratings: Tamb −40…+110 °C",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      110
+    ]
   },
   "pins": [
     {

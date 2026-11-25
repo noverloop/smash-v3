@@ -6,20 +6,29 @@
     "package": "8-lead DFN 2x3x0.9 mm (MC), 0.5 mm pitch, EP = pin 9",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://ww1.microchip.com/downloads/en/DeviceDoc/MCP9808-0.5C-Maximum-Accuracy-Digital-Temperature-Sensor-Data-Sheet-DS20005095B.pdf",
-    "notes": "Datasheet not vendored in the repo; add it. -E = -40..+125 C. Abs max 6.0 V on VDD and all I/O."
+    "notes": "Datasheet not vendored in the repo; add it. -E = -40..+125 C. Abs max 6.0 V on VDD and all I/O. height_max_mm [DS p38 MC DFN outline: A 1.00 max] [temp] DS Temperature Characteristics table: Operating Temperature Range TA −40…+125 °C",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "SDA",
       "type": "io",
-      "note": "Open-drain; requires pull-up"
+      "note": "Open-drain; requires pull-up [DS §3.1 p11: SDA requires a pull-up resistor] [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V] [DS §3.1 p11: SDA open-drain]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "open_drain": true
     },
     {
       "num": "2",
       "name": "SCL",
       "type": "input",
-      "note": "Requires pull-up (bus)"
+      "note": "Requires pull-up (bus) [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V]",
+      "max_v": 6.0
     },
     {
       "num": "3",
@@ -28,30 +37,65 @@
       "aliases": [
         "ALERT"
       ],
-      "note": "Open-drain; external pull-up required"
+      "note": "Open-drain; external pull-up required [DS DC table p3 + §5.2.3 p30: open-drain, external pull-up resistor required] [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V] [DS p3: Alert open-drain output]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "open_drain": true
     },
     {
       "num": "4",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Table 3-1 p11: Ground]"
     },
     {
       "num": "5",
       "name": "A2",
       "type": "input",
-      "note": "Address bit; must be tied to the configured level (no float)"
+      "note": "Address bit; must be tied to the configured level (no float) [DS Table 3-2 note 1 p11: A2/A1/A0 must match the device pin configuration (address input, needs a defined level)] [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V] [DS p4 Digital I/O: VIH 0.7 VDD, VIL 0.3 VDD (SCL, SDA, A0-A2)]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "6",
       "name": "A1",
       "type": "input",
-      "note": "Address bit; must be tied"
+      "note": "Address bit; must be tied [DS Table 3-2 note 1 p11: A2/A1/A0 must match the device pin configuration (address input, needs a defined level)] [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V] [DS p4 Digital I/O: VIH 0.7 VDD, VIL 0.3 VDD (SCL, SDA, A0-A2)]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "7",
       "name": "A0",
       "type": "input",
-      "note": "Address bit; must be tied"
+      "note": "Address bit; must be tied [DS Table 3-2 note 1 p11: A2/A1/A0 must match the device pin configuration (address input, needs a defined level)] [DS p3 Abs Max: voltage at all input/output pins GND−0.3 V to 6.0 V] [DS p4 Digital I/O: VIH 0.7 VDD, VIL 0.3 VDD (SCL, SDA, A0-A2)]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "8",
@@ -60,13 +104,16 @@
       "voltage_range_v": [
         2.7,
         5.5
-      ]
+      ],
+      "connect": "supply",
+      "note": "[DS Table 3-1 p11: power pin]"
     },
     {
       "num": "9",
       "name": "EP",
       "type": "ground",
-      "note": "Internally connected to GND; must be connected to GND (Table 3-1)"
+      "note": "Internally connected to GND; must be connected to GND (Table 3-1) [DS Table 3-1 p11: EP must be connected to GND (§3.7 says \"may\"; Table 3-1 governs)]",
+      "connect": "gnd"
     }
   ]
 }

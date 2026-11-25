@@ -1,0 +1,85 @@
+{
+  "_meta": {
+    "manf_pn": "PMPB15XP,115",
+    "datasheet": "PMPB15XP product data sheet v.3, 22 November 2012",
+    "datasheet_section": "§2 Table 2 Pinning information (transparent top view); Fig.18 package outline SOT1220; Fig.19 reflow footprint",
+    "package": "DFN2020MD-6 (SOT1220), 2 x 2 x 0.65 max, 0.65 pitch",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/PMPB15XP_115/PMPB15XP_115.pdf",
+    "notes": "P-channel, VDS -12 V, VGS ±12 V, VGSth -0.47…-0.9 V; RDSon 19 mΩ max at VGS -4.5 V, 20 mΩ at -2.5 V, 33 mΩ at -1.8 V (Table 7). Pins 1,2,5,6 + pad 7 drain, 3 gate, 4 + pad 8 source. [height] 0.65 mm max: DS §1.2 (2 x 2 x 0.65 mm). [temp] DS Table 5 Limiting values: Tamb −55…150 °C (Tj −55…150 °C)",
+    "height_max_mm": 0.65,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "D_1",
+      "type": "io",
+      "aliases": [
+        "D",
+        "Drain"
+      ],
+      "note": "drain"
+    },
+    {
+      "num": "2",
+      "name": "D_2",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "3",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -12,
+        12
+      ]
+    },
+    {
+      "num": "4",
+      "name": "S_1",
+      "type": "io",
+      "aliases": [
+        "S",
+        "Source"
+      ],
+      "note": "source; tie to pin 8"
+    },
+    {
+      "num": "5",
+      "name": "D_3",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "6",
+      "name": "D_4",
+      "type": "io",
+      "aliases": [],
+      "note": "drain"
+    },
+    {
+      "num": "7",
+      "name": "D_5",
+      "type": "io",
+      "aliases": [],
+      "note": "large drain pad (thermal) — connect to drain"
+    },
+    {
+      "num": "8",
+      "name": "S_2",
+      "type": "io",
+      "aliases": [],
+      "note": "source pad — connect to source (pin 4)"
+    }
+  ]
+}

@@ -6,7 +6,12 @@
     "package": "SOD123W (CFP3) per Nexperia product listing",
     "verified_by": "library check 2026-11-24 (datasheet supplied by user)",
     "verified_from_pdf": "application/src/smash/parts/sources/PNS40010AERX/PNS40010AER.pdf",
-    "notes": "Pin numbering here is from the SamacSys symbol only (1=K, 2=A). Must be confirmed against Nexperia Table 'Pinning information' + SOD123W outline + soldering footprint."
+    "notes": "Pin numbering here is from the SamacSys symbol only (1=K, 2=A). Must be confirmed against Nexperia Table 'Pinning information' + SOD123W outline + soldering footprint. height_max_mm [DS Fig. 15 p8 CFP3 outline: height 0.9-1.1] [temp] DS Table 5 Limiting values: Tamb -55..175 degC (Tj max 175 degC)",
+    "height_max_mm": 1.1,
+    "operating_temp_c": [
+      -55,
+      175
+    ]
   },
   "pins": [
     {

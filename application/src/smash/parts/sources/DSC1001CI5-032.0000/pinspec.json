@@ -6,7 +6,12 @@
     "package": "4-lead CDFN 3.2 x 2.5 x 0.85 mm (code C), Industrial -40..85 °C (I), ±10 ppm (5)",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/DSC1001CI5-008.0000/DSC1001-family.pdf",
-    "notes": "CDFN has no centre pad (only the 7x5 DFN does)."
+    "notes": "CDFN has no centre pad (only the 7x5 DFN does). [height_max_mm: DS p16 CDFN3225-4LD-PL-1 side view 0.85 ±0.05] [temp] DS Recommended Operating Conditions / Temperature Ranges: TA −40…+85 °C (Ordering Option I)",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -22,12 +27,22 @@
         -0.3,
         3.6
       ],
-      "note": "High or open = output ON, Low = output Hi-Z; VIH ≥ 0.75·VDD, VIL ≤ 0.25·VDD; abs max VDD+0.3"
+      "note": "High or open = output ON, Low = output Hi-Z; VIH ≥ 0.75·VDD, VIL ≤ 0.25·VDD; abs max VDD+0.3 [vih/vil: DS Table 1-1 VIH ≥0.75·VDD, VIL ≤0.25·VDD]",
+      "vih": [
+        0.75,
+        "frac"
+      ],
+      "vil": [
+        0.25,
+        "frac"
+      ]
     },
     {
       "num": "2",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS Table 2-1: power supply ground]"
     },
     {
       "num": "3",
@@ -47,7 +62,8 @@
         1.7,
         3.6
       ],
-      "note": "decouple 0.01 µF (Fig 5-1)"
+      "note": "decouple 0.01 µF (Fig 5-1) [connect rule: DS Table 2-1: positive power supply]",
+      "connect": "supply"
     }
   ]
 }

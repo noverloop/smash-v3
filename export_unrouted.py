@@ -213,6 +213,57 @@ _XYZ = lambda key, body: (re.search(rf'\({key}\s*\(xyz\s+([-\d.e]+)\s+([-\d.e]+)
                           or [None, "0", "0", "0"])
 
 
+NOTES_LAYER = "Cmts.User"         # KiCad User.Comments (→ an Altium mechanical layer)
+NOTES_FONT_MM, NOTES_COL_LINES, NOTES_WRAP = 1.0, 60, 95
+
+
+def _plain(md: str) -> list[str]:
+    """Markdown → plain wrapped lines for board text."""
+    import textwrap
+    out = []
+    for ln in md.splitlines():
+        ln = re.sub(r"\*\*(.+?)\*\*", r"\1", ln).replace("`", "").replace("**", "")
+        ln = ln.replace("⚠", "NOTE:").replace("☐", "[ ]").replace("✓", "OK")
+        ln = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", ln)
+        if ln.startswith("#"):
+            ln = ln.lstrip("#").strip().upper()
+        ind = len(ln) - len(ln.lstrip())
+        out += textwrap.wrap(ln, NOTES_WRAP, subsequent_indent=" " * (ind + 2)) or [""]
+    return out
+
+
+def notes_on_board(pcb: pathlib.Path, md: str, tag: str) -> int:
+    """Write `md` as text blocks on NOTES_LAYER, in columns right of the board
+    outline (Edge.Cuts bbox), so the notes travel inside the board file.
+    Returns the number of text blocks."""
+    import uuid
+    text = read(pcb)
+    xs, ys = [], []
+    for m in re.finditer(r'\(gr_(?:line|rect|arc|circle)\s*\((?:start|center) ([-\d.]+) ([-\d.]+)\)'
+                         r'(?:\s*\(mid [-\d.]+ [-\d.]+\))?\s*\((?:end) ([-\d.]+) ([-\d.]+)\)'
+                         r'(?:(?!\(gr_).)*?\(layer "Edge\.Cuts"\)', text, re.S):
+        a = list(map(float, m.groups()))
+        xs += a[0::2]; ys += a[1::2]
+    if not xs:
+        return 0
+    x0, y0 = max(xs) + 15.0, min(ys)
+    lines = _plain(md)
+    col_w = NOTES_WRAP * NOTES_FONT_MM * 0.95 + 8.0
+    blocks = []
+    for k in range(0, len(lines), NOTES_COL_LINES):
+        chunk = "\n".join(lines[k:k + NOTES_COL_LINES])
+        chunk = chunk.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-notes/{tag}/{k}")
+        x = x0 + (k // NOTES_COL_LINES) * col_w
+        blocks.append(f'\t(gr_text "{chunk}"\n\t\t(at {x:.3f} {y0:.3f} 0)\n'
+                      f'\t\t(layer "{NOTES_LAYER}")\n\t\t(uuid "{u}")\n'
+                      f'\t\t(effects\n\t\t\t(font (size {NOTES_FONT_MM} {NOTES_FONT_MM}) '
+                      f'(thickness 0.15))\n\t\t\t(justify left top)\n\t\t)\n\t)')
+    end = text.rstrip().rfind(")")
+    write(pcb, text[:end] + "\n".join(blocks) + "\n" + text[end:])
+    return len(blocks)
+
+
 def model_map(dst: pathlib.Path) -> str:
     """(2026-11-23, user: Altium) 3D_MODEL_MAP.csv: every footprint of both
     projects with its STEP file (relative to the export root) and the offset /
@@ -486,6 +537,25 @@ def main() -> int:
               + read(NOTES).split("\n", 1)[1].lstrip("\n"))
     else:
         warn.append(f"no {NOTES.name}: layout notes not exported")
+    # (2026-11-25, user) the notes also go INTO the boards, beside the outline,
+    # where the layout EE actually reads them
+    if NOTES.exists():
+        body = "LAYOUT EE NOTES\n" + stamp_line + read(NOTES).split("\n", 1)[1].lstrip("\n")
+        n_tower = notes_on_board(dst / f"{PROJECT}.kicad_pcb", body, "tower")
+        devpcb = dst / "dev_board" / "dev_board.kicad_pcb"
+        n_dev = 0
+        if devpcb.exists():
+            panel = dst / "dev_board" / "PANEL_NOTES.md"
+            n_dev = notes_on_board(devpcb, (read(panel) + "\n\n" if panel.exists() else "") + body, "dev")
+        print(f"  notes on {NOTES_LAYER}: {n_tower} column(s) beside the tower panel, "
+              f"{n_dev} beside the dev board")
+    # (2026-11-25, user) no drawing sheet: KiCad draws the page outline even
+    # with the blank template — hide it in each project's local settings
+    sys.path.insert(0, str(REPO / "application" / "src"))
+    from smash.export.kicad_pcb import hide_drawing_sheet
+    for pcb in (dst / f"{PROJECT}.kicad_pcb", dst / "dev_board" / "dev_board.kicad_pcb"):
+        if pcb.exists():
+            hide_drawing_sheet(pcb)
     write(dst / "3D_MODEL_MAP.csv", model_map(dst))
     # (2026-11-23, user) Altium drops KiCad 3D models: script + per-project map
     for root in (dst, dst / "dev_board"):

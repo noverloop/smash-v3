@@ -255,3 +255,100 @@ def test_every_ic_matches_its_pinspec(design):
                 bad.append(f"{c.ref} ({c.manf_pn}) {rule}: {msg}")
     assert not missing, f"ICs without a datasheet pinspec: {sorted(missing)}"
     assert not bad, "\n".join(bad)
+
+
+def test_datasheet_pin_rules(design):
+    """smash.validators.pinspec_rules: every datasheet connection rule in the
+    pinspecs holds (P1), every supply pin is on a rail inside its range (P2),
+    and no input is left floating unless the datasheet allows it (P3).
+    Accepted exceptions: validators/pinspec_rules_acknowledged.json."""
+    from smash.validators.pinspec_rules import report
+    exempt = {c.ref for c in design.chips if c.manf_pn in PINSPEC_EXEMPT}
+    bad = [f"{r} {ref}.{pin}: {msg}" for r, ref, pin, msg in report(design) if ref not in exempt]
+    assert not bad, "\n".join(bad)
+
+
+def test_netlist_audits(design):
+    """smash.validators.audits: I/O levels (D1), back-powering in the lasting
+    power states (D2), strap levels (S1), open-drain pull-ups (O1), package
+    height vs datasheet max (H1). Accepted / open items:
+    validators/audits_acknowledged.json."""
+    from smash.validators.audits import report
+    bad = [f"{r} {w}: {msg}" for r, w, msg in report(design)]
+    assert not bad, "\n".join(bad)
+
+
+def test_ratings_and_environment(design):
+    """Resistor static dissipation (R2) and every part's datasheet operating
+    range vs the product range (T1). MLCC DC-bias and standby leakage are
+    reports: `audits.mlcc_bias`, `audits.standby_leakage`."""
+    from smash.validators import audits as A
+    ack = A.acknowledged()
+    bad = [f"{r} {w}: {msg}" for r, w, msg in A.resistor_power(design) + A.temperature(design)
+           if f"{r} {w}" not in ack]
+    assert not bad, "\n".join(bad)
+
+
+# ── external-interface regression guards (schematic audit R3, 2026-11-25) ──
+
+_CROWN_EXEMPT = {
+    # power / bus contacts protected by their own part, not an ESD array:
+    "EXT_VIN": "D_EXT_VIN_TVS", "EXT_CAN_P": "TJA1462 bus pins", "EXT_CAN_N": "TJA1462 bus pins",
+    "VDD_SENSE": "1 k into 3V3_AON's bulk",
+}
+_FIN_PHASE = re.compile(r"FIN\d_[AB]OUT\d$")       # clamped by the drivers' body diodes into VM
+
+
+def _crown_nets(design):
+    from generate_stackup import AFT_CAP
+    refs = {c.ref for c in design.chips if getattr(c, "board_tag", None) == AFT_CAP}
+    out = {}
+    for n in design.nets:
+        hit = [r for r, _p in n.pins if r in refs]
+        if hit and not re.search(r"(^|_)GND$", n.name):
+            out[n.name] = n
+    return out
+
+
+def test_every_crown_signal_line_has_an_esd_channel(design):
+    """Every aft-crown contact (and the bench cutter pads) is clamped on aft_end
+    by a U_ESD_AFT channel, unless a named part protects it."""
+    nets = _crown_nets(design)
+    for extra in ("PARACHUTE_CUTTER_SET_PAD", "ACTIVATE_CONFIRM_PAD"):
+        n = design.net_by_name(extra)
+        if n is not None:
+            nets[extra] = n
+    bad = [name for name, n in nets.items()
+           if name not in _CROWN_EXEMPT and not _FIN_PHASE.match(name)
+           and not any(r.startswith("U_ESD_AFT") for r, _p in n.pins)]
+    assert not bad, f"crown lines without an ESD channel: {sorted(bad)}"
+
+
+def test_no_crown_line_reaches_an_mcu_pin_directly(design):
+    """MP25 / WBA55 / U545 pins on a crown line sit behind a series resistor
+    (except the open-drain I2C bus: its pull-ups must stay at the pins)."""
+    from generate_stackup import _NO_SERIES_R
+    mcus = ("U_MPU", "U_WBA", "U_FIN_MCU")
+    bad = [f"{name} → {r}.{p}" for name, n in _crown_nets(design).items()
+           if name not in _NO_SERIES_R and not any(a in _NO_SERIES_R for a in (n.aliases or []))
+           for r, p in n.pins if r in mcus]
+    assert not bad, f"crown lines wired straight to an MCU pin: {bad}"
+
+
+def test_no_stiff_power_rail_on_the_crown(design):
+    """Only EXT_VIN (the protected input) may be a power contact; any other
+    supply leaves the tower through a series resistor (≤ tens of mA into a short)."""
+    rails = {"BAT_RAW", "BAT_PROT", "3V3", "3V3_AON", "COMP_3V3", "COMP_5V", "COMP_5V_RAW", "REG_IN_MAIN"}
+    bad = sorted(set(_crown_nets(design)) & rails)
+    assert not bad, f"stiff rails on crown contacts: {bad}"
+
+
+def test_off_board_sensors_keep_their_supply_contact(design):
+    """An off-board sensor landed on pogo pads (VCC / GND / OUT) whose VCC is a
+    tower rail must reach that rail OUTSIDE the tower too: the fin-deploy Hall
+    sits beyond the crown, so HALL_VIN must be a crown contact fed from 3V3."""
+    crown = _crown_nets(design)
+    assert "FIN_HALL" in crown, "FIN_HALL output lost its crown contact"
+    assert "HALL_VIN" in crown, "the off-board Hall sensor lost its supply contact (HALL_VIN)"
+    r = next((c for c in design.chips if c.ref == "R_HALL_VIN"), None)
+    assert r is not None and {p.net if isinstance(p.net, str) else p.net.name for p in r.pins} == {"3V3", "HALL_VIN"}

@@ -1,0 +1,26 @@
+{
+ "part": "PMPB15XP,115",
+ "datasheet": "PMPB15XP_115.pdf",
+ "extracted": "2026-11-25 by Claude — values cite the datasheet; spot-check before trusting",
+ "io": [
+  {
+   "pins": [
+    "D_1",
+    "D_2",
+    "D_3",
+    "D_4",
+    "D_5"
+   ],
+   "domain": null,
+   "abs_max_over_domain_v": null,
+   "abs_max_v": 12,
+   "ref": "p.2 §5 Table 5 Limiting values: VDS -12 V (P-channel, relative to source; checked against ground)"
+  }
+ ],
+ "required": [
+  {
+   "what": "VGS within ±12 V RELATIVE TO THE SOURCE: the source sits on a ≤ 5.6 V rail here, so a gate pulled to GND stays inside the rating",
+   "ref": "p.2 §5 Table 5 Limiting values: VGS -12…+12 V"
+  }
+ ]
+}

@@ -6,7 +6,12 @@
     "package": "LGA-4 1.45x1.45x0.436",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/RR123-1H02-612/redrock-rr123-datasheet.pdf",
-    "notes": "Top view: 1 bottom-left (PIN1), 2 bottom-right, 3 top-right, 4 top-left. Land 0.38 sq on 0.65 pitch."
+    "notes": "Top view: 1 bottom-left (PIN1), 2 bottom-right, 3 top-right, 4 top-left. Land 0.38 sq on 0.65 pitch. [height] 0.486 mm max: DS §8.1 LGA-4 side view: 0.436 ±0.05. [temp] DS 4.1 Absolute Environmental Ratings: TOP −40…+85 °C",
+    "height_max_mm": 0.486,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -17,7 +22,17 @@
         "Latch Control"
       ],
       "type": "input",
-      "note": "LOW = sensor responds; HIGH = output frozen. If unused, drive/tie to GND (DS §7.5)"
+      "note": "LOW = sensor responds; HIGH = output frozen. If unused, drive/tie to GND (DS §7.5); [connect] DS §7.5: actively drive LCP (to VSS) to avoid residual-charge errors; §7.1/7.2 app circuits show LCP grounded when not used; [enrich] DS elec. char.: LCP input low 0..VDD*0.3, high VDD*0.6..VDD",
+      "connect": "defined",
+      "unused": "gnd",
+      "vih": [
+        0.6,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "2",
@@ -27,7 +42,8 @@
         1.0,
         3.6
       ],
-      "note": "Abs max 3.6 V; >=0.1 uF decoupling within 10 mm"
+      "note": "Abs max 3.6 V; >=0.1 uF decoupling within 10 mm; [connect] DS §7: VDD with >=0.1 uF decoupling required",
+      "connect": "supply"
     },
     {
       "num": "3",
@@ -42,7 +58,9 @@
     {
       "num": "4",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS §7.4 pinout: GND"
     }
   ]
 }

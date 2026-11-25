@@ -47,7 +47,7 @@ def test_non_overlapping_uses_max_not_sum():
     # far apart → no coincidence → just the tallest single + clearance
     lower = _board(_placement("U_A", 1.4, (0.0, 0.0), "top"))
     upper = _board(_placement("U_B", 1.8, (10.0, 10.0), "bottom"))
-    assert gap_required_thickness(lower, upper) == 2.1   # 1.8 + 0.3
+    assert gap_required_thickness(lower, upper, floor=0.0) == 2.1   # 1.8 + 0.3
 
 
 def test_floored_at_minimum():
@@ -70,5 +70,5 @@ def test_rounds_up_to_tenth():
     lower = _board(_placement("U_A", 1.05, (0.0, 0.0), "top"))
     upper = _board(_placement("U_B", 0.96, (0.0, 0.0), "bottom"))
     # 1.05 + 0.96 = 2.01 + 0.3 = 2.31 → ceil to 2.4
-    assert gap_required_thickness(lower, upper) == 2.4
+    assert gap_required_thickness(lower, upper, floor=0.0) == 2.4
     assert SPACER_CLEARANCE_MM == 0.3

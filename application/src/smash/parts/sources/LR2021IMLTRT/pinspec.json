@@ -6,7 +6,12 @@
     "package": "QFN-32 5x5 mm, 0.5 pitch, EP 3.70 nom (3.30-3.80)",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/LR2021IMLTRT/LR2021IMLTRT.pdf",
-    "notes": "DS numbers the exposed pad as pin 0; footprint uses 33. DS Table 2-1 has typo 'DI010' for pin 8. VTCXO 1.6-3.3 V programmable, ILTCXO 4 mA max, VDDop > VTCXO + 0.2 V. TCXO into XTA: clipped sine 0.4-1.2 Vpp via 10 pF + 220 Ω."
+    "notes": "DS numbers the exposed pad as pin 0; footprint uses 33. DS Table 2-1 has typo 'DI010' for pin 8. VTCXO 1.6-3.3 V programmable, ILTCXO 4 mA max, VDDop > VTCXO + 0.2 V. TCXO into XTA: clipped sine 0.4-1.2 Vpp via 10 pF + 220 Ω. [height_max_mm: DS Fig. 24-1 Package Outline A max 1.00] [Table 3-26: other DIO pulls (ZPUD 40 kΩ typ) apply only in Sleep per SetDioFunction pull_drive, none at reset; no NRESET pull stated] [temp] DS 3.2 Table 3-2 Operating Range: Top ambient −40…85 °C (Tj max 105 °C)",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -19,13 +24,15 @@
       "num": "2",
       "name": "VPAX2",
       "type": "power",
-      "note": "connect to VPAX1"
+      "note": "connect to VPAX1 [connect rule: DS Table 2-1 / §23.5: VPAX2 connected to VPAX1]",
+      "connect": "same_as:13"
     },
     {
       "num": "3",
       "name": "NTC",
       "type": "passive",
-      "note": "leave unconnected if no NTC"
+      "note": "leave unconnected if no NTC [connect rule: DS §23.5: NTC leave unconnected if no NTC resistor]",
+      "unused": "open"
     },
     {
       "num": "4",
@@ -37,7 +44,8 @@
       "num": "5",
       "name": "XTB",
       "type": "passive",
-      "note": "leave unconnected with a TCXO"
+      "note": "leave unconnected with a TCXO [connect rule: DS §23.5: XTB leave unconnected when a TCXO is used]",
+      "unused": "open"
     },
     {
       "num": "6",
@@ -52,7 +60,9 @@
       "num": "7",
       "name": "DIO11",
       "type": "io",
-      "note": "unused: leave unconnected"
+      "note": "unused: leave unconnected [connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]",
+      "unused": "open",
+      "io_domain": "17"
     },
     {
       "num": "8",
@@ -61,51 +71,68 @@
       "aliases": [
         "DI010"
       ],
-      "note": "unused: leave unconnected"
+      "note": "unused: leave unconnected [connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]",
+      "unused": "open",
+      "io_domain": "17"
     },
     {
       "num": "9",
       "name": "DIO9",
-      "type": "io"
+      "type": "io",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]",
+      "io_domain": "17"
     },
     {
       "num": "10",
       "name": "DIO8",
-      "type": "io"
+      "type": "io",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]",
+      "io_domain": "17"
     },
     {
       "num": "11",
       "name": "DIO7",
-      "type": "io"
+      "type": "io",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]",
+      "io_domain": "17"
     },
     {
       "num": "12",
       "name": "VDCC1",
       "type": "power",
-      "note": "connect to VDCC2"
+      "note": "connect to VDCC2 [connect rule: DS Table 2-1: VDCC1 'To be connected to VDCC2'; §23.5: also in LDO mode]",
+      "connect": "same_as:26"
     },
     {
       "num": "13",
       "name": "VPAX1",
       "type": "power",
-      "note": "connect to VPAX2"
+      "note": "connect to VPAX2 [connect rule: DS Table 2-1: VPAX1 'To be connected to VPAX2'; §23.5: also in LDO mode]",
+      "connect": "same_as:2"
     },
     {
       "num": "14",
       "name": "LXB",
       "type": "passive",
-      "note": "SIMO coil; NC in LDO mode"
+      "note": "SIMO coil; NC in LDO mode [connect rule: DS §23.5: LXA/LXB leave unconnected when LDO regulation is used]",
+      "unused": "open"
     },
     {
       "num": "15",
       "name": "GND_DCC",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS Table 2-1: ground (pin 0 = exposed ground pad)]"
     },
     {
       "num": "16",
       "name": "LXA",
       "type": "passive",
-      "note": "SIMO coil; NC in LDO mode"
+      "note": "SIMO coil; NC in LDO mode [connect rule: DS §23.5: LXA/LXB leave unconnected when LDO regulation is used]",
+      "unused": "open"
     },
     {
       "num": "17",
@@ -115,87 +142,139 @@
         1.8,
         3.7
       ],
-      "note": "abs max 3.9 V"
+      "note": "abs max 3.9 V [connect rule: DS Table 2-1: main battery supply]",
+      "connect": "supply"
     },
     {
       "num": "18",
       "name": "DIO6",
-      "type": "io"
+      "type": "io",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT; internal_pull: §SetDioFunction DIO5/DIO6 pull-up by default, Table 3-26 ZPUD 40 kΩ typ]",
+      "io_domain": "17",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          40,
+          40
+        ]
+      }
     },
     {
       "num": "19",
       "name": "DIO5",
-      "type": "io"
+      "type": "io",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused DIOs leave unconnected] [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT; internal_pull: §SetDioFunction DIO5/DIO6 pull-up by default, Table 3-26 ZPUD 40 kΩ typ]",
+      "io_domain": "17",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          40,
+          40
+        ]
+      }
     },
     {
       "num": "20",
       "name": "NRESET",
       "type": "input",
-      "note": "active low"
+      "note": "active low [io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT; vih/vil: Table 3-26 VIH ≥0.7·VBAT, VIL ≤0.3·VBAT]",
+      "io_domain": "17",
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "21",
       "name": "MISO",
-      "type": "output"
+      "type": "output",
+      "io_domain": "17",
+      "note": "[io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]"
     },
     {
       "num": "22",
       "name": "MOSI",
-      "type": "input"
+      "type": "input",
+      "io_domain": "17",
+      "note": "[io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]"
     },
     {
       "num": "23",
       "name": "SCK",
-      "type": "input"
+      "type": "input",
+      "io_domain": "17",
+      "note": "[io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]"
     },
     {
       "num": "24",
       "name": "NSS",
-      "type": "input"
+      "type": "input",
+      "io_domain": "17",
+      "note": "[io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]"
     },
     {
       "num": "25",
       "name": "BUSY",
-      "type": "output"
+      "type": "output",
+      "io_domain": "17",
+      "note": "[io_domain 17: DS Table 3-26 digital I/O levels referenced to VBAT]"
     },
     {
       "num": "26",
       "name": "VDCC2",
       "type": "power",
-      "note": "from VDCC1"
+      "note": "from VDCC1 [connect rule: DS Table 2-1 / §23.5: VDCC2 connected to VDCC1]",
+      "connect": "same_as:12"
     },
     {
       "num": "27",
       "name": "RFO_LF2",
       "type": "output",
-      "note": "MUST be tied to RFO_LF1 at PCB"
+      "note": "MUST be tied to RFO_LF1 at PCB [connect rule: DS §1 PA_LF: RFO_LF1/RFO_LF2 'must be connected together at PCB level'; §23.5: unused RF pins leave unconnected]",
+      "connect": "same_as:28",
+      "unused": "open"
     },
     {
       "num": "28",
       "name": "RFO_LF1",
       "type": "output",
-      "note": "MUST be tied to RFO_LF2; choke to VR_PA"
+      "note": "MUST be tied to RFO_LF2; choke to VR_PA [connect rule: DS §1 PA_LF: RFO_LF1/RFO_LF2 'must be connected together at PCB level'; §23.5: unused RF pins leave unconnected]",
+      "connect": "same_as:27",
+      "unused": "open"
     },
     {
       "num": "29",
       "name": "RFI_LF",
-      "type": "input"
+      "type": "input",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused RF pins leave unconnected]"
     },
     {
       "num": "30",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: DS Table 2-1: ground (pin 0 = exposed ground pad)]"
     },
     {
       "num": "31",
       "name": "RFI_HF",
-      "type": "input"
+      "type": "input",
+      "unused": "open",
+      "note": "[connect rule: DS §23.5: unused RF pins leave unconnected]"
     },
     {
       "num": "32",
       "name": "RFO_HF",
       "type": "output",
-      "note": "choke to VR_PA"
+      "note": "choke to VR_PA [connect rule: DS §23.5: unused RF pins leave unconnected]",
+      "unused": "open"
     },
     {
       "num": "33",
@@ -205,7 +284,8 @@
         "EP",
         "GND_EP"
       ],
-      "note": "DS pin 0, exposed ground pad; thermal vias to GND plane"
+      "note": "DS pin 0, exposed ground pad; thermal vias to GND plane [connect rule: DS Table 2-1: ground (pin 0 = exposed ground pad)]",
+      "connect": "gnd"
     }
   ]
 }

@@ -6,7 +6,12 @@
     "package": "HSNT-4(1010) 1.0x1.0x0.38, heat sink",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/S-1318D33-A4T2U4/S-1318_datasheet.pdf",
-    "notes": "PL004-A-P-SD top view: 4 TL, 3 TR, 1 BL, 2 BR; 1-2 and 4-3 are the 0.65 mm pairs; heat-sink bar runs parallel to them. D type: no discharge, no ON/OFF pull-down."
+    "notes": "PL004-A-P-SD top view: 4 TL, 3 TR, 1 BL, 2 BR; 1-2 and 4-3 are the 0.65 mm pairs; heat-sink bar runs parallel to them. D type: no discharge, no ON/OFF pull-down. [height] 0.4 mm max: DS HSNT-4-B-PKG dimensions: 0.38 ±0.02. [temp] DS Table 9 Absolute Maximum Ratings: Topr operation ambient −40…+85 °C",
+    "height_max_mm": 0.4,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -24,7 +29,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Table 8: VSS GND pin"
     },
     {
       "num": "3",
@@ -33,7 +40,18 @@
         "EN"
       ],
       "type": "input",
-      "note": "Active H; D type has no pull-down - do not float; tie to VIN if unused (DS §3.2). Abs max 6.0 V"
+      "note": "Active H; D type has no pull-down - do not float; tie to VIN if unused (DS §3.2). Abs max 6.0 V; [connect] DS §3.2 (B/D type): no internal pull-down, do not float; when not used connect to VIN (pin 4); [enrich] DS Table 9 abs max: VON/OFF VSS-0.3..VSS+6.0 V (independent of VIN); elec. char.: VSH 1.0 V min, VSL 0.25 V max",
+      "connect": "defined",
+      "unused": "supply",
+      "max_v": 6.0,
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.25,
+        "abs"
+      ]
     },
     {
       "num": "4",
@@ -46,7 +64,8 @@
         1.7,
         5.5
       ],
-      "note": "Abs max 6.0 V"
+      "note": "Abs max 6.0 V; [connect] DS Table 8: VIN input voltage pin",
+      "connect": "supply"
     },
     {
       "num": "5",
@@ -55,7 +74,8 @@
         "heat sink"
       ],
       "type": "ground",
-      "note": "Connect to board at GND potential; not an electrode (Fig. 6 *1)"
+      "note": "Connect to board at GND potential; not an electrode (Fig. 6 *1); [connect] DS Fig.6 *1: connect backside heat sink to board at GND potential",
+      "connect": "gnd"
     }
   ]
 }

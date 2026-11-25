@@ -1,0 +1,173 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+RPU_SCL_EXT+11       CRCW04024K70FKED             | 2247714   18w    0.09 Taiwan    |  673542 16.0w    0.01 Israel    | 3352633   21w    0.03 Taiwan    | 
+U_CAN_GW+1           TJA1462ATK/0Z                |   77965   16w    1.22 Thailand/ |    5779 16.0w    1.23 Thailand  |    7707   16w    1.37 United St | 
+C_CAN_GW_VIO+131     GRM155R71C104KA88D           | 3800003   53w    0.44 Philippin | 1075398 17.0w    0.03 Japan     |       0   17w    0.01 Philippin | 
+R_EXT_CAN_TERM+1     CRCW0402120RFKED             |  141785   18w    0.09 Taiwan    |   51250 16.0w    0.02 Israel    |  320213   21w    0.10 Taiwan    | 
+U_MAG                BMM350                       |   28682   16w    1.85 Taiwan    |                        - |  118542   16w    2.26 Taiwan    | 
+U_MAG_LDO            S-1318D18-A4T2U4             |       0   16w    0.00 Japan     |                        - |       0   16w    1.03 Japan     | 
+C_MAG_LDO_IN+21      C0603C105K3RACTU             |  938986   31w    0.59 Taiwan/Ta |  172938 15.0w    0.35 Taiwan    |  806479   38w    0.40 Taiwan    | 
+C_MAG_C1+132         C0603C225K8RACTU             |   42313   31w    0.40 Taiwan    |   17891 47.0w    0.32 Malaysia  |  144687   38w    0.33 Taiwan    | 
+U_IMU1+2             ISM330DLCTR                  |   17127   24w    7.60 Italy/Phi |    4063 143.w    8.24 Italy     |     825   24w    8.56 Italy     | 
+R_IMU1_SCX_PU+46     CRCW040210K0FKED             | 2522082   18w    0.09 Taiwan/Ta | 7979175 16.0w    0.01 Israel    | 12427923   21w    0.02 Taiwan    | 
+C_IMU1_3+4           C0402C103K3RACTU             | 1100206   35w    0.14 Taiwan    |   73378 14.0w    0.02 Mexico    |  604217   17w    0.16 Taiwan    | 
+R_QPD_VREF_H+60      CRCW0402100KFKED             | 1792333   18w    0.09 Taiwan/Ta | 2297513 16.0w    0.01 Israel    | 3895734   21w    0.02 Taiwan    | 
+R_TIA_A+9            CRCW04021M00FKED             |  370949   18w    0.09 Taiwan    | 1066775 20.0w    0.01 Israel    | 1161878   21w    0.03 Taiwan    | 
+C_TIA_A+3            C0603C829C5GACTU             |   33044   44w    0.18 Mexico    |    7540 20.0w    0.11 Mexico    |   11183   22w    0.64 Mexico    | 
+U_TIA_A+3            AD8603AUJZ-R2                |     931     w    2.69 Malaysia  |     481 24.0w    4.17 Malaysia  |    1133   52w    4.72 Malaysia  | 
+R_TIA_A_SER+20       CRCW04021K00FKED             |  879887   18w    0.09 Taiwan    | 7453578 16.0w    0.01 Israel    | 3444533   21w    0.03 China     | 
+U_QPD                MT03-092                     |       9   10w  123.47 United St |                        - |      12   10w  139.05 United St | 
+D_IR_TX_Q+2          VSMB1940X01                  |    5571    7w    0.82 Germany   |    1205 53.0w    0.94 Germany   |  154680   15w    1.02 Germany   | 
+R_IR_TX_A_Q+5        CRCW040227R0FKED             |   98197   18w    0.09 Taiwan    |   68007 16.0w    0.02 Israel    |  164831   21w    0.10 Taiwan    | 
+Q_IR_TX_Q+12         SSM3K35CTC,L3F               |   27484   24w    0.27 Thailand/ |   28902 24.0w    0.26 Thailand  |    6002   24w    0.18 Thailand  | 
+R_IR_TX_G_Q+7        CRCW0402100RFKED             |  994951   18w    0.09 Taiwan    |  354196 16.0w    0.01 Israel    | 3322165   21w    0.10 Taiwan    | 
+D_IR_WAKE_Q+2        VEMD5110X01                  |    3577    4w    1.47 Malaysia  |    1410 10.0w    1.44 Malaysia  |    1009    9w    1.66 Malaysia  | 
+U_CAM                VB1943CAJX/1                 |     114   30w   43.52 Japan     |      29  6.0w   23.39 Japan     |    1341   30w   51.95 Japan     | 
+R_CAM_VAA_SRC+2      CRCW04020000Z0ED             | 11674406   18w    0.09 Taiwan    | 4551069 16.0w    0.01 Israel    | 9900705   21w    0.10 Taiwan    | 
+U_CAM_BUCK_VCORE+2   TPS62822DLCR                 |    1293   26w    1.74 Philippin |                        - |   11274   26w    2.08 United St | 
+C_CAM_BUCK_IN+19     CL10A106KP8NNNC              |       0   52w    0.29 Philippin |       0 23.0w    0.17 Philippin |   51266   61w    0.12 Philippin | 
+L_CAM_BUCK_VCORE+2   TMS201210ALM-R47MTAA         |    4874   20w    0.41 Japan     |    5900 20.0w    0.40 Japan     |    5803   20w    0.46 Japan     | 
+R_CAM_VCORE_FB1      CRCW040291K0FKED             |   96732   18w    0.09 Taiwan    |   67178 16.0w    0.02 Taiwan    |   42085   21w    0.10 Taiwan    | 
+C_CAM_VCORE_FF+3     04025A121JAT2A               |    1545   18w    0.11 Taiwan    |   10000 26.0w    0.01 Taiwan    |       0   18w    0.10 China     | 
+C_CAM_LDO2V4+2       C0603C474K3RACTU             |   63272   41w    0.33 Taiwan    |   13252 58.0w    0.24 Taiwan    |   54679   14w    0.37 Taiwan    | 
+Y_CAM_EXTCLK         DSC1001CI1-027.0000          |     864   16w    0.69 Thailand  |                        - |     131   34w    1.03 Thailand  | 
+P_PIEZO              SMD10T04R111                 |                        - |                        - |                        - | 
+R_COMP_DIV+1         CRCW0402200KFKED             |  400535   18w    0.09 Taiwan    |  156492 20.0w    0.02 Taiwan    |  225461   21w    0.10 Taiwan    | 
+U_COMP_PZ            MAX9064EBS+TG45              |     211     w    0.89 United St |    5300 12.0w    1.56 Taiwan    |    9626   10w    1.72 Taiwan    | 
+R_COIL_1+3           CRCW040247R0FKED             |  325421   18w    0.09 Taiwan    |   59578 16.0w    0.03 Israel    |  254794   21w    0.10 Taiwan    | 
+Q_HEALTH_COIL+9      SSM3K7002KF,LF               |       0   20w    0.25 Thailand  |       0 20.0w    0.31 Thailand  |       1   20w    0.19 Japan     | 
+U_ACTIVATE_BOOST     TPS61175PWPR                 |    5278   26w    4.01 Taiwan/Ta |       0     w    0.00 Taiwan    |       0   26w    4.43 Japan     | 
+R_ACTIVATE_FREQ      CRCW0402174KFKED             |   12136   18w    0.09 Taiwan    |   11940 20.0w    0.02 Israel    |   35118   21w    0.10 Taiwan    | 
+C_ACTIVATE_SS        GRM155R71E473KA88D           |       0   53w    0.10 Philippin |   64591 17.0w    0.02 Japan     |    9279   17w    0.11 Philippin | 
+L_ACTIVATE           IHLP2020BZER100M01           |   28194   10w    1.00 Mexico    |     596 24.0w    0.75 China     |    6770   13w    1.13 Mexico    | 
+D_ACTIVATE           RB160VAM-60TR                |   44191   12w    0.43 Thailand  |    4450 16.0w    0.42 Thailand  |   13681   12w    0.48 Thailand  | 
+R_ACTIVATE_FB1       CRCW0402261KFKED             |       0   18w    0.10 Taiwan    |     459 20.0w    0.02 Israel    |   15469   21w    0.11 Israel    | 
+R_ACTIVATE_COMP      CRCW04021K60FKED             |   37681   18w    0.10 Taiwan    |   33685 20.0w    0.03 Israel    |   51127   21w    0.11 Taiwan    | 
+C_ACTIVATE_COMP      C0603C224K5RACTU             |     677   26w    0.39 Mexico    |    2536 27.0w    0.22 Mexico    |      20   22w    0.32 Mexico    | 
+C_ACTIVATE_OUT_1+1   C2012X7R1H225K125AC          |   17130   24w    0.47 Japan     |   70425 15.0w    0.45 Japan     |  356596   36w    0.53 Japan     | 
+R_ACTIVATE_MON2      CRCW040211K0FKED             |  156508   18w    0.09 Taiwan    |   95224 20.0w    0.03 Taiwan    |   86225   21w    0.10 Taiwan    | 
+Q_PARACHUTE_CUTTER_A BUK6D120-60PX                |       5   53w    0.65 Malaysia/ |    3565 22.0w    0.63 Malaysia  |       0   20w    0.73 Malaysia  | 
+P_ACT_COL_0+19       Clamp_Tab_D1.6mm             |                        - |                        - |                        - | 
+D_ACT_WIRE_0+19      BAS4002LE6327XTMA1           |   14643   26w    0.44 Austria/M |   11990 28.0w    0.47 Malaysia  |   42116   26w    0.32 Austria   | 
+U_AWR_BUCK13         TPS62088YFPR                 |     167   26w    1.70 Philippin |                        - |    1056   26w    1.83 Philippin | 
+L_AWR_BUCK13         TMS201210ALM-R24MTAA         |    4530   20w    0.41 Japan     |    5945 20.0w    0.40 Japan     |    5682   20w    0.46 Japan     | 
+R_AWR13_FB1          CRCW0402118KFKED             |   40191   18w    0.09 Taiwan    |    8551 20.0w    0.03 Israel    |   57838   21w    0.10 Israel    | 
+U_AWR                AWR1843ARBGALPQ1             |     297   26w   62.10 Korea, Re |                        - |     122   26w   66.58 South Kor | 
+Y_AWR_HSE+1          SIT1602BI-12-18E-40.000000   |                        - |                        - |       0   12w    2.40 Thailand  | 
+R_AWR_CLK_SER        CRCW0402330RFKED             |  316202   18w    0.09 Taiwan    |  214970 16.0w    0.01 Israel    |  103673   21w    0.10 Taiwan    | 
+R_AWR_CLK_SH         CRCW0402390RFKED             |    1708   18w    0.09 Taiwan    |    5846 16.0w    0.03 Taiwan    |  136223   21w    0.10 Israel    | 
+U_AWR_FLASH          MX25V8035FZNI                |                        - |       3 35.0w    1.45 Taiwan    |    9678   52w    1.32 Taiwan    | 
+U_MPU                STM32MP257FAL3               |       8   30w   22.68 Taiwan    |      35 22.0w   23.32 Taiwan    |       0   30w   25.74 Taiwan    | 
+R_MPU_TXRTUNE+1      CRCW0402200RFKED             |  439963   18w    0.09 Taiwan    |   55428 20.0w    0.02 Taiwan    |  804484   21w    0.10 Taiwan    | 
+Y_MPU_LSE            SIT1533AI-H4-DCC-32.768E     |   31577    6w    1.23 Malaysia  |       0 12.0w    0.63 Malaysia  |  133609   18w    1.38 Malaysia  | 
+U_NAND_A+1           MT29F4G01ABAFDWB-IT_F        |                        - |    1873 52.0w   29.41 Taiwan    |    1920   13w   29.56 Taiwan    | 
+U_DDR                MT41K256M16TW-107 IT:P       |   22388   53w  109.30 Taiwan/Ta |    2359 52.0w   78.58 Singapore |   17365   26w   75.40 Taiwan    | 
+R_MPU_DDR_ZQ+1       CRCW0402240RFKED             |   30221   18w    0.11 Taiwan    |   47845 16.0w    0.03 Israel    |   68077   21w    0.10 Israel    | 
+P_CELL_WIRE_POS1+2   CellLead_PTH_Wire_D0.8       |                        - |                        - |                        - | 
+P_CELL_PIN_NEG1+2    CellLead_PTH_Pin_D1          |                        - |                        - |                        - | 
+R_BAT1_ISO+2         RCWE0402R200FKEA             |   42353   16w    0.30 Israel    |                        - |  274126   19w    0.38 Israel    | 
+C_BAT_BULK1+13       GRM21BR61A226ME44L           |       0   53w    0.54 Japan     |       0 20.0w    0.28 Japan     |       0   17w    0.19 Japan     | 
+U_COMP_BOOST         LTC3124EDHC#TRPBF            |     677     w    6.98 Thailand  |                        - |    3197   34w   11.44 Thailand  | 
+R_BOOST_FREQ         CRCW040228K0FKED             |   61020   18w    0.09 Taiwan    |  140120 20.0w    0.02 Israel    |   88214   21w    0.10 Taiwan    | 
+L_BOOST_COMP+1       74438356047                  |   11703   42w    1.72 Korea, Re |    2384 42.0w    1.97 South Kor |   11267   42w    1.94 South Kor | 
+C_BOOST_OUT1_1+1     GRM21BR61E226ME44L           |       0   53w    0.64 Japan     |   70075 13.0w    0.34 Japan     |       0   17w    0.36 Japan     | 
+R_BOOST_R1           CRCW0402360KFKED             |   25596   18w    0.09 Taiwan    |    5640 20.0w    0.02 Taiwan    |   45511   21w    0.10 Taiwan    | 
+R_BOOST_R2           CRCW0402113KFKED             |     937   18w    0.09 Taiwan    |   40680 20.0w    0.02 Israel    |    9824   21w    0.11 Taiwan    | 
+R_BOOST_COMP         CRCW040260K4FKED             |   58463   18w    0.09 Taiwan    |  104012 20.0w    0.03 Israel    |  112437   21w    0.10 Taiwan    | 
+C_BOOST_COMP         C0402C152K3RACTU             |   17348   24w    0.17 Mexico/Me |   18227 16.0w    0.07 Mexico    |   45424   13w    0.16 Mexico    | 
+C_BOOST_COMP_F       C0603C391J5GACTU             |   84417   44w    0.12 Mexico    |   20278 57.0w    0.07 Mexico    |   18848   22w    0.14 Mexico    | 
+C_BOOST_PL           C0402C470J5GACTU             |  255066   35w    0.09 Taiwan    |   81035 45.0w    0.03 Taiwan    | 1064804   17w    0.10 Taiwan    | 
+R_BOOST_PL           CRCW040268K1FKED             |  145820   18w    0.09 Taiwan    |    8530 20.0w    0.02 Taiwan    |  122140   21w    0.10 Taiwan    | 
+L_PMIC_FILT+3        TMS201210ALM-1R0MTAA         |    5322   20w    0.41 Japan     |    5975 20.0w    0.40 Japan     |    5303   20w    0.46 Japan     | 
+U_PMIC               STPMIC25APQR                 |      62   30w    6.66 Philippin |       0 24.0w    6.50 Singapore |     639   30w    7.85 Philippin | 
+L_PMIC_BUCK4+5       TMS201210ALM-2R2MTAA         |    5721   20w    0.41 Japan     |    4310 20.0w    0.40 Japan     |    5834   20w    0.46 Japan     | 
+C_PMIC_VIN1+4        T491T226K010AT               |     912   21w    1.74 Mexico    |       0 19.0w    0.66 Mexico    |    4086   20w    2.25 Mexico    | 
+U_TMP1               MCP9808T-E/MC                |    7586   14w    1.24 Thailand/ |   20007  6.0w    1.29 Thailand  |   37985    9w    1.40 Thailand  | 
+D_EXT_IN             PNS40010AERX                 |   10054   16w    0.30 Malaysia/ |       0     w    0.00 Malaysia  |   13122   16w    0.34 Malaysia  | 
+QMAIN+2              SSM3J372R,LF                 |  159936   20w    0.36 Thailand/ |    6486 24.0w    0.36 Thailand  |  221138   20w    0.41 Thailand  | 
+U_MAG_WAKE           DRV5032AJDMRR                |   16584   26w    0.34 Thailand  |                        - |    1169   26w    0.49 Thailand  | 
+U_TMR_LDO+1          S-1318D33-A4T2U4             |    5214   16w    1.71 Japan     |                        - |       0   16w    1.03 Japan     | 
+U_MAG_SHELF          RR123-1H02-612               |   15636   14w    1.06 Taiwan    |                        - |   32778   20w    1.07 Taiwan    | New at Mouser
+R_MAG_SHELF+1        CRCW04023K30FKED             |  370695   18w    0.09 Taiwan/Ta |  157010 16.0w    0.03 Israel    |  350386   21w    0.10 Taiwan    | 
+R_JUMP_PU+1          CRCW040222K0FKED             |  423688   18w    0.09 Taiwan    |  104323 16.0w    0.02 Taiwan    |  350258   21w    0.10 Israel    | 
+U_BOOST              MCP1640CT-I/MC               |       0   16w    0.72 Thailand  |   61225  7.0w    0.68 Thailand  |    3369   23w    0.81 Thailand  | 
+R_BOOST_FB1          CRCW0402220KFKED             |   62072   18w    0.09 Taiwan    |  163964 16.0w    0.02 Israel    |    1106   21w    0.10 Taiwan    | 
+U_PWR+1              LDL112PV33R                  |    5652   30w    0.47 Italy     |    3477 32.0w    0.55 Italy     |   10743   30w    0.53 Italy     | 
+R_AON_EN_PD          CRCW040210M0FKED             |  221602   18w    0.10 Taiwan    |  110183 16.0w    0.03 Israel    |   47607   21w    0.11 Taiwan    | 
+U_WBA                STM32WBA55UGI7               |      49   30w    5.90 Taiwan    |       0 17.0w    5.73 Taiwan    |     150   30w    6.67 Taiwan    | 
+C_WBA_VDD11          C0402C225M9PACTU             |  196405   32w    0.15 Taiwan    |    6511 15.0w    0.12 Taiwan    |  112987   42w    1.38 Malaysia  | 
+Y_WBA_HSE            DSC1001CI5-032.0000          |     717   16w    1.17 Thailand  |                        - |       0   34w    1.54 Thailand  | 
+C_WBA_HSE_TOP        04025A3R3BAT2A               |   70066   22w    0.15 Taiwan    |   11887 26.0w    0.05 Taiwan    |   55485   22w    0.28 China     | 
+R_WBA_HSE_BOT        CRCW04022K20FKED             |   52008   18w    0.09 Taiwan    |  465844 16.0w    0.02 Taiwan    | 1131675   21w    0.10 Taiwan    | 
+C_WBA_HSE_BOT        C0603C100J5GACTU             |  259476   41w    0.16 Taiwan    |   38590 14.0w    0.06 Mexico    |  353238   22w    0.18 Taiwan    | 
+C_WBA_HSE_CPL        04025A471JAT2A               |       0   18w    0.10 Taiwan    |   40125 18.0w    0.03 Taiwan    |  125540   18w    0.12 Taiwan    | 
+RPU_IR_WAKE          CRCW0402470KFKED             |  102358   18w    0.10 Taiwan    |   29976 16.0w    0.03 Israel    |  242579   21w    0.11 Taiwan    | 
+L_WBA_PI+1           744765027A                   |    4281   13w    0.39 Malaysia  |    2881 14.0w    0.38 Malaysia  |    6054   13w    0.44 Malaysia  | 
+C_WBA_PI1+3          GJM1555C1HR50BB01D           |   18825   53w    0.12 Singapore |   21570 16.0w    0.05 Singapore |  107313   17w    0.10 Singapore | 
+U_LR                 LR2021IMLTRT                 |   17906   26w    8.73 Taiwan    |                        - |    6683   26w    9.63 Malaysia  | 
+U_LR_SW_HF+4         BGS12P2L6E6327XTSA1          |  333256   20w    0.35 Germany/M |   32915 52.0w    0.42 Malaysia  |  343944   20w    0.40 Germany   | 
+FB_LR_VBAT+1         BLM18PG221SN1D               |  182648   22w    0.12 Thailand  |  190990 37.0w    0.09 Thailand  |  180342   29w    0.14 Thailand  | 
+C_LR_VRPA            C0402C102K3RACTU             |   10879   35w    0.09 Taiwan    |  120445 50.0w    0.04 Mexico    |   78501   13w    0.10 China     | 
+Y_LR_TCXO_MEMS       SiT5356AECFQ-33N0-32.000000T |                        - |                        - |                        - | 
+C_LR_TCXO_AC+2       04025A100JAT2A               |  147150   18w    0.11 Taiwan    |   25002 18.0w    0.03 Taiwan    |  770000  N/Aw    0.00 Taiwan    | 
+R_LR_SPI_SCK+6       CRCW0402220RFKED             |  223239   18w    0.09 Taiwan    |   25351 20.0w    0.03 Israel    |  418923   21w    0.10 Taiwan    | 
+R_LR_BUSY+3          CRCW0402470RFKED             |       0   18w    0.09 Israel    |   82163 16.0w    0.03 Israel    |   64687   21w    0.10 Taiwan    | 
+L_LR_HF_CHOKE        744765110A                   |   12843   13w    0.34 Malaysia  |    2880 14.0w    0.37 Malaysia  |    5822   13w    0.44 Malaysia  | 
+C_LR_HF_TX1+1        GJM1555C1H1R2BB01D           |  408321   53w    0.09 Singapore |   10760 18.0w    0.05 Singapore |  421458   17w    0.10 Singapore | 
+L_LR_HF_TX2+1        744765022A                   |    3846   13w    0.39 Malaysia/ |    2600 14.0w    0.38 Malaysia  |    2250   13w    0.44 Malaysia  | 
+C_LR_HF_TX2          GJM1555C1H1R0BB01D           |  167196   53w    0.11 Singapore |   26172 17.0w    0.06 Singapore |  532991   17w    0.12 Singapore | 
+C_LR_HF_TXBLK+8      04025A101JAT2A               | 2488183   18w    0.34 Taiwan    |   82828 20.0w    0.02 Taiwan    |                        - | 
+L_LR_HF_RX           744765033A                   |   14405   13w    0.39 Malaysia  |    1520 14.0w    0.38 Malaysia  |    5795   13w    0.44 Malaysia  | 
+C_LR_HF_RX+3         GJM1555C1HR80BB01D           |   98190   53w    0.10 Singapore |   15951 18.0w    0.05 Singapore |  129927   17w    0.11 Singapore | 
+L_LR_HF_ANT_LPF      744765039A                   |    2352   13w    0.39 Malaysia  |     118 14.0w    0.38 Malaysia  |    1854   13w    0.44 Malaysia  | 
+U_LR_DTC1+1          PE64904D-Z                   |    5924   24w    3.62 Malaysia/ |                        - |    4946   16w    4.83 Malaysia  | 
+U_XV_LO              ADF4351BCPZ-RL7              |    4941     w   16.08 Korea, Re |     700 43.0w   24.23 South Kor |    3962   18w   25.16 South Kor | 
+R_XV_LO_RSET+2       CRCW04025K10FKED             |       0   18w    0.09 Taiwan    |   59704 16.0w    0.02 Israel    |  364330   21w    0.11 Israel    | 
+C_XV_LO_LF1+1        C0402C102J3GACTU             |   44196   35w    0.16 Taiwan    |   25593 24.0w    0.16 Taiwan    |       0   17w    0.31 Taiwan    | 
+C_XV_LO_LF2          C0402C223K3RACTU             |   10496   24w    0.12 Mexico    |     539 11.0w    0.06 Mexico    |  149743   19w    0.13 Mexico    | 
+C_XV_LO_LF3          04025A221JAT2A               |   21114   18w    0.16 Taiwan    |   20930 18.0w    0.04 Taiwan    |                        - | 
+R_XV_LO_PUP+2        CRCW040251R0FKED             |  167508   18w    0.09 Taiwan    |   41131 16.0w    0.03 Israel    |  183346   21w    0.10 Taiwan    | 
+R_XV_LO_PAD1+1       CRCW0402300RFKED             |  100882   18w    0.09 Israel    |   66812 20.0w    0.02 Taiwan    |   84860   21w    0.10 Israel    | 
+R_XV_LO_PAD2         CRCW040218R0FKED             |  115380   18w    0.09 Taiwan    |    6295 52.0w    0.02 Taiwan    |  119718   21w    0.10 Taiwan    | 
+C_XV_MIX_LO          04025A180JAT2A               |       0   18w    0.11 Taiwan    |   37334 18.0w    0.03 Czech Rep |   54312   18w    0.10 Taiwan    | 
+U_XV_MIX             LTC5552IUDB#TRMPBF           |      35     w   46.33 Thailand/ |     591 35.0w   58.53 Thailand  |    1648   20w   67.00 Thailand  | 
+T_XV_IF              NCS1-292+                    |       0   17w    1.46 Taiwan    |                        - |    2689   16w    1.64 Taiwan    | 
+R_XV_TX_PAD2         CRCW040268R0FKED             |  106629   18w    0.09 Taiwan    |   30771 16.0w    0.02 Israel    |  110983   21w    0.10 Taiwan    | 
+U_XV_PA              GRF5126                      |    1466     w    4.99 Malaysia  |                        - |                        - | 
+L_XV_PA_IN           LQG15HS1N3S02D               |   15228   12w    0.09 Japan     |       0 18.0w    0.02 Japan     |   12228   19w    0.10 Japan     | 
+C_XV_PA_IN           04025A1R5BAT2A               |   38123   22w    0.14 Taiwan    |      95 26.0w    0.05 Taiwan    |   82195   22w    0.10 China     | 
+L_XV_PA_VDD1         744765122A                   |    4738   13w    0.39 Malaysia  |    1348 14.0w    0.38 Malaysia  |    3259   13w    0.44 Malaysia  | 
+L_XV_PA_CHOKE        744765062A                   |    2985   13w    0.39 Malaysia  |    1455 14.0w    0.34 Malaysia  |    3000   13w    0.44 Malaysia  | 
+R_XV_PA_VB1          CRCW04022K74FKED             |   37183   18w    0.09 Taiwan    |   17773 20.0w    0.03 Taiwan    |  118213   21w    0.10 Taiwan    | 
+R_XV_PA_VB2          CRCW04022K32FKED             |   45057   18w    0.09 Taiwan    |                        - |   26211   21w    0.10 Taiwan    | 
+R_XV_PA_VG2          CRCW040215K0FKED             |  587826   18w    0.09 Taiwan    |  316694 16.0w    0.01 Israel    |  630833   21w    0.10 Taiwan    | 
+U_XV_BOOST           MCP1640D-I/MC                |     638   13w    0.72 Malaysia  |     443 23.0w    0.68 United St |      24   24w    0.81 Thailand  | 
+R_XV_BST_FB1         CRCW0402309KFKED             |  174001   18w    0.09 Taiwan    |    9450 20.0w    0.04 Taiwan    |  279869   21w    0.10 Taiwan    | 
+U_XV_LNA             GRF2073W                     |    1859   18w    3.01 Malaysia  |                        - |                        - | 
+L_XV_LNA_BIAS        LQG15HS1N8S02D               |   56952   12w    0.09 Japan     |    5130 26.0w    0.03 Japan     |   38845   19w    0.10 Japan     | 
+C_XV_LNA_OUT         GJM1555C1H5R1BB01D           |  108819   53w    0.09 Singapore |   23237  7.0w    0.05 Singapore |  101870   17w    0.10 Singapore | 
+L_XV_BPF_SH          744765010A                   |    5152   13w    0.39 Malaysia  |    2780 14.0w    0.37 Malaysia  |     898   13w    0.44 Malaysia  | 
+C_XV_BPF_SH          GJM1555C1H1R1BB01D           |   97764   53w    0.09 Singapore |    4446 16.0w    0.03 Singapore |   68653   17w    0.10 Singapore | 
+U_HACC               H3LIS331DLTR                 |       0   24w   10.79 Italy     |    1463 26.0w   10.66 Malta     |    5077   24w   12.88 Italy     | 
+U_FIN_MCU            STM32U545REI6Q               |       0   30w    7.97 Taiwan    |       0 32.0w    7.99 Taiwan    |    2802   30w    8.98 Taiwan    | 
+U_FIN1+3             TC78H653FTG,EL               |    5692   16w    1.31 Taiwan    |                        - |    8394   16w    1.48 Taiwan    | 
+J_DEV_USB            CX90B-16P                    |   33315     w    2.65 Korea, Re |    1013 14.0w    2.80 South Kor |    2837   16w    2.98 South Kor | 
+U_DEV_ESD            USBLC6-4SC6                  |   43025   25w    0.51 Singapore |   15335 19.0w    0.62 Singapore |  269302   25w    0.57 Singapore | 
+U_DEV_MCU            STM32U535CBU6                |    1098   30w    5.92 Taiwan    |      26 17.0w    5.37 Taiwan    |     776   30w    6.67 China     | 
+Q_DEV_FLAT_OE+8      RU1J002YNTCL                 |  107066   16w    0.22 Thailand  |    6519 20.0w    0.22 Thailand  | 1698849   16w    0.25 Philippin | 
+J_DEV_BENCH          691137710002                 |    9618   17w    0.34 Italy     |   13287 15.0w    0.35 Italy     |   74924   17w    0.38 Italy     | 
+R_DEV_SH             WFCP0402R0100FE66            |    4943   32w    0.58 Taiwan    |    1810 14.0w    0.35 Taiwan    |   24335   35w    0.63 Taiwan    | 
+U_DEV_INA            PAC1941T-1E/4MX              |    2346   10w    1.03 Thailand  |      24 57.0w    0.92 Thailand  |     763    4w    1.48 Thailand  | 
+U_DEV_ISENSE         INA241A2IDGKR                |       0   26w    3.47 Malaysia/ |                        - |       0   26w    2.22 -         | 
+U_DEV_BUSSW0+7       SN74CB3T3125PWR              |    4747   26w    1.81 Malaysia/ |       0     w    0.00 Malaysia  |    5021   26w    2.04 Malaysia  | 
+R_DEV_TWR_VDD2       CRCW040220K0FKED             | 1155790   18w    0.09 Taiwan    |  296659 16.0w    0.01 Israel    | 1711698   21w    0.10 Taiwan    | 
+P_DEV_FIX_00+56      0906-0-15-20-76-14-11-0      |  164626    3w    0.72 United St |      70  7.0w    0.64 United St |  105452    4w    0.62 United St | 
+J_DEV_TWR_IO+2       61304021121                  |    4500   16w    1.78 Taiwan    |    1500 17.0w    1.98 Taiwan    |    7355   16w    1.91 Taiwan    | 
+P_DEV_DOWEL1+2       5849-0-00-15-00-00-03-0      |   27813    5w    0.60 United St |                        - |    3715    5w    0.68 United St | 
+D_DEV_SEAT1+7        LTST-C190GKT                 | 2082204   14w    0.12 Thailand/ |                        - |  873883   14w    0.14 Thailand  | 
+S_DEV_MP25_RST+7     B3U-1000P                    |   30332    4w    0.99 Japan     |   13461 17.0w    1.07 Japan     |   88759   26w    1.17 Japan     | 
+R_DEV_LED_VBUS       CRCW04021K50FKED             |  215886   18w    0.09 Taiwan    |  169161 16.0w    0.02 Israel    |  956789   21w    0.10 Taiwan    | 
+D_DEV_LED_HV         LTST-C190KRKT                | 2335170   14w    0.12 Thailand  |                        - |  921721   14w    0.14 Thailand  | 
+R_DEV_LED_HV         CRCW040233K0FKED             |  366060   18w    0.09 Israel    |  311301 16.0w    0.03 Israel    |  363322   21w    0.10 Taiwan    | 
+J_DEV_HF_S1+1        U.FL-R-SMT-1(10)             |  120077    9w    1.48 Japan     |  106120 14.0w    1.70 China     |  301970   16w    1.67 China     | 
+
+Digi-Key rows not in the upload:

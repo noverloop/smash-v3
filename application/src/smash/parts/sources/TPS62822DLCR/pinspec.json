@@ -6,36 +6,58 @@
     "package": "VSON-HR 8 (DLC) 1.5x2.0x1.0 mm, 0.5 mm pitch, no EP",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/TPS62822DLCR/tps62822.pdf",
-    "notes": "Abs max 6 V on VIN/FB/EN/PG/NC; recommended VIN 2.4-5.5 V, VOUT 0.6-4 V, 2 A."
+    "notes": "Abs max 6 V on VIN/FB/EN/PG/NC; recommended VIN 2.4-5.5 V, VOUT 0.6-4 V, 2 A. height_max_mm [DS p29 DLC0008B: VSON-HR 1 mm max height] [temp] DS 7.3 Recommended Operating Conditions: TJ −40…125 °C",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {
       "num": "1",
       "name": "EN",
       "type": "input",
-      "note": "Do not leave floating"
+      "note": "Do not leave floating [DS Pin Functions p3 + §8.3: do not leave EN floating] [DS §7.1 p4: VIN, FB, EN, PG, NC −0.3 to 6 V] [DS §7.5 p5 Control: EN VH 1.0 V min, VL 0.4 V max]",
+      "connect": "defined",
+      "max_v": 6.0,
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.4,
+        "abs"
+      ]
     },
     {
       "num": "2",
       "name": "FB",
-      "type": "analog"
+      "type": "analog",
+      "connect": "defined",
+      "note": "[DS Pin Functions p3: connect resistive voltage divider to FB] [DS §7.1 p4: VIN, FB, EN, PG, NC −0.3 to 6 V]",
+      "max_v": 6.0
     },
     {
       "num": "3",
       "name": "AGND",
       "type": "ground",
-      "note": "Internally connected to PGND; can be left floating"
+      "note": "Internally connected to PGND; can be left floating [DS Pin Functions p3: internally connected to PGND, can be left floating]",
+      "connect": "open_or_gnd"
     },
     {
       "num": "4",
       "name": "NC",
       "type": "nc",
-      "note": "Not connected internally; VOUT, GND or floating"
+      "note": "Not connected internally; VOUT, GND or floating [DS Pin Functions p3: may connect to VOUT, GND or float (no single connect value)]"
     },
     {
       "num": "5",
       "name": "PGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS Pin Functions p3: power ground]"
     },
     {
       "num": "6",
@@ -49,13 +71,18 @@
       "voltage_range_v": [
         2.4,
         5.5
-      ]
+      ],
+      "connect": "supply",
+      "note": "[DS Pin Functions p3: supply voltage]"
     },
     {
       "num": "8",
       "name": "PG",
       "type": "output",
-      "note": "Open-drain; if unused leave floating or GND"
+      "note": "Open-drain; if unused leave floating or GND [DS Pin Functions p3 + PG section: if unused leave floating or connect to GND] [DS §7.1 p4: VIN, FB, EN, PG, NC −0.3 to 6 V] [DS §8.3.3 p8: PG is an open-drain output requiring a pull-up]",
+      "unused": "open_or_gnd",
+      "max_v": 6.0,
+      "open_drain": true
     }
   ]
 }

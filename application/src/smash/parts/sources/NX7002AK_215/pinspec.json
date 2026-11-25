@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "manf_pn": "NX7002AK,215",
+    "datasheet": "Nexperia NX7002AK product data sheet, 6 August 2015",
+    "datasheet_section": "§2 Table 2 Pinning information; Fig.18 package outline SOT23 (TO-236AB); §13 soldering footprint",
+    "package": "SOT23 (TO-236AB), 2.9 x 1.3 body, 2.5 lead span max, 1.1 max high, 0.95 pitch",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/NX7002AK_215/NX7002AK_215.pdf",
+    "notes": "Pins 1 G, 2 S, 3 D. VDS 60 V, VGS ±20 V, ID 190 mA (Tamb 25 °C) / IDM 760 mA, VGSth 1.1-2.1 V, RDSon 5.2 Ω max at VGS 5 V (Table 7). [height] 1.1 mm max: DS Fig.18 A max 1.1. [temp] DS Table 5: Tj −55…150 °C",
+    "height_max_mm": 1.1,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "G",
+      "type": "input",
+      "aliases": [
+        "Gate"
+      ],
+      "voltage_range_v": [
+        -20,
+        20
+      ],
+      "note": "VGSS ±20 V abs max"
+    },
+    {
+      "num": "2",
+      "name": "S",
+      "type": "io",
+      "aliases": [
+        "Source"
+      ]
+    },
+    {
+      "num": "3",
+      "name": "D",
+      "type": "io",
+      "aliases": [
+        "Drain"
+      ],
+      "note": "VDSS 60 V"
+    }
+  ]
+}

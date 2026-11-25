@@ -6,7 +6,13 @@
     "package": "SOT-323FL (UMT3F), D 1.9-2.1, E 1.15-1.35, HE 2.0-2.2, A 0.85-1.05, e 0.65",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://fscdn.rohm.com/en/products/databook/datasheet/discrete/transistor/mosfet/ru1j002yn-e.pdf",
-    "notes": "(1) Gate (2) Source (3) Drain; 1 and 2 on one side 1.3 apart, 3 opposite. VDSS 50 V, VGSS ±8 V, ID ±200 mA. Built-in G-S ESD diode. Taping TCL, marking QJ."
+    "notes": "(1) Gate (2) Source (3) Drain; 1 and 2 on one side 1.3 apart, 3 opposite. VDSS 50 V, VGSS ±8 V, ID ±200 mA. Built-in G-S ESD diode. Taping TCL, marking QJ. height_max_mm [DS p10 dimensions: A 0.85-1.05] [temp] DS Absolute maximum ratings: operating junction and storage temperature range −55…+150 °C",
+    "height_max_mm": 1.05,
+    "operating_temp_c": [
+      -55,
+      150
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {

@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "manf_pn": "ADS7138IRTER",
+    "datasheet": "TI SBAS976A (ADS7138, Rev. A)",
+    "datasheet_section": "Pin Functions; §6.3 recommended operating; RTE0016C 4219117/B",
+    "package": "WQFN-16 3x3 RTE, 0.5 pitch, EP 1.68",
+    "verified_by": "library check 2026-11-24",
+    "verified_from_pdf": "application/src/smash/parts/sources/ADS7138IRTER/ADS7138.pdf",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "notes": "I2C address by ADDR resistors (Table 2): none = 0x10."
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "AIN2",
+      "type": "analog",
+      "aliases": [
+        "AIN2/GPIO2"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "2",
+      "name": "AIN3",
+      "type": "analog",
+      "aliases": [
+        "AIN3/GPIO3"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "3",
+      "name": "AIN4",
+      "type": "analog",
+      "aliases": [
+        "AIN4/GPIO4"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "4",
+      "name": "AIN5",
+      "type": "analog",
+      "aliases": [
+        "AIN5/GPIO5"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "5",
+      "name": "AIN6",
+      "type": "analog",
+      "aliases": [
+        "AIN6/GPIO6"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "6",
+      "name": "AIN7",
+      "type": "analog",
+      "aliases": [
+        "AIN7/GPIO7"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "7",
+      "name": "AVDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.35,
+        5.5
+      ],
+      "connect": "supply",
+      "note": "also the ADC reference; 1 µF to GND"
+    },
+    {
+      "num": "8",
+      "name": "DECAP",
+      "type": "passive",
+      "note": "1 µF to GND (internal supply)"
+    },
+    {
+      "num": "9",
+      "name": "GND",
+      "type": "ground",
+      "connect": "gnd"
+    },
+    {
+      "num": "10",
+      "name": "DVDD",
+      "type": "power",
+      "voltage_range_v": [
+        1.65,
+        5.5
+      ],
+      "connect": "supply",
+      "note": "1 µF to GND"
+    },
+    {
+      "num": "11",
+      "name": "ADDR",
+      "type": "analog",
+      "note": "resistor to DECAP or GND selects the address (Table 2)"
+    },
+    {
+      "num": "12",
+      "name": "ALERT",
+      "type": "output",
+      "open_drain": true,
+      "unused": "open",
+      "note": "open-drain by default"
+    },
+    {
+      "num": "13",
+      "name": "SCL",
+      "type": "input"
+    },
+    {
+      "num": "14",
+      "name": "SDA",
+      "type": "io",
+      "open_drain": true
+    },
+    {
+      "num": "15",
+      "name": "AIN0",
+      "type": "analog",
+      "aliases": [
+        "AIN0/GPIO0"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "16",
+      "name": "AIN1",
+      "type": "analog",
+      "aliases": [
+        "AIN1/GPIO1"
+      ],
+      "note": "analog input 0…AVDD (DS §6.3)"
+    },
+    {
+      "num": "17",
+      "name": "EP",
+      "type": "ground",
+      "connect": "gnd",
+      "note": "Exposed thermal pad; connect to GND"
+    }
+  ]
+}

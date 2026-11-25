@@ -36,6 +36,7 @@ from smash.export.sleeve_step import (SLEEVE_GAP_MM, SLEEVE_WALL_MM,
 VIA_PAD_MM = 0.75
 GND_PLANE_MARGIN_MM = 1.0          # plane stops this far from the sector edges
 ANT_WINDOW_MARGIN_MM = 1.5         # plane cut-back round each antenna element
+ANT_FAN_CLEAR_MM = 1.5             # fan diagonals start this far below the antenna copper
 # Plug ring (2026-11-14): a band of the sleeve BELOW the aft board (z < 0).
 # It carries the aft board's former bottom-face interface, unchanged (same
 # groups, labels and pads: SPI, FIN 1-4, CAN, BAT, PARACHUTE WIRES — the 33 V
@@ -171,6 +172,15 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     fz = ((contract.get("aft_cap") or {}).get("fan_zone"))
     fan_z = ((zmap[fz[0]][1] + 1.0, zmap[fz[1]][0] - 1.0)
              if fz and fz[0] in zmap and fz[1] in zmap else None)
+    if fan_z is not None:
+        # the lanes run straight down past the bottom of the antenna copper
+        # (S4's ground patch reaches below the activation board) before the
+        # fan diagonals start
+        from smash.parts import antenna_slots as _AS
+        _geo = _AS.unrolled_geometry(_board_mid(boards, zmap), SEAM_ANGLES_DEG[0], (0.5, H - 0.5))
+        if _geo["copper"]:
+            ant_z0 = min(r[1] for r in _geo["copper"])
+            fan_z = (fan_z[0], min(fan_z[1], ant_z0 - ANT_FAN_CLEAR_MM))
     # (2026-11-20) STAGGERED fan diagonals: two wide neighbours jogging the
     # same way run parallel and close up to (spacing × cos φ). Each lane's
     # diagonal may start lower (0.5 mm steps) until it keeps the LDS clearance

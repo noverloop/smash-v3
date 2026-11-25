@@ -1,87 +1,521 @@
 {
   "_meta": {
-      "manf_pn": "VB1943CAJX/1",
-      "datasheet": "ST DS14880 Rev 3 (July 2026), VB1943 / VD1943",
-      "datasheet_section": "Table 5 (signal descriptions) + Figure 8 / Table 6 (ball assignment) + Table 7 (capacitors) + Table 10 (input clock) + Table 11 (GPIO states) + Table 20 (operating conditions)",
-      "package": "OBGA-74, 10×9 matrix at 0.8 mm (centre depopulated), 8.9×10.3×2.2 mm",
-      "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
-      "verified_from_pdf": "application/src/smash/parts/sources/VB1943CAJX_1/DS_vd1943.pdf",
-      "notes": "Table 6 spells the charge-pump balls CP_NEG_*/CP_POS_*; Table 5 and the SamacSys symbol use CPNEG_*/CPPOS_* (kept as aliases)."
+    "manf_pn": "VB1943CAJX/1",
+    "datasheet": "ST DS14880 Rev 3 (July 2026), VB1943 / VD1943",
+    "datasheet_section": "Table 5 (signal descriptions) + Figure 8 / Table 6 (ball assignment) + Table 7 (capacitors) + Table 10 (input clock) + Table 11 (GPIO states) + Table 20 (operating conditions)",
+    "package": "OBGA-74, 10×9 matrix at 0.8 mm (centre depopulated), 8.9×10.3×2.2 mm",
+    "verified_by": "verified 2026-11-24 (Claude, from the PDF)",
+    "verified_from_pdf": "application/src/smash/parts/sources/VB1943CAJX_1/DS_vd1943.pdf",
+    "notes": "Table 6 spells the charge-pump balls CP_NEG_*/CP_POS_*; Table 5 and the SamacSys symbol use CPNEG_*/CPPOS_* (kept as aliases). [temp] DS 6.2 Table 17 Junction operating temperature: TJF functional −30…85 °C (no ambient range given)",
+    "operating_temp_c": [
+      -30,
+      85
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
-    {"num": "A1", "name": "AGND", "type": "ground"},
-    {"num": "A2", "name": "CLK_RANGE0", "type": "input", "note": "EXTCLK range select, fail-safe pad, internal pull-down (Tables 10/11)"},
-    {"num": "A3", "name": "CLK_RANGE1", "type": "input", "note": "EXTCLK range select, fail-safe pad, internal pull-down (Tables 10/11)"},
-    {"num": "A4", "name": "CPNEG_OUT", "type": "analog", "aliases": ["CP_NEG_OUT"], "note": "Tie to CPNEG_IN + 4-12 µF reservoir (Table 7)"},
-    {"num": "A5", "name": "CPNEG_IN", "type": "analog", "aliases": ["CP_NEG_IN"], "note": "Tie to CPNEG_OUT"},
-    {"num": "A6", "name": "AGND", "type": "ground"},
-    {"num": "A7", "name": "AGND", "type": "ground"},
-    {"num": "A8", "name": "AGND", "type": "ground"},
-    {"num": "A9", "name": "AGND", "type": "ground"},
-    {"num": "B1", "name": "SCL", "type": "input", "note": "I²C clock, ≤ 1 MHz"},
-    {"num": "B2", "name": "PORTEST", "type": "input", "note": "Must be connected to digital ground"},
-    {"num": "B3", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "B4", "name": "NCG", "type": "reserved", "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"},
-    {"num": "B5", "name": "AGND", "type": "ground"},
-    {"num": "B6", "name": "AGND", "type": "ground"},
-    {"num": "B7", "name": "AGND", "type": "ground"},
-    {"num": "B8", "name": "AGND", "type": "ground"},
-    {"num": "B9", "name": "CPPOS_OUT", "type": "analog", "aliases": ["CP_POS_OUT"], "note": "Tie to CPPOS_IN + 0.47-1 µF reservoir (Table 7)"},
-    {"num": "C1", "name": "SDA", "type": "io", "note": "I²C data"},
-    {"num": "C2", "name": "NCG", "type": "reserved", "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"},
-    {"num": "C3", "name": "NCG", "type": "reserved", "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"},
-    {"num": "C4", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "C5", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "C6", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "C7", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "C8", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "C9", "name": "CPPOS_IN", "type": "analog", "aliases": ["CP_POS_IN"], "note": "Tie to CPPOS_OUT"},
-    {"num": "D1", "name": "GPIO3", "type": "reserved", "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"},
-    {"num": "D2", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "D3", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "D7", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "D8", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "D9", "name": "AGND", "type": "ground"},
-    {"num": "E1", "name": "GPIO2", "type": "reserved", "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"},
-    {"num": "E2", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "E8", "name": "DGND", "type": "ground"},
-    {"num": "E9", "name": "VRT", "type": "analog", "note": "Internal reference, must be connected: 2.4-5 µF (Table 7)"},
-    {"num": "F1", "name": "GPIO1", "type": "reserved", "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"},
-    {"num": "F2", "name": "NCG", "type": "reserved", "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"},
-    {"num": "F8", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "F9", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "G1", "name": "GPIO0", "type": "reserved", "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"},
-    {"num": "G2", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "G3", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "G7", "name": "VDDIO", "type": "power", "voltage_range_v": [1.7, 1.9], "note": "1.70-1.90 V (1.80 typ), Table 20"},
-    {"num": "G8", "name": "VDDIO", "type": "power", "voltage_range_v": [1.7, 1.9], "note": "1.70-1.90 V (1.80 typ), Table 20"},
-    {"num": "G9", "name": "NC", "type": "nc", "note": "Must not be connected; leave floating"},
-    {"num": "H1", "name": "RESETN", "type": "input", "note": "Reset, active low (VDDIO domain); release ≥ 100 µs after supplies"},
-    {"num": "H2", "name": "DGND", "type": "ground"},
-    {"num": "H3", "name": "DGND", "type": "ground"},
-    {"num": "H4", "name": "LDO2V4", "type": "analog", "note": "Internal reference, must be connected: 0.1-1 µF to AGND (Table 7)"},
-    {"num": "H5", "name": "VANA", "type": "power", "voltage_range_v": [2.7, 2.9], "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"},
-    {"num": "H6", "name": "AGND", "type": "ground"},
-    {"num": "H7", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "H8", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "H9", "name": "VCORE", "type": "power", "voltage_range_v": [1.05, 1.26], "note": "1.05-1.26 V (1.15 typ), Table 20"},
-    {"num": "J1", "name": "DGND", "type": "ground"},
-    {"num": "J2", "name": "DATA2N", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "J3", "name": "DATA2P", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "J4", "name": "DGND", "type": "ground"},
-    {"num": "J5", "name": "DGND", "type": "ground"},
-    {"num": "J6", "name": "DATA1N", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "J7", "name": "DATA1P", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "J8", "name": "DGND", "type": "ground"},
-    {"num": "J9", "name": "EXTCLK", "type": "input", "frequency_range_hz": [12000000, 50000000], "note": "12-50 MHz; the sub-range is set on CLK_RANGE0/1 (Table 10)"},
-    {"num": "K1", "name": "DGND", "type": "ground"},
-    {"num": "K2", "name": "DATA3N", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "K3", "name": "DATA3P", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "K4", "name": "CLKN", "type": "output", "note": "MIPI D-PHY CSI-2 clock lane"},
-    {"num": "K5", "name": "CLKP", "type": "output", "note": "MIPI D-PHY CSI-2 clock lane"},
-    {"num": "K6", "name": "DATA4N", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "K7", "name": "DATA4P", "type": "output", "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"},
-    {"num": "K8", "name": "DGND", "type": "ground"},
-    {"num": "K9", "name": "DGND", "type": "ground"}
+    {
+      "num": "A1",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "A2",
+      "name": "CLK_RANGE0",
+      "type": "input",
+      "note": "EXTCLK range select, fail-safe pad, internal pull-down (Tables 10/11)"
+    },
+    {
+      "num": "A3",
+      "name": "CLK_RANGE1",
+      "type": "input",
+      "note": "EXTCLK range select, fail-safe pad, internal pull-down (Tables 10/11)"
+    },
+    {
+      "num": "A4",
+      "name": "CPNEG_OUT",
+      "type": "analog",
+      "aliases": [
+        "CP_NEG_OUT"
+      ],
+      "note": "Tie to CPNEG_IN + 4-12 µF reservoir (Table 7)"
+    },
+    {
+      "num": "A5",
+      "name": "CPNEG_IN",
+      "type": "analog",
+      "aliases": [
+        "CP_NEG_IN"
+      ],
+      "note": "Tie to CPNEG_OUT"
+    },
+    {
+      "num": "A6",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "A7",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "A8",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "A9",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "B1",
+      "name": "SCL",
+      "type": "input",
+      "note": "I²C clock, ≤ 1 MHz"
+    },
+    {
+      "num": "B2",
+      "name": "PORTEST",
+      "type": "input",
+      "note": "Must be connected to digital ground"
+    },
+    {
+      "num": "B3",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "B4",
+      "name": "NCG",
+      "type": "reserved",
+      "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"
+    },
+    {
+      "num": "B5",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "B6",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "B7",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "B8",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "B9",
+      "name": "CPPOS_OUT",
+      "type": "analog",
+      "aliases": [
+        "CP_POS_OUT"
+      ],
+      "note": "Tie to CPPOS_IN + 0.47-1 µF reservoir (Table 7)"
+    },
+    {
+      "num": "C1",
+      "name": "SDA",
+      "type": "io",
+      "note": "I²C data"
+    },
+    {
+      "num": "C2",
+      "name": "NCG",
+      "type": "reserved",
+      "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"
+    },
+    {
+      "num": "C3",
+      "name": "NCG",
+      "type": "reserved",
+      "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"
+    },
+    {
+      "num": "C4",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "C5",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "C6",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "C7",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "C8",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "C9",
+      "name": "CPPOS_IN",
+      "type": "analog",
+      "aliases": [
+        "CP_POS_IN"
+      ],
+      "note": "Tie to CPPOS_OUT"
+    },
+    {
+      "num": "D1",
+      "name": "GPIO3",
+      "type": "reserved",
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+    },
+    {
+      "num": "D2",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "D3",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "D7",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "D8",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "D9",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "E1",
+      "name": "GPIO2",
+      "type": "reserved",
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+    },
+    {
+      "num": "E2",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "E8",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "E9",
+      "name": "VRT",
+      "type": "analog",
+      "note": "Internal reference, must be connected: 2.4-5 µF (Table 7)"
+    },
+    {
+      "num": "F1",
+      "name": "GPIO1",
+      "type": "reserved",
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+    },
+    {
+      "num": "F2",
+      "name": "NCG",
+      "type": "reserved",
+      "note": "Leave floating or connect to analog ground (Table 5) — 'reserved' allows both"
+    },
+    {
+      "num": "F8",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "F9",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "G1",
+      "name": "GPIO0",
+      "type": "reserved",
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+    },
+    {
+      "num": "G2",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "G3",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "G7",
+      "name": "VDDIO",
+      "type": "power",
+      "voltage_range_v": [
+        1.7,
+        1.9
+      ],
+      "note": "1.70-1.90 V (1.80 typ), Table 20"
+    },
+    {
+      "num": "G8",
+      "name": "VDDIO",
+      "type": "power",
+      "voltage_range_v": [
+        1.7,
+        1.9
+      ],
+      "note": "1.70-1.90 V (1.80 typ), Table 20"
+    },
+    {
+      "num": "G9",
+      "name": "NC",
+      "type": "nc",
+      "note": "Must not be connected; leave floating"
+    },
+    {
+      "num": "H1",
+      "name": "RESETN",
+      "type": "input",
+      "note": "Reset, active low (VDDIO domain); release ≥ 100 µs after supplies"
+    },
+    {
+      "num": "H2",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "H3",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "H4",
+      "name": "LDO2V4",
+      "type": "analog",
+      "note": "Internal reference, must be connected: 0.1-1 µF to AGND (Table 7)"
+    },
+    {
+      "num": "H5",
+      "name": "VANA",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        2.9
+      ],
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+    },
+    {
+      "num": "H6",
+      "name": "AGND",
+      "type": "ground"
+    },
+    {
+      "num": "H7",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "H8",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "H9",
+      "name": "VCORE",
+      "type": "power",
+      "voltage_range_v": [
+        1.05,
+        1.26
+      ],
+      "note": "1.05-1.26 V (1.15 typ), Table 20"
+    },
+    {
+      "num": "J1",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "J2",
+      "name": "DATA2N",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "J3",
+      "name": "DATA2P",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "J4",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "J5",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "J6",
+      "name": "DATA1N",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "J7",
+      "name": "DATA1P",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "J8",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "J9",
+      "name": "EXTCLK",
+      "type": "input",
+      "frequency_range_hz": [
+        12000000,
+        50000000
+      ],
+      "note": "12-50 MHz; the sub-range is set on CLK_RANGE0/1 (Table 10)"
+    },
+    {
+      "num": "K1",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "K2",
+      "name": "DATA3N",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "K3",
+      "name": "DATA3P",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "K4",
+      "name": "CLKN",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 clock lane"
+    },
+    {
+      "num": "K5",
+      "name": "CLKP",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 clock lane"
+    },
+    {
+      "num": "K6",
+      "name": "DATA4N",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "K7",
+      "name": "DATA4P",
+      "type": "output",
+      "note": "MIPI D-PHY CSI-2 data lane (Low at reset); unused lanes float"
+    },
+    {
+      "num": "K8",
+      "name": "DGND",
+      "type": "ground"
+    },
+    {
+      "num": "K9",
+      "name": "DGND",
+      "type": "ground"
+    }
   ]
 }

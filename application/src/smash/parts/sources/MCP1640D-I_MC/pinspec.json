@@ -6,32 +6,50 @@
     "package": "8-lead DFN 2x3x0.9 mm (MC), 0.5 mm pitch, EP = pin 9",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/MCP1640DT-I_MC/MCP1640-family.pdf",
-    "notes": "D = PWM only, input-to-output bypass. Blank packaging = tube; DT = tape and reel. Same die and package."
+    "notes": "D = PWM only, input-to-output bypass. Blank packaging = tube; DT = tape and reel. Same die and package. [height] 1.0 mm max: DS MC package C04-123C: A max 1.00. [temp] DS 1.0 Absolute Maximum Ratings: ambient temp with power applied −40…+85 °C (TJ −40…+125 °C)",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
       "num": "1",
       "name": "VFB",
       "type": "analog",
-      "note": "1.21 V typ feedback"
+      "note": "1.21 V typ feedback; [enrich] DS abs max: EN, VFB, VIN, VSW, VOUT - GND +6.5 V",
+      "max_v": 6.5
     },
     {
       "num": "2",
       "name": "SGND",
       "type": "ground",
-      "note": "Connect externally to PGND"
+      "note": "Connect externally to PGND; [connect] DS Table 3-1/§3.2: SGND, connected externally to PGND",
+      "connect": "gnd"
     },
     {
       "num": "3",
       "name": "PGND",
       "type": "ground",
-      "note": "Connect externally to SGND"
+      "note": "Connect externally to SGND; [connect] DS Table 3-1/§3.3: PGND, connected externally to SGND",
+      "connect": "gnd"
     },
     {
       "num": "4",
       "name": "EN",
       "type": "input",
-      "note": "High >90 % VIN, low <20 % VIN"
+      "note": "High >90 % VIN, low <20 % VIN; [enrich] DS DC char.: EN VIH 90 % of VIN min, VIL 20 % of VIN max; abs max EN - GND +6.5 V",
+      "io_domain": "8",
+      "vih": [
+        0.9,
+        "frac"
+      ],
+      "vil": [
+        0.2,
+        "frac"
+      ],
+      "max_v": 6.5
     },
     {
       "num": "5",
@@ -47,13 +65,15 @@
         2.0,
         5.5
       ],
-      "note": "Connect externally to VOUTS"
+      "note": "Connect externally to VOUTS; [connect] DS §3.6: in 2x3 DFN VOUTP and VOUTS are connected externally",
+      "connect": "same_as:7"
     },
     {
       "num": "7",
       "name": "VOUTS",
       "type": "power",
-      "note": "Output sense; connect externally to VOUTP"
+      "note": "Output sense; connect externally to VOUTP; [connect] DS §3.7: in 2x3 DFN VOUTS and VOUTP are connected externally",
+      "connect": "same_as:6"
     },
     {
       "num": "8",
@@ -63,13 +83,15 @@
         0.35,
         5.5
       ],
-      "note": "0.65 V typ / 0.8 V max start-up; >=4.7 uF"
+      "note": "0.65 V typ / 0.8 V max start-up; >=4.7 uF; [connect] DS §3.8: connect input voltage source to VIN",
+      "connect": "supply"
     },
     {
       "num": "9",
       "name": "EP",
       "type": "ground",
-      "note": "No internal connection; must be connected to VSS (same potential as SGND/PGND)"
+      "note": "No internal connection; must be connected to VSS (same potential as SGND/PGND); [connect] DS Table 3-1/§3.9: EP must be connected to VSS (same potential as SGND/PGND)",
+      "connect": "gnd"
     }
   ]
 }

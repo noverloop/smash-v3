@@ -6,7 +6,12 @@
     "package": "0805 2.0 x 1.25 x 0.85 mm",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/VSMB1940X01/vsmb1940.pdf",
-    "notes": "Terminals labelled Anode / Cathode in the drawing; recommended pads 2 x (1.0 x 1.45), 0.6 gap. AEC-Q101, MSL 3."
+    "notes": "Terminals labelled Anode / Cathode in the drawing; recommended pads 2 x (1.0 x 1.45), 0.6 gap. AEC-Q101, MSL 3. [height] 0.95 mm max: DS p.4 package dimensions: 0.85, not-indicated tolerances ±0.1. [temp] DS Absolute Maximum Ratings: Tamb −40…+85 °C",
+    "height_max_mm": 0.95,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {

@@ -6,7 +6,12 @@
     "package": "LGA-14L 2.5x3.0x0.86 (W=3.0 x, L=2.5 y), 0.5 pitch",
     "verified_by": "library check 2026-11-24 (datasheet supplied by user)",
     "verified_from_pdf": "application/src/smash/parts/sources/ISM330DLCTR/ISM330DLC_DS12171.pdf",
-    "notes": "Verified against DS12171 Table 1. Mode-1 notes from secondary sources only."
+    "notes": "Verified against DS12171 Table 1. Mode-1 notes from secondary sources only. height_max_mm [DS12171 Fig. 23 p96: H 0.86 max] [temp] DS 4.1 Table 2 Mechanical characteristics: Top −40…+85 °C",
+    "height_max_mm": 0.86,
+    "operating_temp_c": [
+      -40,
+      85
+    ]
   },
   "pins": [
     {
@@ -17,29 +22,46 @@
         "SDO"
       ],
       "type": "io",
-      "note": "I2C address LSB; do not float"
+      "note": "I2C address LSB; do not float [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins] [DS12171 Table 3 p11: VIH 0.7×VDD_IO, VIL 0.3×VDD_IO]",
+      "io_domain": "5",
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "2",
       "name": "SDX",
       "type": "io",
-      "note": "Mode 1: connect to VDDIO or GND"
+      "note": "Mode 1: connect to VDDIO or GND [DS12171 Table 1 p7 Mode 1: connect to VDDIO or GND] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "connect": "defined",
+      "io_domain": "5"
     },
     {
       "num": "3",
       "name": "SCX",
       "type": "io",
-      "note": "Mode 1: connect to VDDIO or GND"
+      "note": "Mode 1: connect to VDDIO or GND [DS12171 Table 1 p7 Mode 1: connect to VDDIO or GND] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "connect": "defined",
+      "io_domain": "5"
     },
     {
       "num": "4",
       "name": "INT1",
-      "type": "output"
+      "type": "output",
+      "io_domain": "5",
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
     },
     {
       "num": "5",
       "name": "VDDIO",
-      "type": "power"
+      "type": "power",
+      "connect": "supply",
+      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]"
     },
     {
       "num": "6",
@@ -47,7 +69,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS12171 Table 1 p7: 0 V supply]"
     },
     {
       "num": "7",
@@ -55,17 +79,23 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS12171 Table 1 p7: 0 V supply]"
     },
     {
       "num": "8",
       "name": "VDD",
-      "type": "power"
+      "type": "power",
+      "connect": "supply",
+      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]"
     },
     {
       "num": "9",
       "name": "INT2",
-      "type": "output"
+      "type": "output",
+      "io_domain": "5",
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
     },
     {
       "num": "10",
@@ -74,7 +104,16 @@
         "OCS_Aux"
       ],
       "type": "output",
-      "note": "Mode 1: leave unconnected"
+      "note": "Mode 1: leave unconnected [DS12171 Table 1 p7 Mode 1/2: leave unconnected (note 2: electrically unconnected, soldered to PCB)] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins] [DS12171 Table 18 p33-34: default input with pull-up (modes 1/2), 30-50 kΩ depending on VDDIO]",
+      "connect": "open",
+      "io_domain": "5",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          30,
+          50
+        ]
+      }
     },
     {
       "num": "11",
@@ -84,13 +123,37 @@
         "SDO_Aux"
       ],
       "type": "io",
-      "note": "Mode 1: VDDIO or leave unconnected"
+      "note": "Mode 1: VDDIO or leave unconnected [DS12171 Table 1 p7 Mode 1/2: connect to VDD_IO or leave unconnected (no single connect value)] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins] [DS12171 Table 18 p33-34: default input with pull-up (modes 1/2), 30-50 kΩ depending on VDDIO]",
+      "io_domain": "5",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          30,
+          50
+        ]
+      }
     },
     {
       "num": "12",
       "name": "CS",
       "type": "input",
-      "note": "1 = I2C, 0 = SPI"
+      "note": "1 = I2C, 0 = SPI [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins] [DS12171 Table 18 p33: CS default input with pull-up, 30-50 kΩ] [DS12171 Table 3 p11: VIH 0.7×VDD_IO, VIL 0.3×VDD_IO]",
+      "io_domain": "5",
+      "internal_pull": {
+        "dir": "up",
+        "kohm": [
+          30,
+          50
+        ]
+      },
+      "vih": [
+        0.7,
+        "frac"
+      ],
+      "vil": [
+        0.3,
+        "frac"
+      ]
     },
     {
       "num": "13",
@@ -98,7 +161,9 @@
       "aliases": [
         "SPC"
       ],
-      "type": "input"
+      "type": "input",
+      "io_domain": "5",
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
     },
     {
       "num": "14",
@@ -107,7 +172,9 @@
         "SDI",
         "SDO"
       ],
-      "type": "io"
+      "type": "io",
+      "io_domain": "5",
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
     }
   ]
 }

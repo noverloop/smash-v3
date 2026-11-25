@@ -6,14 +6,30 @@
     "package": "DSBGA-6 (YFP) 0.8x1.2x0.5 mm, 0.4 mm pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/TPS62088YFPR/tps62088.pdf",
-    "notes": "Abs max 6 V on VIN/FB/EN/PG; recommended VIN 2.4-5.5 V, VOUT 0.6-4.0 V, PG pull-up <=5.5 V."
+    "notes": "Abs max 6 V on VIN/FB/EN/PG; recommended VIN 2.4-5.5 V, VOUT 0.6-4.0 V, PG pull-up <=5.5 V. [height] 0.5 mm max: DS YFP0006-C01 outline: DSBGA 0.5 mm max height. [temp] DS 6.3 Recommended Operating Conditions: TJ −40…125 °C",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {
       "num": "A1",
       "name": "EN",
       "type": "input",
-      "note": "Do not leave floating"
+      "note": "Do not leave floating; [connect] DS Table 5-1/§7.3: EN do not leave floating; [enrich] DS §6.1 abs max: EN -0.3..6 V; §6.5: EN VIH 1.0 V, VIL 0.4 V",
+      "connect": "defined",
+      "max_v": 6,
+      "vih": [
+        1.0,
+        "abs"
+      ],
+      "vil": [
+        0.4,
+        "abs"
+      ]
     },
     {
       "num": "A2",
@@ -22,13 +38,18 @@
       "voltage_range_v": [
         2.4,
         5.5
-      ]
+      ],
+      "connect": "supply",
+      "note": "[connect] DS Table 5-1: VIN power supply"
     },
     {
       "num": "B1",
       "name": "PG",
       "type": "output",
-      "note": "Open-drain; if unused leave floating"
+      "note": "Open-drain; if unused leave floating; [connect] DS Table 5-1: PG if unused leave floating; [enrich] DS Table 5-1/§7.3: PG open-drain, pull-up to <=5.5 V; §6.1 abs max PG -0.3..6 V",
+      "unused": "open",
+      "open_drain": true,
+      "max_v": 6
     },
     {
       "num": "B2",
@@ -39,12 +60,15 @@
       "num": "C1",
       "name": "FB",
       "type": "analog",
-      "note": "Adjustable version: resistor divider (fixed versions: to output)"
+      "note": "Adjustable version: resistor divider (fixed versions: to output); [enrich] DS §6.1 abs max: FB -0.3..6 V",
+      "max_v": 6
     },
     {
       "num": "C2",
       "name": "GND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS Table 5-1: GND"
     }
   ]
 }

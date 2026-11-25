@@ -6,7 +6,12 @@
     "package": "P-VQFN16-0303-0.50-001 3x3x0.9, 0.5 pitch, EP 1.7 typ",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/TC78H653FTG_EL/TC78H653FTG_datasheet.pdf",
-    "notes": "Top view: 1-4 left column top->bottom, 5-8 bottom L->R, 9-12 right bottom->top, 13-16 top R->L. Control inputs have internal 37k series / 150k pull-down per block diagram. EP connection NOT stated in DS (pin table lists no EP)."
+    "notes": "Top view: 1-4 left column top->bottom, 5-8 bottom L->R, 9-12 right bottom->top, 13-16 top R->L. Control inputs have internal 37k series / 150k pull-down per block diagram. EP connection NOT stated in DS (pin table lists no EP). [height_max_mm: DS p11 P-VQFN16-0303-0.50-001 height 0.9 MAX] [temp] DS Absolute Maximum Ratings: Topr −40…105 °C",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -40,
+      105
+    ]
   },
   "pins": [
     {
@@ -17,7 +22,15 @@
         -0.3,
         5.5
       ],
-      "note": "Abs max -0.3..6 V"
+      "note": "Abs max -0.3..6 V [max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V)]",
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      }
     },
     {
       "num": "2",
@@ -26,7 +39,16 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V)]"
     },
     {
       "num": "3",
@@ -35,7 +57,8 @@
         "NC"
       ],
       "type": "nc",
-      "note": "Leave open (DS: 'Please use this terminal open')"
+      "note": "Leave open (DS: 'Please use this terminal open') [connect rule: TC78H653FTG Pin Functions p.3: NC 'Please use this terminal open']",
+      "connect": "open"
     },
     {
       "num": "4",
@@ -44,7 +67,16 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V)]"
     },
     {
       "num": "5",
@@ -53,7 +85,16 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V)]"
     },
     {
       "num": "6",
@@ -62,7 +103,24 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.5,
+        "abs"
+      ],
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V); vih/vil: DS p7 VIH ≥2.0 V (VM 5.0/7.0 V; 1.5 V @1.8 V, 1.7 V @3.0 V), VIL ≤0.5 V]"
     },
     {
       "num": "7",
@@ -71,7 +129,8 @@
         "NC"
       ],
       "type": "nc",
-      "note": "Leave open"
+      "note": "Leave open [connect rule: TC78H653FTG Pin Functions p.3: NC 'Please use this terminal open']",
+      "connect": "open"
     },
     {
       "num": "8",
@@ -79,7 +138,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: TC78H653FTG Pin Functions p.3: GND pin]"
     },
     {
       "num": "9",
@@ -107,7 +168,9 @@
       "aliases": [
         "GND"
       ],
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect rule: TC78H653FTG Pin Functions p.3: GND pin]"
     },
     {
       "num": "14",
@@ -117,7 +180,8 @@
         1.8,
         7.5
       ],
-      "note": "Abs max 8.0 V; mind back-EMF pumping"
+      "note": "Abs max 8.0 V; mind back-EMF pumping [connect rule: TC78H653FTG Pin Functions p.3: power supply pin, 1.8-7.5 V]",
+      "connect": "supply"
     },
     {
       "num": "15",
@@ -126,7 +190,24 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.5,
+        "abs"
+      ],
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V); vih/vil: DS p7 VIH ≥2.0 V (VM 5.0/7.0 V; 1.5 V @1.8 V, 1.7 V @3.0 V), VIL ≤0.5 V]"
     },
     {
       "num": "16",
@@ -135,7 +216,24 @@
       "voltage_range_v": [
         -0.3,
         5.5
-      ]
+      ],
+      "max_v": 6.0,
+      "internal_pull": {
+        "dir": "down",
+        "kohm": [
+          150,
+          150
+        ]
+      },
+      "vih": [
+        2.0,
+        "abs"
+      ],
+      "vil": [
+        0.5,
+        "abs"
+      ],
+      "note": "[max_v: DS p6 Abs Max VIN -0.3..6 V (independent of VM); internal_pull: DS p2 block diagram 150 kΩ pull-down behind 37 kΩ series (typ only; IIH 10-22 µA @ VIN 3.0 V); vih/vil: DS p7 VIH ≥2.0 V (VM 5.0/7.0 V; 1.5 V @1.8 V, 1.7 V @3.0 V), VIL ≤0.5 V]"
     },
     {
       "num": "17",

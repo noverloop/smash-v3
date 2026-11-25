@@ -1,0 +1,58 @@
+{
+  "_meta": {
+    "manf_pn": "PESD5V0L4UF,115",
+    "datasheet": "Nexperia PESDxL4UF/G/W Rev 04 (28 Feb 2008)",
+    "datasheet_section": "Table 3 pinning; Fig 10 SOT886 outline; Fig 13 reflow footprint",
+    "package": "SOT886 (XSON6) 1.45x1.0x0.50 max",
+    "verified_by": "library check 2026-11-25",
+    "verified_from_pdf": "application/src/smash/parts/sources/PESD5V0L4UF_115/PESD5V0L4UF_115.pdf",
+    "notes": "Pins 1, 3, 4, 6 = cathodes (I/O); 2 and 5 = common anode (GND). VRWM 5 V.",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -65,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "power",
+      "aliases": [
+        "A"
+      ]
+    },
+    {
+      "num": "5",
+      "name": "GND_2",
+      "type": "power",
+      "aliases": [
+        "A2"
+      ]
+    },
+    {
+      "num": "1",
+      "name": "IO1",
+      "type": "passive",
+      "aliases": []
+    },
+    {
+      "num": "3",
+      "name": "IO2",
+      "type": "passive",
+      "aliases": []
+    },
+    {
+      "num": "4",
+      "name": "IO3",
+      "type": "passive",
+      "aliases": []
+    },
+    {
+      "num": "6",
+      "name": "IO4",
+      "type": "passive",
+      "aliases": []
+    }
+  ]
+}

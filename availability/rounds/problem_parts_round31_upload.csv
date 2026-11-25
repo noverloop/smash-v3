@@ -1,0 +1,6 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+W25Q16JVZPIQ,Winbond,1,U_AWR_FLASH R31A,"16 Mb QSPI NOR WSON-8 6x5, non-volatile QE; second source for MX25V8035FZNI (AWR1843 boot flash)"
+W25Q80DVZPIG,Winbond,1,U_AWR_FLASH R31B,"8 Mb QSPI NOR WSON-8 6x5, alternative"
+IS25LP080D-JKLE,ISSI,1,U_AWR_FLASH R31C,"8 Mb QSPI NOR WSON-8, alternative (check package / QE behaviour)"
+MX25V8035FZNI,Macronix,1,U_AWR_FLASH R31D,"current part: recheck stock at all three"
+DSC1001DI5-040.0000,Microchip,2,Y_AWR_HSE R31E,"40 MHz MEMS oscillator 2.5 x 2.0, alternate of SiT1602BI-12-18E-40"

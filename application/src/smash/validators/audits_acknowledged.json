@@ -1,0 +1,23 @@
+{
+ "_note": "Accepted findings of smash.validators.audits. Key = '<rule> <where>'. 'OPEN:' = decision pending.",
+ "D2 U_MAG.A2@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MAG.A3@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.A7@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.A8@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.A15@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.A16@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.B11@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.E12@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.M15@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_MPU.P12@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_XV_LO.3@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_XV_LO.4@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_XV_LO.2@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_XV_LO.1@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "D2 U_XV_MIX.7@aon": "WBA drives it only while the target is powered: FIRMWARE_RULES.md #21 (and #10).",
+ "O1 U_DEV_INA.15": "PAC1941 GPIO/ALERT2 used as an input with a 10 k pull-down (R_DEV_INA_GPIO); not an open-drain output here.",
+ "T1 691137710002": "Dev-board bench terminal block (−30 °C): bench equipment, accepted.",
+ "T1 LTST-C190KRKT": "Dev-board indicator LED (−30 °C): bench equipment, accepted.",
+ "T1 VB1943CAJX/1": "Accepted (user, 2026-11-24): camera rated −30…85 °C (functional, junction); not guaranteed below −30 °C.",
+ "R2 R_DEV_LED_HV": "Dev-board 33 V LED resistor: 33 of 63 mW (LED Vf ignored), bench only."
+}

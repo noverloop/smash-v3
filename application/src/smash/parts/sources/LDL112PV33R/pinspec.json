@@ -6,25 +6,80 @@
     "package": "DFN-6 (3x3)",
     "verified_by": "Anthropic 2026-05-27",
     "verified_from_pdf": "application/src/smash/parts/sources/LDL112PV33R/LDL112.pdf",
-    "notes": "Fixed-variant pinout per ST datasheet visual diagram. The SamacSys symbol carries 'ADJ' as the pin-3 label because it's shared across the adj + fixed family, but for fixed-output variants (PV33R, PV18R) the datasheet diagram explicitly labels pin 3 as NC. We follow the datasheet."
+    "notes": "Fixed-variant pinout per ST datasheet visual diagram. The SamacSys symbol carries 'ADJ' as the pin-3 label because it's shared across the adj + fixed family, but for fixed-output variants (PV33R, PV18R) the datasheet diagram explicitly labels pin 3 as NC. We follow the datasheet. height_max_mm [DS10321 Table 6 p14 DFN6 (3x3): A max 1] [temp] DS Table 2 Absolute maximum ratings: TOP operating junction −40…125 °C",
+    "height_max_mm": 1.0,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
-    { "num": "1", "name": "EN",   "type": "input",
-      "voltage_range_v": [-0.3, 6.0],
-      "note": "Logic input: low=shutdown, high=active. DO NOT FLOAT (per Table 1). Abs-max per DS Table 5 EN pin." },
-    { "num": "2", "name": "GND",  "type": "ground" },
-    { "num": "3", "name": "NC",   "type": "nc",
-      "aliases": ["ADJ"],
-      "note": "On the adjustable variant this pin is ADJ; on the FIXED variants (PV33R) the datasheet diagram labels it NC. SamacSys family symbol exposes the adjustable label." },
-    { "num": "4", "name": "VOUT", "type": "power",
+    {
+      "num": "1",
+      "name": "EN",
+      "type": "input",
+      "voltage_range_v": [
+        -0.3,
+        6.0
+      ],
+      "note": "Logic input: low=shutdown, high=active. DO NOT FLOAT (per Table 1). Abs-max per DS Table 5 EN pin. [DS10321 Table 1 p3: EN, do not leave floating] [DS10321 Table 4 p6: enable input logic high 1.4 V min, logic low 0.35 V max]",
+      "connect": "defined",
+      "vih": [
+        1.4,
+        "abs"
+      ],
+      "vil": [
+        0.35,
+        "abs"
+      ]
+    },
+    {
+      "num": "2",
+      "name": "GND",
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[DS10321 Table 1 p3: common ground]"
+    },
+    {
+      "num": "3",
+      "name": "NC",
+      "type": "nc",
+      "aliases": [
+        "ADJ"
+      ],
+      "note": "On the adjustable variant this pin is ADJ; on the FIXED variants (PV33R) the datasheet diagram labels it NC. SamacSys family symbol exposes the adjustable label."
+    },
+    {
+      "num": "4",
+      "name": "VOUT",
+      "type": "power",
       "voltage_v": 3.3,
-      "note": "3.3 V fixed output, 1.2 A max" },
-    { "num": "5", "name": "NC",   "type": "nc",
-      "note": "Not connected per datasheet Table 1." },
-    { "num": "6", "name": "VIN",  "type": "power",
-      "voltage_range_v": [1.6, 5.5],
-      "note": "1.6 V to 5.5 V input per datasheet Table 5 (operating range)." },
-    { "num": "7", "name": "EP",   "type": "ground",
-      "note": "Exposed pad — Table 1: 'Must be connected to GND'. Required for thermal." }
+      "note": "3.3 V fixed output, 1.2 A max"
+    },
+    {
+      "num": "5",
+      "name": "NC",
+      "type": "nc",
+      "note": "Not connected per datasheet Table 1."
+    },
+    {
+      "num": "6",
+      "name": "VIN",
+      "type": "power",
+      "voltage_range_v": [
+        1.6,
+        5.5
+      ],
+      "note": "1.6 V to 5.5 V input per datasheet Table 5 (operating range). [DS10321 Table 1 p3: LDO input voltage]",
+      "connect": "supply"
+    },
+    {
+      "num": "7",
+      "name": "EP",
+      "type": "ground",
+      "note": "Exposed pad — Table 1: 'Must be connected to GND'. Required for thermal. [DS10321 Table 1 p3: exposed pad must be connected to GND]",
+      "connect": "gnd"
+    }
   ]
 }

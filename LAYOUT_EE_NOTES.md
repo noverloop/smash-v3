@@ -70,17 +70,39 @@ radar / QPD), 39.7 mm with the camera nose.
   keep-out zones. Please honour them in copper on every layer.
 - **Spacer cut-outs are drawn on the silkscreen** of both neighbouring tiles
   (fold-mirrored). Keep face parts inside the drawn window and the spacer needs
-  no re-mill. Gap heights are set by the tallest part pair across each gap.
+  no re-mill. Gap heights are set by the tallest part pair across each gap,
+  with a 3.0 mm minimum.
+- **Matched height zone, power_board top ↔ companion_compute bottom** (drawn on
+  **User.Comments**, both faces: the band r 9.0–14.5 mm). The power↔compute gap
+  is 3.0 mm only if every facing pair of parts totals ≤ 2.7 mm. Inside the
+  band, power_board top may carry parts up to 2.1 mm (L_BOOST_COMP,
+  L_BOOST_COMP_B 2.1, L_ACTIVATE 2.0, C_ACTIVATE_OUT_1-3 1.8) and
+  companion_compute bottom keeps to ≤ 0.6 mm. Outside the band, power_board top
+  stays ≤ 1.75 mm (the compute bottom's 0.95 mm MPU/DDR decoupling sits within
+  r 8.6). **The spacer is designed to 3.0 mm**: the parts as delivered still sit
+  near the centre, over the compute decoupling — move them into the band.
 - **Pre-routed copper is a starting point**: castellation escape stubs, the LDS
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came
   from Freerouting with ONE rule (100 µm / 75 µm, 0.45/0.20 via) — all nets at
   4 mil including ACTIVATE_HV (33 V) and BAT_RAW: **re-derive power widths per
   net class before fab.**
+- **Peak currents for widths** (battery sim, 2.6 V end-of-mission pack): the pack
+  path BAT_RAW → R_BAT*_ISO → Q_ISO → BAT_PROT → QMAIN → REG_IN_MAIN → LTC3124
+  (all on power_board) carries 1.8 A in descent, 4.4 A for chirp + cutter, 6.5 A
+  with fins stepping; keep it short, wide and on planes, and keep the 22 µF
+  REG_IN_MAIN / COMP_5V_RAW caps at the LTC3124. Per cell (BAT_CELLx_POS): 0.6 A
+  / 1.5 A / 2.2 A. BAT_PROT → radar_module: 1.2 A peak. 3V3 (U_PWR): 0.45 A.
+- **Sleeve (LDS) lanes** are one 0.6 mm lane per power net and 4 GND lanes per
+  board. Their copper thickness and current rating come from the LDS shop: the
+  cell lanes (aft_end → power) and the GND return carry the currents above.
+  Agree ≥ 15 µm Cu (+ Ni/Au) and a rating with the shop before fab.
 - **Locked placements** (`application/src/smash/data/locked_placements.json`,
   each with a reason) are mechanical/thermal/RF constraints — talk to us before
-  moving them. Notably: the launch piezo cluster on aft_end top (sits in the
-  floor plate's underside pocket), the cell − pin PTHs and + wire pads
+  moving them. Notably: the launch piezo cluster and the crown ESD protection
+  (U_ESD_AFT1-7, D_EXT_VIN_TVS, D_ACT_COL*_TVS) on aft_end top (they sit in the
+  floor plate's underside pocket; each crown lane is clamped there before it
+  runs up the stack, through its aft castellation), the cell − pin PTHs and + wire pads
   (P_CELL_PIN_NEG1-3, P_CELL_WIRE_POS1-3, under the bore grooves), radar AoP,
   MP25 reference placement on companion_compute.
 - **Assembly datums:** every board has a 1.2 × 1.0 mm **rim notch at 285°**
@@ -160,12 +182,12 @@ radar / QPD), 39.7 mm with the camera nose.
   / GRF2073W DFN8, MT03-092 QPD (TO-8), piezo disc, cell lead PTHs (Ø0.8 pin is
   a placeholder until Tadiran confirms), clamp tabs, pogo pads.
 - **Vendor lands we changed**: 3D models rotated by us (LTC3124, VB1943,
-  BUK6D120, S-1318, GRF5126, GRF2073W, H3LIS331 — check pin 1 in the 3D
+  BUK6D120 / PMPB15XP (shared SOT1220 model), S-1318, GRF5126, GRF2073W, H3LIS331 — check pin 1 in the 3D
   viewer against the land's pin 1), and lands taken
   from a sibling part or named after one (STM32MP255F land for the MP257F,
   LTC5549 land for the LTC5552, PE64904C for D, SST26 SON-8 for the MX25V8035F,
   SiT5356 20 MHz for 32 MHz, DSC1001 family, H3LIS331 on a LIS3DH LGA-16 land,
-  SSM3K35 on SSM3J64, SSM3K7002 on 1SS294, BLM18PG on BLM18SP).
+  SSM3K35 on SSM3J64, SSM3K7002 on 1SS294, BLM18PG / BLM18SG on BLM18SP).
 
 ## 5. Dev board (`dev_board/` in this package)
 

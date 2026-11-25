@@ -6,7 +6,12 @@
     "package": "TSLP-2-1, 1.0 x 0.6 x 0.4(+0.1) mm, terminals 0.65 pitch",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/BAS40-02L/BAS40-02L.pdf",
-    "notes": "Pin 1 = cathode (cathode marking bar at pin-1 end, top view p.14). Marking FF. Not AEC-Q101. VR 40 V. Recommended land: 2x 0.6 x 0.35 copper, 0.3 gap; one 0.6 x 1.0 solder-mask opening over both pads."
+    "notes": "Pin 1 = cathode (cathode marking bar at pin-1 end, top view p.14). Marking FF. Not AEC-Q101. VR 40 V. Recommended land: 2x 0.6 x 0.35 copper, 0.3 gap; one 0.6 x 1.0 solder-mask opening over both pads. [height] 0.5 mm max: DS p.14 TSLP-2-1 outline: 0.4 +0.1. [temp] DS Maximum Ratings: Top operating temperature range -55..150 degC",
+    "height_max_mm": 0.5,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
   },
   "pins": [
     {

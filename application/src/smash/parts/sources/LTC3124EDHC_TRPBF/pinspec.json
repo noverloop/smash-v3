@@ -6,7 +6,13 @@
     "package": "DHC 16-lead DFN 5x3x0.75 mm, 0.5 mm pitch, EP = pin 17",
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "application/src/smash/parts/sources/LTC3124EDHC_TRPBF/3124f.pdf",
-    "notes": "Grounds are typed power in our factory by design (FLEX_GND convention)."
+    "notes": "Grounds are typed power in our factory by design (FLEX_GND convention). [height] 0.8 mm max: DS DHC16 package drawing (05-08-1706): 0.75 ±0.05. [temp] DS Absolute Maximum Ratings: operating junction LTC3124E −40…125 °C (Notes 3,4); Order Information",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      125
+    ],
+    "operating_temp_basis": "junction"
   },
   "pins": [
     {
@@ -18,7 +24,9 @@
     {
       "num": "2",
       "name": "PGNDB",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS p7 Pin Functions: PGNDB power ground"
     },
     {
       "num": "3",
@@ -29,7 +37,9 @@
     {
       "num": "4",
       "name": "PGNDA",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS p7 Pin Functions: PGNDA power ground"
     },
     {
       "num": "5",
@@ -39,13 +49,25 @@
         0.5,
         5.5
       ],
-      "note": "1.8 V max start-up (VOUT=0); >=10 uF ceramic to PGND"
+      "note": "1.8 V max start-up (VOUT=0); >=10 uF ceramic to PGND; [connect] DS p7 Pin Functions: VIN input supply",
+      "connect": "supply"
     },
     {
       "num": "6",
       "name": "PWM/SYNC",
       "type": "input",
-      "note": "Do not leave floating. High=PWM, Low=Burst, clock=sync (then RT resistor required)"
+      "note": "Do not leave floating. High=PWM, Low=Burst, clock=sync (then RT resistor required); [connect] DS p8 Pin Functions: PWM/SYNC do not leave floating; [enrich] DS Elec. Char.: PWM/SYNC VIH 0.9*VCC, VIL 0.1*VCC (thresholds relative to VCC, p.12); abs max 'all other pins' -0.3..6 V",
+      "connect": "defined",
+      "io_domain": "7",
+      "vih": [
+        0.9,
+        "frac"
+      ],
+      "vil": [
+        0.1,
+        "frac"
+      ],
+      "max_v": 6
     },
     {
       "num": "7",
@@ -57,30 +79,45 @@
       "num": "8",
       "name": "RT",
       "type": "analog",
-      "note": "Resistor to SGND; fOSC ~ 56/RT(kOhm) MHz"
+      "note": "Resistor to SGND; fOSC ~ 56/RT(kOhm) MHz; [enrich] DS abs max: RT -0.3 V to VCC",
+      "io_domain": "7"
     },
     {
       "num": "9",
       "name": "VC",
       "type": "analog",
-      "note": "Error-amp output; compensation network to SGND"
+      "note": "Error-amp output; compensation network to SGND; [enrich] DS abs max: VC -0.3 V to VCC",
+      "io_domain": "7"
     },
     {
       "num": "10",
       "name": "FB",
       "type": "analog",
-      "note": "VOUT = 1.2 V*(1+R1/R2); divider bottom to SGND"
+      "note": "VOUT = 1.2 V*(1+R1/R2); divider bottom to SGND; [enrich] DS abs max 'all other pins' -0.3..6 V",
+      "max_v": 6
     },
     {
       "num": "11",
       "name": "SD",
       "type": "input",
-      "note": "Do not leave floating. >1.6 V on, <0.25 V off (output disconnected)"
+      "note": "Do not leave floating. >1.6 V on, <0.25 V off (output disconnected); [connect] DS p8 Pin Functions: SD do not leave floating; [enrich] DS Elec. Char.: SD input high 1.6 V min, low 0.25 V max; abs max 'all other pins' -0.3..6 V",
+      "connect": "defined",
+      "vih": [
+        1.6,
+        "abs"
+      ],
+      "vil": [
+        0.25,
+        "abs"
+      ],
+      "max_v": 6
     },
     {
       "num": "12",
       "name": "SGND",
-      "type": "ground"
+      "type": "ground",
+      "connect": "gnd",
+      "note": "[connect] DS p8 Pin Functions: SGND signal ground"
     },
     {
       "num": "13",
@@ -90,19 +127,22 @@
         2.5,
         15
       ],
-      "note": "Must be tied to VOUTB; >=10 uF per phase"
+      "note": "Must be tied to VOUTB; >=10 uF per phase; [connect] DS p8 Pin Functions: VOUTA and VOUTB must be tied together",
+      "connect": "same_as:15"
     },
     {
       "num": "14",
       "name": "NC",
       "type": "nc",
-      "note": "Not connected internally; DS: connect to VOUTA/VOUTB for copper"
+      "note": "Not connected internally; DS: connect to VOUTA/VOUTB for copper; [connect] DS p8 Pin Functions: NC, connect to VOUTA/VOUTB for wider VOUT copper",
+      "connect": "same_as:13"
     },
     {
       "num": "15",
       "name": "VOUTB",
       "type": "power",
-      "note": "Must be tied to VOUTA"
+      "note": "Must be tied to VOUTA; [connect] DS p8 Pin Functions: VOUTA and VOUTB must be tied together",
+      "connect": "same_as:13"
     },
     {
       "num": "16",
@@ -117,7 +157,8 @@
       "aliases": [
         "EP"
       ],
-      "note": "Exposed pad is PGND; must be soldered to the PCB ground plane"
+      "note": "Exposed pad is PGND; must be soldered to the PCB ground plane; [connect] DS p7 Pin Functions: exposed pad is ground, must be soldered to PCB ground plane",
+      "connect": "gnd"
     }
   ]
 }

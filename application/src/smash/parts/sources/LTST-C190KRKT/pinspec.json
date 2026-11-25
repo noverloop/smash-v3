@@ -6,7 +6,12 @@
     "package": "0603 chip LED 1.6 x 0.8 x 0.8 mm (C190 family), -30..+85 C operating",
     "verified_by": "library check 2026-11-24 (datasheet supplied by user)",
     "verified_from_pdf": "application/src/smash/parts/sources/LTST-C190KRKT/LTST-C190KRKT.pdf",
-    "notes": "K/A assignment and package taken from the C190 family (GKT spec). Electrical values in the part def (VF, IF, VR, temp) are typicals, not datasheet."
+    "notes": "K/A assignment and package taken from the C190 family (GKT spec). Electrical values in the part def (VF, IF, VR, temp) are typicals, not datasheet. [height] 0.9 mm max: DS p.1 package dimensions: 0.80 height, general tolerance ±0.10. [temp] DS Absolute Maximum Ratings: Operating Temperature Range −30…+85 °C",
+    "height_max_mm": 0.9,
+    "operating_temp_c": [
+      -30,
+      85
+    ]
   },
   "pins": [
     {
