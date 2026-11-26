@@ -313,6 +313,10 @@ def _setup_block(board) -> str:
     return ("\t(setup\n"
             f"{_render_stackup_block(board)}\n"
             "\t\t(pad_to_mask_clearance 0)\n"
+            # the fab's minimum solder-mask web (dam) between two openings:
+            # DRC then flags pads whose mask dam would not survive (solder
+            # bridge risk) instead of silently merging the openings
+            "\t\t(solder_mask_min_width 0.1)\n"
             "\t\t(allow_soldermask_bridges_in_footprints no)\n"
             "\t)")
 

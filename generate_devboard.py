@@ -1905,6 +1905,29 @@ FAB_LAYERS = ("F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu", "In6.Cu"
               "F.Mask", "B.Mask", "F.Paste", "B.Paste", "F.SilkS", "B.SilkS", "Edge.Cuts")
 
 
+def _tent_castellations(txt: str) -> tuple[str, int]:
+    """Production tiles get the TOWER's castellation mask: the face annulus
+    tented (expansion −pad/2), as in the tile files. On the dev board the
+    pads are opened for probing (_open_castellation_mask) — nothing is
+    soldered there and no Al ring presses on them. In the tower the Al rings
+    bear on the faces over the annulus (mask + ring insulation = two layers)
+    and the sleeve joint's solder must stay in the half-barrel instead of
+    wicking across the 0.10 mm to the neighbouring pad."""
+    import re
+    from smash.parts.castellations import CAST_PAD_MM
+    tent = f"(solder_mask_margin {-CAST_PAD_MM / 2:g})"
+    n = 0
+
+    def fix(m):
+        nonlocal n
+        blk = m.group(0)
+        if "pad_prop_castellated" not in blk:
+            return blk
+        n += 1
+        return re.sub(r"\(solder_mask_margin [-\d.]+\)", tent, blk)
+    return re.sub(r"\t\t\(pad \"[^\"]*\" thru_hole.*?\n\t\t\)", fix, txt, flags=re.S), n
+
+
 def write_fab_sets(pcb, production_txt) -> dict:
     """fab/dev and fab/production Gerbers + Excellon from the ONE design file;
     production is derived in a temp file (Production.Rout applied), exported,
@@ -1915,6 +1938,7 @@ def write_fab_sets(pcb, production_txt) -> dict:
     except G.KiCadCliNotFound:
         return {}
     out = {}
+    production_txt, n_tent = _tent_castellations(production_txt)
     with tempfile.TemporaryDirectory() as td:
         prod = pathlib.Path(td) / f"{DEV}.kicad_pcb"
         prod.write_text(production_txt)

@@ -43,7 +43,13 @@ def drc_summary(pcb) -> collections.Counter | None:
     j = _run(cli, ["pcb", "drc", "--severity-error", str(pcb)])
     if j is None:
         return None
-    return collections.Counter(v["type"] for v in j.get("violations", []))
+    # the dev board opens its castellation masks on purpose (probing; nothing
+    # is soldered there and no Al ring presses on them): mask bridges between
+    # two castellation pads are expected — the production set re-tents them
+    def expected(v):
+        return (v["type"] == "solder_mask_bridge"
+                and all("J_CAST_" in i.get("description", "") for i in v.get("items", [])))
+    return collections.Counter(v["type"] for v in j.get("violations", []) if not expected(v))
 
 
 def erc_summary(sch) -> collections.Counter | None:

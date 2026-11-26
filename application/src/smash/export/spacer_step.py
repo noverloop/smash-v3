@@ -592,7 +592,8 @@ class RingSpec:
 
 
 RING_PEEK = RingSpec(RING_MATERIAL, False, RING_LABEL, 15.0)
-RING_AL = RingSpec("7075-T6 aluminium, hard anodised (anodise = insulation)", True,
+RING_AL = RingSpec("7075-T6 aluminium, electrically insulated: hard anodised or parylene C "
+                   "(with the tiles' tented castellation faces = two insulation layers)", True,
                    "AL RING", 16.0)
 # (2026-11-17, user) 2 mm GF30 PEEK ONLY in the slot gaps; every other gap
 # keeps a 1 mm Al ring to preserve board space. (2026-11-21) fin_ble merged

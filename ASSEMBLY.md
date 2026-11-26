@@ -80,7 +80,11 @@ in your quotation.
 - The tile edges carry **castellated half-holes** (sleeve contacts): Ø0.50 mm
   plated holes in Ø0.70 mm pads at 0.80 mm pitch, 0.30 mm between holes
   (PCBWay normal process: hole ≥ 0.5 mm, edge-to-edge ≥ 0.3 mm). No burrs,
-  no solder on the castellations, no paste or flux on the board edge.
+  no solder on the castellations, no paste or flux on the board edge. The
+  castellations' copper annulus on both faces is **tented** (covered by solder
+  mask) on production tiles: the electrically insulated (anodised or parylene)
+  Al spacer rings bear on it, and the sleeve joint is soldered from the side
+  into the plated half-barrel only.
 - **Depanelling:** router or saw — **no hand snapping** (MLCC cracking). Sand
   the tab stubs flush with the Ø34.0 mm outline: the sleeve clearance is only
   0.1 mm.
