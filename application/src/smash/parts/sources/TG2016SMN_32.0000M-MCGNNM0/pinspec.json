@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from TG2016SMN.pdf",
+    "abs_max_notes": "The Epson brief (p1 spec table) has no absolute-maximum-ratings table; it gives only the supply voltage range 1.7–3.63 V (operating). No abs max added to VCC."
   },
   "pins": [
     {

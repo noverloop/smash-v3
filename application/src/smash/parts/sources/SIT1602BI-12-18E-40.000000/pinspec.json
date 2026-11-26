@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from SiT1602B.pdf (Rev 1.08)",
+    "abs_max_notes": "Table 3 (p3) lists only Vdd (−0.5…4 V); no input-pin (OE) abs max is given, so OE carries none."
   },
   "pins": [
     {
@@ -65,7 +67,9 @@
         1.98
       ],
       "note": "0.1 uF or more between VDD and GND required [DS Table 2 p2: power supply; note 2: >= 0.1 uF VDD-GND required]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 4.0,
+      "abs_max_ref": "SiT1602B DS p3 Table 3 Absolute Maximum Limits: Vdd −0.5…4 V"
     }
   ]
 }

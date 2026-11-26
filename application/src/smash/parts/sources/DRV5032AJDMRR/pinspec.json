@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from DRV5032FCDBZT/drv5032.pdf (TI SLVSDC7H, family datasheet)",
+    "abs_max_notes": "OUT current ±5 mA; VCC slew rate and magnetic flux density unlimited (§6.1). ESD HBM ±6000 V (§6.2)."
   },
   "pins": [
     {
@@ -23,7 +25,9 @@
         5.5
       ],
       "note": ">=0.1 uF ceramic to GND [DS SLVSDC7H Table 5-1 p3: 1.65-5.5 V supply]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 5.5,
+      "abs_max_ref": "drv5032.pdf (SLVSDC7H) p.4 §6.1 VCC −0.3…5.5 V"
     },
     {
       "num": "2",
@@ -45,7 +49,12 @@
       "type": "output",
       "note": "Open-drain (AJ): needs pull-up; VO 0-5.5 V [DS §7.3.2.3: AJ open-drain output, an external pullup resistor must be used] [DS §7.3.2.3: AJ open-drain, external pull-up required]",
       "connect": "defined",
-      "open_drain": true
+      "open_drain": true,
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.3
+      },
+      "abs_max_ref": "drv5032.pdf (SLVSDC7H) p.4 §6.1 OUT −0.3…VCC+0.3 V"
     },
     {
       "num": "5",

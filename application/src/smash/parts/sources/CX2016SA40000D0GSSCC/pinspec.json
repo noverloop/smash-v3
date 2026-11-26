@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       125
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from CX2016SA40000D0GSSCC.pdf",
+    "abs_max_notes": "Drive level DL 10 µW typ, 200 µW max (Kyocera CX2016SA sheet p1 spec table). No voltage ratings for a crystal."
   },
   "pins": [
     {"num": "1", "name": "XTAL1", "type": "passive", "aliases": ["X1"]},

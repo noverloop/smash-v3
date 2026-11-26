@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from ISM330DLCTR/ISM330DLC_DS12171.pdf (DS12171 Rev 4)",
+    "abs_max_notes": "ESD HBM 2 kV; mechanical shock 10 000 g for 0.2 ms (Table 8)."
   },
   "pins": [
     {
@@ -31,7 +33,13 @@
       "vil": [
         0.3,
         "frac"
-      ]
+      ],
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "2",
@@ -39,7 +47,13 @@
       "type": "io",
       "note": "Mode 1: connect to VDDIO or GND [DS12171 Table 1 p7 Mode 1: connect to VDDIO or GND] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
       "connect": "defined",
-      "io_domain": "5"
+      "io_domain": "5",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "3",
@@ -47,21 +61,35 @@
       "type": "io",
       "note": "Mode 1: connect to VDDIO or GND [DS12171 Table 1 p7 Mode 1: connect to VDDIO or GND] [DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
       "connect": "defined",
-      "io_domain": "5"
+      "io_domain": "5",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "4",
       "name": "INT1",
       "type": "output",
       "io_domain": "5",
-      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "5",
       "name": "VDDIO",
       "type": "power",
       "connect": "supply",
-      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]"
+      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]",
+      "max_v": 4.8,
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vdd −0.3…4.8 V; note: supply voltage on any pin never > 4.8 V"
     },
     {
       "num": "6",
@@ -88,14 +116,22 @@
       "name": "VDD",
       "type": "power",
       "connect": "supply",
-      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]"
+      "note": "[DS12171 Table 1 p7: power supply (100 nF filter cap recommended)]",
+      "max_v": 4.8,
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vdd −0.3…4.8 V; note: supply voltage on any pin never > 4.8 V"
     },
     {
       "num": "9",
       "name": "INT2",
       "type": "output",
       "io_domain": "5",
-      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "10",
@@ -113,7 +149,13 @@
           30,
           50
         ]
-      }
+      },
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "11",
@@ -131,7 +173,13 @@
           30,
           50
         ]
-      }
+      },
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "12",
@@ -153,7 +201,13 @@
       "vil": [
         0.3,
         "frac"
-      ]
+      ],
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "13",
@@ -163,7 +217,13 @@
       ],
       "type": "input",
       "io_domain": "5",
-      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     },
     {
       "num": "14",
@@ -174,7 +234,13 @@
       ],
       "type": "io",
       "io_domain": "5",
-      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]"
+      "note": "[DS12171 Table 3 p11: VIH/VIL referenced to VDD_IO; Table 18 p33: Vdd_IO = power supply for I/O pins]",
+      "max_v": 4.8,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "ISM330DLC_DS12171.pdf p.15 §4.5 Table 8 Vin any control pin −0.3…Vdd_IO+0.3 V (lists CS, SCL/SPC, SDA/SDI/SDO, SDO/SA0 as 'including'); 4.8 V any-pin note"
     }
   ]
 }

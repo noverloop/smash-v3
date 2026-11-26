@@ -1578,7 +1578,8 @@ def _symbol_instance(project, lib, inst_path, board, lsym, c, uno, X, Y, bx, by,
     seed = (board, c.ref, str(uno))
     out = [
         f'\t(symbol (lib_id {_q(f"{lib}:{lsym.name}")}) (at {_f(X)} {_f(Y)} 0) (unit {uno})',
-        '\t\t(exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
+        f'\t\t(exclude_from_sim no) (in_bom yes) (on_board yes) '
+        f'(dnp {"yes" if getattr(c, "dnp", False) else "no"})',
         f'\t\t(uuid {_q(_uid(*seed, "sym"))})',
     ]
     for name, val, fx, fy, just, hide, size in fields:

@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/DF2S8.2FS_L3M/DF2S8.2FS_L3M.pdf"
   },
   "pins": [
     {
@@ -20,7 +21,11 @@
       "type": "passive",
       "aliases": [
         "Cathode"
-      ]
+      ],
+      "max_v_to": {
+        "A": 6.5
+      },
+      "abs_max_ref": "DF2S8.2FS DS p.2 §4 Electrical Characteristics: VRWM 6.5 V (§3 Absolute Maximum Ratings gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "2",

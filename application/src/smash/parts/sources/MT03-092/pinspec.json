@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from Research/MT03-092.pdf (Marktech, 2025-11-11)",
+    "abs_max_notes": "DS p.1 Absolute Maximum Ratings lists only Topr, Tstg and lead soldering temperature: no reverse-voltage or current rating, so no pin limits recorded. The only voltage figure is the characteristic VBR >= 50 V min at IR 10 uA (p.1 Electrical & Optical Characteristics, per quadrant), which is not an abs-max rating; dark current is specified at VR 10 V."
   },
   "pins": [
     {

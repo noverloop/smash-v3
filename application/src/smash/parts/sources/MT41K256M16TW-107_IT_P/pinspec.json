@@ -11,7 +11,9 @@
       -40,
       95
     ],
-    "operating_temp_basis": "case"
+    "operating_temp_basis": "case",
+    "abs_max_checked": "2026-11-26 from MT41K256M16TW-107_PTR/MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L.pdf Rev. Q 12/17)",
+    "abs_max_notes": "Table 5 note 1: VREF (VREFCA/VREFDQ) must not exceed 0.6 x VDDQ (≤ 300 mV while VDD/VDDQ < 500 mV) — ratio limit, not expressible as max_over."
   },
   "pins": [
     {
@@ -22,22 +24,33 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "BALL_A2",
       "name": "DQ13",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "BALL_A3",
       "name": "DQ15",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "BALL_A7",
       "name": "DQ12",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "BALL_A8",
@@ -47,7 +60,12 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "BALL_A9",
@@ -67,7 +85,12 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "B3",
@@ -77,12 +100,16 @@
     {
       "num": "B7",
       "name": "UDQS#",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "B8",
       "name": "DQ14",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "B9",
@@ -97,27 +124,40 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "C2",
       "name": "DQ11",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "C3",
       "name": "DQ9",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "C7",
       "name": "UDQS",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "C8",
       "name": "DQ10",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "C9",
@@ -127,7 +167,12 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "D1",
@@ -142,17 +187,26 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "D3",
       "name": "UDM",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "D7",
       "name": "DQ8",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "D8",
@@ -167,7 +221,12 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "E1",
@@ -182,12 +241,16 @@
     {
       "num": "E3",
       "name": "DQ0",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "E7",
       "name": "LDM",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "E8",
@@ -202,7 +265,12 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "F1",
@@ -212,27 +280,40 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "F2",
       "name": "DQ2",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "F3",
       "name": "LDQS",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "F7",
       "name": "DQ1",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "F8",
       "name": "DQ3",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "F9",
@@ -247,12 +328,16 @@
     {
       "num": "G2",
       "name": "DQ6",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "G3",
       "name": "LDQS#",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "G7",
@@ -262,7 +347,12 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "G8",
@@ -282,7 +372,9 @@
         0.628,
         0.74
       ],
-      "note": "0.49-0.51 × VDDQ (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input)"
+      "note": "0.49-0.51 × VDDQ (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input)",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "H2",
@@ -292,22 +384,33 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "H3",
       "name": "DQ4",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "H7",
       "name": "DQ7",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "H8",
       "name": "DQ5",
-      "type": "io"
+      "type": "io",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "H9",
@@ -317,7 +420,12 @@
         1.283,
         1.45
       ],
-      "note": "= VDD, 1.283-1.45 V (DDR3L)"
+      "note": "= VDD, 1.283-1.45 V (DDR3L)",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDD": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDDQ −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "J1",
@@ -333,12 +441,16 @@
     {
       "num": "J3",
       "name": "RAS#",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "J7",
       "name": "CK",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "J8",
@@ -354,7 +466,9 @@
     {
       "num": "K1",
       "name": "ODT",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "K2",
@@ -364,17 +478,26 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "K3",
       "name": "CAS#",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "K7",
       "name": "CK#",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "K8",
@@ -384,12 +507,19 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "K9",
       "name": "CKE",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "L1",
@@ -400,12 +530,16 @@
     {
       "num": "L2",
       "name": "CS#",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "L3",
       "name": "WE#",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "L7",
@@ -414,13 +548,17 @@
       "aliases": [
         "A10",
         "AP"
-      ]
+      ],
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "L8",
       "name": "ZQ",
       "type": "analog",
-      "note": "External 240 Ω (RZQ) to VSSQ for output-driver calibration"
+      "note": "External 240 Ω (RZQ) to VSSQ for output-driver calibration",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "L9",
@@ -436,12 +574,16 @@
     {
       "num": "M2",
       "name": "BA0",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "M3",
       "name": "BA2",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "M7",
@@ -457,7 +599,9 @@
         0.628,
         0.74
       ],
-      "note": "0.49-0.51 × VDD (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input). Must be held at all times incl. self refresh"
+      "note": "0.49-0.51 × VDD (≈0.675 V at 1.35 V). Table 4 type 'Supply'; typed analog (reference input). Must be held at all times incl. self refresh",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "M9",
@@ -472,17 +616,26 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "N2",
       "name": "A3",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "N3",
       "name": "A0",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "N7",
@@ -491,12 +644,16 @@
       "aliases": [
         "A12",
         "BC#"
-      ]
+      ],
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "N8",
       "name": "BA1",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "N9",
@@ -506,7 +663,12 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "P1",
@@ -516,22 +678,30 @@
     {
       "num": "P2",
       "name": "A5",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "P3",
       "name": "A2",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "P7",
       "name": "A1",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "P8",
       "name": "A4",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "P9",
@@ -546,27 +716,40 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "R2",
       "name": "A7",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "R3",
       "name": "A9",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "R7",
       "name": "A11",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "R8",
       "name": "A6",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "R9",
@@ -576,7 +759,12 @@
         1.283,
         1.45
       ],
-      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V"
+      "note": "DDR3L 1.35 V (1.283-1.45 V), DS p.1 + operating conditions; the part also runs at DDR3 1.5 V",
+      "max_v": 1.975,
+      "max_v_to": {
+        "VDDQ": 0.3
+      },
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VDD −0.4…1.975 V; note 1 VDD and VDDQ within 300 mV at all times"
     },
     {
       "num": "T1",
@@ -587,22 +775,30 @@
       "num": "T2",
       "name": "RESET#",
       "type": "input",
-      "note": "Active-low CMOS input referenced to VSS (not VREF)"
+      "note": "Active-low CMOS input referenced to VSS (not VREF)",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "T3",
       "name": "A13",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "T7",
       "name": "A14",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "T8",
       "name": "A8",
-      "type": "input"
+      "type": "input",
+      "max_v": 1.975,
+      "abs_max_ref": "MT41K256M16TW-107_P_TR.pdf (4Gb_DDR3L Rev Q) p.28 Table 5 VIN/VOUT voltage on any pin −0.4…1.975 V"
     },
     {
       "num": "T9",

@@ -1,0 +1,37 @@
+{
+  "part": "STM32U545REI6Q",
+  "datasheet": "DS_stm32u545re.pdf",
+  "extracted": "2026-11-26 by Claude — values cite the datasheet; spot-check before trusting",
+  "supplies": [
+    {"pins": ["VDD_1", "VDD_2", "VDD_3", "VDD_4"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.136 Table 33 VDD 1.71–3.6 V (IO_VDD_HSLV = 0); p.134 Table 30 VDDX−VSS −0.3…4.0 V"},
+    {"pins": ["VDDSMPS"], "min_v": 1.71, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.136 Table 33 VDDSMPS = VDD; p.134 Table 30 −0.3…4.0 V"},
+    {"pins": ["VDDA"], "min_v": 1.62, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.136 Table 33 VDDA 1.62–3.6 V with ADC used (0 V allowed if ADC/DAC/COMP/OPAMP/VREFBUF unused); p.134 Table 30 −0.3…4.0 V"},
+    {"pins": ["VDDUSB"], "min_v": 0.0, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.136 Table 33 VDDUSB 3.0–3.6 V with USB used, 0–3.6 V unused; p.134 Table 30 −0.3…4.0 V"},
+    {"pins": ["VBAT"], "min_v": 1.65, "max_v": 3.6, "abs_max_v": 4.0,
+     "ref": "p.136 Table 33 VBAT 1.65–3.6 V; p.134 Table 30 −0.3…4.0 V"},
+    {"pins": ["VDD11_1", "VDD11_2"], "min_v": null, "max_v": null, "abs_max_v": null,
+     "ref": "VDD11 is the internal SMPS output node (decoupling only); no external-supply rating in Table 30 / 33"}
+  ],
+  "io": [
+    {"pins": ["PH3-BOOT0", "PB6", "PD2", "PC10", "PC13", "PC11", "PC12", "PC14-OSC32_IN", "PC15-OSC32_OUT",
+              "PB8", "PA15", "PA14", "PA13", "PA12", "PA11", "PH0-OSC_IN", "PH1-OSC_OUT", "PB7", "PB5", "PB4", "PB3",
+              "PA10", "PA9", "PA8", "PC9", "PC0", "PC1", "PC2", "PA0", "PB14", "PC7", "PC8", "PC3", "PA1", "PA6",
+              "PB10", "PB15", "PC6", "PA2", "PB2", "PB1", "PB13", "PA7"],
+     "domain": "VDD_1", "abs_max_over_domain_v": 4.0, "abs_max_v": 6.0,
+     "ref": "p.134 Table 30 VIN on FT_xx pins (except FT_c): min(min(VDD, VDDA, VDDUSB, VDDIO2) + 4.0 V, 6.0 V); internal pulls off above 4 V (note 5). FT structure per p.101–116 Table 27 (UFBGA64 column)"},
+    {"pins": ["PA3", "PA4", "PA5", "PB0", "NRST"],
+     "domain": null, "abs_max_over_domain_v": null, "abs_max_v": 4.0,
+     "ref": "p.134 Table 30 VIN on any other pin −0.3…4.0 V; PA3 TT_hav, PA4 / PB0 TT_ha, PA5 TT_a, NRST RST per p.101–116 Table 27 (operating limit for TT_xx: VDDIOx + 0.3 V, p.136 Table 33)"}
+  ],
+  "open_drain": [],
+  "required": [
+    {"what": "All main supplies (VDD, VDDSMPS, VDDA, VDDUSB, VBAT) and grounds connected to the supply, within range", "ref": "p.134 Table 30 note 1"},
+    {"what": "|ΔVDDx| between supply pins of one domain ≤ 50 mV; |VSSx−VSS| ≤ 50 mV; VREF+ − VDDA ≤ 0.4 V", "ref": "p.134 Table 30"},
+    {"what": "Injected current on FT_xx / TT_xx / RST pins −5 / +0 mA; any I/O sinks ≤ 20 mA, all I/Os ≤ 120 mA", "ref": "p.134–135 Table 31"},
+    {"what": "UFBGA64 land: ST example Dpad 0.280 mm (Table 147); this design uses 0.25 mm NSMD for one 85 µm escape track between balls", "ref": "p.286 Table 147"}
+  ]
+}

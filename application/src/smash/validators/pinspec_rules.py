@@ -11,6 +11,19 @@
   P3 unconnected a non-output pin with no net (or alone on its net) is allowed to float
                   by the datasheet: nc type, or a connect / "unused" rule of
                   "open" / "open_or_gnd"; otherwise the "unused" rule is reported
+  P4 abs max    a pin's highest static voltage stays inside its datasheet absolute
+                  maximum ratings (pinspec fields, all in volts):
+                    "max_v"     vs GND
+                    "max_v_to"  {"<pin>": v}  |V(this) − V(that pin)| ≤ v, or
+                                {"<pin>": [lo, hi]}  lo ≤ V(this) − V(that) ≤ hi
+                                (FET V_GS / V_DS, diode V_R, differential limits)
+                    "max_over"  {"pin": "<supply pin>", "v": 0.3}
+                                V(this) ≤ V(supply) + v while both are known
+                  A net's voltage is its rail's voltage_v (through 0 Ω / beads);
+                  a non-rail net takes the divider voltage of its resistors to
+                  rails / GND, or the highest rail it is pulled up to. Static
+                  only: transients, ringing and unpowered-domain back-feed are
+                  outside this rule.
 
 `check(design)` returns [(rule, ref, pin, message)]. Accepted exceptions live
 in pinspec_rules_acknowledged.json next to this file ("<rule> <ref>.<pin>").
@@ -44,6 +57,7 @@ def check(design) -> list:
             n = _net(p)
             if n:
                 members.setdefault(n, []).append((c.ref, p.num))
+    vmax = _signal_voltages(design, volts)
     raw_cache: dict = {}
     out = []
     for c in design.chips:
@@ -102,7 +116,86 @@ def check(design) -> list:
                     and rule not in ("open", "open_or_gnd") and unused not in ("open", "open_or_gnd"):
                 why = f" (datasheet when unused: {unused})" if unused else ""
                 out.append(("P3", c.ref, sp.num, f"{sp.name} ({sp.type}) is unconnected{why}"))
+            # P4 — absolute maximum ratings
+            rp = raw.get(sp.num) or {}
+            v_here = vmax.get(net) if net else None
+            mv = rp.get("max_v")
+            if isinstance(mv, (int, float)) and v_here is not None and v_here > mv + 1e-6:
+                out.append(("P4", c.ref, sp.num,
+                            f"{sp.name} on {net} reaches {v_here:g} V > abs max {mv:g} V"))
+            for other, lim in (rp.get("max_v_to") or {}).items():
+                op = _pin_by_key(c, by_num, other)
+                onet = _net(op) if op is not None else None
+                if v_here is None or onet is None or vmax.get(onet) is None:
+                    continue
+                dv = v_here - vmax[onet]
+                lo, hi = (lim if isinstance(lim, (list, tuple)) else (-lim, lim))
+                if dv > hi + 1e-6 or dv < lo - 1e-6:
+                    out.append(("P4", c.ref, sp.num,
+                                f"{sp.name} on {net} ({v_here:g} V) vs {other} on {onet} "
+                                f"({vmax[onet]:g} V): {dv:+g} V outside abs max {lo:g}…{hi:g} V"))
+            mo = rp.get("max_over")
+            if mo and v_here is not None:
+                op = _pin_by_key(c, by_num, mo.get("pin"))
+                onet = _net(op) if op is not None else None
+                if onet in volts and v_here > volts[onet] + mo.get("v", 0.3) + 1e-6:
+                    out.append(("P4", c.ref, sp.num,
+                                f"{sp.name} on {net} reaches {v_here:g} V > {mo.get('pin')} "
+                                f"({volts[onet]:g} V) + {mo.get('v', 0.3):g} V"))
     return out
+
+
+def _pin_by_key(chip, by_num, key):
+    """A pin of `chip` by number or name."""
+    if key is None:
+        return None
+    k = str(key)
+    if k in by_num:
+        return by_num[k]
+    return next((p for p in chip.pins if str(p.name or "").upper() == k.upper()), None)
+
+
+def _signal_voltages(design, volts) -> dict:
+    """{net: highest static voltage}: rails as given; a non-rail net with
+    resistors to known nets takes their Thevenin voltage when it has a path to
+    GND through a resistor (a divider), else the highest rail it is pulled to."""
+    from smash.validators.electrical import RAIL_TOL
+    volts = {n: v * (1 + RAIL_TOL) for n, v in volts.items()}     # rail upper tolerance
+    out = dict(volts)
+    res: dict = {}
+    for c in design.chips:
+        if not c.ref.startswith("R") or len(c.pins) != 2:
+            continue
+        ohms = _ohms(getattr(c, "value", None))
+        a, b = (_net(p) for p in c.pins)
+        if not a or not b or ohms is None:
+            continue
+        res.setdefault(a, []).append((b, ohms))
+        res.setdefault(b, []).append((a, ohms))
+    for net, links in res.items():
+        if net in volts:
+            continue
+        known = [(volts[o], r) for o, r in links if o in volts]
+        if not known:
+            continue
+        if any(v == 0.0 for v, _ in known) and any(v > 0 for v, _ in known):
+            g = sum(1 / max(r, 1e-3) for _, r in known)
+            out[net] = round(sum(v / max(r, 1e-3) for v, r in known) / g, 4)
+        else:
+            out[net] = max(v for v, _ in known)
+    return out
+
+
+_MULT = {"": 1, "R": 1, "K": 1e3, "M": 1e6, "G": 1e9}
+
+
+def _ohms(value):
+    s = str(value or "").strip().upper().replace("Ω", "").replace("OHM", "").replace(" ", "")
+    m = re.fullmatch(r"(\d+(?:\.\d+)?)([RKMG]?)(\d*)", s)
+    if not m:
+        return None
+    base = float(m.group(1) + ("." + m.group(3) if m.group(3) else ""))
+    return base * _MULT[m.group(2)]
 
 
 def _raw_pins(manf_pn: str) -> dict:

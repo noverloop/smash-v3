@@ -96,6 +96,8 @@ def resolve(mpn: str) -> tuple[str, str] | None:
         return (f"7447650{int(round(nh * 10)):02d}A" if nh < 10 else f"7447651{int(round(nh)):02d}A"), "Würth Elektronik"
     if mpn.startswith("T491T 22uF"):
         return "T491T226K010AT", "KEMET"
+    if mpn.startswith("T528W 47uF"):                 # decisions.csv: T528W476 → T521V476 (R13)
+        return "T521V476M016ATE070", "KEMET"
     return None
 
 

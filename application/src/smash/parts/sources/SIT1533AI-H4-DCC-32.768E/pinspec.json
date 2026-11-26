@@ -10,7 +10,8 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from SiT1533.pdf (Rev 1.4)"
   },
   "pins": [
     {
@@ -47,7 +48,9 @@
         1.5,
         3.63
       ],
-      "note": "1.5-3.63 V over -40..+85 °C (Table 2); no bypass cap required (internal filtering). Abs max 3.63 V continuous"
+      "note": "1.5-3.63 V over -40..+85 °C (Table 2); no bypass cap required (internal filtering). Abs max 3.63 V continuous",
+      "max_v": 3.63,
+      "abs_max_ref": "SiT1533 DS p3 Table 3 Absolute Maximum Limits: continuous Vdd −0.5…3.63 V (short duration ≤30 min, −40…+85 °C: 4.0 V)"
     }
   ]
 }

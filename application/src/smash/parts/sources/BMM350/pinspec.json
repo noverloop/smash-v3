@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from BMM350/BMM350.pdf (BST-BMM350-DS002-29)",
+    "abs_max_notes": "Table 4 gives no rating for CRST (reset-cap pin); none added."
   },
   "pins": [
     {
@@ -19,7 +21,12 @@
       "name": "INT",
       "type": "output",
       "note": "Interrupt output [io_domain B3: DS Table 1 VDDIO = I/O domain supply; INT drive OD/push-pull selectable via INT_CTRL.int_od §5.5.3]",
-      "io_domain": "B3"
+      "io_domain": "B3",
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 any logic pad (non-supply) −0.3…VDDIO+0.3 V"
     },
     {
       "num": "A2",
@@ -27,7 +34,12 @@
       "type": "io",
       "note": "I2C/I3C data [io_domain B3: DS Table 1 VDDIO = I/O domain supply; open_drain: §9 I2C SDA open drain (push-pull only in I3C data phase)]",
       "io_domain": "B3",
-      "open_drain": true
+      "open_drain": true,
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 any logic pad (non-supply) −0.3…VDDIO+0.3 V"
     },
     {
       "num": "A3",
@@ -37,7 +49,12 @@
         "SCL"
       ],
       "note": "I2C/I3C clock [io_domain B3: DS Table 1 VDDIO = I/O domain supply]",
-      "io_domain": "B3"
+      "io_domain": "B3",
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 any logic pad (non-supply) −0.3…VDDIO+0.3 V"
     },
     {
       "num": "B1",
@@ -60,7 +77,12 @@
       "vil": [
         0.2,
         "frac"
-      ]
+      ],
+      "max_over": {
+        "pin": "VDDIO",
+        "v": 0.3
+      },
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 any logic pad (non-supply) −0.3…VDDIO+0.3 V"
     },
     {
       "num": "B3",
@@ -71,7 +93,9 @@
         3.6
       ],
       "note": "100 nF decoupling [connect rule: DS §6 pin table: supply pin]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 3.6,
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 VDDIO pin −0.3…3.6 V"
     },
     {
       "num": "C1",
@@ -82,7 +106,9 @@
         1.98
       ],
       "note": "Abs max 2.0 V; 100 nF decoupling [connect rule: DS §6 pin table: supply pin]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 2.0,
+      "abs_max_ref": "BMM350.pdf p.11 §3 Table 4 VDD pin −0.3…2 V"
     },
     {
       "num": "C2",

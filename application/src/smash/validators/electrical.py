@@ -226,7 +226,13 @@ def check(d) -> dict:
             continue                                  # passives: E3 only
         lim = load_limits(c.manf_pn)
         if lim is None:
-            uncovered.append(c.manf_pn)
+            # pinspec abs-max fields (checked by pinspec_rules P4 / audits D1)
+            from smash.validators.pinspec_rules import _raw_pins
+            if any(k in rp for rp in _raw_pins(c.manf_pn).values()
+                   for k in ("max_v", "max_v_to", "max_over")):
+                covered.append(c.manf_pn)
+            else:
+                uncovered.append(c.manf_pn)
             continue
         covered.append(c.manf_pn)
         ref_of = lambda e: f" [{e.get('ref', '?')}]"

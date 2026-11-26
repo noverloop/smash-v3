@@ -7,7 +7,8 @@
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://fscdn.rohm.com/en/products/databook/datasheet/discrete/diode/schottky_barrier/rb160vam-60tr-e.pdf",
     "notes": "(1) Cathode = marking-bar end, large terminal; (2) Anode, small terminal. Land: l1 2.0 (cathode) + l2 0.8 (anode), b4 1.1, l3 3.3 overall. VR 60 V, Io 1 A, IFSM 5 A, IR 40 µA max @ 60 V. Marking 7. [height_max_mm: DS p5 Dimensions SOD-323HE A max 0.80]",
-    "height_max_mm": 0.8
+    "height_max_mm": 0.8,
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/RB160VAM-60TR/RB160VAM-60.pdf"
   },
   "pins": [
     {
@@ -17,7 +18,11 @@
       "aliases": [
         "Cathode"
       ],
-      "note": "large pad"
+      "note": "large pad",
+      "max_v_to": {
+        "A": 60
+      },
+      "abs_max_ref": "RB160VAM-60 DS p.1 Absolute Maximum Ratings: VRM 60 V, VR 60 V"
     },
     {
       "num": "2",

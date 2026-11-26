@@ -7,7 +7,8 @@
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=59199&prodName=SSM3J372R",
     "notes": "Top view: 1 (G) bottom-left, 2 (S) bottom-right, 3 (D) top. P-ch, VDSS -30 V, VGSS -12/+6 V, ID -6 A. AEC-Q101. height_max_mm [DS p8 package dimensions: 0.8 +0.08/−0.05]",
-    "height_max_mm": 0.88
+    "height_max_mm": 0.88,
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/SSM3J372R_LF/SSM3J372R.pdf"
   },
   "pins": [
     {
@@ -21,7 +22,11 @@
         -12,
         6
       ],
-      "note": "asymmetric VGSS: -12 V / +6 V abs max"
+      "note": "asymmetric VGSS: -12 V / +6 V abs max",
+      "max_v_to": {
+        "S": [-12, 6]
+      },
+      "abs_max_ref": "SSM3J372R DS p.2 §4 Absolute Maximum Ratings: VGSS -12/+6 V (V(G) − V(S))"
     },
     {
       "num": "2",
@@ -38,7 +43,11 @@
       "aliases": [
         "Drain"
       ],
-      "note": "VDSS -30 V"
+      "note": "VDSS -30 V",
+      "max_v_to": {
+        "S": 30
+      },
+      "abs_max_ref": "SSM3J372R DS p.2 §4 Absolute Maximum Ratings: VDSS -30 V"
     }
   ]
 }

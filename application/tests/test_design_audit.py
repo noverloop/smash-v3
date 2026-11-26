@@ -260,7 +260,8 @@ def test_every_ic_matches_its_pinspec(design):
 def test_datasheet_pin_rules(design):
     """smash.validators.pinspec_rules: every datasheet connection rule in the
     pinspecs holds (P1), every supply pin is on a rail inside its range (P2),
-    and no input is left floating unless the datasheet allows it (P3).
+    no input is left floating unless the datasheet allows it (P3), and no
+    pin's static voltage exceeds its datasheet absolute maximum (P4).
     Accepted exceptions: validators/pinspec_rules_acknowledged.json."""
     from smash.validators.pinspec_rules import report
     exempt = {c.ref for c in design.chips if c.manf_pn in PINSPEC_EXEMPT}

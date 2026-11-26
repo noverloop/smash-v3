@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -65,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/PESD5V0L4UF_115/PESD5V0L4UF_115.pdf"
   },
   "pins": [
     {
@@ -34,25 +35,41 @@
       "num": "1",
       "name": "IO1",
       "type": "passive",
-      "aliases": []
+      "aliases": [],
+      "max_v_to": {
+        "GND": 5.0
+      },
+      "abs_max_ref": "PESDxL4UF Rev 04 p.5 Table 9 Characteristics: PESD5V0L4UF VRWM 5.0 V (Table 6 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "3",
       "name": "IO2",
       "type": "passive",
-      "aliases": []
+      "aliases": [],
+      "max_v_to": {
+        "GND": 5.0
+      },
+      "abs_max_ref": "PESDxL4UF Rev 04 p.5 Table 9 Characteristics: PESD5V0L4UF VRWM 5.0 V (Table 6 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "4",
       "name": "IO3",
       "type": "passive",
-      "aliases": []
+      "aliases": [],
+      "max_v_to": {
+        "GND": 5.0
+      },
+      "abs_max_ref": "PESDxL4UF Rev 04 p.5 Table 9 Characteristics: PESD5V0L4UF VRWM 5.0 V (Table 6 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "6",
       "name": "IO4",
       "type": "passive",
-      "aliases": []
+      "aliases": [],
+      "max_v_to": {
+        "GND": 5.0
+      },
+      "abs_max_ref": "PESDxL4UF Rev 04 p.5 Table 9 Characteristics: PESD5V0L4UF VRWM 5.0 V (Table 6 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     }
   ]
 }

@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/BAS40-02L/BAS40-02L.pdf"
   },
   "pins": [
     {
@@ -21,7 +22,11 @@
       "aliases": [
         "Cathode"
       ],
-      "note": "cathode, marked end"
+      "note": "cathode, marked end",
+      "max_v_to": {
+        "A": 40
+      },
+      "abs_max_ref": "BAS40-02L.pdf p.2 Maximum Ratings: VR 40 V"
     },
     {
       "num": "2",

@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/SSM3K339R_LF/SSM3K339R_LF.pdf"
   },
   "pins": [
     {
@@ -24,7 +25,11 @@
       "voltage_range_v": [
         -12,
         12
-      ]
+      ],
+      "max_v_to": {
+        "S": 12
+      },
+      "abs_max_ref": "SSM3K339R DS p.2 §4 Absolute Maximum Ratings: VGSS ±12 V"
     },
     {
       "num": "2",
@@ -40,7 +45,11 @@
       "type": "io",
       "aliases": [
         "Drain"
-      ]
+      ],
+      "max_v_to": {
+        "S": 40
+      },
+      "abs_max_ref": "SSM3K339R DS p.2 §4 Absolute Maximum Ratings: VDSS 40 V"
     }
   ]
 }

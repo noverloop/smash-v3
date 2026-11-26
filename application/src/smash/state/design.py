@@ -171,6 +171,9 @@ class Design:
             # no-op for un-listed footprints) here so it covers every factory
             # uniformly, before the part is placed.
             footprint.apply_courtyard_growth()
+            # Manufacturer's recommended land over a library-generator land.
+            from smash.parts.lands import apply_land
+            apply_land(manf_pn, footprint)
         pin_objs: list = []
         for pin in (pins or []):
             if isinstance(pin, Pin):

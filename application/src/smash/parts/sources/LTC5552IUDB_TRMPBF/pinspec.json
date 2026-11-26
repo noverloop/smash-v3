@@ -12,7 +12,9 @@
       -40,
       105
     ],
-    "operating_temp_basis": "case"
+    "operating_temp_basis": "case",
+    "abs_max_checked": "2026-11-26 from LTC5552IUDB/LTC5552IUDB.pdf (LTC5552 rev F, Japanese edition)",
+    "abs_max_notes": "p.2: LO input power +10 dBm (1–20 GHz); RF power +20 dBm (3–20 GHz); IF+/IF− power +20 dBm (LF–6 GHz). No DC voltage limit given for LO."
   },
   "pins": [
     {
@@ -26,13 +28,17 @@
       "num": "2",
       "name": "IF+",
       "type": "io",
-      "note": "differential IF DC-6 GHz, DC level 0 V; to balun or differential"
+      "note": "differential IF DC-6 GHz, DC level 0 V; to balun or differential",
+      "max_v": 0.3,
+      "abs_max_ref": "LTC5552IUDB.pdf (5552f, JP ed.) p.2 絶対最大定格 IF+/IF− DC voltage ±0.3 V"
     },
     {
       "num": "3",
       "name": "IF-",
       "type": "io",
-      "note": "differential IF DC-6 GHz, DC level 0 V"
+      "note": "differential IF DC-6 GHz, DC level 0 V",
+      "max_v": 0.3,
+      "abs_max_ref": "LTC5552IUDB.pdf (5552f, JP ed.) p.2 絶対最大定格 IF+/IF− DC voltage ±0.3 V"
     },
     {
       "num": "4",
@@ -45,7 +51,9 @@
       "num": "5",
       "name": "RF",
       "type": "io",
-      "note": "low DC resistance to GND via internal transformer — series DC block required"
+      "note": "low DC resistance to GND via internal transformer — series DC block required",
+      "max_v": 0.1,
+      "abs_max_ref": "LTC5552IUDB.pdf (5552f, JP ed.) p.2 絶対最大定格 RF DC voltage ±0.1 V"
     },
     {
       "num": "6",
@@ -77,7 +85,12 @@
       "vil": [
         0.3,
         "abs"
-      ]
+      ],
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.3
+      },
+      "abs_max_ref": "LTC5552IUDB.pdf (5552f, JP ed.) p.2 絶対最大定格 EN −0.3…VCC+0.3 V"
     },
     {
       "num": "8",
@@ -95,7 +108,9 @@
         3.6
       ],
       "note": "3.3 V regulated, 132 mA typ / 150 max; abs max 4 V; bypass at pin [DS p9: connect to regulated 3.3 V supply with bypass cap near pin]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 4.0,
+      "abs_max_ref": "LTC5552IUDB.pdf (5552f, JP ed.) p.2 絶対最大定格 VCC 4 V"
     },
     {
       "num": "10",

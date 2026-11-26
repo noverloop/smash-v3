@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from MX25V8035FZNI/MX25V8035F_v1.5.pdf (PM2209 Rev 1.5)",
+    "abs_max_notes": "Table 15 note 3: all pins may overshoot to VCC+1.0 V / −1.0 V for up to 20 ns. No rating for EP."
   },
   "pins": [
     {
@@ -21,7 +23,12 @@
       "aliases": [
         "CE#"
       ],
-      "note": "chip select, active low"
+      "note": "chip select, active low",
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "2",
@@ -30,7 +37,12 @@
       "aliases": [
         "SO",
         "SIO1"
-      ]
+      ],
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "3",
@@ -41,7 +53,12 @@
         "SIO2"
       ],
       "note": "internal pull-up only while the pin is physically unconnected; disabled once wired, so drive or pull it if connected; [connect] DS §4 Pin Description note: internal pull-up active only while WP#/SIO2 is physically unconnected",
-      "unused": "open"
+      "unused": "open",
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "4",
@@ -60,7 +77,12 @@
       "aliases": [
         "SI",
         "SIO0"
-      ]
+      ],
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "6",
@@ -68,7 +90,12 @@
       "type": "input",
       "aliases": [
         "SCK"
-      ]
+      ],
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "7",
@@ -79,7 +106,12 @@
         "SIO3"
       ],
       "note": "same pull-up rule as WP#; no RESET# function on this part; [connect] DS §4 Pin Description note: internal pull-up active only while HOLD#/SIO3 is physically unconnected",
-      "unused": "open"
+      "unused": "open",
+      "max_over": {
+        "pin": "VCC",
+        "v": 0.5
+      },
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 applied input/output voltage −0.5…VCC+0.5 V"
     },
     {
       "num": "8",
@@ -93,7 +125,9 @@
         3.6
       ],
       "connect": "supply",
-      "note": "[connect] DS §4 Pin Description: VCC power supply"
+      "note": "[connect] DS §4 Pin Description: VCC power supply",
+      "max_v": 4.0,
+      "abs_max_ref": "MX25V8035F_v1.5.pdf p.64 §12 Table 15 VCC to ground −0.5…4.0 V"
     },
     {
       "num": "9",

@@ -10,7 +10,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from sources/DSC1001CI5-008.0000/DSC1001-family.pdf (DS20005529B)",
+    "abs_max_notes": "DS20005529B p3 gives no supply (VDD) absolute maximum, only Recommended Operating VDD +1.7…+3.6 V; VDD carries no max_v."
   },
   "pins": [
     {
@@ -26,7 +28,12 @@
         -0.3,
         3.9
       ],
-      "note": "High or open = output on (internal pull-up); low = output high-Z (§4.1). Abs max -0.3 V to VDD + 0.3 V"
+      "note": "High or open = output on (internal pull-up); low = output high-Z (§4.1). Abs max -0.3 V to VDD + 0.3 V",
+      "max_over": {
+        "pin": "VDD",
+        "v": 0.3
+      },
+      "abs_max_ref": "DSC1001 DS20005529B p3 §1.0 Absolute Maximum Ratings: Input Voltage VIN −0.3 V…VDD+0.3 V"
     },
     {
       "num": "2",

@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/PESD2CANFD24V-QBZ/PESD2CANFD24V-QBZ.pdf"
   },
   "pins": [
     {
@@ -20,7 +21,11 @@
       "type": "passive",
       "aliases": [
         "CATHODE1"
-      ]
+      ],
+      "max_v_to": {
+        "CC": 24
+      },
+      "abs_max_ref": "PESD2CANFD24V-QB DS p.4 Table 6 Characteristics: VRWM 24 V (bidirectional; Table 5 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "2",
@@ -28,7 +33,11 @@
       "type": "passive",
       "aliases": [
         "CATHODE2"
-      ]
+      ],
+      "max_v_to": {
+        "CC": 24
+      },
+      "abs_max_ref": "PESD2CANFD24V-QB DS p.4 Table 6 Characteristics: VRWM 24 V (bidirectional; Table 5 Limiting values gives no voltage). Stand-off, not a breakdown limit: keep the line's working voltage below it."
     },
     {
       "num": "3",

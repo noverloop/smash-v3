@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       85
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/NCS1-292P/NCS1-292+.pdf (Rev D)",
+    "abs_max_notes": "DS p.1 Maximum Ratings: RF power 3 W, derate linearly to 2 W at 85 C; operating -40..85 C, storage -55..100 C. No DC current or voltage rating given (pads 2/3/4 are DC-connected; DC feed on pad 2 has no specified limit)."
   },
   "pins": [
     {

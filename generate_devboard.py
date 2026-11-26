@@ -1638,6 +1638,10 @@ def main() -> int:
     if rep.any_overflow:
         over = [s for s in rep.per_board if s.overflow]
         print(f"  WARNING: placement overflow: {over}")
+    # the tower's fine-pitch BGA escapes, on the dev board's tiles too
+    from smash.layout.bga_escape import escape_board as _escape_board
+    for _ref, _st in _escape_board(d, boards, G.BGA_ESCAPE_REFS).items():
+        print(f"  BGA escape {_ref} ({_st['board']}): {_st}")
     # ONE KiCad project: dev_board.kicad_pro → .kicad_pcb + .kicad_sch, every
     # footprint linked to its symbol (same route as the tower's stackup project)
     import smash.export.kicad_sch as KS
@@ -1679,6 +1683,21 @@ def main() -> int:
           f"{pv['n_tabs']} tabs, {pv['n_bites']} mouse bites; 6 fiducials; fab sets: "
           + ", ".join(str(v.relative_to(REPO)) for v in pv.get("fab", {}).values()))
     print(f"  LDS escapes: {n_stubs} radial stubs (castellation → r {LDS_STUB_R_MM:g})")
+    # assembly (CPL + BOM from the board's own footprints) + one zip per fab set
+    try:
+        import zipfile
+        from smash.export.assembly import write_assembly
+        asm = write_assembly(pcb, OUT / "fab", G.find_kicad_cli())
+        print(f"  assembly: {asm['cpl'].relative_to(REPO)} + {asm['bom'].relative_to(REPO)} "
+              f"({asm['lines']} lines, {asm['parts']} placed parts"
+              + (f"; NOT in the pos file: {', '.join(asm['missing'][:8])}" if asm["missing"] else "") + ")")
+        for mode, fdir in pv.get("fab", {}).items():
+            zp = OUT / "fab" / f"{DEV}_gerbers_{mode}.zip"
+            with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
+                for f in sorted(fdir.iterdir()):
+                    z.write(f, f.name)
+    except G.KiCadCliNotFound:
+        print("  assembly: SKIPPED (kicad-cli unavailable)")
     import os
     if os.environ.get("SMASH_SKIP_CHECKS") != "1":                 # warnings only
         from smash.export.checks import report as _check_report

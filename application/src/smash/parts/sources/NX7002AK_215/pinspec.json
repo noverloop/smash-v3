@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       150
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/NX7002AK_215/NX7002AK_215.pdf"
   },
   "pins": [
     {
@@ -25,7 +26,11 @@
         -20,
         20
       ],
-      "note": "VGSS ±20 V abs max"
+      "note": "VGSS ±20 V abs max",
+      "max_v_to": {
+        "S": 20
+      },
+      "abs_max_ref": "NX7002AK DS p.3 Table 5 Limiting values: VGS -20..20 V"
     },
     {
       "num": "2",
@@ -42,7 +47,11 @@
       "aliases": [
         "Drain"
       ],
-      "note": "VDSS 60 V"
+      "note": "VDSS 60 V",
+      "max_v_to": {
+        "S": 60
+      },
+      "abs_max_ref": "NX7002AK DS p.3 Table 5 Limiting values: VDS 60 V (Tj 25 C)"
     }
   ]
 }

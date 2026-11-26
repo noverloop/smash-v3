@@ -436,8 +436,11 @@ def _emit_footprint(
     # "unspecified", which the 3D viewer filters separately (models hidden)
     # and pos files skip. Any drilled pad → through_hole, else smd.
     if fp.pads:
-        parts.append("\t\t(attr through_hole)" if any(p.drill_mm is not None for p in fp.pads)
-                     else "\t\t(attr smd)")
+        # not-fitted parts (dual-footprint options) carry KiCad's dnp flag, so
+        # pos files and BOMs exported from the board leave them out
+        _dnp = " dnp" if getattr(chip, "dnp", False) else ""
+        parts.append(f"\t\t(attr through_hole{_dnp})" if any(p.drill_mm is not None for p in fp.pads)
+                     else f"\t\t(attr smd{_dnp})")
     # (2026-11-21) a footprint that carries its OWN copper between its pads
     # (embedded coil: spiral pin 1 → pin 2) is a net tie — without this DRC
     # flags the net-less copper as shorting the two pins.

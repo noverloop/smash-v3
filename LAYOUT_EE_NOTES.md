@@ -88,9 +88,20 @@ radar / QPD), 39.7 mm with the camera nose.
   on In1 and a staggered microvia onto In2. GND balls drop through
   via-in-pad into In1; power balls get via-in-pad + a staggered microvia onto
   In2, where each rail still needs its island and its buried drops to In4 /
-  the bottom-face decoupling. The MP25 land is 0.25 mm (ST AN5489 Fig. 20).
-  Each ball takes the shortest route out to the courtyard; route onward from
-  the stubs.
+  the bottom-face decoupling. The MP25 uses a 0.25 mm NSMD land (ST AN5489
+  Fig. 20), which leaves room for one 0.085 mm track between balls; its
+  stencil aperture needs an area ratio ≥ 0.66 (a 0.08 mm stencil or step there,
+  or a slightly larger aperture than the land), and its via-in-pad microvias
+  leave a 0.05 mm annular ring. The WBA55
+  (Dpad 0.300 mm) and U545 (Dpad 0.280 mm) use their datasheet lands: their
+  escapes leave diagonally between balls or through the via-in-pad. Each ball takes the shortest route out to the courtyard; route
+  onward from the stubs.
+- **Land patterns follow the manufacturers' recommendations** where the
+  library footprint differed (`smash/parts/lands.py`, one datasheet reference
+  per part): AWR1843 Ø0.40 NSMD balls (0.40 mm between balls), SOT23 FETs,
+  TPS62822, LP5907, LTC3124, MCP9808, ADF4351, DSC1001, SiT1533 and LR2021
+  lands trimmed to the datasheet; TPS61175 thermal pad, PNS40010 and
+  PESD36VS1UL lands enlarged to the datasheet.
 - **Pre-routed copper is a starting point**: castellation escape stubs, the LDS
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came

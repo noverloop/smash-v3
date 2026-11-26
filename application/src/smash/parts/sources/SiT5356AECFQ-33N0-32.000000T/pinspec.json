@@ -11,7 +11,9 @@
     "operating_temp_c": [
       -40,
       105
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from SiT5356.pdf (Rev 1.08)",
+    "abs_max_notes": "Table 8 (p9) also gives any input pin −0.3…Vdd+0.3 V; this variant has no input pins in our pinspec (all others NC)."
   },
   "pins": [
     {
@@ -91,7 +93,9 @@
         3.63
       ],
       "note": "44 mA typ / 53 mA max; 0.1 µF within 1-2 mm + 10 µF required; abs max 4 V [connect rule: SiT5356 Table 13: 'Connect to power supply' (+ note 10: 0.1 uF || 10 uF required)]",
-      "connect": "supply"
+      "connect": "supply",
+      "max_v": 4.0,
+      "abs_max_ref": "SiT5356 DS p9 Table 8 Absolute Maximum Limits: continuous Vdd −0.5…4 V"
     },
     {
       "num": "10",

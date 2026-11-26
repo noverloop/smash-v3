@@ -11,7 +11,8 @@
     "operating_temp_c": [
       -55,
       175
-    ]
+    ],
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/PNS40010AERX/PNS40010AER.pdf"
   },
   "pins": [
     {
@@ -20,7 +21,11 @@
       "type": "passive",
       "aliases": [
         "CATHODE"
-      ]
+      ],
+      "max_v_to": {
+        "A": 400
+      },
+      "abs_max_ref": "PNS40010AER DS p.2 Table 5 Limiting values: VRRM 400 V, VR 400 V"
     },
     {
       "num": "2",

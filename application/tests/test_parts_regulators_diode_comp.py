@@ -247,11 +247,10 @@ class TestTPS61175:
         assert fp.name == "SOP65P640X120-15N"
         assert fp.pitch_mm == pytest.approx(0.65)
         assert len(fp.pads) == 15
-        # Exposed-pad geometry — the SamacSys mod draws the EP with a
-        # 90° rotation and (size 2.31 2.46): effective 2.46 wide × 2.31
-        # tall, baked into the model (the Pad has no rotation field).
+        # Exposed pad: TI PWP0014K land pattern example 2.60 × 2.59
+        # (smash.parts.lands — the SamacSys EP was 2.46 × 2.31).
         ep = fp.pad("15")
-        assert ep.size_mm == pytest.approx((2.46, 2.31))
+        assert ep.size_mm == pytest.approx((2.60, 2.59))
 
 
 # ─── MBRS340T3G ──────────────────────────────────────────────────────────

@@ -7,7 +7,8 @@
     "verified_by": "library check 2026-11-24",
     "verified_from_pdf": "https://toshiba.semicon-storage.com/info/docget.jsp?did=29855&prodName=SSM3K35CTC",
     "notes": "Bottom view: 1 (G) top-left, 2 (S) top-right, 3 (D) wide terminal on the opposite edge → top view mirrored. VDSS 20 V, VGSS ±10 V, ID 250 mA. G-S protection diode + gate resistor internal. No recommended land in the datasheet. [height_max_mm: DS p8 Package Dimensions height 0.38 +0.02/-0.03]",
-    "height_max_mm": 0.4
+    "height_max_mm": 0.4,
+    "abs_max_checked": "2026-11-26 from application/src/smash/parts/sources/SSM3K35CTC_L3F/SSM3K35CTC.pdf"
   },
   "pins": [
     {
@@ -20,7 +21,11 @@
       "voltage_range_v": [
         -10,
         10
-      ]
+      ],
+      "max_v_to": {
+        "S": 10
+      },
+      "abs_max_ref": "SSM3K35CTC DS p.2 §4 Absolute Maximum Ratings: VGSS ±10 V"
     },
     {
       "num": "2",
@@ -37,7 +42,11 @@
       "aliases": [
         "Drain"
       ],
-      "note": "VDSS 20 V"
+      "note": "VDSS 20 V",
+      "max_v_to": {
+        "S": 20
+      },
+      "abs_max_ref": "SSM3K35CTC DS p.2 §4 Absolute Maximum Ratings: VDSS 20 V"
     }
   ]
 }

@@ -36,7 +36,10 @@ from smash.state.routing.track import Track
 from smash.state.routing.via import Via
 
 GRID = 0.025
-CLR = 0.075          # copper clearance (NCAB advanced)
+CLR = 0.075          # copper clearance inside the ball field (NCAB advanced)
+CLR_OUT = 0.10       # clearance outside the courtyard (the board's 100 µm rule)
+BAND = 0.15          # inside the courtyard edge, also held at CLR_OUT (the DRC rule
+                     # checks an outside stub against everything near it)
 MARGIN = 0.005       # grid-rounding guard (channel slack is 0.0075 with 0.25 mm lands at 0.5 mm pitch)
 W_ESC = 0.085        # escape track inside the courtyard (one track between 0.25 mm lands)
 W_OUT = 0.120        # stub outside the courtyard (preferred width)
@@ -73,12 +76,12 @@ class _Field:
     def xy(self, i, j):
         return (-self.L + i * GRID, -self.L + j * GRID)
 
-    def blocked(self, layer, net, half) -> np.ndarray:
+    def blocked(self, layer, net, half, clr=CLR) -> np.ndarray:
         m = np.zeros((self.n, self.n), dtype=bool)
         for kind, snet, a, b, sh in self.shapes.get(layer, []):
             if snet == net:
                 continue
-            r = sh + CLR + half + MARGIN
+            r = sh + clr + half + MARGIN
             if kind == "d":
                 lo = self.ij((a[0] - r, a[1] - r)); hi = self.ij((a[0] + r, a[1] + r))
                 sl = (slice(max(lo[0], 0), min(hi[0] + 1, self.n)), slice(max(lo[1], 0), min(hi[1] + 1, self.n)))
@@ -282,13 +285,15 @@ def escape_bga(chip, placement, pin_net: dict, *, board=None, ring_limit_outer: 
             add_via(netname[num], pads[num].position_mm, outer, plane)
 
     inside_mask = (np.abs(field.X) < bound) & (np.abs(field.Y) < bound)
+    core_mask = (np.abs(field.X) < bound - BAND) & (np.abs(field.Y) < bound - BAND)
 
     def route(num, start, layer):
         """Escape at W_ESC inside the courtyard, continuing at W_OUT for
         STUB beyond it; both widths checked against every obstacle."""
         net = netname[num]
-        blk = np.where(inside_mask, field.blocked(layer, net, W_ESC / 2),
-                       field.blocked(layer, net, W_OUT / 2))
+        blk = np.where(core_mask, field.blocked(layer, net, W_ESC / 2),
+                       np.where(inside_mask, field.blocked(layer, net, W_ESC / 2, CLR_OUT),
+                                field.blocked(layer, net, W_OUT / 2, CLR_OUT)))
         x, y = start
         side = min(((bound - x, (1, 0)), (x + bound, (-1, 0)), (bound - y, (0, 1)), (y + bound, (0, -1))))[1]
         path = _astar(field, blk, start, bound + STUB, prefer=side)

@@ -11,7 +11,9 @@
       -30,
       85
     ],
-    "operating_temp_basis": "junction"
+    "operating_temp_basis": "junction",
+    "abs_max_checked": "2026-11-26 from VB1943CAJX_1/DS_vd1943.pdf (DS14880 Rev 3)",
+    "abs_max_notes": "Table 19 rates only the three supplies; no abs max is given for I/O, MIPI CSI-2 or charge-pump pins. ESD HBM ±2 kV, CDM ±500 V."
   },
   "pins": [
     {
@@ -148,7 +150,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "C5",
@@ -158,7 +162,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "C6",
@@ -168,7 +174,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "C7",
@@ -178,7 +186,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "C8",
@@ -188,7 +198,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "C9",
@@ -225,7 +237,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "D8",
@@ -235,7 +249,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "D9",
@@ -285,7 +301,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "F9",
@@ -307,7 +325,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "G3",
@@ -317,7 +337,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "G7",
@@ -327,7 +349,9 @@
         1.7,
         1.9
       ],
-      "note": "1.70-1.90 V (1.80 typ), Table 20"
+      "note": "1.70-1.90 V (1.80 typ), Table 20",
+      "max_v": 2.85,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VDDIO max 2.85 V"
     },
     {
       "num": "G8",
@@ -337,7 +361,9 @@
         1.7,
         1.9
       ],
-      "note": "1.70-1.90 V (1.80 typ), Table 20"
+      "note": "1.70-1.90 V (1.80 typ), Table 20",
+      "max_v": 2.85,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VDDIO max 2.85 V"
     },
     {
       "num": "G9",
@@ -375,7 +401,9 @@
         2.7,
         2.9
       ],
-      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order"
+      "note": "2.70-2.90 V (2.80 typ), Table 20; any power-up order",
+      "max_v": 3.99,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VANA max 3.99 V"
     },
     {
       "num": "H6",
@@ -390,7 +418,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "H8",
@@ -400,7 +430,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "H9",
@@ -410,7 +442,9 @@
         1.05,
         1.26
       ],
-      "note": "1.05-1.26 V (1.15 typ), Table 20"
+      "note": "1.05-1.26 V (1.15 typ), Table 20",
+      "max_v": 1.89,
+      "abs_max_ref": "DS_vd1943.pdf p.38 §7.1 Table 19 VCORE max 1.89 V"
     },
     {
       "num": "J1",
