@@ -73,7 +73,9 @@ in your quotation.
   on castellations, the board edge or in the aft board's piezo pocket.
 
 ### 3.3 Mechanical / board handling
-- The tile edges carry **castellated half-holes** (sleeve contacts): no burrs,
+- The tile edges carry **castellated half-holes** (sleeve contacts): Ø0.50 mm
+  plated holes in Ø0.70 mm pads at 0.80 mm pitch, 0.30 mm between holes
+  (PCBWay normal process: hole ≥ 0.5 mm, edge-to-edge ≥ 0.3 mm). No burrs,
   no solder on the castellations, no paste or flux on the board edge.
 - **Depanelling:** router or saw — **no hand snapping** (MLCC cracking). Sand
   the tab stubs flush with the Ø34.0 mm outline: the sleeve clearance is only

@@ -29,8 +29,11 @@ import sys
 from smash.state import Pin, Pad, Footprint
 
 CAST_PITCH_MM = 0.8            # lane pitch at the rim (sleeve via outer opening ~0.55 mm)
-CAST_DRILL_MM = 0.40           # plated half-hole drill, centred on the outline (2026-11-21: 0.45 → 0.40 so the Ø0.65 pad keeps a 0.125 mm ring, not exactly the 0.10 minimum)
-CAST_PAD_MM = 0.65             # copper annulus Ø on the board faces (tented)
+# Plated half-holes at PCBWay's NORMAL process (capabilities: castellated hole
+# ≥ 0.5 mm, edge-to-edge ≥ 0.3 mm): 0.50 mm at 0.8 mm pitch = 0.30 mm between
+# holes; the Ø0.70 pad keeps a 0.10 mm ring and 0.10 mm copper to its neighbour.
+CAST_DRILL_MM = 0.50           # plated half-hole drill, centred on the outline
+CAST_PAD_MM = 0.70             # copper annulus Ø on the board faces (tented)
 # (2026-11-14) Sector layout of the sleeve, PHYSICAL angles:
 #   • SIGNAL sector centred on 0° (±105° = 210°): every signal / power lane,
 #     on the sleeve's OUTER face, joined to its castellation by a via.

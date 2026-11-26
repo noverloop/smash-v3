@@ -27,13 +27,14 @@ import math
 import pathlib
 
 from smash.parts.castellations import (
-    SEAM_ANGLES_DEG, SEAM_HALF_WIDTH_DEG, CAST_DRILL_MM,
+    SEAM_ANGLES_DEG, SEAM_HALF_WIDTH_DEG,
     SIGNAL_SECTOR_CENTRE_DEG, SIGNAL_SECTOR_HALF_DEG,
 )
 from smash.export.sleeve_step import (SLEEVE_GAP_MM, SLEEVE_WALL_MM,
                                       INNER_FACE_LASERABLE, stack_z_map)
 
 VIA_PAD_MM = 0.75
+SLEEVE_VIA_DRILL_MM = 0.40     # LDS sleeve vias (the LDS shop's process, not the PCB castellations)
 GND_PLANE_MARGIN_MM = 1.0          # plane stops this far from the sector edges
 ANT_WINDOW_MARGIN_MM = 1.5         # plane cut-back round each antenna element
 ANT_FAN_CLEAR_MM = 1.5             # fan diagonals start this far below the antenna copper
@@ -229,7 +230,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                 bn_ = next(b for b in lane["boards"] if b in zmap and abs(sum(zmap[b]) / 2.0 - zc) < 1e-9)
                 xa = X(_x_of(lane.get("board_angles", {}).get(bn_, [fan["top_deg"]])[0], r_out))
                 items.append(f'\t(via (at {xa} {Y(zc)}) (size {VIA_PAD_MM}) '
-                             f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
+                             f'(drill {SLEEVE_VIA_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1
             zd = fan_z[1] - fan_drop.get(net, 0.0)
             items += path([(xt, z_hi), (xt, zd), (xb, fan_z[0]), (xb, z_lo)], w, n)
@@ -244,7 +245,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                           if b in zmap and ang in ba.get(b, lane["angles"]))
             for zc in zs_a:
                 items.append(f'\t(via (at {x} {Y(zc)}) (size {VIA_PAD_MM}) '
-                             f'(drill {CAST_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
+                             f'(drill {SLEEVE_VIA_DRILL_MM}) (layers "F.Cu" "B.Cu") (net {n}))')
                 n_vias += 1
             if kind == "cone_exit" and zs:
                 # runs up to the sleeve's nose rim → continues on the LDS cone
@@ -314,7 +315,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
                      f'(width {round(x1 - x0, 3)}) (layer "F.Cu") (net {n}))')
     for net, xf, zb in feeds:
         if net not in lanes:
-            items.append(f'\t(via (at {X(xf)} {Y(zb)}) (size {VIA_PAD_MM}) (drill {CAST_DRILL_MM}) '
+            items.append(f'\t(via (at {X(xf)} {Y(zb)}) (size {VIA_PAD_MM}) (drill {SLEEVE_VIA_DRILL_MM}) '
                          f'(layers "F.Cu" "B.Cu") (net {nid(net)}))')
             items.append(f'\t(gr_text "{net} feed - RESERVED (no board castellation yet)" '
                          f'(at {X(xf)} {Y(zb) - 1.2:.2f}) (layer "F.SilkS") '
@@ -408,7 +409,7 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
         e, cx, px, row = t
         n = nid(e["net"])
         xc, xp = X(cx), X(px)
-        items.append(f'\t(via (at {xc} {Y(zf)}) (size {VIA_PAD_MM}) (drill {CAST_DRILL_MM}) '
+        items.append(f'\t(via (at {xc} {Y(zf)}) (size {VIA_PAD_MM}) (drill {SLEEVE_VIA_DRILL_MM}) '
                      f'(layers "F.Cu" "B.Cu") (net {n}))')
         zl = z_top - depth.get(id(t), 0) * PLUG_LEVEL_STEP_MM
         pts = [(xc, Y(zf)), (xc, Y(zl)), (xp, Y(zl)), (xp, Y(rows[row][0]))]
