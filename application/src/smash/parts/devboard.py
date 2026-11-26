@@ -159,11 +159,19 @@ def add_b3u_1000p(design, ref: str, **overrides) -> Chip:
 def add_mill_max_0906(design, ref: str, **overrides) -> Chip:
     """Mill-Max 0906-0-15-20-76-14-11-0 — spring-loaded pin (through-hole
     tail): the dev board's aft-fixture contacts."""
-    return _sam(design, ref, pn="0906-0-15-20-76-14-11-0",
+    import math
+    chip = _sam(design, ref, pn="0906-0-15-20-76-14-11-0",
                 part_dir="0906-0-15-20-76-14-11-0", mod="0906015207614110.kicad_mod",
                 package="spring pin", height_mm=5.3, size_mm=(1.8, 1.8), manf="Mill-Max",
                 ring_courtyard=True,                     # SamacSys CrtYd 3.8 mm > the 1.67 mm contact pitch
                 description="Spring-loaded contact pin", **overrides)
+    # ROUND courtyard just outside the Ø1.8 barrel (Ø1.9): the fixture's
+    # staggered pins sit 2.17 mm apart, and a rectangular envelope clips its
+    # diagonal neighbours although the barrels keep 0.37 mm
+    r = 0.95
+    chip.footprint.courtyard = [(round(r * math.cos(math.radians(a)), 4),
+                                 round(r * math.sin(math.radians(a)), 4)) for a in range(0, 360, 15)]
+    return chip
 
 
 def add_mill_max_5849(design, ref: str, **overrides) -> Chip:

@@ -7443,6 +7443,12 @@ def main() -> int:
                 tuple(pl.position_mm) for pl in boards["aft_end_board"].chip_placements
                 if pl.face == "bottom" and pl.item.ref.startswith(("P_ACT_",) + _AFT_CUTTER_PADS)]
         _ac = write_aft_cap(_cast_contract, _MAXIMALIST_DIR / "sleeve" / "aft_end_cap")
+        if _ac and _ac["missing"]:
+            # the battery-zone fan solver found no order-preserving assignment:
+            # it would otherwise ship a cap with every crown tooth on GND
+            raise RuntimeError(f"aft_end_cap: no crown tooth for {len(_ac['missing'])} net(s) "
+                               f"({', '.join(_ac['missing'][:8])}…) — the battery-zone fan "
+                               "does not fit (lane widths / count changed?)")
         if _ac:
             print(f"  aft_end_cap: {_ac['n_signal']} crown contacts, solid "
                   f"{'ok' if _ac['valid'] and _ac['solids'] == 1 else 'INVALID'} (7075 disc + PEEK-LDS crown) → "

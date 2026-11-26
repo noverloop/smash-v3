@@ -33,8 +33,14 @@ from smash.parts.castellations import (
 from smash.export.sleeve_step import (SLEEVE_GAP_MM, SLEEVE_WALL_MM,
                                       INNER_FACE_LASERABLE, stack_z_map)
 
-VIA_PAD_MM = 0.75
-SLEEVE_VIA_DRILL_MM = 0.40     # LDS sleeve vias (the LDS shop's process, not the PCB castellations)
+# Sleeve "vias": a MECHANICALLY drilled hole through the wall (the inner bore
+# cannot be lasered, so nothing is plated inside); the castellation's solder
+# fills it from the inside up to this LDS land on the outer face. Land 0.64 mm
+# (0.12 mm ring) keeps neighbouring lanes' lands 0.20 mm apart at the
+# 0.842 mm outer-face lane pitch (LPKF DR_013 recommended spacing).
+VIA_PAD_MM = 0.64
+SLEEVE_VIA_DRILL_MM = 0.40     # mechanical drill, solder-filled
+LDS_MIN_WIDTH_MM, LDS_MIN_SPACE_MM = 0.15, 0.20   # LPKF LDS-MID DR_013 (recommended)
 GND_PLANE_MARGIN_MM = 1.0          # plane stops this far from the sector edges
 ANT_WINDOW_MARGIN_MM = 1.5         # plane cut-back round each antenna element
 ANT_FAN_CLEAR_MM = 1.5             # fan diagonals start this far below the antenna copper

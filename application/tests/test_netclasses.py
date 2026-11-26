@@ -78,3 +78,14 @@ def test_dru_rules_follow_the_fab_rules():
     assert "Micro" in dru and "hole_to_hole" in dru          # no stacked microvias
     assert "HV_33V" in dru
     assert N.CLASSES["Default"]["width"] == 0.125
+
+
+def test_ddr_skew_rules_cover_every_timed_ddr_net():
+    from smash.roots import git_repo_root
+    nets = {n["name"] for n in json.loads(
+        (git_repo_root() / "dist" / "maximalist_canonical_netlist.json").read_text())["nets"]}
+    ddr = {n for n in nets if n.startswith("DDR3L_")} - {"DDR3L_VREF", "DDR3L_ZQ", "DDR3L_RESET_N"}
+    grouped = {n for _t, ns, _mm in N.DDR_SKEW_RULES for n in ns}
+    assert grouped == ddr, (sorted(ddr - grouped), sorted(grouped - ddr))
+    dru = N.build_dru("")
+    assert dru.count("(constraint skew") == 4 and "(max 1.42mm)" in dru and "(max 12.07mm)" in dru

@@ -69,10 +69,14 @@ def report(pcbs=(), schematics=(), root=None) -> None:
                 c = fn(f)
             except Exception:
                 c = None
+            # length matching (DDR skew) is only meaningful on routed nets: on
+            # the escape-only boards it is reported apart, not as an error
+            pre = c.pop("skew_out_of_range", 0) if c is not None else 0
+            tail = f" (+ {pre} DDR skew — expected until routed)" if pre else ""
             if c is None:
                 print(f"  {kind} {rel(f)}: SKIPPED (kicad-cli unavailable or failed)")
             elif not c:
-                print(f"  {kind} {rel(f)}: clean")
+                print(f"  {kind} {rel(f)}: clean{tail}")
             else:
                 cats = ", ".join(f"{k} {n}" for k, n in c.most_common())
-                print(f"  WARN {kind} {rel(f)}: {sum(c.values())} error(s) — {cats}")
+                print(f"  WARN {kind} {rel(f)}: {sum(c.values())} error(s) — {cats}{tail}")

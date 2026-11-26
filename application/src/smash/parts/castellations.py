@@ -784,7 +784,7 @@ def _aft_cap_contract(design, lanes: dict, rigid: list, r: float, gnd,
     # further apart, and a wide lane's jog is limited to tan φ ≤ JOG_TAN over
     # the zone (≈ cell length) — keeps ≥ the LDS clearance along the diagonal.
     from smash.layout.boards.smash_evb_v1 import BATTERY_LENGTH_MM
-    R_SKIN, CLR, JOG_TAN = 17.9, 0.15, 0.45
+    R_SKIN, CLR, JOG_TAN = 17.9, 0.20, 0.45      # CLR: LDS spacing (LPKF DR_013, recommended)
     jog_max = math.degrees(JOG_TAN * (BATTERY_LENGTH_MM - 2.0) / R_SKIN)
     wid = lambda it: lanes[it[2]].get("width_mm", 0.2)
     def sep_q(a, b):

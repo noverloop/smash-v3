@@ -251,6 +251,36 @@ def fine_pitch_array_refs(pcb_text: str, max_pitch_mm: float = 0.55) -> list[str
     return sorted(set(refs))
 
 
+# DDR3L length matching (AN5724 / AN5489 budget, the DDR_SE55 note). KiCad's
+# skew constraint groups every net its condition matches and checks each
+# against the LONGEST of the group, so "each within X of the longest" also
+# bounds every pair by X (stricter than ±X around one reference net). Lengths
+# here are board copper only: enter the MP25 / DDR3L package lengths as pad
+# die lengths before tuning, or the budget is not "incl. package".
+_DDR_BYTE = {k: [f"DDR3L_DQ{i}" for i in range(8 * k, 8 * k + 8)]
+             + [f"DDR3L_DM{k}", f"DDR3L_DQS{k}_P", f"DDR3L_DQS{k}_N"] for k in (0, 1)}
+_DDR_AC = ([f"DDR3L_A{i}" for i in range(15)] + [f"DDR3L_BA{i}" for i in range(3)]
+           + ["DDR3L_RAS_N", "DDR3L_CAS_N", "DDR3L_WE_N", "DDR3L_CS_N", "DDR3L_CKE", "DDR3L_ODT",
+              "DDR3L_CK_P", "DDR3L_CK_N"])
+_DDR_STROBE = ["DDR3L_DQS0_P", "DDR3L_DQS0_N", "DDR3L_DQS1_P", "DDR3L_DQS1_N", "DDR3L_CK_P", "DDR3L_CK_N"]
+DDR_SKEW_RULES = (
+    ("DDR3L byte 0: DQ0-7 / DM0 / DQS0 within 1.42 mm", _DDR_BYTE[0], 1.42),
+    ("DDR3L byte 1: DQ8-15 / DM1 / DQS1 within 1.42 mm", _DDR_BYTE[1], 1.42),
+    ("DDR3L address / command / control with CK within 3.55 mm", _DDR_AC, 3.55),
+    ("DDR3L DQS0 / DQS1 with CK within 12.07 mm", _DDR_STROBE, 12.07),
+)
+
+
+def ddr_skew_rules() -> str:
+    out = []
+    for title, nets, mm in DDR_SKEW_RULES:
+        cond = " || ".join(f"A.NetName == '{n}'" for n in nets)
+        out.append(f'(rule "{title} (AN5724; board copper only — add package lengths as pad die lengths)"\n'
+                   f'  (condition "{cond}")\n'
+                   f'  (constraint skew (max {mm:g}mm)))\n')
+    return "".join(out)
+
+
 def build_dru(pcb_text: str = "") -> str:
     """The project's custom rules: the via / HV rules, and 0.125 mm tracks
     outside the fine-pitch BGA ball fields (100 µm track and clearance are the
@@ -258,9 +288,10 @@ def build_dru(pcb_text: str = "") -> str:
     refs = fine_pitch_array_refs(pcb_text) if pcb_text else []
     cond = "A.Type == 'Track'" + "".join(f" && !A.intersectsCourtyard('{r}')" for r in refs)
     note = ", ".join(refs) if refs else "none on this board"
+    ddr = ddr_skew_rules() if (not pcb_text or "DDR3L_DQ0" in pcb_text) else ""
     return _DRU_HEAD + (f'(rule "Track ≥ {W_MIN:g} mm outside fine-pitch BGA ball fields ({note})"\n'
                         f'  (condition "{cond}")\n'
-                        f'  (constraint track_width (min {W_MIN:g}mm)))\n')
+                        f'  (constraint track_width (min {W_MIN:g}mm)))\n') + ddr
 
 
 def kicad_classes() -> list[dict]:

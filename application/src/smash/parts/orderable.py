@@ -117,6 +117,11 @@ def apply_orderable(design) -> int:
         if r:
             placeholder = c.manf_pn
             c.manf_pn, c.manf = r
+            # the description still named the placeholder family: AVX SQCS
+            # (obsolete, 250 V) → the fitted KEMET C0603C…5GAC (C0G, 50 V)
+            if placeholder.startswith("SQCSVA") and c.description:
+                c.description = re.sub(r"AVX SQCS 0603 RF/microwave C0G MLC, ([\d.]+pF), 250 V",
+                                       r"KEMET 0603 C0G MLCC, \1, 50 V", c.description)
             c.note = (c.note or "") + f"\n\n[orderable] placeholder '{placeholder}' → {r[0]} ({r[1]})."
             n += 1
     return n
