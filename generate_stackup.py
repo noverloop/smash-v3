@@ -1852,17 +1852,12 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
             _net(d, "GND").connect(dtc.pin(pn))
         _net(d, "3V3").connect(dtc.pin("VDD"))
         cap_to_gnd(d, "3V3", "100nF", ref=f"C_{ref[2:]}_VDD", board_tag=BTAG, pin=dtc.pin("VDD"))
-        _net(d, "LR_DTC_SCL_LV").connect(dtc.pin("SCL"))
-        _net(d, "LR_DTC_SDA_LV").connect(dtc.pin("SDA"))
-        _net(d, f"{sen}_LV").connect(dtc.pin("SEN"))
-    # (2026-11-21) PE64906 logic HIGH max 3.1 V (DS p.3 Table 2, no I/O abs
-    # max) but the WBA drives 3.3 V → a 220 Ω / 1 kΩ divider per line
-    # (2.70 V, 2.84 V at +5 %); ~180 Ω source keeps edges ≈ 2 ns (≤ 6.5 ns,
-    # DS Table 5). SCL/SDA dividers sit AFTER the ADF4351 branch (it keeps
-    # 3.3 V). Firmware: idle the lines LOW (≈ 2.7 mA per line while high).
-    for line in ("LR_DTC_SCL", "LR_DTC_SDA", "LR_DTC_SEN1", "LR_DTC_SEN2"):
-        res_between(d, line, f"{line}_LV", "220", ref=f"R_{line[3:]}_TOP", board_tag=BTAG)
-        res_between(d, f"{line}_LV", "GND", "1k", ref=f"R_{line[3:]}_BOT", board_tag=BTAG)
+        # PE64904 control inputs take 3.3 V directly (VIH 1.2–3.6 V, DS Table 2);
+        # SCL / SDA / SEN edges must stay ≤ 6.5 ns (DS Table 5) → driven
+        # straight from normal-speed WBA GPIOs (no divider, no slow pin).
+        _net(d, "LR_DTC_SCL").connect(dtc.pin("SCL"))
+        _net(d, "LR_DTC_SDA").connect(dtc.pin("SDA"))
+        _net(d, sen).connect(dtc.pin("SEN"))
 
     # ── ONE 2.4 GHz slot (S1) shared by the LR2021 and BLE (2026-11-17,
     # user: S3 merged into S1 — with PEEK gap rings S1 peaks at 2.44-2.48 GHz;
@@ -4100,7 +4095,15 @@ def build_wakeup_board(d: Design) -> None:
         _net(d, "BAT_PROT")    .connect(qmain.pin(_sp))   # Source
     for _dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
         _net(d, "REG_IN_MAIN") .connect(qmain.pin(_dp))   # Drain
-    _net(d, "MAIN_SW_GATE") .connect(qmain.pin("G"))      # Gate
+    # Gate through 10 k + 10 nF gate–drain (Miller): the wake / hold FETs pull
+    # MAIN_SW_GATE low hard, so without it QMAIN switched in ~1 µs into
+    # REG_IN_MAIN's bulk (est. 40–85 A peak vs the PMPB15XP's 33 A pulse
+    # rating). With it the drain slews ≈ 25 V/ms → ≈ 0.5 A into 22 µF,
+    # fully on in ≈ 0.2 ms. Turn-off is unchanged (the 1 M / 100 nF hold).
+    _net(d, "QMAIN_G") .connect(qmain.pin("G"))           # Gate
+    res_between(d, "MAIN_SW_GATE", "QMAIN_G", "10k", ref="R_QMAIN_G", board_tag="power_board")
+    cap_to_gnd(d, "QMAIN_G", "10nF", gnd_net="REG_IN_MAIN", ref="C_QMAIN_GD", board_tag="power_board",
+               pin=qmain.pin("G"))
 
     # Gate pull-up on BAT_RAW (the always-live cell rail): holds QMAIN
     # off in shelf. With the eFuse gone, BAT_PROT is now ALIVE in shelf
@@ -4110,8 +4113,7 @@ def build_wakeup_board(d: Design) -> None:
     # Q_EXT_WAKE (power_board), which joins this gate's open-drain OR.
     res_between(d, "BAT_RAW", "MAIN_SW_GATE", "1M",
                 ref="RMAIN_PU",     board_tag=BTAG)
-    cap_to_gnd(d, "MAIN_SW_GATE", "100nF", ref="CMAIN_HOLD", board_tag="power_board", feature="bottom",
-               pin=qmain.pin("G"))
+    cap_to_gnd(d, "MAIN_SW_GATE", "100nF", ref="CMAIN_HOLD", board_tag="power_board", feature="bottom")
 
     # (Q_EFEN removed with the eFuse — there is no longer an eFuse EN to
     # gate. The wake now self-sequences through Q_ISO's body diode:
@@ -4595,7 +4597,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "LR_DTC_SCL") .connect(wba.pin("PA7"))
     _net(d, "LR_DTC_SDA") .connect(wba.pin("PA8"))
     _net(d, "LR_DTC_SEN1").connect(wba.pin("PA9"))
-    _net(d, "LR_DTC_SEN2").connect(wba.pin("PC15__OSC32__OUT"))  # low-drive pin: fine for a latch line
+    _net(d, "LR_DTC_SEN2").connect(wba.pin("PB6"))   # normal-speed pin: SEN edges ≤ 6.5 ns (PE64904 DS Table 5)
     # S4 transverter (2026-11-18, _build_transverter) on spare UFBGA59 GPIO —
     # all on 3V3 parts: hold LOW / Hi-Z while 3V3 is off. LO SPI CLK/DATA
     # share LR_DTC_SCL/SDA above; the T/R and IF switches run off LR2021 DIOs.
@@ -4603,7 +4605,7 @@ def build_wakeup_board(d: Design) -> None:
     _net(d, "XV_LO_CE")   .connect(wba.pin("PA10"))   # ADF4351 CE (100 k pull-down)
     _net(d, "XV_LO_MUX")  .connect(wba.pin("PB11"))   # ADF4351 MUXOUT (lock detect / readback) in
     _net(d, "XV_MIX_EN")  .connect(wba.pin("PA11"))   # LTC5549 EN
-    _net(d, "XV_LNA_EN")  .connect(wba.pin("PB6"))    # GRF2073W VENABLE
+    _net(d, "XV_LNA_EN")  .connect(wba.pin("PC15__OSC32__OUT"))   # GRF2073W VENABLE: static enable — fine on the slow backup-domain pin
     _net(d, "XV_PA_EN")   .connect(wba.pin("PB7"))    # → EN level shift → MCP1640B → XV_5V → GRF5126
 
     # PA6/PA7 (freed by the H3LIS→M33 move) re-tasked for the optical

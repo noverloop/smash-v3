@@ -127,6 +127,9 @@ HV = {"ACTIVATE_HV", "ACTIVATE_SW", "PARACHUTE_CUTTER_ACTIVATE", "PARACHUTE_CUTT
       "PARACHUTE_CUTTER_ACTIVATE_GD"}
 PACK = {"BAT_CELL1_POS", "BAT_CELL2_POS", "BAT_CELL3_POS", "BAT_RAW", "BAT_PROT",
         "REG_IN_MAIN", "COMP_5V_RAW"}
+# dev board only: bench input → protection → meter → tower / flat feeds
+DEV_PACK = {"DEV_BENCH_IN", "DEV_INPROT_S", "DEV_BENCH", "DEV_FEED", "TWR_EXT_VIN"}
+DEV_P_LOW = {"DEV_VBUS", "DEV_3V3"}
 P1A = {"COMP_5V", "XV_5V", "EXT_VIN", "AWR_1V2", "AWR_1V3", "AWR_1V3_BK", "AWR_1V8", "AWR_1V8_BK",
        "COMP_0V82", "COMP_0V9", "COMP_1V35", "COMP_1V8", "3V3", "CAM_VCORE_1V15"}
 P_LOW = {"3V3_AON", "TMR_VDD", "MAG_1V8", "COMP_1V8_AON", "COMP_2V8", "COMP_3V3", "LR_VBAT",
@@ -152,8 +155,9 @@ _RULES: list[tuple[str, re.Pattern]] = [
 
 
 def classify(name: str) -> str:
-    """Net class for a net name (aliases such as `FOO__MPU` follow `FOO`)."""
-    base = re.sub(r"__(MPU|WBA|FIN)$", "", name)
+    """Net class for a net name (aliases such as `FOO__MPU` and the dev
+    board's per-tile split nets `FOO__RADAR` follow `FOO`)."""
+    base = re.sub(r"__[A-Z][A-Z0-9_]*$", "", name)
     if base in HV or name == "ACTIVATE_SW":
         return "HV_33V"
     for cls, pat in _RULES[:1]:
@@ -165,7 +169,7 @@ def classify(name: str) -> str:
         return "RF_DIFF100"
     if base in ("EXT_CAN_P", "EXT_CAN_N"):
         return "CAN_PAIR"
-    if base in PACK:
+    if base in PACK or base in DEV_PACK:
         return "PWR_PACK"
     for cls, pat in _RULES[1:]:
         if pat.search(base):
@@ -176,7 +180,7 @@ def classify(name: str) -> str:
         return "ANALOG_HIZ"
     if base in P1A:
         return "PWR_1A"
-    if base in P_LOW:
+    if base in P_LOW or base in DEV_P_LOW:
         return "PWR_LOW"
     return "Default"
 

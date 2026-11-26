@@ -221,12 +221,6 @@ PINSPEC_EXEMPT = {
     "STM32WBA55UGI7": "ball map checked against CubeMX",
     "STM32U545REI6Q": "ball map checked against CubeMX",
     "STM32U535CBU6": "ball map checked against CubeMX",
-    "MT41K256M16TW-107 IT:P": "compute board: manual / vendor check pending",
-    "MT29F4G01ABAFDWB-IT:F": "compute board: manual / vendor check pending",
-    "VB1943CAJX/1": "camera board: manual / vendor check pending",
-    "LP5907MFX-2.8/NOPB": "camera board (DNP): manual check pending",
-    "DSC1001CI1-027.0000": "camera board: manual check pending",
-    "SIT1533AI-H4-DCC-32.768E": "compute board: manual check pending",
 }
 
 

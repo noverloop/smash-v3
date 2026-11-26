@@ -164,16 +164,16 @@ def test_s1_tuner_is_two_dtcs_around_the_series_l(design):
     ends = _two_ended(design, lpf)
     wba = _chip(design, "U_WBA")
     for ref, sen, wpin in (("U_LR_DTC1", "LR_DTC_SEN1", "PA9"),
-                           ("U_LR_DTC2", "LR_DTC_SEN2", "PC15__OSC32__OUT")):
+                           ("U_LR_DTC2", "LR_DTC_SEN2", "PB6")):   # normal-speed pins (SEN edges ≤ 6.5 ns)
         dtc = _chip(design, ref)
         assert dtc.manf_pn == "PE64904D-Z"     # (2026-11-22) PE64906B-Z 0 stock
         rf = {_net(design, dtc, p) for p in ("RF+_1", "RF+_2")}
         assert len(rf) == 1 and rf <= ends
         gnd = _net(design, _chip(design, "U_LR"), "GND")
         assert {_net(design, dtc, p) for p in ("RF-_1", "RF-_2", "GND_1", "GND_2")} == {gnd}   # PE64904: no EP
-        # (2026-11-21) through a 220 Ω / 1 kΩ divider (PE64906 VIH max 3.1 V)
-        assert _net(design, dtc, "SEN") == f"{sen}_LV" and _net(design, wba, wpin) == sen
-        assert _net(design, dtc, "SCL") == "LR_DTC_SCL_LV" and _net(design, wba, "PA7") == "LR_DTC_SCL"
-        assert _net(design, dtc, "SDA") == "LR_DTC_SDA_LV" and _net(design, wba, "PA8") == "LR_DTC_SDA"
+        # direct 3.3 V drive: PE64904 VIH 1.2–3.6 V (DS Table 2) — no divider
+        assert _net(design, dtc, "SEN") == sen == _net(design, wba, wpin)
+        assert _net(design, dtc, "SCL") == "LR_DTC_SCL" == _net(design, wba, "PA7")
+        assert _net(design, dtc, "SDA") == "LR_DTC_SDA" == _net(design, wba, "PA8")
     assert _net(design, _chip(design, "U_LR_DTC1"), "RF+_1") != \
         _net(design, _chip(design, "U_LR_DTC2"), "RF+_1")

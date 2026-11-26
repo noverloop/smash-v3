@@ -40,6 +40,22 @@ def test_rf_and_power_lists_name_real_nets():
         assert not missing, f"class lists name nets that do not exist: {missing}"
 
 
+def test_dev_power_lists_name_real_dev_nets():
+    import contextlib, io, sys
+    from smash.roots import git_repo_root
+    root = str(git_repo_root())
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    import generate_devboard as GD
+    with contextlib.redirect_stdout(io.StringIO()):
+        d, _r, _l = GD.build_design()
+    nets = {n.name for n in d.nets}
+    missing = sorted((N.DEV_PACK | N.DEV_P_LOW) - nets)
+    assert not missing, f"dev-board power lists name nets that do not exist: {missing}"
+    assert all(N.classify(n) == "PWR_PACK" for n in N.DEV_PACK)
+    assert all(N.classify(n) == "PWR_LOW" for n in N.DEV_P_LOW)
+
+
 def test_project_file_carries_classes(tmp_path):
     pcb = tmp_path / "x.kicad_pcb"
     pcb.write_text('(kicad_pcb (net "BAT_PROT") (net "DDR3L_A0") (net "FOO"))')

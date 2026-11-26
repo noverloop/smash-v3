@@ -105,8 +105,10 @@ radar / QPD), 39.7 mm with the camera nose.
   TPS62822, LP5907, LTC3124, MCP9808, ADF4351, DSC1001, SiT1533 and LR2021
   lands trimmed to the datasheet; TPS61175 thermal pad, PNS40010 and
   PESD36VS1UL lands enlarged to the datasheet.
-- **Pre-routed copper is a starting point**: castellation escape stubs, the LDS
-  sleeve bus (radial stubs → r 19.6), and the activation_interface reference
+- **Pre-routed copper is a starting point**: castellation escape stubs (0.4 mm
+  on power nets), the LDS sleeve bus of signal lanes (power rails are NOT in
+  the dev-board bus: route them as pours per their net class), and the
+  activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came
   from Freerouting with ONE rule (100 µm / 75 µm, 0.45/0.20 via) — all nets at
   4 mil including ACTIVATE_HV (≤ 15.9 V) and BAT_RAW: **re-route those nets to

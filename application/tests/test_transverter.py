@@ -162,7 +162,7 @@ def test_rx_chain_lna_between_the_switches(design):
     assert _other_end(design, "C_XV_LNA_OUT", _net(design, lna, "RF_OUT")) == _net(design, tr1, "RF1")
     ven = _net(design, lna, "VENABLE")
     assert _other_end(design, "R_XV_LNA_VEN", ven) == "XV_LNA_EN" == \
-        _net(design, _chip(design, "U_WBA"), "PB6")
+        _net(design, _chip(design, "U_WBA"), "PC15__OSC32__OUT")   # static enable on the slow pin
     assert _net(design, _chip(design, "U_XV_MIX"), "EN") == "XV_MIX_EN" == \
         _net(design, _chip(design, "U_WBA"), "PA11")
 

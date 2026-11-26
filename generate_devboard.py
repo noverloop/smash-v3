@@ -291,7 +291,15 @@ def build_diag(d) -> dict:
     qb = add_dmn6075sq_7(d, ref="Q_DEV_INPROT_B", **T)
     N("DEV_BENCH_IN").connect(qa.pin("D")); N("DEV_INPROT_S").connect(qa.pin("S"))
     N("DEV_INPROT_S").connect(qb.pin("S")); N("DEV_BENCH").connect(qb.pin("D"))
-    N("DEV_INPROT_G").connect(qa.pin("G")); N("DEV_INPROT_G").connect(qb.pin("G"))
+    # gate network per LTC4365 DS p.14 / Fig. 14: 10 Ω into each FET gate (no HF
+    # oscillation) and R_GATE 5.1 k + C_GATE 4.7 nF → the GATE slews 20 µA / 4.7 nF,
+    # so the 47 µF bench cap charges at ≈ 0.2 A (it was ≈ 15–19 A, over the
+    # DMN6075's 12 A peak); R_GATE keeps C_GATE out of the fast fault turn-off.
+    res_between(d, "DEV_INPROT_G", "DEV_INPROT_GA", "10", ref="R_DEV_INPROT_GA", **T)
+    res_between(d, "DEV_INPROT_G", "DEV_INPROT_GB", "10", ref="R_DEV_INPROT_GB", **T)
+    N("DEV_INPROT_GA").connect(qa.pin("G")); N("DEV_INPROT_GB").connect(qb.pin("G"))
+    res_between(d, "DEV_INPROT_G", "DEV_INPROT_GC", "5.1k", ref="R_DEV_INPROT_GATE", **T)
+    cap_to_gnd(d, "DEV_INPROT_GC", "4.7nF", ref="C_DEV_INPROT_GATE", **T)
     N("DEV_BENCH_IN").connect(pc.pin("VIN")); N("DEV_BENCH").connect(pc.pin("VOUT"))
     N("DEV_INPROT_G").connect(pc.pin("GATE")); N("GND").connect(pc.pin("GND"))
     res_between(d, "DEV_BENCH_IN", "DEV_INPROT_SHDN", "100k", ref="R_DEV_INPROT_SHDN", **T)   # DS: ≥ 100 k if VIN can go negative
@@ -354,11 +362,15 @@ def build_diag(d) -> dict:
         # (seat lines, overvoltage cut-off) can pull it low whatever firmware does
         lsg = f"DEV_{tag}_PWR_LSG"
         N(lsg).connect(qn.pin("1"))
-        # soft start: 4.7 k gate drive + 22 nF gate-drain (Miller) → the P-FET
-        # ramps the output over ≈ 1 ms instead of µs into the tower's bulk caps
+        # soft start: 22 k gate drive + 150 nF gate-drain (Miller). On the
+        # plateau ≈ 2.4 V / 22 k ≈ 110 µA (3.6 V flat feed) → ≈ 0.7 V/ms: the
+        # output ramps over ≈ 5 ms, ≈ 0.3 A into 390 µF (the 5.6 V tower feed
+        # ≈ 1.3 V/ms, ≈ 4 ms). Fully on: V_GS = −feed × 100k / 122k (−2.9 V at
+        # 3.6 V). Turn-off through the 100 k pull-up ≈ 15 ms — the LTC4365
+        # ahead still cuts an over-voltage in ≈ 1 µs.
         _gd = f"DEV_{tag}_PWR_GD"
-        res_between(d, _gd, f"DEV_{tag}_PWR_G", "4.7k", ref=f"R_DEV_{tag}_PWR_GS", **T)
-        cap_to_gnd(d, f"DEV_{tag}_PWR_G", "22nF", gnd_net=out_net, ref=f"C_DEV_{tag}_PWR_SS", **T)
+        res_between(d, _gd, f"DEV_{tag}_PWR_G", "22k", ref=f"R_DEV_{tag}_PWR_GS", **T)
+        cap_to_gnd(d, f"DEV_{tag}_PWR_G", "150nF", gnd_net=out_net, ref=f"C_DEV_{tag}_PWR_SS", **T)
         res_between(d, en, lsg, "1k", ref=f"R_DEV_{tag}_PWR_S", **T)
         res_between(d, lsg, "GND", "100k", ref=f"R_DEV_{tag}_PWR_PD", **T)
         if tag == "TWR":
@@ -617,6 +629,12 @@ def build_diag(d) -> dict:
         uf = DB.add_u_fl_r_smt_1(d, ref=f"J_DEV_{net[4:]}", **T)
         # Hirose land: pad 3 = SIG (the small centre pad), pads 1/2 = the shell's GND tabs
         N(net).connect(uf.pin("3")); N("GND").connect(uf.pin("1")); N("GND").connect(uf.pin("2"))
+    # SYS_I2C on the dev board carries the bus + header capacitance on top of
+    # the tower's (≈ 271 ns rise with the tower's 4.7 k alone vs 300 ns at
+    # 400 kHz): a second 4.7 k pair → 2.35 k. To the TOWER's 3V3 (not DEV_3V3)
+    # so the strip never back-powers an unpowered tower through the bus.
+    res_between(d, "3V3", "SYS_I2C_SCL", "4.7k", ref="RPU_DEV_SYS_SCL", **T)
+    res_between(d, "3V3", "SYS_I2C_SDA", "4.7k", ref="RPU_DEV_SYS_SDA", **T)
     return locks
 
 
@@ -1348,6 +1366,13 @@ def _tabs(cast_deg, key, n=3):
 
 LDS_STUB_R_MM = ROUT_MM[1] + 0.6      # stubs end just outside the cut line
 LDS_STUB_W_MM = 0.125                 # the 125 µm track class outside the BGA fields
+LDS_STUB_PWR_W_MM = 0.4               # power-class nets (fits the 0.8 mm castellation pitch)
+_PWR_CLASSES = ("PWR_PACK", "PWR_1A", "PWR_LOW")
+
+
+def _is_power_net(net: str) -> bool:
+    from smash.layout.netclasses import classify
+    return classify(net) in _PWR_CLASSES
 
 
 SILK_TEXT_MM, SILK_STROKE_MM = 1.0, 0.15     # printable silkscreen (fab minimum)
@@ -1497,8 +1522,9 @@ def add_lds_stubs(pcb) -> int:
                 pts.append((fx + vx * rs, fy + vy * rs))
             for j, ((sx_, sy_), (ex, ey)) in enumerate(zip(pts, pts[1:])):
                 u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/lds/{m[1]}/{pm[1]}" + (f"/{j}" if j else ""))
+                w = LDS_STUB_PWR_W_MM if _is_power_net(net) else LDS_STUB_W_MM
                 segs.append(f'\t(segment\n\t\t(start {sx_:.4f} {sy_:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
-                            f'\t\t(width {LDS_STUB_W_MM})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
+                            f'\t\t(width {w})\n\t\t(layer "F.Cu")\n\t\t(net "{net}")\n'
                             f'\t\t(uuid "{u}")\n\t)')
     end = txt.rstrip().rfind(")")
     pcb.write_text(txt[:end] + "\n".join(segs) + "\n" + txt[end:])
@@ -1542,6 +1568,8 @@ def add_lds_bus(pcb, lay) -> dict:
         net = ln.get("net", key)
         if net not in pad_nets:
             continue
+        if _is_power_net(net):
+            continue        # power rails: routed as pours per their net class, not 0.125 mm bus lanes
         xs = [cx[b] for b in ln.get("boards", []) if b in cx]
         if not xs:
             continue

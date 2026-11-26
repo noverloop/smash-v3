@@ -215,7 +215,8 @@
       "num": "D1",
       "name": "GPIO3",
       "type": "reserved",
-      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both",
+      "unused": "open"
     },
     {
       "num": "D2",
@@ -262,7 +263,8 @@
       "num": "E1",
       "name": "GPIO2",
       "type": "reserved",
-      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both",
+      "unused": "open"
     },
     {
       "num": "E2",
@@ -285,7 +287,8 @@
       "num": "F1",
       "name": "GPIO1",
       "type": "reserved",
-      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both",
+      "unused": "open"
     },
     {
       "num": "F2",
@@ -315,7 +318,8 @@
       "num": "G1",
       "name": "GPIO0",
       "type": "reserved",
-      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both"
+      "note": "GPIO / strobe (fail-safe, VDDIO); internal pull-down in every state but HW_STANDBY (Table 11) — may float when unused; 'reserved' allows both",
+      "unused": "open"
     },
     {
       "num": "G2",
