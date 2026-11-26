@@ -162,3 +162,51 @@ def add_uj20_c_v_g_smt_23b_p16_tr_x5(design, ref: str, **overrides) -> Chip:
     )
     fields.update(overrides)
     return design.add_chip(ref=ref, **fields)
+
+
+# Distance from the footprint origin to its "PCB EDGE" fab line (vendor mod,
+# y-down +1.825): placed so this line lies on the board outline, the shell
+# overhangs the edge by 0.9 mm.
+CX90B_EDGE_OFFSET_MM = 1.825
+
+
+def add_cx90b_16p(design, ref: str, **overrides) -> Chip:
+    """Hirose CX90B-16P — USB-C **2.0** receptacle, horizontal **top-mount**
+    (on-board: the shell sits on the board surface, no cutout), 16 contacts,
+    SMT signal row at 0.40 mm pitch + SMT shell pads SH5/SH6 + four
+    through-hole shell posts in slots (SH1-SH4) + two MID-plate holes.
+    Front 0.9 mm past the board edge (the mod's "PCB EDGE" line, 1.825 mm
+    from the origin). Made in Korea; dev-board part. Land: the CX90B-16P1
+    library mod, checked against Hirose's CX90B-16P drawing EDC3-632698 —
+    identical except the front shell-post pads (1.10 × 2.60, smash.parts.lands).
+    A and B rows are separate pads: A1/A12/B1/B12 GND, A4/A9/B4/B9 VBUS,
+    A5 / B5 CC1 / CC2, A6/B6 D+, A7/B7 D−, A8/B8 SBU, SH1-6 + MID1/2 shell."""
+    base = "CX90B-16P"
+    fp_mod = src(base, "HIROSE_CX90B-16P1.kicad_mod")
+    pads = pads_from_kicad_mod(fp_mod)
+    pins = build_pins(src(base, "CX90B-16P1.kicad_sym"))
+    if {p.num for p in pins} != {p.num for p in pads}:
+        raise ValueError(f"CX90B-16P: pin/pad mismatch "
+                         f"{sorted({p.num for p in pins} ^ {p.num for p in pads})}")
+    fields = dict(
+        manf="Hirose", manf_pn="CX90B-16P", canonical_id=canonical_id("CX90B-16P"),
+        name="CX90B-16P", value="CX90B-16P",
+        description="USB Type-C 2.0 receptacle, horizontal top-mount SMT + TH shell posts, 16-contact",
+        datasheet=datasheet_ref(base, "CX90B-16P_2d.pdf"),
+        package="USB-C 2.0 receptacle (horizontal top-mount)",
+        size_mm=(8.94, 6.8), height_mm=3.17,       # drawing EDC3-632698: body 3.17 ±0.10 above the PCB
+        voltage_rating_v=48.0, i_rms_a=1.25, temp_range_c=(-40, 105),   # spec CL 6246-0003-2 p.1
+        standards=["RoHS"],
+        pins=pins,
+        footprint=Footprint(
+            name="HIROSE_CX90B-16P", package_class="USB-C",
+            pads=pads,
+            body_outline=outline_polygon(fp_mod, "F.Fab"),
+            courtyard=outline_polygon(fp_mod, "F.CrtYd"),
+            model_3d_path=datasheet_ref(base, "CX90B-16P_hirose.stp"),
+            source="snapmagic CX90B-16P1 mod, checked vs Hirose EDC3-632698",
+        ),
+        note="USB2 top-mount; only power + USB2 wired, SBU1/2 open.",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)

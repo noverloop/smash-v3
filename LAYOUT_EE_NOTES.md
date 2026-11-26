@@ -244,10 +244,11 @@ radar / QPD), 39.7 mm with the camera nose.
   their castellation's escape stub (pre-routed on F.Cu); keep them clear.
 - J_DEV_HF_S1 / J_DEV_HF_S4 (u.FL) are on the slot side of the feed matches:
   conducted S1 levels read ≈ 3.3 dB low at 2.44 GHz, S4 ≈ 0.7 dB.
-- J_DEV_USB is the Same Sky UJ20-C-H (China origin): shell slots 0.65 × 1.2 mm
-  in 0.9 mm-wide pads (0.125 mm ring). It is due to become the Hirose
-  CX90B-16P (accepted, not applied yet: the SnapMagic land is the CX90B-16P1
-  file and needs checking against Hirose's drawing) — leave room around it.
+- J_DEV_USB is the Hirose CX90B-16P (Korea), a top-mount USB-C 2.0
+  receptacle: no board cutout, its "PCB EDGE" line on the strip's left edge,
+  the shell 0.9 mm past it. Land per Hirose drawing EDC3-632698: shell posts
+  in 0.6 × 2.0 mm (1.10 × 2.60 land) and 0.6 × 1.7 mm (1.20 × 2.30 land)
+  plated slots, SH5/SH6 SMT shell pads, two Ø0.45 mid-plate holes; SBU open.
 - P_DEV_FIX pogo pads: 4 courtyard overlaps (tight fixture pitch) — confirm.
 - ERC "power pin not driven" on 3V3 / GND = missing power flags only.
 

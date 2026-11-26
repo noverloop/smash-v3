@@ -144,7 +144,7 @@ def build_diag(d) -> dict:
     import math
     from smash.netlist import cap_to_gnd, res_between
     from smash.parts import devboard as DB
-    from smash.parts.usb import add_uj20_c_h_g_msmt_1a_p16_tr_67
+    from smash.parts.usb import add_cx90b_16p
     from smash.parts.ldos import add_ldl112pv33r
     from smash.parts.oscillators import add_dsc1001ci5_032_0000
     from smash.parts.swaps_2026_11 import (add_tja1462btk_0z, add_usblc6_4sc6, add_ru1j002yntcl,
@@ -160,17 +160,19 @@ def build_diag(d) -> dict:
 
     # ── USB-C (replaces the USB nose's vertical receptacle) ────────────────
     remove_component(d, "J_USB_C")
-    usb = add_uj20_c_h_g_msmt_1a_p16_tr_67(d, ref="J_DEV_USB", **T)
-    for pn in ("VBUS", "VBUS__1"):
-        N("DEV_VBUS").connect(usb.pin(pn))                 # programmer supply only (2026-11-23)
-    for pn in ("GND", "GND__1", "SHIELD", "SHIELD__1", "SHIELD__2", "SHIELD__3"):
-        N("GND").connect(usb.pin(pn))
-    N("USB_CC1").connect(usb.pin("CC1")); N("USB_CC2").connect(usb.pin("CC2"))
+    # Hirose CX90B-16P: top-mount (no board cutout), wired by pad number
+    usb = add_cx90b_16p(d, ref="J_DEV_USB", **T)
+    pin = lambda num: next(p for p in usb.pins if str(p.num) == num)
+    for num in ("A4", "A9", "B4", "B9"):
+        N("DEV_VBUS").connect(pin(num))                  # programmer supply only
+    for num in ("A1", "A12", "B1", "B12", "SH1", "SH2", "SH3", "SH4", "SH5", "SH6", "MID1", "MID2"):
+        N("GND").connect(pin(num))
+    N("USB_CC1").connect(pin("A5")); N("USB_CC2").connect(pin("B5"))
     for k in (1, 2):                                   # Rd: UFP (sink) → the host turns VBUS on
         res_between(d, f"USB_CC{k}", "GND", "5.1k", ref=f"R_DEV_USB_CC{k}", **T)
-    for pn, net in (("DP1", "DEV_USB_UP_P"), ("DP2", "DEV_USB_UP_P"),
-                    ("DN1", "DEV_USB_UP_N"), ("DN2", "DEV_USB_UP_N")):
-        N(net).connect(usb.pin(pn))
+    for num, net in (("A6", "DEV_USB_UP_P"), ("B6", "DEV_USB_UP_P"),
+                     ("A7", "DEV_USB_UP_N"), ("B7", "DEV_USB_UP_N")):
+        N(net).connect(pin(num))                       # SBU (A8 / B8) open
     esd = add_usblc6_4sc6(d, ref="U_DEV_ESD", **T)   # (2026-11-22) TPD4E05U06 (China lots) → USBLC6-4SC6
     N("DEV_USB_UP_P").connect(esd.pin("I/O1")); N("DEV_USB_UP_N").connect(esd.pin("I/O2"))
     N("GND").connect(esd.pin("GND")); N("DEV_VBUS").connect(esd.pin("VBUS"))
@@ -1113,8 +1115,9 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
     ry1 = prog_top - 7.5                                        # below the strip's corner holes
     ry0 = -H / 2 + 7.5                                          # above the corner holes
     for c in usb:
+        from smash.parts.usb import CX90B_EDGE_OFFSET_MM
         w, h, _ox, _oy = _crt_box(c)
-        ux = -W / 2 + 2.0 + h / 2
+        ux = -W / 2 + CX90B_EDGE_OFFSET_MM            # its "PCB EDGE" line on the board edge
         locks[c.ref] = {"position_mm": [round(ux, 4), round((ry0 + ry1) / 2, 4)],
                         "rotation_deg": 270, "face": "top"}
         usb_w = h + 3.0

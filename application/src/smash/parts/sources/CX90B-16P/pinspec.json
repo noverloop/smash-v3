@@ -1,0 +1,146 @@
+{
+  "_meta": {
+    "manf_pn": "CX90B-16P",
+    "datasheet": "Hirose CX90B-16P drawing EDC3-632698 (CX90B-16P_2d.pdf) + product specification CL 6246-0003-2 (cx16p1.pdf, CX90B-16P1 — same contact system)",
+    "datasheet_section": "p.1 ratings (current, voltage, operating condition); pin map = USB Type-C 2.0 receptacle (USB-IF Type-C spec, 16-contact) as in the vendor symbol",
+    "package": "USB-C 2.0 receptacle, horizontal top-mount: 16 SMD contacts at 0.40 pitch, SH5/SH6 SMD shell pads, SH1-SH4 TH shell slots, MID1/MID2 holes",
+    "verified_by": "library check 2026-11-26",
+    "verified_from_pdf": "application/src/smash/parts/sources/CX90B-16P/CX90B-16P_2d.pdf",
+    "notes": "USB2-only (no SuperSpeed pins). Rated 48 V AC/DC; 1.25 A per power pin (A1/A4/A9/A12/B1/B4/B5/B9/B12 per the spec's list), 0.25 A other pins. [height] drawing EDC3-632698: body 3.17 ±0.10 mm above the PCB. [temp] spec p.1 OPERATING CONDITION −40…+105 °C (incl. temperature rise).",
+    "operating_temp_c": [
+      -40,
+      105
+    ],
+    "height_max_mm": 3.27
+  },
+  "pins": [
+    {
+      "num": "A1",
+      "name": "GND_A",
+      "type": "ground"
+    },
+    {
+      "num": "A12",
+      "name": "GND_A",
+      "type": "ground"
+    },
+    {
+      "num": "B1",
+      "name": "GND_B",
+      "type": "ground"
+    },
+    {
+      "num": "B12",
+      "name": "GND_B",
+      "type": "ground"
+    },
+    {
+      "num": "A4",
+      "name": "VBUS_A",
+      "type": "power",
+      "note": "1.25 A max per power pin [spec CL 6246-0003-2 p.1 Current rating]"
+    },
+    {
+      "num": "A9",
+      "name": "VBUS_A",
+      "type": "power",
+      "note": "1.25 A max per power pin [spec CL 6246-0003-2 p.1 Current rating]"
+    },
+    {
+      "num": "B4",
+      "name": "VBUS_B",
+      "type": "power",
+      "note": "1.25 A max per power pin [spec p.1]"
+    },
+    {
+      "num": "B9",
+      "name": "VBUS_B",
+      "type": "power",
+      "note": "1.25 A max per power pin [spec p.1]"
+    },
+    {
+      "num": "A5",
+      "name": "CC1",
+      "type": "io",
+      "note": "Needs Rd 5.1k to GND for a sink."
+    },
+    {
+      "num": "B5",
+      "name": "CC2",
+      "type": "io",
+      "note": "Needs Rd 5.1k to GND for a sink."
+    },
+    {
+      "num": "A6",
+      "name": "D1+",
+      "type": "io"
+    },
+    {
+      "num": "A7",
+      "name": "D1-",
+      "type": "io"
+    },
+    {
+      "num": "B6",
+      "name": "D2+",
+      "type": "io"
+    },
+    {
+      "num": "B7",
+      "name": "D2-",
+      "type": "io"
+    },
+    {
+      "num": "A8",
+      "name": "SBU1",
+      "type": "io",
+      "unused": "open"
+    },
+    {
+      "num": "B8",
+      "name": "SBU2",
+      "type": "io",
+      "unused": "open"
+    },
+    {
+      "num": "SH1",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "SH2",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "SH3",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "SH4",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "SH5",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "SH6",
+      "name": "SHIELD",
+      "type": "ground"
+    },
+    {
+      "num": "MID1",
+      "name": "MID_PLATE",
+      "type": "ground"
+    },
+    {
+      "num": "MID2",
+      "name": "MID_PLATE",
+      "type": "ground"
+    }
+  ]
+}
