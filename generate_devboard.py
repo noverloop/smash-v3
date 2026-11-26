@@ -1184,7 +1184,9 @@ def build_panel(layout=None):
         ch = [(bx0, pt + ROUT_MM[1] - ROUT_MM[0] + 0.5), (bx1, pt + ROUT_MM[1] - ROUT_MM[0] + 0.5),
               (bx1, yc - CHANNEL_MM / 2), (W / 2 - 3.0, yc - CHANNEL_MM / 2),
               (W / 2 - 3.0, yc + CHANNEL_MM / 2), (bx0, yc + CHANNEL_MM / 2)]
-        for layer in ("F.SilkS", "B.SilkS"):
+        # placement / keep-out drawing on the fab layers (in the file and the
+        # assembly drawing, not printed); printed silk = add_dev_silk()
+        for layer in ("F.Fab", "B.Fab"):
             boards[DEV].silk_overlays.append((layer, prog, "PROGRAMMER"))
             boards[DEV].silk_overlays.append((layer, ch, "LDS SLEEVE (unrolled)"))
         g0.keepouts.append(_K(polygon=ch, layers=("*.Cu",), scope="component", tag="sleeve_channel",
@@ -1194,11 +1196,12 @@ def build_panel(layout=None):
             box = [(cx - h, cy - h), (cx + h, cy - h), (cx + h, cy + h), (cx - h, cy + h)]
             circ = [(cx + 17.0 * math.cos(math.radians(k * 5)), cy + 17.0 * math.sin(math.radians(k * 5)))
                     for k in range(72)]                         # the Ø34 tower-board outline
-            for layer in ("F.SilkS", "B.SilkS"):
+            for layer in ("F.Fab", "B.Fab"):
                 boards[DEV].silk_overlays.append((layer, box, name))
                 boards[DEV].silk_overlays.append((layer, circ, None))
             m = layout.get("mech", {}).get(name, {})
             for ly, pts, lb in m.get("silk", []):                 # ring outlines, ANT keep-outs
+                ly = ly.replace("SilkS", "Fab")
                 boards[DEV].silk_overlays.append((ly, [(cx + x, cy + y) for x, y in pts], lb))
             for (hx, hy), hd, plated, tag in m.get("holes", []):  # the tower board's holes
                 g0.holes.append(_H(position_mm=(cx + hx, cy + hy), diameter_mm=hd,
@@ -1345,6 +1348,114 @@ def _tabs(cast_deg, key, n=3):
 
 LDS_STUB_R_MM = ROUT_MM[1] + 0.6      # stubs end just outside the cut line
 LDS_STUB_W_MM = 0.125                 # the 125 µm track class outside the BGA fields
+
+
+SILK_TEXT_MM, SILK_STROKE_MM = 1.0, 0.15     # printable silkscreen (fab minimum)
+SILK_HEADERS = ("J_DEV_LA", "J_DEV_TWR_IO", "J_DEV_FLAT_IO", "J_DEV_BENCH")
+_SILK_STRIP = ("DEV_TWR_", "DEV_")
+
+
+def add_dev_silk(pcb, lay) -> dict:
+    """The dev board's printed silkscreen: a net label beside every pin of the
+    user headers (+ a pin-1 dot), the tile names and "PROGRAMMER". Everything
+    else (placement / keep-out drawing) lives on the fab layers."""
+    import math, re, uuid
+    txt = pcb.read_text()
+    out, n_lbl = [], 0
+
+    def text(t, x, y, ang, just, tag, size=SILK_TEXT_MM, layer="F.SilkS"):
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/silk/{tag}")
+        mir = " mirror" if layer.startswith("B.") else ""
+        if mir and just in ("left", "right"):          # a mirrored text runs the other way
+            just = "right" if just == "left" else "left"
+        j = f" (justify {just}{mir})" if (just or mir) else ""
+        out.append(f'\t(gr_text "{t}"\n\t\t(at {x:.4f} {y:.4f} {ang:g})\n\t\t(layer "{layer}")\n'
+                   f'\t\t(uuid "{u}")\n\t\t(effects (font (size {size:g} {size:g}) '
+                   f'(thickness {SILK_STROKE_MM:g})){j})\n\t)')
+
+    # every user header's pads (world), for the facing-row test
+    blocks = re.split(r"\n\t\(footprint ", txt)
+    headers = {}
+    for blk in blocks[1:]:
+        ref = re.search(r'"Reference" "([^"]+)"', blk)
+        base = re.sub(r"\d+$", "", ref.group(1)) if ref else ""
+        if base not in SILK_HEADERS:
+            continue
+        at = re.search(r"\(at ([-\d.]+) ([-\d.]+)(?: ([-\d.]+))?\)", blk)
+        fx, fy, fr = float(at.group(1)), float(at.group(2)), float(at.group(3) or 0)
+        c, s_ = math.cos(math.radians(fr)), math.sin(math.radians(fr))
+        pads = {}
+        for m in re.finditer(r'\(pad "([^"]+)" thru_hole[\s\S]*?\(at ([-\d.]+) ([-\d.]+)[^)]*\)'
+                             r'[\s\S]*?(?:\(net "([^"]*)"\)|\n\t\t\))', blk):
+            px, py = float(m.group(2)), float(m.group(3))
+            pads[m.group(1)] = ((fx + px * c + py * s_, fy - px * s_ + py * c), m.group(4) or "")
+        if "1" in pads:
+            headers[base] = pads
+    LBL = 12.0                                         # label run past its anchor (mm)
+    for base, pads in headers.items():
+        xs = [p[0][0] for p in pads.values()]; ys = [p[0][1] for p in pads.values()]
+        cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+        rows_vertical = len({round(x, 2) for x in xs}) <= 2      # rows run along y
+        span = (max(xs) - min(xs)) if not rows_vertical else (max(ys) - min(ys))
+        pitch = (max(ys) - min(ys)) if not rows_vertical else (max(xs) - min(xs))
+
+        def facing(dx, dy):
+            """Another header within label reach on this side (the facing row)."""
+            for ob, op in headers.items():
+                if ob == base:
+                    continue
+                for (ox_, oy_), _n in op.values():
+                    if dy and min(xs) - 1 <= ox_ <= max(xs) + 1 and 0 < (oy_ - cy) * dy < pitch / 2 + LBL * 2:
+                        return True
+                    if dx and min(ys) - 1 <= oy_ <= max(ys) + 1 and 0 < (ox_ - cx) * dx < pitch / 2 + LBL * 2:
+                        return True
+            return False
+
+        for num, ((x, y), net) in pads.items():
+            if not net:
+                continue
+            lbl = net
+            for pre in _SILK_STRIP:
+                lbl = lbl[len(pre):] if lbl.startswith(pre) else lbl
+            lbl = lbl.split("__")[0]
+            if rows_vertical:
+                dx, dy = (1.0 if x > cx else -1.0), 0.0
+            else:
+                dx, dy = 0.0, (1.0 if y > cy else -1.0)
+            bottom = facing(dx, dy)
+            if bottom:
+                # facing row: bottom silk, beyond this header's OTHER row (mirrored)
+                dx, dy = -dx, -dy
+                ox, oy = x + dx * (pitch + 1.5), y + dy * (pitch + 1.5)
+            else:
+                ox, oy = x + dx * 1.5, y + dy * 1.5
+            if dy == 0.0:
+                ang, just = 0, ("left" if dx > 0 else "right")
+            else:
+                ang, just = (90 if dy < 0 else 270), "left"
+            text(lbl, ox, oy, ang, just, f"{base}/{num}", layer="B.SilkS" if bottom else "F.SilkS")
+            n_lbl += 1
+        (x1, y1), _ = pads["1"]
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/silk/{base}/pin1")
+        dot_x = x1 - 1.4 if not rows_vertical else x1 + (-1.4 if x1 <= cx else 1.4)
+        dot_y = y1 if rows_vertical else y1
+        out.append(f'\t(gr_circle\n\t\t(center {dot_x:.4f} {dot_y:.4f})\n\t\t(end {dot_x + 0.3:.4f} {dot_y:.4f})\n'
+                   f'\t\t(stroke (width 0.15) (type solid))\n\t\t(fill yes)\n\t\t(layer "F.SilkS")\n'
+                   f'\t\t(uuid "{u}")\n\t)')
+    # tile names + PROGRAMMER (board frame → world via the first mount hole)
+    W, H = lay["W"], lay["H"]
+    m = re.search(r'\(footprint "[^"]*mech[_:]mount".*?\(at ([-\d.]+) ([-\d.]+)\)', txt, re.S)
+    ox, oy = float(m[1]) + (W / 2 - 3.5), float(m[2]) - (H / 2 - 3.5)
+    world = lambda x, y: (ox + x, oy - y)
+    h = TILE_BOX_MM / 2
+    for name, (cx_, cy_) in lay["centres"].items():
+        x, y = world(cx_ - h + 1.0, cy_ + h - 1.6)
+        text(name, x, y, 0, "left", f"tile/{name}", size=1.5)
+    x, y = world(-W / 2 + 4.0, lay["prog_top"] - 3.0)
+    text("PROGRAMMER", x, y, 0, "left", "programmer", size=2.0)
+    end = txt.rstrip().rfind(")")
+    pcb.write_text(txt[:end] + "\n".join(out) + "\n" + txt[end:])
+    return {"labels": n_lbl, "items": len(out)}
 
 
 def add_lds_stubs(pcb) -> int:
@@ -1717,6 +1828,8 @@ def main() -> int:
     pp = write_portable_project(pcb)
     write_fixture_collar(OUT)
     n_stubs = add_lds_stubs(pcb)
+    silk = add_dev_silk(pcb, lay)
+    print(f"  silkscreen: {silk['labels']} header pin labels + tile names ({silk['items']} items)")
     bus = add_lds_bus(pcb, lay)
     pv = write_panel_variant(pcb, lay)          # Production.Rout layer + fab/dev, fab/production
     print(f"  → {pcb} ({r.get('n_footprints', '?')} footprints) + {DEV}.kicad_sch "
