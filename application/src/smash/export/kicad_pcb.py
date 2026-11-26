@@ -758,7 +758,10 @@ def _emit_pad(pad, chip: Chip, *, face: str, board_name: str,
     lines.append(f'\t\t\t(at {_fmt(px)} {_fmt(py)}'
                  + (f' {_fmt(ang)})' if abs(ang) > 1e-9 else ')'))
     lines.append(f'\t\t\t(size {_fmt(w)} {_fmt(h)})')
-    if pth:
+    if pth and getattr(pad, "drill_slot_mm", None):
+        sw, sh = pad.drill_slot_mm                     # slot (oval) drill, pad axes
+        lines.append(f'\t\t\t(drill oval {_fmt(sw)} {_fmt(sh)})')
+    elif pth:
         lines.append(f'\t\t\t(drill {_fmt(pad.drill_mm)})')
     lines.append(f'\t\t\t(layers {layers})')
     if pth and pad.note == "castellated":

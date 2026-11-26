@@ -123,8 +123,8 @@ _PAD_RX = re.compile(
         \(at\s+(?P<x>-?\d+(?:\.\d+)?)\s+(?P<y>-?\d+(?:\.\d+)?)
                   (?:\s+(?P<rot>-?\d+(?:\.\d+)?))?\s*\)\s+
         \(size\s+(?P<w>-?\d+(?:\.\d+)?)\s+(?P<h>-?\d+(?:\.\d+)?)\s*\)
-        (?:\s+\(drill\s+(?:oval\s+)?(?P<drill>-?\d+(?:\.\d+)?)
-                  (?:\s+-?\d+(?:\.\d+)?)?\s*\))?   # (drill N) or (drill oval W H)
+        (?:\s+\(drill\s+(?P<oval>oval\s+)?(?P<drill>-?\d+(?:\.\d+)?)
+                  (?:\s+(?P<drill2>-?\d+(?:\.\d+)?))?\s*\))?   # (drill N) or (drill oval W H)
         [^)]*\(layers\s+(?P<layers>[^)]+)\)
     """,
     re.VERBOSE,
@@ -167,8 +167,12 @@ def pads_from_kicad_mod(kicad_mod_path: str) -> list[Pad]:
         # reading (w, h) verbatim swapped every such pad's aspect.
         w, h = float(m.group("w")), float(m.group("h"))
         rot = float(m.group("rot") or 0.0)
+        slot = None
+        if m.group("oval") and m.group("drill2"):
+            slot = (float(m.group("drill")), float(m.group("drill2")))
         if rot % 180 == 90:
             w, h = h, w
+            slot = (slot[1], slot[0]) if slot else None
         out.append(Pad(
             num=_strip_quotes(m.group("num")),
             # KiCad `.kicad_mod` files are screen-y-down; the smash model
@@ -182,6 +186,7 @@ def pads_from_kicad_mod(kicad_mod_path: str) -> list[Pad]:
             shape=m.group("shape"),
             layer=primary,
             drill_mm=(float(m.group("drill")) if m.group("drill") else None),
+            drill_slot_mm=slot,
         ))
     return out
 

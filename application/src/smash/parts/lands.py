@@ -120,6 +120,11 @@ LANDS = {
     "PNS40010AERX": (
         lambda fp: _set(fp, size=(1.20, 1.20), x=_rows_x(1.40)),
         "Nexperia PNS40010AER DS §13 CFP3 reflow footprint: 1.2 × 1.2, pitch 2.8"),
+    "UJ20-C-H-G-MSMT-1A-P16-TR-67": (
+        lambda fp: _set(fp, ["SH1", "SH2", "SH3", "SH4"], size=(0.90, 1.60), shape="oval"),
+        "Same Sky UJ20-C-H DS recommended PCB layout: shell slots 0.65 × 1.2 kept; pads "
+        "0.8 → 0.9 mm wide so the plated slot keeps a 0.125 mm ring on every layer (fab "
+        "minimum 0.10)"),
     "PESD36VS1ULSYL": (
         lambda fp: _set(fp, size=(0.50, 0.70), x=_rows_x(0.40)),
         "Nexperia PESD36VS1UL DS Fig. 12 (SOD882BD): 0.5 × 0.7, gap 0.30, span 1.30"),

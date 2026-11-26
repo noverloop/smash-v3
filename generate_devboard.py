@@ -713,15 +713,17 @@ _OLD_TILE_GRID = (("aft_end_board", "activation_interface", "wakeup_board"),
              ("camera_module", "qpd_module"))
 # (2026-11-21, user) tiles in STACK ORDER along a straight channel = the LDS
 # sleeve unrolled (lanes in sleeve-angle order), alternating above / below it;
-# the programming board (socket + debug) is a strip at the channel's aft end
+# the programming board (socket + debug) is a strip UNDER the tile rows, the
+# bus turning down into it past the aft-end tile — the board fits a 221 × 186 mm
+# assembly line (2026-11-26, user)
 TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_board",
               "companion_compute", "radar_module", "qpd_module", "camera_module")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
-PROG_W_MM = 118.0              # programming-board strip (left edge = board edge: USB-C): breakout + logic-analyzer headers right of the USB-C, clear of the strip fiducial
+PROG_H_MM = 74.0               # programming-board strip under the tiles (full board width): USB-C on its left edge, socket at its right end, debug between
 CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
-# (2026-11-21, user) 4 tabs, none where the bus crosses: the bus passes a
-# fully cut stretch of the slot (|y| ≤ channel/2 + margin stays open)
-PROG_SLOT_TABS_Y = (-38.0, -16.0, 16.0, 38.0)
+# 4 tabs on the strip's slot, none where the bus crosses it (the bus passes a
+# fully cut stretch of the slot); x relative to the board centre
+PROG_SLOT_TABS_X = (-45.0, -5.0, 40.0, 85.0)
 TILE_PITCH_MM = 42.0           # Ø34 tile + castellation fan-out room
 TILE_BOX_MM = 38.0             # silkscreen box round each tile
 SOCKET_COL_MM = 56.0           # socket column (Ø50 collar + margin)
@@ -938,13 +940,19 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
     _open_castellation_mask(d)
     P, n = TILE_PITCH_MM, len(TILE_ORDER)
     row_y = CHANNEL_MM / 2 + P / 2
-    W = PROG_W_MM + 24.0 + (n - 1) * P / 2 + 23.0
-    H = 2 * (row_y + TILE_BOX_MM / 2 + TILE_EDGE_MM)
-    xs = -W / 2 + PROG_W_MM + 24.0
+    W = 24.0 + (n - 1) * P / 2 + 23.0
+    HT = 2 * (row_y + TILE_BOX_MM / 2 + TILE_EDGE_MM)        # the tile rows
+    H = HT + ROUT_MM[1] - ROUT_MM[0] + PROG_H_MM
+    YC = H / 2 - HT / 2                                      # channel centre line
+    prog_top = -H / 2 + PROG_H_MM                            # strip top edge (slot above it)
+    xs = -W / 2 + 24.0
+    # the bus turns down into the strip left of the first below-channel tile
+    bus_x1 = xs - 2.0
+    bus_x0 = bus_x1 - CHANNEL_MM - 0.5                      # lanes turn on the bus pitch (≤ 10.5 mm)
     locks, centres = {}, {}
     for k, name in enumerate(TILE_ORDER):
         above = k % 2 == 0
-        cx, cy = xs + k * P / 2, (row_y if above else -row_y)
+        cx, cy = xs + k * P / 2, YC + (row_y if above else -row_y)
         centres[name] = (cx, cy)
         m = mech.get(name, {})
         # (2026-11-21, user) every tile the SAME way round (potting hole, key and
@@ -986,7 +994,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                 items.append((a, pad, chain))
             fc = TILE_BOX_MM / 2 - 1.5                    # the tile's local fiducials (box corners)
             fids = [(cx + sx * fc, cy + sy * fc) for sx in (-1, 1) for sy in (-1, 1)]
-            others = [(xs + j * P / 2, row_y if j % 2 == 0 else -row_y)
+            others = [(xs + j * P / 2, YC + (row_y if j % 2 == 0 else -row_y))
                       for j in range(n) if j != k]
             r0 = LDS_STUB_R_MM + 0.4                      # the fan-out starts here
             pol = lambda rr, ang: (cx + rr * math.cos(math.radians(ang)),
@@ -1017,7 +1025,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
             # nest the arcs: items nearest the channel's flanks go first (inner
             # radius, short swing); those facing the channel straight on go last,
             # over them on a larger radius
-            chan = -90.0 if cy > 0 else 90.0
+            chan = -90.0 if cy > YC else 90.0
             adiff = lambda u, v: abs(((u - v + 180.0) % 360.0) - 180.0)
             for a, pad, chain in sorted(items, key=lambda it: -adiff(it[0], chan)):
                 s0 = pol(r0, a)
@@ -1037,10 +1045,13 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                     path = list(zip(wp, wp[1:])) + ([(pts[0], pts[-1])] if len(chain) > 1 else [])
                     obst = [q for a_, q in starts if a_ != a] + ends
                     ok = (all(math.hypot(x - fx_, y - fy_) > 3.0 for x, y in pts for fx_, fy_ in fids)
-                          and all(abs(y) > CHANNEL_MM / 2 + 1.5 and abs(y) < H / 2 - 2.0
+                          and all(abs(y - YC) > CHANNEL_MM / 2 + 1.5 and abs(y - YC) < HT / 2 - 2.0
                                   and abs(x) < W / 2 - 2.0 for x, y in pts)
+                          and all(not (bus_x0 - 1.5 < x < bus_x1 + 1.5 and y < YC) for x, y in pts)
                           and all(seg_d(o, *sg_) > 21.0 for o in others for sg_ in path[1:])
-                          and all(abs(q[1]) > CHANNEL_MM / 2 + 0.8 for sg_ in path[1:] for q in sg_)
+                          and all(abs(q[1] - YC) > CHANNEL_MM / 2 + 0.8 for sg_ in path[1:] for q in sg_)
+                          and all(not (bus_x0 - 0.8 < q[0] < bus_x1 + 0.8 and q[1] < YC)
+                                  for sg_ in path[1:] for q in sg_)
                           and all(seg_d(q, *sg_) > 1.5 for q in _FAN_PTS for sg_ in path)
                           and all(math.hypot(x - q[0], y - q[1]) > 2.6 for x, y in pts for q in _FAN_PTS)
                           and all(seg_seg(*sg_, *o) > 0.45 for sg_ in path for o in _FAN_SEGS)
@@ -1086,8 +1097,9 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
             m["cast_deg"] = sorted((a + phi) % 360 for a in m["cast_deg"])
             if m.get("key"):
                 m["key"] = ((m["key"][0] + phi) % 360,) + tuple(m["key"][1:])
-    # programming strip: socket at the top, debug below, USB-C on the left edge
-    sx, sy = -W / 2 + PROG_W_MM / 2, H / 2 - (FIXTURE_KEEPOUT_R_MM + 1.0)
+    # programming strip under the tiles: USB-C on the left edge, socket at the
+    # right end, debug between
+    sx, sy = W / 2 - (FIXTURE_KEEPOUT_R_MM + 3.0), -H / 2 + PROG_H_MM / 2
     fixture = (round(sx, 4), round(sy, 4))
     debug = [c for c in d.chips if section.get(c.ref) == DIAG and c.ref not in fixture_refs
              and c.ref not in locks]
@@ -1098,7 +1110,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
     tht = [c for c in debug if c not in ui and c not in usb and any(
         getattr(p, "drill_mm", None) for p in (getattr(c.footprint, "pads", None) or []))]
     rest = [c for c in debug if c not in ui and c not in usb and c not in tht]
-    ry1 = sy - FIXTURE_KEEPOUT_R_MM - 1.0
+    ry1 = prog_top - 7.5                                        # below the strip's corner holes
     ry0 = -H / 2 + 7.5                                          # above the corner holes
     for c in usb:
         w, h, _ox, _oy = _crt_box(c)
@@ -1107,7 +1119,7 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
                         "rotation_deg": 270, "face": "top"}
         usb_w = h + 3.0
     cx0 = -W / 2 + 1.0 + (usb_w if usb else 0.0)
-    cx1 = -W / 2 + PROG_W_MM - 1.5
+    cx1 = sx - FIXTURE_KEEPOUT_R_MM - 1.5
     # THT band at the strip's bottom (right of the USB-C); the rest fills above it
     rel = _shelf(tht, cx0, 0.0, cx1 - 3.0, gap=1.5)     # 3 mm clear of the strip-corner fiducial
     band = -min((y - _crt_box(next(c for c in tht if c.ref == r))[1] / 2 for r, (_x, y) in rel.items()),
@@ -1136,7 +1148,8 @@ def tile_layout(d, section: dict, fixture_refs: set) -> dict:
             if y - _crt_box(next(c for c in rest if c.ref == r))[1] / 2 < ry0 - 0.5]
     return {"locks": locks, "W": round(W, 1), "H": round(H, 1), "fixture": fixture,
             "centres": centres, "miss": miss, "mech": mech,
-            "prog_x1": round(-W / 2 + PROG_W_MM, 4)}
+            "prog_top": round(prog_top, 4), "yc": round(YC, 4),
+            "bus_x": (round(bus_x0, 4), round(bus_x1, 4))}
 
 
 def build_panel(layout=None):
@@ -1156,14 +1169,18 @@ def build_panel(layout=None):
             for sy in (-1, 1):
                 x, y = sx * (layout["W"] / 2 - 3.5), sy * (layout["H"] / 2 - 3.5)
                 g0.holes.append(_H(position_mm=(x, y), diameter_mm=3.2, plated=False, tag="mount"))
-        W, H, px = layout["W"], layout["H"], layout["prog_x1"]
-        for sy_ in (-1, 1):                                  # programming board's own corners
-            g0.holes.append(_H(position_mm=(px - 3.5, sy_ * (H / 2 - 3.5)), diameter_mm=3.2,
+        W, H, pt, yc = layout["W"], layout["H"], layout["prog_top"], layout["yc"]
+        bx0, bx1 = layout["bus_x"]
+        for sx_ in (-1, 1):                                  # programming board's own corners
+            g0.holes.append(_H(position_mm=(sx_ * (W / 2 - 3.5), pt - 3.5), diameter_mm=3.2,
                                plated=False, tag="mount"))
-        prog = [(-W / 2 + 0.6, -H / 2 + 0.6), (px - 0.6, -H / 2 + 0.6),
-                (px - 0.6, H / 2 - 0.6), (-W / 2 + 0.6, H / 2 - 0.6)]
-        ch = [(px + 2.5, -CHANNEL_MM / 2), (W / 2 - 3.0, -CHANNEL_MM / 2),
-              (W / 2 - 3.0, CHANNEL_MM / 2), (px + 2.5, CHANNEL_MM / 2)]
+        prog = [(-W / 2 + 0.6, -H / 2 + 0.6), (W / 2 - 0.6, -H / 2 + 0.6),
+                (W / 2 - 0.6, pt - 0.6), (-W / 2 + 0.6, pt - 0.6)]
+        # the unrolled sleeve: along the channel, turning down into the strip
+        # past the aft-end tile
+        ch = [(bx0, pt + ROUT_MM[1] - ROUT_MM[0] + 0.5), (bx1, pt + ROUT_MM[1] - ROUT_MM[0] + 0.5),
+              (bx1, yc - CHANNEL_MM / 2), (W / 2 - 3.0, yc - CHANNEL_MM / 2),
+              (W / 2 - 3.0, yc + CHANNEL_MM / 2), (bx0, yc + CHANNEL_MM / 2)]
         for layer in ("F.SilkS", "B.SilkS"):
             boards[DEV].silk_overlays.append((layer, prog, "PROGRAMMER"))
             boards[DEV].silk_overlays.append((layer, ch, "LDS SLEEVE (unrolled)"))
@@ -1392,7 +1409,8 @@ def add_lds_bus(pcb, lay) -> dict:
         e = txt.find("\n\t(footprint", fm.start())
         prog_nets |= set(re.findall(r'\(net "([^"]+)"\)', txt[fm.start():e if e > 0 else None]))
     cx = {n: c[0] for n, c in lay["centres"].items()}
-    x_start = lay["prog_x1"] + 2.5
+    yc, (bx0, bx1) = lay["yc"], lay["bus_x"]
+    y_end = lay["prog_top"] + ROUT_MM[1] - ROUT_MM[0] + 0.5     # the bus ends at the strip's slot
     lanes = []
     for key, ln in (_LANE_CONTRACT.get("lanes") or {}).items():
         if ln.get("kind") in ("gnd_plane", "crown_payload"):
@@ -1404,33 +1422,44 @@ def add_lds_bus(pcb, lay) -> dict:
         if not xs:
             continue
         x0, x1 = min(xs), max(xs)
-        if net in prog_nets:
-            x0 = x_start
-        if x1 - x0 < 1.0:
+        prog = net in prog_nets
+        if not prog and x1 - x0 < 1.0:
             continue
         for ang in ln.get("angles", []):
-            lanes.append((round(ang % 360, 3), x0, x1, net))
+            lanes.append((round(ang % 360, 3), x0, x1, net, prog))
     angles = sorted({a for a, *_ in lanes})
     rank = {a: k for k, a in enumerate(angles)}
-    y0 = -(len(angles) - 1) * BUS_STEP_MM / 2
+    y0 = yc - (len(angles) - 1) * BUS_STEP_MM / 2
+    # a lane the programmer uses turns down at x_turn(k): the higher the lane
+    # (larger k), the further out it turns, so no two lanes on a layer cross
+    x_turn = lambda k: bx1 - k * BUS_STEP_MM                  # same pitch as along the channel
     used, segs, spill = {}, [], 0
-    for ang, x0, x1, net in sorted(lanes):
+
+    def seg(a, b, layer, net, tag):
+        (sx, sy), (ex, ey) = world(*a), world(*b)
+        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/bus/{net}/{tag}")
+        segs.append(f'\t(segment\n\t\t(start {sx:.4f} {sy:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
+                    f'\t\t(width {BUS_W_MM})\n\t\t(layer "{layer}")\n\t\t(net "{net}")\n'
+                    f'\t\t(uuid "{u}")\n\t)')
+
+    for ang, x0, x1, net, prog in sorted(lanes):
         k = rank[ang]
+        if prog:
+            x0 = x_turn(k)
         layer = BUS_LAYERS[k % len(BUS_LAYERS)]
         if any(not (x1 + 1.0 < a or x0 - 1.0 > b) for a, b in used.get((k, layer), [])):
             layer = BUS_SPILL[k % 2]; spill += 1
         used.setdefault((k, layer), []).append((x0, x1))
         y = y0 + k * BUS_STEP_MM
-        (sx, sy), (ex, ey) = world(x0, y), world(x1, y)
-        u = uuid.uuid5(uuid.NAMESPACE_URL, f"smash-dev/bus/{net}/{ang}")
-        segs.append(f'\t(segment\n\t\t(start {sx:.4f} {sy:.4f})\n\t\t(end {ex:.4f} {ey:.4f})\n'
-                    f'\t\t(width {BUS_W_MM})\n\t\t(layer "{layer}")\n\t\t(net "{net}")\n'
-                    f'\t\t(uuid "{u}")\n\t)')
+        if x1 - x0 > 0.01:
+            seg((x0, y), (x1, y), layer, net, ang)
+        if prog:
+            seg((x0, y), (x0, y_end), layer, net, f"{ang}/down")
     end = txt.rstrip().rfind(")")
     pcb.write_text(txt[:end] + "\n".join(segs) + "\n" + txt[end:])
     return {"tracks": len(segs), "angles": len(angles), "spill": spill,
             "width_mm": round((len(angles) - 1) * BUS_STEP_MM + BUS_W_MM, 2),
-            "prog": len({n for *_, n in lanes if n in prog_nets})}
+            "prog": len({ln[3] for ln in lanes if ln[4]})}
 
 
 def write_panel_variant(pcb, lay) -> dict:
@@ -1455,9 +1484,9 @@ def write_panel_variant(pcb, lay) -> dict:
     c = TILE_BOX_MM / 2 - 1.5
     local = {name: [(cx - c, cy + c), (cx + c, cy + c), (cx - c, cy - c)]
              for name, (cx, cy) in lay["centres"].items()}
-    px = lay["prog_x1"]
-    local["programmer"] = [(-W / 2 + 4.0, -H / 2 + 12.0), (px - 4.0, -H / 2 + 12.0),
-                           (px - 4.0, H / 2 - 10.0)]
+    pt = lay["prog_top"]
+    local["programmer"] = [(-W / 2 + 4.0, -H / 2 + 12.0), (W / 2 - 4.0, -H / 2 + 12.0),
+                           (W / 2 - 10.0, pt - 4.0)]
     for name, pts in local.items():
         for bot in (0, 1):
             for k, (x, y) in enumerate(pts):
@@ -1468,12 +1497,12 @@ def write_panel_variant(pcb, lay) -> dict:
     pcb.write_text(dev_txt)
     from shapely.ops import unary_union
     polys, bites, ntab, slots = [], [], 0, []
-    px = lay["prog_x1"]
-    pslot = box(px, -H / 2 - 1, px + ROUT_MM[1] - ROUT_MM[0], H / 2 + 1)
-    for ty in PROG_SLOT_TABS_Y:                              # programming board break tabs
-        pslot = pslot.difference(box(px - 1, ty - TAB_W_MM / 2, px + 3, ty + TAB_W_MM / 2))
+    pt = lay["prog_top"]
+    pslot = box(-W / 2 - 1, pt, W / 2 + 1, pt + ROUT_MM[1] - ROUT_MM[0])
+    for tx in PROG_SLOT_TABS_X:                              # programming board break tabs
+        pslot = pslot.difference(box(tx - TAB_W_MM / 2, pt - 1, tx + TAB_W_MM / 2, pt + 3))
         for k in range(MOUSE_BITES):
-            bites.append(world(px + 1.0, ty + (k - (MOUSE_BITES - 1) / 2) * 0.8))
+            bites.append(world(tx + (k - (MOUSE_BITES - 1) / 2) * 0.8, pt + 1.0))
         ntab += 1
     slots.append(pslot)
     for name, (cx, cy) in lay["centres"].items():
@@ -1547,7 +1576,7 @@ def write_panel_variant(pcb, lay) -> dict:
         f"{MOUSE_BITES} × Ø{MOUSE_BITE_D_MM:g} mouse bites each, on the cut line.\\n"
         "- Every tile: the 1.2 × 1.0 mm stacking-fixture notch at 285° (tower frame) is part of its slot.\\n"
         "- PROGRAMMER strip (socket + debug, USB-C on the panel edge): 2 mm slot on its "
-        f"channel side, {len(PROG_SLOT_TABS_Y)} tabs; with its corner holes it is a stand-alone "
+        f"tile side, {len(PROG_SLOT_TABS_X)} tabs; with its corner holes it is a stand-alone "
         "tower programmer.\\n"
         "- Traces that cross a slot (castellation escapes, the programmer→channel bus) are "
         "milled through: they only matter on the uncut dev board (dev_board.kicad_pcb).\\n"

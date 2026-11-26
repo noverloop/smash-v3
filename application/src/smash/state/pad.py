@@ -19,6 +19,7 @@ class Pad:
     shape: str = "rect"               # "round" | "rect" | "oval" | "roundrect" | "custom"
     layer: str = "F.Cu"               # "F.Cu" | "B.Cu" | "*.Cu" (PTH spans all)
     drill_mm: float | None = None     # PTH drill; None = SMD
+    drill_slot_mm: tuple | None = None  # oval (slot) drill (W, H) in the pad's axes; None = round
     paste: bool = True                # in solder-paste mask?
     solder_mask_expansion_mm: float | None = None
     note: str | None = None
@@ -27,5 +28,7 @@ class Pad:
         d = dataclasses.asdict(self)
         d["position_mm"] = list(self.position_mm)
         d["size_mm"]     = list(self.size_mm)
+        if self.drill_slot_mm is not None:
+            d["drill_slot_mm"] = list(self.drill_slot_mm)
         return d
 

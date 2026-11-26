@@ -3,8 +3,9 @@
 Both files are read from the board's own footprints, so their designators
 match each other and the silkscreen by construction (the board's references,
 e.g. U_MPU1 — not the design refs). Only fitted parts with an MPN are listed:
-fiducials, test points, castellations, fixture pins and other board-only
-footprints carry no MPN, and not-fitted (dnp) parts are left out.
+fiducials, test points and other board-only footprints carry no MPN; project
+items (castellations, the embedded coil, clamp tabs, cell leads: copper or
+mechanical, manufacturer "project") and not-fitted (dnp) parts are left out.
 
   <stem>_cpl.csv           Designator, Mid X, Mid Y, Rotation, Layer  (mm, deg)
   <stem>_bom_assembly.csv  Designator (all refs), Quantity, MPN, Manufacturer,
@@ -40,8 +41,8 @@ def fitted_parts(pcb_text: str) -> dict:
         if not ref or flags & {"dnp", "exclude_from_bom", "board_only"}:
             continue
         mpn = _prop(blk, "MPN")
-        if not mpn:
-            continue
+        if not mpn or _prop(blk, "Manufacturer").lower() == "project":
+            continue                  # board copper (castellations, coils) / mechanical items
         out[ref] = dict(mpn=mpn, manufacturer=_prop(blk, "Manufacturer"), value=_prop(blk, "Value"),
                         footprint=blk.split('"')[1], description=_prop(blk, "Description"))
     return out

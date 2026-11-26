@@ -225,7 +225,8 @@ def add_mt29f4g01abafdwb_it_f(design, ref: str, **overrides) -> Chip:
     flash, 8-pad WSON, industrial temp -40..+85 °C."""
     fields = _flash_factory(
         manf="Micron",
-        pn="MT29F4G01ABAFDWB-IT_F",
+        pn="MT29F4G01ABAFDWB-IT_F",                 # sources/ folder name
+        manf_pn="MT29F4G01ABAFDWB-IT:F",            # Micron's orderable part number
         ds_name="MT29F4G01ABAFDWB-IT_F.pdf",
         fp_mod_name="SON127P800X600X65-8N.kicad_mod",
         fp_class="WSON-8 (6×8 mm)",

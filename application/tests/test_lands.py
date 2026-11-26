@@ -51,3 +51,13 @@ def test_add_chip_applies_the_land():
 def test_every_entry_cites_a_datasheet():
     for pn, (fn, ref) in LANDS.items():
         assert callable(fn) and len(ref) > 20, pn
+
+
+def test_oval_drill_survives_import():
+    """(drill oval W H) in a vendor .kicad_mod stays a slot, not a round hole."""
+    from smash.parts._artifacts import pads_from_kicad_mod
+    from smash.roots import git_repo_root
+    mod = (git_repo_root() / "application/src/smash/parts/sources/UJ20-C-H-G-MSMT-1A-P16-TR-67"
+           / "SAMESKY_UJ20-C-H-G-MSMT-1A-P16-TR-67.kicad_mod")
+    sh = {p.num: p for p in pads_from_kicad_mod(str(mod)) if p.num.startswith("SH")}
+    assert sh and all(p.drill_slot_mm == (0.65, 1.2) for p in sh.values())
