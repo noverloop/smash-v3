@@ -41,8 +41,8 @@ Voltages are nominal; pass = within ±5 % unless stated.
   non-synchronous TPS61175 passes COMP_5V_RAW through its inductor + diode.
   No wire current flows (master, row and column switches all open); the bleed +
   monitor draw ≈ 90 µA. The cut voltage appears only with ACTIVATE_BOOST_EN (rule #30).
-- **SWD to the WBA55 and the fin MCU ≤ 2 MHz**: 1 kΩ series resistors at their
-  pins (crown protection). The MP25 lines have 100 Ω and run at full speed.
+- **SWD to the WBA55 and the fin MCU ≤ 4 MHz** (rule #41; start at 1 MHz): 1 kΩ series
+  resistors at their pins (crown protection). The MP25 lines have 100 Ω and run at full speed.
 - **TP_VDD on the crown is 3V3_AON through 1 kΩ**, not the MP25's I/O rail
   (COMP_3V3, off in Standby). A third-party probe that takes VTref from it
   could drive SWD into an unpowered MP25 — use the dev board, or check COMP_3V3.
@@ -56,8 +56,8 @@ Voltages are nominal; pass = within ±5 % unless stated.
 
 1. Visual + X-ray of the BGAs (MP25, DDR3L, AWR1843AOP, WBA55, BMM350) and of the
    0.4 mm parts (S-1318 HSNT-4, BGS12, PE64904, TC78H653).
-2. Polarity / orientation: pin-1 marks on every IC; LEDs and diodes (BAS40-02L
-   cathode = marked end, RB160VAM, PNS40010AER); tantalums.
+2. Polarity / orientation: pin-1 marks on every IC; LEDs and diodes (BAS3005S-02LRH
+   cathode = marked side, RB160VAM, PNS40010AER); tantalums.
 3. Resistance from each rail to GND (DMM, both polarities). Nothing below ~100 Ω;
    a short is most likely an assembly bridge or a wrong-orientation part.
    Rails and probe points:
@@ -118,7 +118,7 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
 - Seat interlock: with a tower seated, lift each seat tooth in turn (or open its
   spring pin): tower power must drop each time; the flat path must stay off while
   any seat tooth touches.
-- Soft start: scope the TWR path output into the dummy + 220 µF — ≈ 1 ms ramp, no
+- Soft start: scope the TWR path output into the dummy + 220 µF — ≈ 4 ms ramp, no
   overshoot; PAC1941 sense voltage within its limits.
 - Probe firmware reports the three status lines (rule #40).
 
@@ -188,6 +188,9 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
 - TF-A: provision the PMIC NVM (FIRMWARE_RULES #1), enable BUCK6 1.35 V
   (#3), raise BUCK1 to 0.9 V; check COMP_1V35 and DDR3L_VREF (0.675 V, the
   local 1k/1k divider).
+- **Before DDR training — boundary scan** (rule #43, flat tower): IDCODE of both TAPs, then an
+  interconnect test of every MP25 net in the chain (shorts / stuck-at, incl. 49 DDR3L balls). If
+  training then fails, run a walking-ones data / address test from SYSRAM over SWD to name the bit.
 - DDR training passes; write the SPI-NAND; release PB13 → BOOT high → boots from NAND.
 - I²C scans (pass = exactly these addresses):
   I²C2: BMM350 0x14, ISM330 (IMU1) 0x6A, MCP9808 0x1A, STPMIC25 0x33;
@@ -198,7 +201,7 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
 
 - **Fin-deploy Hall**: HALL_VIN ≈ 3.2 V at its crown contact (≈ 2.8 V with the
   DRV5023 drawing 3 mA); FIN_HALL toggles with the magnet.
-- **Fin MCU** (STM32U545): SWD through TWR_FIN_* (≤ 2 MHz, 1 kΩ series); SYS_SPI to the MP25; fin
+- **Fin MCU** (STM32U545): SWD through TWR_FIN_* (≤ 4 MHz, 1 kΩ series); SYS_SPI to the MP25; fin
   drivers TC78H653 on COMP_5V_RAW — STBY low until firmware, check each H-bridge
   into a dummy load.
 - **Radar** (AWR1843AOP): PI6 holds NRESET low, RADAR_EN high (TP_DEV_DBG_RADAR_EN)

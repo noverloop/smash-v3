@@ -543,3 +543,23 @@ def escape_board(d, boards, refs) -> dict:
                 out[ref] = dict(r["stats"], board=name, unrouted_balls=r["unrouted"],
                                 **({"why": r["why"]} if r["why"] else {}))
     return out
+
+
+
+def escape_stub_end(board, net: str):
+    """(end, unit direction, layer) of a net's BGA escape stub on `board`: the
+    free end farthest from its own ball field, pointing away from the ball."""
+    esc = [t for t in board.tracks if t.net == net and t.note == NOTE]
+    if not esc:
+        return None
+    ends = [p for t in esc for p in (t.path[0], t.path[-1])]
+    free = [p for p in ends if ends.count(p) == 1]
+    f0 = free[0]
+    pts = [p for t in board.tracks if t.note == NOTE for p in t.path
+           if math.hypot(p[0] - f0[0], p[1] - f0[1]) < 8.0]           # this BGA's field only
+    fc = (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
+    e = max(free, key=lambda p: math.hypot(p[0] - fc[0], p[1] - fc[1]))
+    seg = next(t for t in esc if e in (t.path[0], t.path[-1]))
+    o = seg.path[0] if e == seg.path[-1] else seg.path[-1]
+    L = math.hypot(e[0] - o[0], e[1] - o[1]) or 1.0
+    return e, ((e[0] - o[0]) / L, (e[1] - o[1]) / L), seg.layer

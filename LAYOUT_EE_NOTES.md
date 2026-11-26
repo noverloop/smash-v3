@@ -81,6 +81,11 @@ radar / QPD), 39.7 mm with the camera nose.
   stays ≤ 1.75 mm (the compute bottom's 0.95 mm MPU/DDR decoupling sits within
   r 8.6). **The spacer is designed to 3.0 mm**: the parts as delivered still sit
   near the centre, over the compute decoupling — move them into the band.
+- **MP25 JTDI (W3), dev board only, is pre-routed**: in the tower W3 is open. On the dev
+  board its escape stub runs to a through via, then straight out on an inner layer through a
+  castellation-free gap (clear of the break tabs) past the rout slot, a second via, and a short
+  F.Cu track to the pogo pad TP_DEV_JTDI on the panel (boundary scan, FIRMWARE_RULES #43).
+  Keep it; from TP_DEV_JTDI the net continues to U_DEV_FLATSW3 pin 2B.
 - **BGA escapes (MP25 on companion_compute, WBA55 on wakeup_board, U545 on
   activation_interface)** are generated, with **no via in any ball pad**
   (no VIPPO, nothing copper-filled), at **100 µm track / 100 µm clearance**

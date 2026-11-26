@@ -791,6 +791,8 @@ def build_companion_compute(d: Design) -> None:
     _net(d, "SWO")        .connect(mpu.pin("JTDO-TRACESWO"))
     _net(d, "NRST")       .connect(mpu.pin("NRST"))
     _net(d, "BOOT0")      .connect(mpu.pin("BOOT0"))        # force serial boot
+    # JTDI (W3) is connected on the DEV BOARD only (boundary scan, routed off
+    # the tile there); in the tower it stays open, as does NJTRST (V2).
     # (2026-11-21, user: dev board must flash + diagnose the tower) DEBUG
     # CONSOLE on USART6 — PF5 TX / PF4 RX, one of the MP25 ROM-bootloader
     # UARTs (DS boot-interface table), so the aft fixture also serial-boots it.

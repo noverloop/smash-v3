@@ -212,7 +212,7 @@ def build_diag(d) -> dict:
     pinmap = {
         "PA0": "DEV_ISENSE",          # INA241 → ADC1_IN5 (fast current)
         "PA1": "DEV_TWR_VDD_SENSE",   # tower 3V3_AON present (ADC1_IN6)
-        "PA2": "DEV_BTN_METER",       # meter-reset button
+        "PA2": "DEV_FLAT_MP25_JTDI_G",  # MP25 JTDI (boundary scan, flat tower) via U_DEV_FLATSW3 ch 2
         "PB6": "DEV_I2C_SCL", "PB7": "DEV_I2C_SDA",          # I2C1
         "PB8": "DEV_CAN_RX", "PB9": "DEV_CAN_TX",            # FDCAN1
         "PA10": "DEV_TWR_CONS_TX_G", "PA9": "DEV_TWR_CONS_RX_G",   # USART1: RX ← MP25 TX (CONS_TX), TX → MP25 RX (CONS_RX)
@@ -456,7 +456,23 @@ def build_diag(d) -> dict:
         N("DEV_TWR_MP25_BOOT0_G").connect(bs.pin("1A"))
         N(b_net).connect(bs.pin("1B"))
         N(oe).connect(bs.pin("1~{OE}"))
-        for c in (2, 3, 4):                                  # spare: off, both sides grounded
+        spare = (2, 3, 4)
+        if ref == "U_DEV_FLATSW3":
+            # ch 2: MP25 JTDI (W3) of the flat tower ↔ probe PA2. W3 is open in
+            # the tower; HERE it is connected and routed off the tile on an inner
+            # layer through a castellation-free gap to TP_DEV_JTDI on the panel
+            # (route_jtdi_off_tile) — no castellation, no tile space. With
+            # SWDIO/SWCLK/SWO as TMS/TCK/TDO the probe runs 4-wire JTAG
+            # (boundary scan). A real (potted) tower has no JTDI: BUSSW3 ch 2 spare.
+            _mpu = next(c for c in d.chips if c.ref == "U_MPU")
+            N("MP25_JTDI").connect(_mpu.pin("JTDI"))
+            _tpj = add_pogo_pad(d, ref="TP_DEV_JTDI", manf_pn=None, **T)
+            N("MP25_JTDI").connect(_tpj.pin("1"))
+            N("DEV_FLAT_MP25_JTDI_G").connect(bs.pin("2A"))
+            N("MP25_JTDI").connect(bs.pin("2B"))
+            N(oe).connect(bs.pin("2~{OE}"))
+            spare = (3, 4)
+        for c in spare:                                      # spare: off, both sides grounded
             N(V3).connect(bs.pin(f"{c}~{{OE}}"))
             N("GND").connect(bs.pin(f"{c}A")); N("GND").connect(bs.pin(f"{c}B"))
     res_between(d, "TWR_VDD", "DEV_TWR_VDD_SENSE", "10k", ref="R_DEV_TWR_VDD1", **T)
@@ -531,14 +547,13 @@ def build_diag(d) -> dict:
     # ── buttons ────────────────────────────────────────────────────────────
     btns = (("S_DEV_MP25_RST", "NRST", "GND"), ("S_DEV_WBA_RST", "WBA_NRST", "GND"),
             ("S_DEV_WAKE", "MAG_WAKE_N", "GND"), ("S_DEV_JUMP", "JUMP_PAD", "GND"),
-            ("S_DEV_LAUNCH", "DEV_LAUNCH_SW", "3V3"), ("S_DEV_METER", "DEV_BTN_METER", "GND"),
+            ("S_DEV_LAUNCH", "DEV_LAUNCH_SW", "3V3"),
             ("S_DEV_MCU_BOOT", "DEV_MCU_BOOT0", V3),
             ("S_DEV_MP25_BOOT", "DEV_TWR_MP25_BOOT0_G", "GND"))
     for ref, a_, b_ in btns:
         sw = DB.add_b3u_1000p(d, ref=ref, **T)
         N(a_).connect(sw.pin("K")); N(b_).connect(sw.pin("A"))
     res_between(d, "DEV_LAUNCH_SW", "PIEZO_P", "10k", ref="R_DEV_LAUNCH", **T)   # fakes the piezo
-    res_between(d, V3, "DEV_BTN_METER", "10k", ref="R_DEV_BTN_METER", **T)
 
     # ── LEDs ───────────────────────────────────────────────────────────────
     leds = (("D_DEV_LED_VBUS", "DEV_VBUS", "1.5k", add_ltst_c190gkt),
@@ -1614,6 +1629,128 @@ def add_lds_bus(pcb, lay) -> dict:
             "prog": len({ln[3] for ln in lanes if ln[4]})}
 
 
+def route_jtdi_off_tile(d, boards, lay, net="MP25_JTDI", tp_ref="TP_DEV_JTDI",
+                        tile="companion_compute") -> dict:
+    """W3's escape stub → through via → a straight inner-layer track out across
+    the tile edge in a castellation-free gap (clear of the break tabs) → a
+    through via past the rout slot → a short F.Cu track to TP_DEV_JTDI (2 mm
+    pogo pad) on the panel. Every candidate is checked against the placed
+    parts (pads of both faces; through-hole pads on every layer) and all copper
+    already on the board. Raises if nothing fits."""
+    import math
+    from smash.layout.bga_escape import escape_stub_end, CLR, W_OUT
+    from smash.layout.placer.grid import placement_extents_mm, placement_pad_extents_mm
+    from smash.state.routing.track import Track
+    from smash.state.routing.via import Via
+    from smash.state.topology.placement import Placement
+    b = boards[DEV]
+    got = escape_stub_end(b, net)
+    if got is None:
+        raise RuntimeError(f"{net}: no escape stub on the dev board")
+    e, (ux, uy), stub_layer = got
+    C = tuple(lay["centres"][tile])
+    m = lay["mech"].get(tile, {})
+    tabs = [t[0] for t in _tabs(m.get("cast_deg", []), m.get("key"))]
+    yc = lay["yc"]
+    pls = b.chip_placements
+    tpi = next(i for i, pl in enumerate(pls) if pl.item.ref == tp_ref)
+    tp = pls[tpi].item
+    VD, VP = 0.20, 0.45                                   # through via drill / land
+    vr = VP / 2
+    pads = {"top": [], "bottom": [], "th": []}
+    rects_top = []
+    for pl in pls:
+        fp = getattr(pl.item, "footprint", None)
+        if pl.item is tp or fp is None:
+            continue
+        ext = placement_pad_extents_mm(pl, fp, clearance_mm=CLR)
+        th = [r for r, pd in zip(ext, fp.pads) if pd.drill_mm or pd.layer == "*.Cu"]
+        pads["th"].extend(th)
+        pads[pl.face].extend(r for r, pd in zip(ext, fp.pads) if not (pd.drill_mm or pd.layer == "*.Cu"))
+        if pl.face == "top":
+            rects_top.append(placement_extents_mm(pl, fp))
+    trk = [t for t in b.tracks if t.net != net]
+    vias = [v for v in b.vias if v.net != net]
+
+    def sd(p, a, c):
+        dx, dy = c[0] - a[0], c[1] - a[1]
+        l2 = dx * dx + dy * dy or 1e-12
+        u = max(0.0, min(1.0, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2))
+        return math.hypot(a[0] + u * dx - p[0], a[1] + u * dy - p[1])
+
+    def rect_d(r, a, c):                                   # segment ↔ rect, sampled
+        n = max(2, int(math.hypot(c[0] - a[0], c[1] - a[1]) / 0.05))
+        x0, y0, x1, y1 = r
+        best = 9e9
+        for k in range(n + 1):
+            px, py = a[0] + (c[0] - a[0]) * k / n, a[1] + (c[1] - a[1]) * k / n
+            best = min(best, math.hypot(max(x0 - px, 0, px - x1), max(y0 - py, 0, py - y1)))
+        return best
+
+    def seg_ok(a, c, w, layer, face=None):
+        h = w / 2
+        if any(rect_d(r, a, c) < h for r in pads["th"]):
+            return False
+        if face and any(rect_d(r, a, c) < h for r in pads[face]):
+            return False
+        for t in trk:
+            if t.layer == layer and any(
+                    min(sd(a, p, q), sd(c, p, q), sd(p, a, c), sd(q, a, c)) < h + t.width_mm / 2 + CLR
+                    for p, q in zip(t.path, t.path[1:])):
+                return False
+        return all(sd(v.position_mm, a, c) >= h + v.pad_diameter_mm / 2 + CLR for v in vias)
+
+    def via_ok(p):
+        return (seg_ok(p, p, VP, "*", face="top") and seg_ok(p, p, VP, "*", face="bottom")
+                and all(seg_ok(p, p, VP, L) for L in ("F.Cu", "In1.Cu", "In2.Cu", "In3.Cu",
+                                                         "In4.Cu", "In5.Cu", "In6.Cu", "B.Cu")))
+
+    R_OUT = ROUT_MM[1] + 0.9                               # past the rout slot
+    tab_half = math.degrees((TAB_W_MM / 2 + 0.8) / ROUT_MM[0])
+    for k in range(1, 26):
+        v1 = (e[0] + ux * 0.1 * k, e[1] + uy * 0.1 * k)
+        if not via_ok(v1):
+            continue
+        th0 = math.degrees(math.atan2(v1[1] - C[1], v1[0] - C[0]))
+        for dth in sorted((x * 0.5 for x in range(-30, 31)), key=abs):
+            th = th0 + dth
+            if any(min(abs(th - t) % 360, 360 - abs(th - t) % 360) < tab_half for t in tabs):
+                continue
+            v2 = (C[0] + R_OUT * math.cos(math.radians(th)), C[1] + R_OUT * math.sin(math.radians(th)))
+            if abs(v2[1] - yc) < CHANNEL_MM / 2 + 1.5:
+                continue
+            for L in ("In3.Cu", "In4.Cu", "In2.Cu", "In5.Cu"):
+                if not (seg_ok(v1, v2, W_OUT, L) and via_ok(v2)):
+                    continue
+                for dist in (1.6, 2.0, 2.5):
+                    for a in (0, 30, -30, 60, -60, 90, -90):
+                        t_ = math.radians(th + a)
+                        c = (v2[0] + dist * math.cos(t_), v2[1] + dist * math.sin(t_))
+                        if any(math.hypot(c[0] - x, c[1] - y) < R_OUT + 0.5
+                               for x, y in lay["centres"].values()):
+                            continue
+                        trial = Placement(c, 0.0, tp, "top", True)
+                        x0, y0, x1, y1 = placement_extents_mm(trial, tp.footprint)
+                        if any(not (x1 <= a0 or a1 <= x0 or y1 <= b0 or b1 <= y0)
+                               for a0, b0, a1, b1 in rects_top):
+                            continue
+                        if not seg_ok(v2, c, W_OUT, "F.Cu", face="top"):
+                            continue
+                        r2 = lambda p: (round(p[0], 4), round(p[1], 4))
+                        v1, v2, c = r2(v1), r2(v2), r2(c)
+                        b.tracks += [Track(net=net, layer=stub_layer, width_mm=W_OUT, path=[e, v1]),
+                                     Track(net=net, layer=L, width_mm=W_OUT, path=[v1, v2]),
+                                     Track(net=net, layer="F.Cu", width_mm=W_OUT, path=[v2, c])]
+                        b.vias += [Via(net=net, position_mm=p, drill_mm=VD, pad_diameter_mm=VP,
+                                       from_layer="F.Cu", to_layer="B.Cu") for p in (v1, v2)]
+                        pls[tpi] = Placement(c, 0.0, tp, "top", True)
+                        return {"layer": L, "angle_deg": round(th % 360, 1),
+                                "length_mm": round(math.hypot(v1[0] - e[0], v1[1] - e[1])
+                                                   + math.hypot(v2[0] - v1[0], v2[1] - v1[1])
+                                                   + math.hypot(c[0] - v2[0], c[1] - v2[1]), 2)}
+    raise RuntimeError(f"{net}: no clear inner-layer path off the {tile} tile")
+
+
 def write_panel_variant(pcb, lay) -> dict:
     """Fiducials on the dev board, and dev_board_panel.kicad_pcb: the same
     board + a 2 mm rout slot round every tile (inner edge on the castellation
@@ -1824,6 +1961,8 @@ def main() -> int:
     from smash.layout.bga_escape import escape_board as _escape_board
     for _ref, _st in _escape_board(d, boards, G.BGA_ESCAPE_REFS).items():
         print(f"  BGA escape {_ref} ({_st['board']}): {_st}")
+    _r = route_jtdi_off_tile(d, boards, lay)
+    print(f"  MP25 JTDI off the compute tile: {_r}")
     # ONE KiCad project: dev_board.kicad_pro → .kicad_pcb + .kicad_sch, every
     # footprint linked to its symbol (same route as the tower's stackup project)
     import smash.export.kicad_sch as KS
