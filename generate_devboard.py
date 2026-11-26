@@ -1311,8 +1311,15 @@ def _fp_fiducial(ref, x, y, bottom, seed):
             f'(solder_mask_margin 1.0))\n\t)')
 
 
+TAB_MIN_FREE_MM = 3.0         # castellation-free arc a break tab needs (JLC: break ≥ 3 mm)
+
+
 def _tabs(cast_deg, key, n=3):
-    """Tab centre angles: the widest castellation-free gaps, ≥ 90° apart."""
+    """Tab centre angles: the widest castellation-free gaps, ≥ 90° apart, each
+    with ≥ TAB_MIN_FREE_MM of copper-free rim (so breaking the tab cannot tear
+    a neighbouring half-hole). Three where three such gaps exist, else two."""
+    import math
+    from smash.parts.castellations import CAST_PAD_MM
     pts = sorted(set(round(a, 3) for a in cast_deg)) or [0.0]
     gaps = []
     for i, a in enumerate(pts):
@@ -1321,8 +1328,11 @@ def _tabs(cast_deg, key, n=3):
         if key and min(abs(mid - key[0]), 360 - abs(mid - key[0])) < 15:
             continue
         gaps.append((b - a, mid))
+    free = lambda w: math.radians(w) * ROUT_MM[0] - CAST_PAD_MM
     out = []
     for w, mid in sorted(gaps, reverse=True):
+        if len(out) >= 2 and free(w) < TAB_MIN_FREE_MM:
+            break                               # a third tab only in a full-size gap
         if all(min(abs(mid - o[0]), 360 - abs(mid - o[0])) >= 90 for o in out):
             out.append((mid, w))
         if len(out) == n:
@@ -1572,7 +1582,8 @@ def write_panel_variant(pcb, lay) -> dict:
         f"- Rout: {ROUT_MM[1] - ROUT_MM[0]:g} mm slot, inner edge at r {ROUT_MM[0]:g} = through the "
         "castellation hole centres → CASTELLATED (plated half) holes: call this out to the fab "
         "(castellation process: plate, then rout).\\n"
-        f"- {ntab} break tabs ({TAB_W_MM:g} mm) at the widest castellation-free gaps, "
+        f"- {ntab} break tabs ({TAB_W_MM:g} mm) at the widest castellation-free gaps (three per "
+        f"tile where three ≥ {TAB_MIN_FREE_MM:g} mm gaps exist, else two), "
         f"{MOUSE_BITES} × Ø{MOUSE_BITE_D_MM:g} mouse bites each, on the cut line.\\n"
         "- Every tile: the 1.2 × 1.0 mm stacking-fixture notch at 285° (tower frame) is part of its slot.\\n"
         "- PROGRAMMER strip (socket + debug, USB-C on the panel edge): 2 mm slot on its "
