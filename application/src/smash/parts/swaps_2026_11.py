@@ -759,3 +759,18 @@ def add_pns40010aerx(design, ref: str, **overrides) -> Chip:
                 note="Aft-end external power diode (2026-11-23, user; PNS40010ER,115 is obsolete). "
                      "SamacSys land/symbol/STEP.",
                 **overrides)
+
+
+def add_mcp4725a0t_e_ch(design, ref: str, **overrides) -> Chip:
+    """Microchip MCP4725A0T-E/CH — 12-bit I²C DAC with EEPROM, SOT-23-6,
+    VDD (2.7–5.5 V) is the reference, rail-to-rail output. I²C address
+    1100·A2·A1·A0 with A2A1 = 00 (the "A0" part) → 0x60 with A0 = GND.
+    Power-up loads the EEPROM; factory default = mid-scale (0.5 × VDD)
+    (DS22039D Table 5-3). Pins: 1 VOUT, 2 VSS, 3 VDD, 4 SDA, 5 SCL, 6 A0.
+    Footprint: KiCad library SOT-23-6; symbol: KiCad Analog_DAC MCP4725."""
+    from smash.parts.devboard import _sam
+    return _sam(design, ref, pn="MCP4725A0T-E/CH", part_dir="MCP4725A0T-E_CH",
+                mod="SOT-23-6.kicad_mod", package="SOT-23-6", height_mm=1.45,
+                size_mm=(2.9, 2.8), manf="Microchip",
+                description="12-bit DAC with EEPROM, I2C, SOT-23-6",
+                note="KiCad library SOT-23-6 land + Microchip DS22039D.", **overrides)

@@ -533,7 +533,7 @@ def build_diag(d) -> dict:
             ("D_DEV_LED_3V3", V3, "1k", add_ltst_c190gkt),
             ("D_DEV_LED_TWR", "TWR_EXT_VIN", "1k", add_ltst_c190gkt),     # socket powered (never on the cells)
             ("D_DEV_LED_FLAT", "BAT_RAW", "1k", add_ltst_c190gkt),        # flat tower powered
-            ("D_DEV_LED_HV", "ACTIVATE_HV", "33k", add_ltst_c190krkt))   # 33 V: 29 mW in the 0402 (10k was 96 mW)
+            ("D_DEV_LED_HV", "ACTIVATE_HV", "4.7k", add_ltst_c190krkt))  # 7.9–15.9 V: 1.2–3.0 mA, ≤ 41 mW in the 0402
     for ref, net, rv, fn in leds:
         led = fn(d, ref=ref, **T)
         res_between(d, net, f"{ref}_A", rv, ref=f"R_{ref[2:]}", **T)
@@ -1722,7 +1722,7 @@ def write_panel_variant(pcb, lay) -> dict:
         "- Bring-up test points (BRING_UP.md). Rails and control lines that have a sleeve "
         "lane: TP_DEV_DBG_<net> on the programmer strip, reached over the channel bus. "
         "Board-local debug nets: TP_DEV_DBG_<net> at the end of their castellation stub, "
-        "outside the tile. TP_DEV_DBG_ACTIVATE_HV carries 33 V.\\n"
+        "outside the tile. TP_DEV_DBG_ACTIVATE_HV carries the cutter voltage (≤ 15.9 V).\\n"
         "- Per-tile current shunts: on the panel, each consumer tile's copy of BAT_PROT, "
         "3V3, COMP_5V and COMP_3V3 is its own net <RAIL>__<TILE>, joined to the channel "
         "bus through R_DEV_SH_<RAIL>_<TILE> (0.1 Ω 0402; 10 mΩ on R_DEV_SH_BAT_PROT_RADAR, which carries up to ≈1.3 A) at the end of that tile's stub; "

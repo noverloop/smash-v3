@@ -25,7 +25,7 @@ Voltages are nominal; pass = within ±5 % unless stated.
 - Bench supply with current limit, set per stage (below). Scope ≥ 100 MHz, 4
   channels (power-up sequencing), DMM, µA meter (or the dev board's PAC1941 +
   INA241), frequency counter / scope for clocks.
-- **ACTIVATE_HV is 33 V** and drives the parachute-cutter wires: leave the
+- **ACTIVATE_HV is 7.9–15.9 V (firmware-set, 11.9 V default)** and drives the parachute-cutter wires: leave the
   clamp tabs (P_ACT_WIRE_*, P_ACT_COL_*) open or on dummy loads until stage 6.
 - ESD: wrist strap. The aft-crown signal lanes have ESD arrays (U_ESD_*) and
   100 Ω series resistors at the MCU pins, EXT_VIN a TVS, the cutter columns 36 V
@@ -40,7 +40,7 @@ Voltages are nominal; pass = within ±5 % unless stated.
 - **ACTIVATE_HV ≈ 4.7 V in Ready** with the cutter boost disabled: the
   non-synchronous TPS61175 passes COMP_5V_RAW through its inductor + diode.
   No wire current flows (master, row and column switches all open); the bleed +
-  monitor draw ≈ 90 µA. 33 V appears only with ACTIVATE_BOOST_EN (rule #30).
+  monitor draw ≈ 90 µA. The cut voltage appears only with ACTIVATE_BOOST_EN (rule #30).
 - **SWD to the WBA55 and the fin MCU ≤ 2 MHz**: 1 kΩ series resistors at their
   pins (crown protection). The MP25 lines have 100 Ω and run at full speed.
 - **TP_VDD on the crown is 3V3_AON through 1 kΩ**, not the MP25's I/O rail
@@ -89,7 +89,7 @@ Voltages are nominal; pass = within ±5 % unless stated.
 | AWR_1V2 / AWR_1V3 / AWR_1V8 | 1.2 / 1.326 / 1.8 | TP_DEV_DBG_AWR_1V2 / _1V3 / _1V8 | 2.7 / 3.0 / 3.1 | radar | RADAR_EN |
 | LR_TCXO_3V3 | 3.3 | C_LR_TCXO_MEMS2 | | wakeup | LR2021 VTCXO on |
 | XV_5V | 5.0 (= COMP_5V) | C_XV_PA_BULK1 | 3.7 | wakeup | XV_PA_EN |
-| ACTIVATE_HV | ≈ 4.7 (Ready) / 33.3 | TP_DEV_DBG_ACTIVATE_HV (33 V) | 2.6 | power | ≈ 4.7 V with COMP_5V_RAW; 33.3 V with ACTIVATE_BOOST_EN (#30) |
+| ACTIVATE_HV | ≈ 4.7 (Ready) / 11.9 | TP_DEV_DBG_ACTIVATE_HV (≤ 15.9 V) | 2.6 | power | ≈ 4.7 V with COMP_5V_RAW; 11.9 V with ACTIVATE_BOOST_EN (#30) at the DAC's mid-scale default; step the DAC (#18) and check 7.9 / 15.9 V at the code ends |
 | HALL_VIN | ≈ 3.2 (150 Ω from 3V3) | crown contact HALL_VIN | | activation | with 3V3 |
 | NRST (MP25 / PMIC RSTn) | 3.3 when released | R_PMIC_NRST | 3.6 | power / compute | PMIC POWER_UP done |
 | DEV_VBUS / DEV_3V3 | 5.0 / 3.3 | C_DEV_LDO_IN / TP_DEV_MCU_3V3 | | dev strip | USB |
@@ -216,9 +216,11 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
   and TP_XV_LO_MUX, #16); conducted test on J_DEV_HF_S4 (≈ 0.7 dB low at 4.7 GHz).
 - **CAN**: TJA1462 VIO on COMP_3V3; probe ↔ tower CAN through the fixture (120 Ω
   each end).
-- **Cutter (33 V)**: dummy loads on the wires first; ACTIVATE_BOOST_EN high (#30)
-  → ACTIVATE_HV 33.3 V within ≈ 5 ms; master
-  arm (PARACHUTE_CUTTER_SET) + one row + one column; pulse ≤ 10 ms (#18).
+- **Cutter**: 67 Ω dummy loads on the wires first; ACTIVATE_BOOST_EN high (#30)
+  → ACTIVATE_HV 11.9 V within ≈ 5 ms; set the DAC (#18) and confirm on
+  ACTIVATE_CONFIRM; master arm (PARACHUTE_CUTTER_SET) + one row + one
+  column → ≈ 0.18 A in the dummy load; then a real 25 µm × 30 mm nichrome
+  sector to time the cut.
 
 ## 7. Exit criteria
 

@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "manf_pn": "BAS3005S-02LRH",
+    "datasheet": "Infineon BAS3005S-02LRH (2011-06-20)",
+    "datasheet_section": "p.1 maximum ratings; p.2 electrical characteristics; p.5 package TSLP-2-17 outline + foot print",
+    "package": "TSLP-2-17 1.0 × 0.6 × 0.39 (+0.01/−0.03) mm",
+    "verified_by": "library check 2026-11-26",
+    "verified_from_pdf": "application/src/smash/parts/sources/BAS3005S-02LRH/BAS3005S-02LRH.pdf",
+    "notes": "V_R 30 V, I_F 0.5 A (T_S ≤ 132 °C), I_FSM 2 A (≤ 10 ms), Tj 150 °C. Pin 1 = cathode. [height] p.5 0.39 +0.01 mm. [temp] p.1 operating −55…150 °C.",
+    "abs_max_checked": "2026-11-26 from BAS3005S-02LRH.pdf",
+    "height_max_mm": 0.4,
+    "operating_temp_c": [
+      -55,
+      150
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "K",
+      "type": "passive",
+      "max_v_to": {
+        "A": 30
+      },
+      "abs_max_ref": "p.1 Maximum Ratings V_R 30 V"
+    },
+    {
+      "num": "2",
+      "name": "A",
+      "type": "passive"
+    }
+  ]
+}

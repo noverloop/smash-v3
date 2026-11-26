@@ -72,9 +72,12 @@ RADAR_CHIRP_EXTRA = Load("AWR1843 active frame (RF rail to 1.5 A)", "AWR_1V3", 1
                          "DS T6-3/6-4 est")
 FIN_STEP_EXTRA = Load("one fin driver step (~5 W, firmware-staggered)", "COMP_5V", 4.0 / 5.03,
                       "old (5 W/driver) — winding R not in netlist")
-CUTTER_W_PER_SECTOR = 4.0   # DS-derived range 0.65-4 W per nichrome sector (generator docstring)
+# 25 µm × 30 mm nichrome (≈ 67 Ω) at the 11.9 V nominal (DAC mid-scale):
+# 0.18 A → 2.1 W; firmware range 0.9–3.8 W (7.9–15.9 V, generator docstring)
+CUTTER_V_NOMINAL = 11.9
+CUTTER_W_PER_SECTOR = 2.1
 
 
 def cutter(sectors: int = 1, watts: float = CUTTER_W_PER_SECTOR) -> Load:
-    return Load(f"parachute cutter, {sectors} sector(s) x {watts:g} W, ~5 ms",
-                "ACTIVATE_HV", sectors * watts / 33.0, "generator docstring")
+    return Load(f"parachute cutter, {sectors} sector(s) x {watts:g} W, ~0.1-0.5 s",
+                "ACTIVATE_HV", sectors * watts / CUTTER_V_NOMINAL, "generator docstring")

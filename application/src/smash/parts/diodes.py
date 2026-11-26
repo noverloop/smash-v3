@@ -410,6 +410,44 @@ def add_bas40_02l(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_bas3005s_02lrh(design, ref: str, **overrides) -> Chip:
+    """Infineon BAS3005S-02LRH — low-VF Si Schottky, V_R = 30 V, I_F = 0.5 A
+    (T_S ≤ 132 °C), I_FSM = 2 A (t ≤ 10 ms), V_F ≤ 420 mV @ 200 mA, Tj 150 °C,
+    C_T 10 pF, leadless TSLP-2-17 (1.0 × 0.6 × < 0.4 mm), marking "5A"
+    (datasheet 2011-06-20).
+
+    Steering diode of the 4 × 4 parachute-restraint MATRIX: one in series with
+    each nichrome wire (anode = its row line, cathode = its wire tab), on
+    aft_end_board's TOP face in the holder floor's pocket. A wire draws
+    0.12–0.24 A (firmware-set cutter rail 7.9–15.9 V on ≈ 67 Ω) for ≈ 0.1–0.5 s
+    — under I_F; unselected columns float up to ≤ 15.9 V (< V_R 30 V).
+
+    Footprint = the datasheet's TSLP-2-17 foot print (p.5): two 0.6 × 0.35 mm
+    copper pads, 0.3 mm gap (0.65 mm pitch). Pin 1 = CATHODE (cathode marking
+    at pin 1) — the same land as the BAS40-02L's TSLP-2-1."""
+    pn = "BAS3005S-02LRH"
+    pads = [Pad(num="1", position_mm=(-0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="2", position_mm=(0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu")]
+    fp = Footprint(name="Infineon_TSLP-2-17", package_class="TSLP-2-17 (1.0 × 0.6 mm)",
+                   pads=pads, size_mm=(1.0, 0.6), height_mm=0.4, pitch_mm=0.65,
+                   source="Infineon BAS3005S-02LRH datasheet p.5 (TSLP-2-17 foot print)")
+    fp.ensure_courtyard_clearance()
+    fields = dict(
+        manf="Infineon", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description="Schottky diode, V_R=30 V, I_F=0.5 A, I_FSM=2 A (≤10 ms), low V_F, TSLP-2-17",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        standards=["RoHS", "Pb-Free"],
+        package="TSLP-2-17", size_mm=(1.0, 0.6), height_mm=0.4,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=30.0, i_rms_a=0.5, tj_max_c=150.0,
+        pins=[Pin(num="1", name="K", type="passive"), Pin(num="2", name="A", type="passive")],
+        footprint=fp,
+        note="Parachute-matrix steering diode. Pin 1 = cathode (datasheet p.5).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ═════════════════════════════════════════════════════════════════════════
 # ST STPS1L60ZF — 60 V / 1 A low-drop power Schottky, SOD-123Flat (1.10 mm)
 # ═════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,6 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+BAS3005S-02LRH,Infineon,16,D_ACT_WIRE_0+15 R32,Schottky 30 V 0.5 A TSLP-2-17 (1.0 x 0.6 mm); cutter steering diode; check origin + stock
+RB550ASA-30FHT2RB,ROHM,16,D_ACT_WIRE alt R32,Schottky 30 V 0.5 A DFN1006-2W; alternate of BAS3005S-02LRH; check origin
+"PMEG3005EL,315",Nexperia,16,D_ACT_WIRE alt2 R32,Schottky 30 V 0.5 A SOD882; alternate of BAS3005S-02LRH; check origin
+MCP4725A0T-E/CH,Microchip,1,U_ACTIVATE_DAC R32,"12-bit I2C DAC with EEPROM, SOT-23-6; cutter voltage setpoint; check origin + second source"
+CX90B-16P,Hirose,1,J_DEV_USB R32,USB-C 2.0 receptacle top-mount (dev board); check stock

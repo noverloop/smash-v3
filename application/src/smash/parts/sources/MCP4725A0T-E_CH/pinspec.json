@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "manf_pn": "MCP4725A0T-E/CH",
+    "datasheet": "Microchip MCP4725 DS22039D",
+    "datasheet_section": "Table 3-1 pin functions (p.13); Absolute Maximum Ratings (p.3); Electrical Characteristics (p.4); Table 5-3 EEPROM factory default; Product Identification System",
+    "package": "SOT-23-6 (CH)",
+    "verified_by": "library check 2026-11-26",
+    "verified_from_pdf": "application/src/smash/parts/sources/MCP4725A0T-E_CH/MCP4725_DS22039D.pdf",
+    "notes": "I2C address 1100\u00b7A2\u00b7A1\u00b7A0, A2A1 = 00 for the A0 ordering code \u2192 0x60 / 0x61. EEPROM factory default = mid-scale (0.5\u00b7VDD). Short-circuit current 15\u201324 mA. [temp] Electrical Characteristics: operating \u221240\u2026+125 \u00b0C. [height] SOT-23-6 1.45 mm max.",
+    "abs_max_checked": "2026-11-26 from MCP4725_DS22039D.pdf",
+    "height_max_mm": 1.45,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "VOUT",
+      "type": "output",
+      "max_over": {
+        "pin": "VDD",
+        "v": 0.3
+      },
+      "abs_max_ref": "DS22039D p.3 Absolute Maximum Ratings: all inputs and outputs \u20130.3 V to VDD+0.3 V; output pin current \u00b125 mA"
+    },
+    {
+      "num": "2",
+      "name": "VSS",
+      "type": "ground"
+    },
+    {
+      "num": "3",
+      "name": "VDD",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        5.5
+      ],
+      "max_v": 6.5,
+      "abs_max_ref": "DS22039D p.3 Absolute Maximum Ratings VDD 6.5 V; p.4 Electrical Characteristics VDD 2.7\u20135.5 V"
+    },
+    {
+      "num": "4",
+      "name": "SDA",
+      "type": "io",
+      "open_drain": true,
+      "max_over": {
+        "pin": "VDD",
+        "v": 0.3
+      },
+      "abs_max_ref": "DS22039D p.3"
+    },
+    {
+      "num": "5",
+      "name": "SCL",
+      "type": "input",
+      "max_over": {
+        "pin": "VDD",
+        "v": 0.3
+      },
+      "abs_max_ref": "DS22039D p.3"
+    },
+    {
+      "num": "6",
+      "name": "A0",
+      "type": "input",
+      "connect": "defined",
+      "max_over": {
+        "pin": "VDD",
+        "v": 0.3
+      },
+      "note": "I2C address bit A0: tie to VSS or VDD [DS22039D Table 3-1]",
+      "abs_max_ref": "DS22039D p.3"
+    }
+  ]
+}

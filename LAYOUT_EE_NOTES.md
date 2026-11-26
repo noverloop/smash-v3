@@ -109,7 +109,7 @@ radar / QPD), 39.7 mm with the camera nose.
   sleeve bus (radial stubs → r 19.6), and the activation_interface reference
   routing (an imported reference layout). ⚠ That reference routing came
   from Freerouting with ONE rule (100 µm / 75 µm, 0.45/0.20 via) — all nets at
-  4 mil including ACTIVATE_HV (33 V) and BAT_RAW: **re-route those nets to
+  4 mil including ACTIVATE_HV (≤ 15.9 V) and BAT_RAW: **re-route those nets to
   their net class before fab.**
 - **Net classes** (`NET_CLASSES.md`, also loaded in every `.kicad_pro` under
   Board Setup → Net Classes, assigned per net): layer plan (In1 / In3 / In6
@@ -121,7 +121,7 @@ radar / QPD), 39.7 mm with the camera nose.
   have the fab tune them; the inner layers give ≈ 39 Ω at 0.125 mm, so keep
   impedance-controlled runs outside), DDR length matching (DQ/DM to DQS ±1.42 mm, A/C to
   CK ±3.55 mm, DQS to CK ±12.07 mm), RF / clock / high-impedance analog / HV
-  (0.13 mm, 33 V) / pack-current classes. Inner copper is 18 µm: carry the
+  (0.13 mm, cutter rail ≤ 15.9 V) / pack-current classes. Inner copper is 18 µm: carry the
   pack path on outer-layer pours.
 - **Decoupling map** (`DECOUPLING_MAP.csv`): every capacitor with the IC pin it
   serves and its distance rule (≤ 220 nF within 1.5 mm of the pin, ≤ 4.7 µF

@@ -81,7 +81,7 @@ CLASSES: dict[str, dict] = {
                     note="switch nodes: smallest copper area that carries the current; no other "
                          "signals under them on the adjacent layer."),
     "HV_33V": dict(width=0.20, clearance=0.13,
-                   note="ACTIVATE_HV / cutter matrix (≤ 33 V, 0.12 A burn): IPC-2221B B4 "
+                   note="ACTIVATE_HV / cutter matrix (≤ 15.9 V, ≤ 0.24 A burn; spacing kept at the 33 V value): IPC-2221B B4 "
                         "(31-50 V, coated/potted) 0.13 mm."),
     "PWR_PACK": dict(width=2.5, inner_width=6.0, clearance=0.15,
                      note="pack path (BAT_CELLx, BAT_RAW, BAT_PROT, REG_IN_MAIN, COMP_5V_RAW): 1.8 A "

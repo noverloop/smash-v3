@@ -68,7 +68,7 @@ from smash.parts.regulators import (                                    # noqa: 
 from smash.parts.motor_drivers import add_drv8428epwpr, add_drv8428erter  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
                                 add_pmeg040v050epe_qz,
-                                add_bas40_02l, add_stps1l60zf, add_pmeg6010cej)
+                                add_bas40_02l, add_bas3005s_02lrh, add_stps1l60zf, add_pmeg6010cej)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
     add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr, add_tps7a0233pdqnr,
@@ -180,7 +180,7 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "AWR_1V8_BK":   1.8,    # TPS62822 output, ahead of the FB_AWR_1V8 post-filter
     "BAT_RAW":      4.0,
     "BAT_PROT":     4.0,
-    "ACTIVATE_HV":      33.0,   # aft activation rail (TPS61175 boost off COMP_5V); cap-free, boost sources the wire directly
+    "ACTIVATE_HV":      15.9,   # cutter rail (TPS61175 off COMP_5V), firmware-set 7.9–15.9 V via the FB DAC — the maximum, for the rating checks
     "EXT_VIN":     5.6,    # (2026-11-23) external supply at the aft end (programmer fixture) → D_EXT_IN → BAT_PROT
     "REG_IN_MAIN":  4.0,
     "WBA_VDD11":    1.1,    # WBA55 SMPS output → core supply
@@ -2576,37 +2576,36 @@ def _build_activation_array(d: Design) -> None:
     common that feeds whichever restraint the sector decoder has
     selected. That wire fuses and lets its sector of the canopy go.
 
-    A TPS61175 boost makes ACTIVATE_HV = 33 V (off COMP_5V) and sources the
-    cutter current DIRECTLY — no reservoir cap. At this operating point one
-    sector is ~30 mm of 25 µm / fine outbound at current density
-    ~1000 A/mm²: V = J·ρ·L = 33 V, the wire draws ~20-120 mA depending on
-    gauge (0.65-4 W), and self-fuses adiabatically in ~5 ms. That power is
-    well within the boost's ~280 mA @ 33 V output, so the old cutter cap
-    (and the cell-pulse problem it solved) is GONE — the wire is the load.
+    Wire: one sector = 30 mm of 25 µm nichrome (ρ ≈ 1.1 µΩ·m) ≈ 67 Ω;
+    fusing current ≈ 0.1 A (estimate — a bench cut test sets the working
+    point). A TPS61175 boost makes ACTIVATE_HV off COMP_5V and sources the
+    cutter current directly — no reservoir cap; the wire is the load. Its
+    voltage is FIRMWARE-SET through an MCP4725 I²C DAC on the FB node,
+    hardware-bounded to 7.9–15.9 V (0.12–0.24 A / 0.9–3.8 W on 67 Ω), and
+    comes up at the 11.9 V nominal (0.18 A, 2.1 W, cut in ≈ 0.1–0.5 s) with
+    the DAC's factory mid-scale default — inside the pack's ≈ 4 W budget.
 
-    Selection (2026-11-20): a 4 × 4 DIODE MATRIX driven straight by the fin
-                MCU (G0B1 PA0..3 = rows, PA5..8 = columns). Row = DMP6110
-                high side (BSS138 level shift), column = BSS138 low side; each
-                wire has its own BAS40-02L steering diode (aft_end top) — no
-                sneak paths, 8 nets to aft_end instead of 17. Replaces the
-                CD74HC4514 decoder + 16 DMN6075 select NFETs.
+    Selection: a 4 × 4 DIODE MATRIX driven by the fin MCU (U545): rows =
+                P-FET high sides, columns = N-FET low sides; each wire has
+                its own 0.5 A Schottky steering diode (aft_end top, in the
+                holder's piezo pocket) — no sneak paths, 8 nets to aft_end.
     Set/activate: PARACHUTE_CUTTER_SET (MP25) → DMP6110 master high side
                 (ACTIVATE_HV → PARACHUTE_CUTTER_ACTIVATE → the 4 row PFETs).
                 Without it ACTIVATE_HV reaches no wire even if a row and a
                 column switch both short. The
                 PFET gate is a resistor divider (R1=R2=100k off
-                ACTIVATE_HV) → V_GS ≈ -16.5 V at 33 V, inside the ±20 V
-                limit (no zener).
-    Monitor:    ACTIVATE_HV → 100k/11k divider → ACTIVATE_CONFIRM (MP25 ADC) so
-                firmware verifies the 33 V rail before the cut; R_ACTIVATE_BLEED
-                discharges the small output cap when PARACHUTE_CUTTER_SET is released.
+                ACTIVATE_HV) → V_GS ≈ −4 … −8 V over the 7.9–15.9 V range,
+                inside the ±20 V limit.
+    Monitor:    ACTIVATE_HV → 100k/11k divider → ACTIVATE_CONFIRM (MP25 ADC):
+                firmware verifies the set voltage before the cut and drops
+                PARACHUTE_CUTTER_SET if the rail collapses during one (a
+                shorted wire — the non-synchronous boost cannot limit an
+                output short); R_ACTIVATE_BLEED discharges the output cap.
 
-    Both 33 V (vs the cap's 25 V) and 60 V FETs are comfortable; only the
-    boost's mandatory output ceramic remains on ACTIVATE_HV (50 V, loop
-    stability — NOT a cutter reservoir). All on aft_end_board. SAFETY
-    (eFuse-gated decoder + PARACHUTE_CUTTER_SET interlock): no restraint
-    cuts unless the package is in MAIN (BAT_PROT live) AND
-    PARACHUTE_CUTTER_SET drives the high side."""
+    Only the boost's mandatory output ceramic sits on ACTIVATE_HV (loop
+    stability, not a cutter reservoir). SAFETY: no restraint cuts unless the
+    package is in MAIN (BAT_PROT live) AND PARACHUTE_CUTTER_SET drives the
+    master high side."""
     # SECTOR SELECT + ACTIVATE CHAIN on aft_end_board's TOP face (moved here
     # from activation 2026-07-31; the piezo cluster moved OUT to
     # fin_ble_board's top in the same-day stack reorder, freeing the room
@@ -2621,7 +2620,7 @@ def _build_activation_array(d: Design) -> None:
     # The bench pogos + wire pads + common ride aft_end's BOTTOM (aft
     # service) face.
     BT = "aft_end_board"
-    # ── activate-rail boost: COMP_5V → ACTIVATE_HV 33 V (TPS61175) ──────────────
+    # ── activate-rail boost: COMP_5V → ACTIVATE_HV 7.9–15.9 V (TPS61175) ───────
     # Fed from COMP_5V (not BAT_PROT): 5→33 V is 85 % duty vs 88 % from a
     # depleted cell — comfortable headroom under the TPS61175 ~89 % DMAX.
     # The boost POWER STAGE lives one tile up on ACTIVATION_INTERFACE
@@ -2638,7 +2637,7 @@ def _build_activation_array(d: Design) -> None:
     # the wires — safety topology unchanged.
     # (2026-11-20, user) the fire boost moved to power_board's TOP, next to the
     # COMP 5 V boost that feeds it: both tall boost stages face ONE gap
-    # (power↔compute); only ACTIVATE_HV (33 V, ≤ 0.12 A) runs down to the
+    # (power↔compute); only ACTIVATE_HV (≤ 15.9 V, ≤ 0.24 A) runs down to the
     # cutter / matrix on activation_interface.
     BT_BOOST = "power_board"
     boost = add_tps61175pwpr(d, ref="U_ACTIVATE_BOOST", board_tag=BT_BOOST)
@@ -2678,9 +2677,26 @@ def _build_activation_array(d: Design) -> None:
     d_activate = add_rb160vam_60(d, ref="D_ACTIVATE", board_tag=BT_BOOST)   # (2026-11-21) SOD323F 0.8 mm, same 60 V / 1 A
     _net(d, "ACTIVATE_SW").connect(d_activate.pin("A"))
     _net(d, "ACTIVATE_HV").connect(d_activate.pin("K"))
-    # FB: VOUT = 1.229 × (1 + 261/10) = 33.3 V
+    # FB — firmware-set cutter voltage: an MCP4725 I²C DAC (I2C2, 0x60)
+    # injects into FB through R3. VFB = 1.229 V (TPS61175 DS):
+    #   VOUT = 1.229·(1 + R1/R2 + R1/R3) − V_DAC·R1/R3
+    #        = 15.93 V − 2.439·V_DAC   (R1 261k, R2 27.4k, R3 107k)
+    # → 15.9 V (DAC 0 V) … 11.9 V (mid-scale = the DAC's factory EEPROM
+    # default, so an unprogrammed part comes up at the nominal) … 7.9 V
+    # (DAC 3.3 V). Hardware-bounded: no DAC code can leave 7.9–15.9 V. On the
+    # 25 µm × 30 mm nichrome wire (≈ 67 Ω) that is 0.12–0.24 A / 0.9–3.8 W
+    # (nominal 0.18 A / 2.1 W); fusing current ≈ 0.1 A. FB stays < 1 V with
+    # EN low (≈ 4.7 V passthrough), inside its 3 V abs max.
     res_between(d, "ACTIVATE_HV", "ACTIVATE_FB", "261k", ref="R_ACTIVATE_FB1", board_tag=BT_BOOST)
-    res_between(d, "ACTIVATE_FB", "GND",     "10k",  ref="R_ACTIVATE_FB2", board_tag=BT_BOOST)
+    res_between(d, "ACTIVATE_FB", "GND",     "27.4k", ref="R_ACTIVATE_FB2", board_tag=BT_BOOST)
+    from smash.parts.swaps_2026_11 import add_mcp4725a0t_e_ch
+    dac = add_mcp4725a0t_e_ch(d, ref="U_ACTIVATE_DAC", board_tag=BT_BOOST)
+    _net(d, "ACTIVATE_DAC").connect(dac.pin("VOUT"))
+    _net(d, "3V3").connect(dac.pin("VDD")); _net(d, "GND").connect(dac.pin("VSS"))
+    _net(d, "GND").connect(dac.pin("A0"))                          # 0x60
+    _net(d, "I2C2_SDA").connect(dac.pin("SDA")); _net(d, "I2C2_SCL").connect(dac.pin("SCL"))
+    cap_to_gnd(d, "3V3", "100nF", ref="C_ACTIVATE_DAC", board_tag=BT_BOOST, pin=dac.pin("VDD"))
+    res_between(d, "ACTIVATE_DAC", "ACTIVATE_FB", "107k", ref="R_ACTIVATE_FB3", board_tag=BT_BOOST)
     # COMP RC — light load (the wire), loop non-critical; reuse known values.
     res_between(d, "ACTIVATE_COMP", "ACTIVATE_COMP_C", "1.6k", ref="R_ACTIVATE_COMP", board_tag=BT_BOOST)
     cap_to_gnd(d, "ACTIVATE_COMP_C", "220nF", ref="C_ACTIVATE_COMP", board_tag=BT_BOOST, pin=(boost.ref, None))
@@ -2710,7 +2726,7 @@ def _build_activation_array(d: Design) -> None:
     for dp in ("D_1", "D_2", "D_3", "D_4", "D_5"):
         _net(d, "PARACHUTE_CUTTER_ACTIVATE").connect(unlock.pin(dp))   # drains → sector common
     for sp in ("S_1", "S_2"):
-        _net(d, "ACTIVATE_HV").connect(unlock.pin(sp))      # source = the 33 V rail
+        _net(d, "ACTIVATE_HV").connect(unlock.pin(sp))      # source = the cutter rail
     _net(d, "PARACHUTE_CUTTER_ACTIVATE_G").connect(unlock.pin("G"))
     # gate divider: ACTIVATE_HV ─100k─ G ─100k─ (BSS138 drain). parachute_cutter_activate → G≈16.5 V
     # → V_GS≈-16.5 V (PFET on, inside ±20 V); without parachute_cutter_activate → G=ACTIVATE_HV (off).
@@ -2725,7 +2741,7 @@ def _build_activation_array(d: Design) -> None:
 
     # ── (2026-11-20, user) 4 × 4 DIODE MATRIX, driven straight by the fin MCU ──
     # Wire k = (row k // 4, column k % 4): row PFET (high side, behind the
-    # master PARACHUTE_CUTTER_ACTIVATE PFET) → D_ACT_WIRE_k (BAS40-02L, on
+    # master PARACHUTE_CUTTER_ACTIVATE PFET) → D_ACT_WIRE_k (BAS3005S-02LRH, on
     # aft_end's TOP in the holder floor's annular pocket) → ACT_WIRE_k clamp
     # tab → nichrome → its column tab ACT_COL_j → column NFET → GND. Only 8
     # nets (ACT_ROW_0..3, ACT_COL_0..3) cross to aft_end (was 16 wires + the
@@ -2753,9 +2769,9 @@ def _build_activation_array(d: Design) -> None:
         res_between(d, f"ACT_ROW_SEL_{r}", "GND", "100k", ref=f"R_ACT_ROW{r}_PD", board_tag=BT)
     for c in range(4):
         # SSM3K339R: R_DS(on) guaranteed at V_GS 2.5 V (238 mΩ) — fully on at the
-        # fin MCU's 3.3 V gate for the 0.12 A burn (the 60 V NX7002AK is only
+        # fin MCU's 3.3 V gate for the ≤ 0.24 A burn (the 60 V NX7002AK is only
         # specified at 5 V and could current-limit below the wire current).
-        # 40 V: unselected columns float to the 33 V rail; the 36 V TVS below
+        # 40 V: unselected columns float up to the ≤ 15.9 V cutter rail; the 36 V TVS below
         # (V_BR 38.2 V min) clamps ESD on the wire tabs.
         q = add_ssm3k339r(d, ref=f"Q_ACT_COL{c}", board_tag=BT)
         _net(d, f"ACT_COL_{c}").connect(q.pin("3"))
@@ -2770,7 +2786,7 @@ def _build_activation_array(d: Design) -> None:
     # Restraint-wire clamp tabs (aft_end BOTTOM, r 6.4 ring) + their series
     # steering diodes right above them (aft_end TOP, holder-floor pocket).
     for i in range(16):
-        dk = add_bas40_02l(d, ref=f"D_ACT_WIRE_{i}", board_tag="aft_end_board")
+        dk = add_bas3005s_02lrh(d, ref=f"D_ACT_WIRE_{i}", board_tag="aft_end_board")   # 0.5 A: the 0.12–0.24 A burn
         _net(d, f"ACT_ROW_{i // 4}").connect(dk.pin("A"))
         _net(d, f"ACT_WIRE_{i}").connect(dk.pin("K"))
         pad = add_clamp_tab(d, ref=f"P_ACT_WIRE_{i}", board_tag="aft_end_board",
