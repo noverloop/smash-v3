@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 
 # accepted swaps for specific values (availability/decisions.csv)
-_C0G_0402_MURATA = {0.5: "GJM1555C1HR50BB01D", 0.8: "GJM1555C1HR80BB01D", 1.0: "GJM1555C1H1R0BB01D",
+_C0G_0402_MURATA = {0.5: "GJM1555C1HR50BB01D", 0.6: "GJM1555C1HR60BB01D", 0.8: "GJM1555C1HR80BB01D", 1.0: "GJM1555C1H1R0BB01D",
                     1.1: "GJM1555C1H1R1BB01D", 1.2: "GJM1555C1H1R2BB01D", 5.1: "GJM1555C1H5R1BB01D"}
 _X7R_0402_MURATA = {100e-9: "GRM155R71C104KA88D", 47e-9: "GRM155R71E473KA88D"}
 
@@ -61,6 +61,9 @@ def resolve(mpn: str) -> tuple[str, str] | None:
         v = m[1]
         special = {"0": "CRCW04020000Z0ED", "10m": "WFCP0402R0100FE66", "200m": "RCWE0402R200FKEA"}
         return (special.get(v) or f"CRCW0402{_rcode(_ohms(v))}FKED"), "Vishay"
+    m = re.match(r"CRCW0805 ([\d.]+[kKM]?) 1% e3", mpn)
+    if m:
+        return f"CRCW0805{_rcode(_ohms(m[1]))}FKEA", "Vishay"
     m = re.match(r"CRCW0603 ([\d.]+[kKM]?) 1% e3", mpn)
     if m:
         return f"CRCW0603{_rcode(_ohms(m[1]))}FKEA", "Vishay"

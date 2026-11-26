@@ -42,6 +42,8 @@ for rnd in ["r4", "r5", "r7", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r1
 
 ACC = [  # line, refs, function, MPN, manufacturer, qty, library, fitted, note
  ("D_JUMP_WAKE / D_AON_WAKE", "D_JUMP_WAKE, D_JUMP_WAKE2, D_AON_WAKE, D_AON_WAKE2", "wake-OR Schottky", "BAS4002LE6327XTMA1", "Infineon", 4, "in repo", "fitted", "APPLIED in generator"),
+ ("D_ACT_WIRE", "D_ACT_WIRE_0..D_ACT_WIRE_15", "cutter steering Schottky", "RB550ASA-30FHT2RB", "ROHM", 16, "in repo", "fitted", "APPLIED in generator (round 33)"),
+ ("U_ACTIVATE_DAC", "U_ACTIVATE_DAC", "cutter-rail DAC", "MCP4725A0T-E/CH", "Microchip", 1, "in repo", "fitted", "APPLIED in generator (round 33)"),
  ("C_BAT_BULK1", "C_BAT_BULK1 (+1)", "battery bulk 470 uF 6.3 V polymer", "6TPE470MI", "Panasonic", 2, "need", "fitted", ""),
  ("C_BOOST_OUT1", "C_BOOST_OUT1", "boost output 47 uF 16 V polymer", "T521V476M016ATE070", "KEMET", 1, "need", "fitted", "promoted from alternate (R13)"),
  ("U_FIN1", "U_FIN1..U_FIN4", "fin dual H-bridge", "TC78H653FTG,EL", "Toshiba", 4, "need", "fitted", "new pin map vs DRV8428"),
@@ -116,6 +118,8 @@ ALT = [  # line, for MPN, alternate MPN, manufacturer, why / caveat
  ("C_BOOST_OUT1", "T521V476M016ATE070", "T520V476M016ATE070", "KEMET", "previous primary; same V case; Mouser lot only clean"),
  ("C_BOOST_OUT1", "T521V476M016ATE070", "T520D476M016ATE070", "KEMET", "D case, same 7343 land, taller"),
  ("D_JUMP_WAKE / D_AON_WAKE", "BAS4002LE6327XTMA1", "PMEG4002EL,315", "Nexperia", "SOD882 1.0x0.6; check wafer fab (Nexperia rule)"),
+ ("D_ACT_WIRE", "RB550ASA-30FHT2RB", "BAS3005S02LRHE6327XTSA1", "Infineon", "TSLP-2-17 1.0x0.6, I_FSM 2 A; Mouser lists it (726-BAS3005S02LRH), not Farnell / Digi-Key; stock unconfirmed"),
+ ("D_ACT_WIRE", "RB550ASA-30FHT2RB", "PMEG3005EL,315", "Nexperia", "SOD882 1.0x0.6; stocked at Digi-Key only (round 33); check wafer fab (Nexperia rule)"),
  ("U_DEV_MCU", "STM32U535CBU6", "STM32U535CCU6", "STMicroelectronics", "same pinout, 256 KB; Digi-Key lot Taiwan, Mouser lot China"),
  ("Y_WBA_HSE", "DSC1001CI5-032.0000", "SIT1602BI-12-33E-32.000000", "SiTime", "programmed to order; confirm pinout"),
  ("Y_AWR_HSE", "SIT1602BI-12-18E-40.000000", "DSC1001DI5-040.0000", "Microchip", "2.5 x 2.0 package (the 'C' code is 3.2 x 2.5 and does not fit the land); stock to check"),

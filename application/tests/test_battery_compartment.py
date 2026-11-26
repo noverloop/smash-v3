@@ -323,9 +323,10 @@ def test_piezo_cluster_sits_in_the_holder_floor_pocket():
     for ref in ("R_PIEZO_BLEED", "R_COMP_SER", "R_COMP_DIV", "U_COMP_PZ", "C_COMP_PZ"):
         x, y = L[ref]["position_mm"]
         assert pk.contains(box(x - 0.6, y - 0.6, x + 0.6, y + 0.6)), ref
-    # crown ESD parts: their real body (+ 0.1 mm) inside the pocket
-    body = {"U_ESD_AFT": (1.0, 1.45), "D_EXT_VIN_TVS": (1.0, 0.6), "D_ACT_COL": (1.0, 0.6)}
-    for ref in (*(f"U_ESD_AFT{k}" for k in range(1, 8)), "D_EXT_VIN_TVS",
+    # crown ESD parts: their real body (+ 0.1 mm) inside the pocket (the
+    # EXT_VIN TVS is on power_board with the rest of the EXT_VIN parts)
+    body = {"U_ESD_AFT": (1.0, 1.45), "D_ACT_COL": (1.0, 0.6)}
+    for ref in (*(f"U_ESD_AFT{k}" for k in range(1, 8)),
                 *(f"D_ACT_COL{c}_TVS" for c in range(4))):
         x, y = L[ref]["position_mm"]
         w, h = next(v for k, v in body.items() if ref.startswith(k))

@@ -1,0 +1,11 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+R_EXT_CAN_TERM_P+1 R CRCW060362R0FKEA             |   34294   18w    0.09 Taiwan    |   25695 16.0w    0.03 Israel    |   49687   21w    0.10 Taiwan    | 
+R_HALL_VIN R34       CRCW0805150RFKEA             |  262195   18w    0.09 Taiwan    |   47331 20.0w    0.04 Taiwan    |  120453   21w    0.10 Israel    | 
+U_EXT_EFUSE R34      TPS25940AQRVCTQ1             |     346   26w    2.73 Philippin |                        - |     540   26w    3.13 United St | 
+R_EFUSE_UV1 R34      CRCW0402750KFKED             |  196445   18w    0.09 Taiwan    |    2449 20.0w    0.04 Taiwan    |   62004   21w    0.10 Taiwan    | 
+R_EFUSE_OV R34       CRCW0402150KFKED             |  232215   18w    0.09 Israel    |   13776 20.0w    0.04 Taiwan    |  280470   21w    0.10 Taiwan    | 
+R_EFUSE_ILIM R34     CRCW040288K7FKED             |   57481   18w    0.09 Taiwan    |    3715 20.0w    0.02 Israel    |   80137   21w    0.10 Taiwan    | 
+D_EXT_VIN_TVS cand1  ESD218B102ELSE6327XTSA1      |       0     w    0.00 Malaysia/ |                        - |       0   12w    0.00 Austria   | Obsolete Obsolete
+D_EXT_VIN_TVS cand2  PESD15VS1UL,315              |    4144   53w    0.26 Malaysia  |                        - |       0   30w    0.26 China     | 
+
+Digi-Key rows not in the upload:

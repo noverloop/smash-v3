@@ -317,7 +317,12 @@ def write_unrolled_sleeve(boards: dict, chain: list, contract: dict,
     for net, (x0, z0, x1, z1) in strips:
         n = nid(net)
         xc = 0.5 * (x0 + x1)
-        items.append(f'\t(segment (start {X(xc)} {Y(z0)}) (end {X(xc)} {Y(z1)}) '
+        # a KiCad track has ROUND ends that stick out w/2: inset both ends so
+        # the copper ends where the simulated (square) strip does — at the
+        # feed end it must keep the CPW gap g to the closing ground band (the
+        # sim's port), not touch it (a short across the port)
+        h = min(0.5 * (x1 - x0), 0.5 * (z1 - z0))
+        items.append(f'\t(segment (start {X(xc)} {Y(z0 + h)}) (end {X(xc)} {Y(z1 - h)}) '
                      f'(width {round(x1 - x0, 3)}) (layer "F.Cu") (net {n}))')
     for net, xf, zb in feeds:
         if net not in lanes:

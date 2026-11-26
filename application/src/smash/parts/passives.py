@@ -409,6 +409,34 @@ def add_resistor_0603_vishay(design, ref: str, *, value: str, **overrides) -> Ch
     return design.add_chip(ref=ref, **fields)
 
 
+def add_resistor_0805_vishay(design, ref: str, *, value: str, **overrides) -> Chip:
+    """Vishay CRCW0805 thick-film chip resistor, 1 % tolerance, 0.125 W, 150 V,
+    2.0 × 1.25 × 0.45 (+0.1) mm (Vishay 20035, CRCW e3). For positions whose
+    continuous dissipation (e.g. a crown short) exceeds the 0603's 0.1 W."""
+    family = "Vishay_CRCW0402"          # same CRCW e3 datasheet
+    fp = _stock_smd_2pad(
+        name="Resistor_SMD:R_0805_2012Metric",
+        size_mm=(2.0, 1.25), height_mm=0.55,
+        pad_size=(1.0, 1.45), pad_pitch_mm=1.9,
+        package_class="0805",
+    )
+    fields = dict(
+        manf="Vishay", manf_pn=f"CRCW0805 {value} 1% e3", value=value,
+        name=f"R_0805_{value}",
+        description=f"Vishay CRCW0805 thick-film resistor, {value}, 1%, 0.125W, 150V",
+        datasheet=datasheet_ref(family, "vishay_crcw_e3.pdf"),
+        package="0805", size_mm=(2.0, 1.25), height_mm=0.55,
+        temp_range_c=(-55, 155), voltage_rating_v=150.0, power_rating_w=0.125,
+        resistance_ohm=parse_resistance_ohm(value), tolerance_pct=1.0,
+        weight_g=weight_g_for_passive("0805"), fab_country="DE",
+        standards=["RoHS", "Pb-Free", "Halogen-Free"],
+        pins=_two_pin(), footprint=fp,
+        note="CRCW0805 thick-film 0805 (continuous-dissipation positions).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ── capacitor: 0402 X7R ECM placeholder ─────────────────────────────────
 
 

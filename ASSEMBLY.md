@@ -67,10 +67,14 @@ in your quotation.
 - **Underfill** (after X-ray, before depanelling) every BGA / CSP / WLCSP
   listed in Appendix B with the underfill named there: Henkel Loctite Eccobond
   **UF1173** (cure 5 min at 150 °C) or Henkel/Hysol **FP4549** capillary underfill.
-- **(proposed) Silicone buffer coat** over the MEMS sensors and MEMS
-  oscillators (the parts marked BUFFER in the BOM notes): thin dome
-  0.2-0.5 mm of Dow SYLGARD 527, fully cured before the tower is potted; never
-  on castellations, the board edge or in the aft board's piezo pocket.
+- **Silicone buffer coat (required)** over the MEMS sensors and MEMS
+  oscillators (the parts marked BUFFER in the BOM notes) and the 0402
+  multilayer RF inductors of the S4 transverter (L_XV_PA_IN, L_XV_LNA_BIAS,
+  L_XV_PA_VDD1 — Murata cautions against resin cure stress on its chip
+  inductors): thin dome 0.2-0.5 mm of Dow SYLGARD 527, fully cured before
+  the tower is potted, so the potting's cure shrinkage and expansion do not
+  load them; never on castellations, the board edge or in the aft board's
+  piezo pocket.
 
 ### 3.3 Mechanical / board handling
 - The tile edges carry **castellated half-holes** (sleeve contacts): Ø0.50 mm
@@ -106,7 +110,7 @@ in your quotation.
    - **aft_end_board:** attach the Ø10 × 0.5 mm piezo disc (PI Ceramic
      PIC181, wrap-around contact) with **In52/Sn48** (liquidus 118 °C) — the last solder step
      on that board; it sits in the battery floor plate's pocket.
-   - (proposed) silicone buffer coat (§3.2).
+   - silicone buffer coat (§3.2).
 8. Pack per tile in ESD packaging, with the test record.
 
 ## 5. Tower assembly (if quoted: after the PCBA)

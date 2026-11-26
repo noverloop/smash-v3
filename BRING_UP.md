@@ -43,7 +43,7 @@ Voltages are nominal; pass = within ±5 % unless stated.
   monitor draw ≈ 90 µA. The cut voltage appears only with ACTIVATE_BOOST_EN (rule #30).
 - **SWD to the WBA55 and the fin MCU ≤ 4 MHz** (rule #41; start at 1 MHz): 1 kΩ series
   resistors at their pins (crown protection). The MP25 lines have 100 Ω and run at full speed.
-- **TP_VDD on the crown is 3V3_AON through 1 kΩ**, not the MP25's I/O rail
+- **TP_VDD on the crown is 3V3_AON through a Schottky + 10 kΩ** (≈ 3.0 V into a high-impedance VTref), not the MP25's I/O rail
   (COMP_3V3, off in Standby). A third-party probe that takes VTref from it
   could drive SWD into an unpowered MP25 — use the dev board, or check COMP_3V3.
 - **PMIC INTn / RSTn**: the STPMIC25's internal pull-ups go to its VIO (3V3), so
@@ -56,8 +56,8 @@ Voltages are nominal; pass = within ±5 % unless stated.
 
 1. Visual + X-ray of the BGAs (MP25, DDR3L, AWR1843AOP, WBA55, BMM350) and of the
    0.4 mm parts (S-1318 HSNT-4, BGS12, PE64904, TC78H653).
-2. Polarity / orientation: pin-1 marks on every IC; LEDs and diodes (BAS3005S-02LRH
-   cathode = marked side, RB160VAM, PNS40010AER); tantalums.
+2. Polarity / orientation: pin-1 marks on every IC; LEDs and diodes (RB550ASA-30FHT2RB
+   cathode = bar-marked end, RB160VAM, PNS40010AER); tantalums.
 3. Resistance from each rail to GND (DMM, both polarities). Nothing below ~100 Ω;
    a short is most likely an assembly bridge or a wrong-orientation part.
    Rails and probe points:
@@ -67,7 +67,7 @@ Voltages are nominal; pass = within ±5 % unless stated.
 | BAT_RAW | 3.0–4.07 | R_BAT1_ISO..3 (or the PAC1941 bus voltage, flat tower) | | power | shelf |
 | TMR_VDD | 3.3 | TP_DEV_DBG_TMR_VDD | 2.4 | activation | shelf |
 | BAT_PROT | 3.0–4.07 | TP_BAT (wakeup) / CBAT3; per tile TP_DEV_SH_BAT_PROT_* | 3.5 | power | aon |
-| 3V3_AON | 3.3 | C_WBA_BULK_1 (TP_VDD through 1 k) | 2.3 | wakeup | aon |
+| 3V3_AON | 3.3 | C_WBA_BULK_1 (TP_VDD through Schottky + 10 k) | 2.3 | wakeup | aon |
 | WBA_VDD11 | 1.1 | C_WBA_VDD11 | | wakeup | aon |
 | REG_IN_MAIN | = BAT | TP_DEV_DBG_REG_IN_MAIN | 2.1 | power | main |
 | 3V3 | 3.3 | COUT1; per tile TP_DEV_SH_3V3_* | 2.2 | power | with COMP_5V_RAW |

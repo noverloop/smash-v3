@@ -448,6 +448,48 @@ def add_bas3005s_02lrh(design, ref: str, **overrides) -> Chip:
     return design.add_chip(ref=ref, **fields)
 
 
+def add_rb550asa_30fht2rb(design, ref: str, **overrides) -> Chip:
+    """ROHM RB550ASA-30FHT2RB — AEC-Q101 Schottky, V_R = 30 V, I_O = 0.5 A,
+    I_FSM = 1 A (60 Hz half-sine, one cycle), V_F ≤ 0.59 V @ 0.5 A,
+    I_R ≤ 35 µA @ 30 V, Tj 150 °C, SOD-882 / DFN1006-2W (1.0 × 0.6 × ≤ 0.4 mm)
+    with side-wettable flanks, marking M (data sheet 2023/04/14 Rev.002).
+
+    Steering diode of the 4 × 4 parachute-restraint MATRIX: one in series with
+    each nichrome wire (anode = its row line, cathode = its wire tab), on
+    aft_end_board's TOP face in the holder floor's pocket. A wire draws
+    0.12–0.24 A (firmware-set cutter rail 7.9–15.9 V on ≈ 67 Ω) for ≈ 0.1–0.5 s
+    — under I_O; unselected columns float up to ≤ 15.9 V (< V_R 30 V). A
+    shorted wire is cut by firmware within ms (FIRMWARE_RULES #18), inside the
+    1 A one-cycle I_FSM.
+
+    Land (ROHM gives none): terminals b 0.50 × L 0.25 mm on e = 0.65 mm
+    (p.5) → two 0.35 × 0.60 mm pads at ±0.325 mm (0.30 mm gap; 0.05 mm past
+    each terminal end, 0.05 mm each side) — the same land as the TSLP-2 parts
+    it replaces, so the aft_end floor pocket keeps its spacing. Pin 1 =
+    CATHODE (bar-marked end, p.1)."""
+    pn = "RB550ASA-30FHT2RB"
+    pads = [Pad(num="1", position_mm=(-0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu"),
+            Pad(num="2", position_mm=(0.325, 0.0), size_mm=(0.35, 0.6), shape="rect", layer="F.Cu")]
+    fp = Footprint(name="ROHM_DFN1006-2W", package_class="SOD-882 / DFN1006-2W (1.0 × 0.6 mm)",
+                   pads=pads, size_mm=(1.0, 0.6), height_mm=0.4, pitch_mm=0.65,
+                   source="ROHM RB550ASA-30FH data sheet p.5 (dimensions; land derived)")
+    fp.ensure_courtyard_clearance()
+    fields = dict(
+        manf="ROHM", manf_pn=pn, canonical_id=canonical_id(pn), name=pn, value=pn,
+        description="Schottky diode, V_R=30 V, I_O=0.5 A, I_FSM=1 A, AEC-Q101, SOD-882 (DFN1006-2W)",
+        datasheet=datasheet_ref(pn, f"{pn}.pdf"),
+        standards=["RoHS", "AEC-Q101"],
+        package="DFN1006-2W", size_mm=(1.0, 0.6), height_mm=0.4,
+        temp_range_c=(-55, 150),
+        voltage_rating_v=30.0, i_rms_a=0.5, tj_max_c=150.0,
+        pins=[Pin(num="1", name="K", type="passive"), Pin(num="2", name="A", type="passive")],
+        footprint=fp,
+        note="Parachute-matrix steering diode. Pin 1 = cathode (bar-marked end, data sheet p.1).",
+    )
+    fields.update(overrides)
+    return design.add_chip(ref=ref, **fields)
+
+
 # ═════════════════════════════════════════════════════════════════════════
 # ST STPS1L60ZF — 60 V / 1 A low-drop power Schottky, SOD-123Flat (1.10 mm)
 # ═════════════════════════════════════════════════════════════════════════

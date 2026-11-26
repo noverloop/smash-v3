@@ -277,8 +277,12 @@ def res_between(design: Design,
     size = overrides.pop("size", "0402")
     if size == "0603":
         from smash.parts.passives import add_resistor_0603_vishay as _fac
-    else:
+    elif size == "0805":
+        from smash.parts.passives import add_resistor_0805_vishay as _fac
+    elif size == "0402":
         _fac = add_resistor_0402_vishay
+    else:                                  # never fall back silently to a weaker part
+        raise ValueError(f"res_between: no resistor factory for size {size!r}")
     r = _fac(
         design,
         ref=ref or f"R_{n1.replace('-', '_')}_{n2.replace('-', '_')}",

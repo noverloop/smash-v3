@@ -68,7 +68,7 @@ from smash.parts.regulators import (                                    # noqa: 
 from smash.parts.motor_drivers import add_drv8428epwpr, add_drv8428erter  # noqa: E402
 from smash.parts.diodes import (add_mbrs340t3g, add_mbrs540t3g,  # noqa: E402
                                 add_pmeg040v050epe_qz,
-                                add_bas40_02l, add_bas3005s_02lrh, add_stps1l60zf, add_pmeg6010cej)
+                                add_bas40_02l, add_rb550asa_30fht2rb, add_stps1l60zf, add_pmeg6010cej)
 from smash.parts.ldos import (                                          # noqa: E402
     add_ldl112pv18r, add_ldl112pv33r, add_stlq020c33r,
     add_lp5907mfx_1_2_nopb, add_lp5907mfx_2_8_nopb, add_tps7a0233pdbvr, add_tps7a0233pdqnr,
@@ -181,7 +181,8 @@ _AUTO_POWER_RAILS: dict[str, float] = {
     "BAT_RAW":      4.0,
     "BAT_PROT":     4.0,
     "ACTIVATE_HV":      15.9,   # cutter rail (TPS61175 off COMP_5V), firmware-set 7.9–15.9 V via the FB DAC — the maximum, for the rating checks
-    "EXT_VIN":     5.6,    # (2026-11-23) external supply at the aft end (programmer fixture) → D_EXT_IN → BAT_PROT
+    "EXT_VIN":     5.6,    # (2026-11-23) external supply at the aft end (programmer fixture) → D_EXT_IN → U_EXT_EFUSE → BAT_PROT
+    "EXT_VIN_D":   4.9,    # after D_EXT_IN (≈ 0.7 V drop), the eFuse input
     "REG_IN_MAIN":  4.0,
     "WBA_VDD11":    1.1,    # WBA55 SMPS output → core supply
     "XV_5V":        5.0,    # S4 transverter PA rail (P-FET switch off COMP_5V, on only for TX)
@@ -1889,7 +1890,10 @@ def _build_lr_radio(d: Design, BTAG: str, *, face: str = "bottom") -> None:
     # 66/70/65 % at 2.40/2.44/2.48 GHz (C0G Q 100; 64-71 % over ±0.05 pF).
     # The LR2021's DTC π then sits near 50 Ω in ISM and only trims / moves
     # the match to the authorised 2.1-2.4 GHz band.
-    series_cap("ANT_S1_COM", "ANT_HF_S1", "0.8pF", "C_ANT_S1_DCBLK")
+    # 0.6 pF (was 0.8): the 0.64 mm feed land shifts S1's Zin (p34 sim,
+    # 48+130j at 2.44 GHz); 0.6 / 0.5 pF → 68 / 77 / 65 % total at 2.40 /
+    # 2.44 / 2.48 GHz (C0G Q 100). Final values from bring-up tuning (u.FL).
+    series_cap("ANT_S1_COM", "ANT_HF_S1", "0.6pF", "C_ANT_S1_DCBLK")
     cap_to_gnd(d, "ANT_S1_COM", "0.5pF", ref="C_ANT_S1_SHUNT",
                board_tag=BTAG, feature="rf", **_as_built_0402("0.5pF", "C0G/NP0"))
 
@@ -2420,11 +2424,18 @@ def build_activation_interface(d: Design) -> None:
         pad = add_pogo_pad(d, ref=ref, board_tag=btag,
                            manf_pn=None, square=ref in SQUARE_STARTS)
         _net(d, net).connect(pad.pin("1"))
-    # series 1 k: the VDD sense pad cannot short the always-on rail, and the
-    # two bench cutter pads cannot drive the MP25 pins / arm gate stiffly
-    res_between(d, "VDD_SENSE", "3V3_AON", "1k", ref="R_VDD_SENSE", board_tag="wakeup_board")
+    # VDD sense pad: Schottky + 10 k from the always-on rail — a GND short costs
+    # 0.3 mA (not 3.3), and 5 V on the pad (a fin phase, EXT_VIN) is BLOCKED
+    # instead of pumping 3V3_AON (an LDO output that cannot sink) past the
+    # WBA's 4.0 V abs max. The two bench cutter pads stay at 1 k.
+    d_vs = add_bas40_02l(d, ref="D_VDD_SENSE", board_tag="wakeup_board")
+    _net(d, "3V3_AON").connect(d_vs.pin("A"))
+    _net(d, "VDD_SENSE_D").connect(d_vs.pin("K"))
+    res_between(d, "VDD_SENSE_D", "VDD_SENSE", "10k", ref="R_VDD_SENSE", board_tag="wakeup_board")
+    # 0805: a HALL_VIN↔GND crown short dissipates 73 mW indefinitely (90 % of a
+    # derated 0603); 150 Ω kept for the DRV5023's 2.5 V minimum supply
     res_between(d, "3V3", "HALL_VIN", "150", ref="R_HALL_VIN", board_tag="activation_interface",
-                size="0603")
+                size="0805")
     res_between(d, "PARACHUTE_CUTTER_SET_PAD", "PARACHUTE_CUTTER_SET", "1k",
                 ref="R_PCS_PAD", board_tag="aft_end_board")
     res_between(d, "ACTIVATE_CONFIRM_PAD", "ACTIVATE_CONFIRM", "1k",
@@ -2738,7 +2749,7 @@ def _build_activation_array(d: Design) -> None:
 
     # ── (2026-11-20, user) 4 × 4 DIODE MATRIX, driven straight by the fin MCU ──
     # Wire k = (row k // 4, column k % 4): row PFET (high side, behind the
-    # master PARACHUTE_CUTTER_ACTIVATE PFET) → D_ACT_WIRE_k (BAS3005S-02LRH, on
+    # master PARACHUTE_CUTTER_ACTIVATE PFET) → D_ACT_WIRE_k (RB550ASA-30FHT2RB, on
     # aft_end's TOP in the holder floor's annular pocket) → ACT_WIRE_k clamp
     # tab → nichrome → its column tab ACT_COL_j → column NFET → GND. Only 8
     # nets (ACT_ROW_0..3, ACT_COL_0..3) cross to aft_end (was 16 wires + the
@@ -2783,7 +2794,7 @@ def _build_activation_array(d: Design) -> None:
     # Restraint-wire clamp tabs (aft_end BOTTOM, r 6.4 ring) + their series
     # steering diodes right above them (aft_end TOP, holder-floor pocket).
     for i in range(16):
-        dk = add_bas3005s_02lrh(d, ref=f"D_ACT_WIRE_{i}", board_tag="aft_end_board")   # 0.5 A: the 0.12–0.24 A burn
+        dk = add_rb550asa_30fht2rb(d, ref=f"D_ACT_WIRE_{i}", board_tag="aft_end_board")   # 0.5 A: the 0.12–0.24 A burn
         _net(d, f"ACT_ROW_{i // 4}").connect(dk.pin("A"))
         _net(d, f"ACT_WIRE_{i}").connect(dk.pin("K"))
         pad = add_clamp_tab(d, ref=f"P_ACT_WIRE_{i}", board_tag="aft_end_board",
@@ -3107,7 +3118,7 @@ def build_usb_nose(d: Design) -> None:
 # ≈30 A, ns-wide peak → cover the 16 phase contacts in the ESD qualification
 # test); EXT_CAN by D_CAN_TVS
 # (PESD2CANFD24V-QB, in the same pocket);
-# EXT_VIN by D_EXT_VIN_TVS (DF2S8.2FS); JUMP_PAD / VDD_SENSE / the cutter pads by
+# EXT_VIN by D_EXT_VIN_TVS (PESD2CANFD24V, on power_board); JUMP_PAD / VDD_SENSE / the cutter pads by
 # their series resistors.
 _ESD_LINES = {
     "companion_compute": ("BOOT0", "COMP_SWDCLK", "COMP_SWDIO", "GPIO_EXT_0",
@@ -3119,8 +3130,19 @@ _ESD_LINES = {
     # VDD_SENSE has no channel: its 1 k feeds 3V3_AON's ≈ 27 µF, which absorbs a strike
     "aft_end_board": ("PARACHUTE_CUTTER_SET_PAD", "ACTIVATE_CONFIRM_PAD", "HALL_VIN", "JUMP_PAD"),
 }
-_SERIES_R_MCUS = {"U_MPU": "MPU", "U_WBA": "WBA", "U_FIN_MCU": "FIN"}
-_NO_SERIES_R = {"SYS_I2C_SDA", "SYS_I2C_SCL"}   # open-drain bus: pull-ups stay at the pins
+# Pins behind a series R (their own inner net per tag). The PMIC's RSTN and the
+# WBA reset FET's drain sit behind one too, so a crown short never reaches them
+# directly; the PMIC gets its OWN 1 k on power_board (sharing the MP25's inner
+# NRST would need a power↔compute lane).
+_SERIES_R_MCUS = {"U_MPU": "MPU", "U_WBA": "WBA", "U_FIN_MCU": "FIN",
+                  "U_PMIC": "PMIC", "Q_WBA_RST": "WBA"}
+# SYS_I2C now has 100 Ω at the MP25 too (5 V from a mis-wired payload no longer
+# reaches its TT pins unlimited); the pull-ups stay on the bus side.
+_NO_SERIES_R: set = set()
+# MP25 crown lines that are slow (reset / strap / GPIO / 115 k console / SWO):
+# a higher R limits a short or mis-wire to ≤ 1.7 mA (SWO 330 Ω: trace clock)
+_SLOW_MPU_R = {"BOOT0": "1k", "NRST": "1k", "GPIO_EXT_0": "1k",
+               "MP25_CONSOLE_TX": "1k", "MP25_CONSOLE_RX": "1k", "SWO": "330"}
 # pull-ups on the MCU side of a series R: (net, MCU tag) → (rail, value, ref)
 _PIN_PULLUPS = {("SYS_SPI_CS_FIN", "FIN"): ("3V3", "100k", "R_FIN_SPI_CS_PU")}   # CS idles high while the MP25 is off
 
@@ -3156,7 +3178,8 @@ def _protect_external_lines(d: Design) -> None:
                 if first:                         # one resistor per MCU even if several pins
                     # 1 k on the WBA / fin-MCU debug + reset lines: their crown teeth
                     # sit beside 5 V fin phases, so a bridge injects ≤ 1.4 mA, not 14 mA
-                    rv = "1k" if tag in ("WBA", "FIN") and not name.startswith("SYS_SPI") else "100"
+                    rv = ("1k" if tag in ("WBA", "FIN", "PMIC") and not name.startswith("SYS_SPI")
+                          else _SLOW_MPU_R.get(name, "100") if tag == "MPU" else "100")
                     res_between(d, net.name, inner, rv, ref=f"R_ESD_{tag}_{net.name}",
                                 board_tag=chip.board_tag)
                     pu = _PIN_PULLUPS.get((net.name, tag))
@@ -3291,8 +3314,14 @@ def build_flight_board(d: Design, board_tag: str = "flight_board",
     _net(d, "EXT_CAN_N").connect(can_gw.pin("CANL"))
     cap_to_gnd(d, "COMP_5V", "100nF", ref="C_CAN_GW",
                embedded_cap_absorbs=True, board_tag=_CAN_TAG, pin=can_gw.pin("VCC"))
-    res_between(d, "EXT_CAN_P", "EXT_CAN_N", "120",
-                ref="R_EXT_CAN_TERM", board_tag=_CAN_TAG)
+    # SPLIT termination 2 × 62 Ω 0603 + 4.7 nF to GND at the midpoint: a crown
+    # short (CANL→GND, CANH→EXT_VIN) puts ≤ 0.17 W into a 0.1 W 0603 per half
+    # instead of 1.4-2.7× the rating of one 0402 120 Ω; better common-mode too
+    res_between(d, "EXT_CAN_P", "EXT_CAN_SPLIT", "62", ref="R_EXT_CAN_TERM_P", board_tag=_CAN_TAG,
+                size="0603")
+    res_between(d, "EXT_CAN_SPLIT", "EXT_CAN_N", "62", ref="R_EXT_CAN_TERM_N", board_tag=_CAN_TAG,
+                size="0603")
+    cap_to_gnd(d, "EXT_CAN_SPLIT", "4.7nF", ref="C_EXT_CAN_SPLIT", board_tag=_CAN_TAG)
     # CAN bus ESD clamp where the lanes enter the tower: the TJA1462 is rated
     # ±6 kV IEC 61000-4-2 on CANH/CANL (DS Table 6) and the bus reaches the
     # exposed aft crown. PESD2CANFD24V-QB: 23 kV contact, 6 pF, 24 V standoff,
@@ -3588,8 +3617,8 @@ def build_power_board(d: Design) -> None:
     _net(d, "BAT_ISO_EN")  .connect(q_iso_usb.pin("3"))   # drain → force EN low
     _net(d, "GND")         .connect(q_iso_usb.pin("2"))   # source
     _net(d, "BAT_ISO_EXTG").connect(q_iso_usb.pin("1"))   # gate
-    res_between(d, "EXT_VIN",      "BAT_ISO_EXTG", "100k", ref="R_ISO_EXT_H", board_tag=BTAG)
-    res_between(d, "BAT_ISO_EXTG",  "GND",          "100k", ref="R_ISO_EXT_L", board_tag=BTAG)
+    res_between(d, "EXT_VIN",      "BAT_ISO_EXTG", "100k", ref="R_ISO_EXT_H", board_tag=BTAG)   # 0.451×: ≤ 9.0 V at ±20 V
+    res_between(d, "BAT_ISO_EXTG",  "GND",          "82k",  ref="R_ISO_EXT_L", board_tag=BTAG)
 
     cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT1", board_tag=BTAG, feature="bottom")
     cap_to_gnd(d, "BAT_PROT", "100uF", ref="CBAT2", board_tag=BTAG, feature="bottom")
@@ -3644,10 +3673,18 @@ def build_power_board(d: Design) -> None:
     _net(d, "COMP_5V_FREQ").connect(boost.pin("RT"))
     res_between(d, "COMP_5V_FREQ", "GND", "28k", ref="R_BOOST_FREQ", board_tag=BTAG)
     # SD (> 1.6 V on, < 0.25 V off, never float): pulled up to REG_IN_MAIN.
-    # The pack UV cutoff is WBA firmware via BAT_SENSE + QMAIN (wakeup_board);
-    # COMP_BOOST_SD is a spare hook.
+    # The pack UV cutoff is WBA firmware via BAT_SENSE + QMAIN (wakeup_board).
+    # Q_BOOST_INH (gate on MAIN_SW_GATE, V_th 0.5-1.0 V) holds SD low whenever
+    # QMAIN's gate is released: the boost is OFF before QMAIN leaves full
+    # enhancement, so QMAIN never carries the boost's constant-power load in
+    # its ≈ 50 ms linear turn-off (was 10-25 W, past the PMPB15XP SOA), and the
+    # boost soft-starts only once a hold has pulled the gate to 0 V.
     _net(d, "COMP_BOOST_SD").connect(boost.pin("SD"))
     res_between(d, "REG_IN_MAIN", "COMP_BOOST_SD", "100k", ref="R_BOOST_SD", board_tag=BTAG)
+    q_inh = add_ssm3k35ctc_l3f(d, ref="Q_BOOST_INH", board_tag=BTAG)
+    _net(d, "COMP_BOOST_SD").connect(q_inh.pin("3"))   # Drain
+    _net(d, "GND")          .connect(q_inh.pin("2"))   # Source
+    _net(d, "MAIN_SW_GATE") .connect(q_inh.pin("1"))   # Gate
     # Inductors: 4.7 µH per phase (DS typical application), WE-MAPI 4020
     # (Isat 3.05 A @10 % / 5.75 A @30 %; peak limit 2.5 min / 4.5 A max per phase).
     l_boost = add_inductor_we_mapi_74438356047(d, ref="L_BOOST_COMP", board_tag=BTAG)
@@ -3987,17 +4024,57 @@ def build_power_board(d: Design) -> None:
     # (wake) still sense EXT_VIN. PNS40010AER: 1 A — bench / fixture loads
     # only; firing actuators from the fixture needs the cells.
     from smash.parts.swaps_2026_11 import add_pns40010aerx
-    d_ext = add_pns40010aerx(d, ref="D_EXT_IN", board_tag="aft_end_board", feature="bottom")
-    _net(d, "EXT_VIN") .connect(d_ext.pin("2"))       # anode  ← fixture supply
-    _net(d, "BAT_PROT").connect(d_ext.pin("1"))       # cathode → protected rail
-    # TVS at the contact: clamps ESD on the public EXT POWER tooth and turns a
-    # reversed, current-limited supply into a −0.7 V clamp. V_RWM 6.5 V: no
-    # conduction at the 5.6 V fixture setting. A mis-set bench supply is the dev
-    # board's job (U_DEV_OVP); this part cannot absorb a stiff source.
-    from smash.parts.protection import add_df2s8_2fs
-    tvs_ext = add_df2s8_2fs(d, ref="D_EXT_VIN_TVS", board_tag="aft_end_board")   # floor pocket (locked)
-    _net(d, "EXT_VIN").connect(tvs_ext.pin("K"))
-    _net(d, "GND")    .connect(tvs_ext.pin("A"))
+    # On power_board (EXT_VIN already reaches it; no new lane), in front of the
+    # eFuse: it takes a REVERSED supply (the eFuse's IN is only −0.3 V rated).
+    d_ext = add_pns40010aerx(d, ref="D_EXT_IN", board_tag="power_board")
+    _net(d, "EXT_VIN")  .connect(d_ext.pin("2"))      # anode  ← fixture supply
+    _net(d, "EXT_VIN_D").connect(d_ext.pin("1"))      # cathode → eFuse IN
+    # EXT_VIN eFuse (B3): TPS25940-Q1 between the diode and BAT_PROT. Cuts at
+    # 6.6 V on the contact (back on < 6.1 V) so BAT_PROT stays ≤ 5.9 V (the
+    # 6 V-abs-max regulators behind it), limits to ≈ 1.0 A (D_EXT_IN's rating;
+    # also a tower-internal short on the programmer), ramps ≈ 0.5 V/ms into
+    # BAT_PROT's bulk, auto-retries after a thermal trip. Its REVERSE BLOCKING
+    # isolates BAT_PROT (live from the cells) from an unplugged contact — the
+    # TPS2596x cannot (OUT ≤ IN + 0.3 V abs max). EN/UVLO and OVP hang on the
+    # CONTACT side: unplugged they draw nothing and the eFuse is unpowered.
+    from smash.parts.efuses import add_tps25940aqrvctq1
+    ef = add_tps25940aqrvctq1(d, ref="U_EXT_EFUSE", board_tag="power_board")
+    for k in range(1, 6):
+        _net(d, "EXT_VIN_D").connect(ef.pin(f"IN_{k}"))
+        _net(d, "BAT_PROT") .connect(ef.pin(f"OUT_{k}"))
+    _net(d, "GND").connect(ef.pin("GND")); _net(d, "GND").connect(ef.pin("EP"))
+    _net(d, "GND").connect(ef.pin("DEVSLP"))           # normal mode (DS §6)
+    _net(d, "GND").connect(ef.pin("PGTH"))             # PGOOD unused (DS §6: PGTH to OUT or GND)
+    _net(d, "EXT_EFUSE_EN") .connect(ef.pin("EN"))
+    _net(d, "EXT_EFUSE_OVP").connect(ef.pin("OVP"))
+    _net(d, "EXT_EFUSE_ILIM").connect(ef.pin("ILIM"))
+    _net(d, "EXT_EFUSE_DVDT").connect(ef.pin("DVDT"))
+    # EXT_VIN ─ 750k ─ EN ─ 100k ─ OVP ─ 150k ─ GND (thresholds 0.99 V):
+    # EN on at 0.99 × 1000/250 = 3.96 V, OVP at 0.99 × 1000/150 = 6.6 V
+    # (falling 0.92 V → 6.13 V). At 20 V on the contact EN sits at 5 V (< 20 V abs).
+    res_between(d, "EXT_VIN", "EXT_EFUSE_EN", "750k", ref="R_EFUSE_UV1", board_tag="power_board")
+    res_between(d, "EXT_EFUSE_EN", "EXT_EFUSE_OVP", "100k", ref="R_EFUSE_UV2", board_tag="power_board")
+    res_between(d, "EXT_EFUSE_OVP", "GND", "150k", ref="R_EFUSE_OV", board_tag="power_board")
+    # reversed supply: clamp the top tap (EN and OVP pins are −0.3 V rated)
+    d_efc = add_bas40_02l(d, ref="D_EFUSE_CLAMP", board_tag="power_board")
+    _net(d, "GND").connect(d_efc.pin("A")); _net(d, "EXT_EFUSE_EN").connect(d_efc.pin("K"))
+    res_between(d, "EXT_EFUSE_ILIM", "GND", "88.7k", ref="R_EFUSE_ILIM", board_tag="power_board")   # ≈ 1.0 A (DS 0.90-1.07)
+    cap_to_gnd(d, "EXT_EFUSE_DVDT", "22nF", ref="C_EFUSE_DVDT", board_tag="power_board")         # 1 µA × 11.9 / 22 nF ≈ 0.54 V/ms
+    cap_to_gnd(d, "EXT_VIN_D", "100nF", ref="C_EFUSE_IN", board_tag="power_board", pin=ef.pin("IN_1"))
+    # ESD at the contact: BIDIRECTIONAL 24 V (PESD2CANFD24V-QB, both channels
+    # on EXT_VIN, the CAN TVS's part) so that NOTHING on the contact dies inside
+    # one envelope: −24…+20 V DC of either polarity is survived by every part
+    # (this diode, D_EXT_IN 400 V, the eFuse 20 V behind it, the 0.45× gate
+    # dividers ≤ 9.0 V); above +20 V the eFuse is the first casualty. Its 33 V
+    # ESD clamp is ns-long and lands on the eFuse's 100 nF behind D_EXT_IN
+    # (an 8 kV / 150 pF strike ≈ 12 V of rise there). On power_board next to
+    # D_EXT_IN: every part on EXT_VIN is there (nothing taps the lane on the
+    # way up), and the aft floor pocket has no room for its 1.1 × 1.0 mm.
+    from smash.parts.protection import add_pesd2canfd24v_qbz
+    tvs_ext = add_pesd2canfd24v_qbz(d, ref="D_EXT_VIN_TVS", board_tag="power_board")
+    _net(d, "EXT_VIN").connect(tvs_ext.pin("K1"))
+    _net(d, "EXT_VIN").connect(tvs_ext.pin("K2"))
+    _net(d, "GND")    .connect(tvs_ext.pin("CC"))
 
     # ── Depot-USB WAKE: VBUS presence joins the MAIN_SW_GATE open-drain
     # OR (4th member after the NFC GPO diode, QHOLD/MP25, QHOLD2/WBA) —
@@ -4015,9 +4092,11 @@ def build_power_board(d: Design) -> None:
     _net(d, "MAIN_SW_GATE").connect(q_usbwk.pin("3"))   # Drain → the latch OR
     _net(d, "GND")         .connect(q_usbwk.pin("2"))   # Source
     _net(d, "EXTWK_GATE")  .connect(q_usbwk.pin("1"))   # Gate ← VBUS divider
-    res_between(d, "EXT_VIN",   "EXTWK_GATE", "10k",
+    # 100k / 82k (0.451×): ±20 V on the contact keeps both wake gates at ±9.0 V
+    # (SSM3K35 V_GS ±10 V; was 0.91× → 18 V); 4 V still gives 1.8 V (V_th ≤ 1.0)
+    res_between(d, "EXT_VIN",   "EXTWK_GATE", "100k",
                 ref="R_EXTWK_G",  board_tag=BTAG)
-    res_between(d, "EXTWK_GATE", "GND",        "100k",
+    res_between(d, "EXTWK_GATE", "GND",        "82k",
                 ref="R_EXTWK_PD", board_tag=BTAG)
 
     # P_AFT_LGA removed: activation_interface is now flex-connected to
@@ -4589,7 +4668,7 @@ def build_wakeup_board(d: Design) -> None:
     # sample ADC4_IN6 against VREFINT (VDDA = 3V3_AON sags with the pack once
     # its LDO drops out); below ~2.5 V for > ~10 ms (ignore cutter / chirp
     # dips), tell the MP25 to drop PWR_HOLD, then release WBA_WAKE (QHOLD2) →
-    # QMAIN opens and REG_IN_MAIN dies. COMP_BOOST_SD stays a pulled-up spare.
+    # QMAIN opens and REG_IN_MAIN dies (Q_BOOST_INH has the boost off first).
     _net(d, "BAT_SENSE").connect(wba.pin("PA3"))      # ADC4_IN6
     res_between(d, "REG_IN_MAIN", "BAT_SENSE", "1M", ref="R_BAT_SENSE_H", board_tag=BTAG)
     res_between(d, "BAT_SENSE", "GND", "1M", ref="R_BAT_SENSE_L", board_tag=BTAG)
@@ -6390,7 +6469,7 @@ _PIEZO_POCKET_REFS = ("P_PIEZO", "R_PIEZO_BLEED", "R_COMP_SER", "R_COMP_DIV",
                       "R_PZ_TX", "C_PZ_TX",      # vibration-beacon coupling (2026-11-18)
                       "L_HEALTH_COIL",            # embedded coil (copper only)
                       # (2026-11-25, user) crown ESD protection in the same pocket
-                      *(f"U_ESD_AFT{k}" for k in range(1, 8)), "D_EXT_VIN_TVS", "D_CAN_TVS",
+                      *(f"U_ESD_AFT{k}" for k in range(1, 8)), "D_CAN_TVS",
                       *(f"D_ACT_COL{c}_TVS" for c in range(4)))
 
 

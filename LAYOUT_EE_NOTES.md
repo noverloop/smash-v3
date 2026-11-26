@@ -194,7 +194,7 @@ radar / QPD), 39.7 mm with the camera nose.
 
 - **wakeup_board — antenna matches**: S1 (shared BLE / LR2021) has a fixed
   match between the owner switch U_ANTSW_S1 and the ANT_HF_S1 castellation:
-  C_ANT_S1_DCBLK 0.8 pF in series right at the castellation, C_ANT_S1_SHUNT
+  C_ANT_S1_DCBLK 0.6 pF in series right at the castellation, C_ANT_S1_SHUNT
   0.5 pF to GND on the switch side. S4: C_ANT_S4_MATCH 0.8 pF in series at
   the ANT_HF_S4 castellation. All C0G 0402; keep them on the feed line with
   short GND vias (sub-pF values: pad parasitics matter).

@@ -1,0 +1,190 @@
+{
+  "_meta": {
+    "manf_pn": "TPS25940AQRVCTQ1",
+    "datasheet": "TI TPS25940-Q1 data sheet (application/src/smash/parts/sources/TPS25940AQRVCTQ1/TPS25940.pdf)",
+    "datasheet_section": "§6 pin functions; §7.1 absolute maximum ratings; §7.5 electrical characteristics",
+    "package": "WQFN-20 RVC 3 × 4 × 0.8 mm",
+    "verified_by": "library check 2026-11-26",
+    "verified_from_pdf": "application/src/smash/parts/sources/TPS25940AQRVCTQ1/TPS25940.pdf",
+    "notes": "Reverse current blocking (V(IN) < V(OUT) − 66 mV). EN/UVLO and OVP thresholds 0.99 V rising (OVP 0.92 V falling). I(dVdT) 1 µA, GAIN(dVdT) 11.9 V/V. R(ILIM) 88.7 kΩ → 0.99 A (0.9–1.07). IQ(OFF) 6–20 µA at V(IN) 12 V. Auto-retry.",
+    "abs_max_checked": "2026-11-26 from TPS25940.pdf",
+    "height_max_mm": 0.8,
+    "operating_temp_c": [
+      -40,
+      125
+    ]
+  },
+  "pins": [
+    {
+      "num": "1",
+      "name": "DEVSLP",
+      "type": "input",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V",
+      "note": "High = DevSleep (low-power) mode; unused: GND or floating (§6)"
+    },
+    {
+      "num": "2",
+      "name": "PGOOD",
+      "type": "output",
+      "max_v": 20,
+      "unused": "open",
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "3",
+      "name": "PGTH",
+      "type": "input",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V",
+      "note": "unused: connect to OUT or GND (§6)"
+    },
+    {
+      "num": "4",
+      "name": "OUT_1",
+      "type": "power",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "5",
+      "name": "OUT_2",
+      "type": "power",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "6",
+      "name": "OUT_3",
+      "type": "power",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "7",
+      "name": "OUT_4",
+      "type": "power",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "8",
+      "name": "OUT_5",
+      "type": "power",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "9",
+      "name": "IN_1",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        18
+      ],
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V; recommended 2.7–18 V"
+    },
+    {
+      "num": "10",
+      "name": "IN_2",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        18
+      ],
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V; recommended 2.7–18 V"
+    },
+    {
+      "num": "11",
+      "name": "IN_3",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        18
+      ],
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V; recommended 2.7–18 V"
+    },
+    {
+      "num": "12",
+      "name": "IN_4",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        18
+      ],
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V; recommended 2.7–18 V"
+    },
+    {
+      "num": "13",
+      "name": "IN_5",
+      "type": "power",
+      "voltage_range_v": [
+        2.7,
+        18
+      ],
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V; recommended 2.7–18 V"
+    },
+    {
+      "num": "14",
+      "name": "EN",
+      "type": "input",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V",
+      "note": "EN/UVLO, 0.99 V rising; do not float"
+    },
+    {
+      "num": "15",
+      "name": "OVP",
+      "type": "input",
+      "max_v": 20,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V",
+      "note": "0.99 V rising / 0.92 V falling"
+    },
+    {
+      "num": "16",
+      "name": "GND",
+      "type": "ground"
+    },
+    {
+      "num": "17",
+      "name": "ILIM",
+      "type": "io",
+      "max_v": 3.6,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "18",
+      "name": "DVDT",
+      "type": "io",
+      "max_v": 3.6,
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V",
+      "unused": "open"
+    },
+    {
+      "num": "19",
+      "name": "IMON",
+      "type": "output",
+      "max_v": 7,
+      "unused": "open",
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "20",
+      "name": "F\\L\\T\\",
+      "type": "output",
+      "max_v": 20,
+      "unused": "open",
+      "abs_max_ref": "TPS25940 data sheet §7.1 Absolute Maximum Ratings: IN, OUT, PGTH, PGOOD, EN/UVLO, OVP, DEVSLP, FLT −0.3…20 V (IN/OUT 22 V for 10 ms); dVdT, ILIM −0.3…3.6 V; IMON −0.3…7 V"
+    },
+    {
+      "num": "21",
+      "name": "EP",
+      "type": "ground"
+    }
+  ]
+}

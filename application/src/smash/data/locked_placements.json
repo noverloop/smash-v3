@@ -784,15 +784,6 @@
   "face": "top",
   "reason": "2026-11-25 (user): crown ESD protection on aft_end_board's TOP, r 7.2 at 244.0°, in the floor plate's underside pocket (diode ring widened to r 6.2-9.0): every crown lane is clamped where it enters the tower, before it runs up the stack."
  },
- "D_EXT_VIN_TVS": {
-  "position_mm": [
-   -2.805,
-   7.705
-  ],
-  "rotation_deg": 90,
-  "face": "top",
-  "reason": "2026-11-25 (user): crown ESD protection on aft_end_board's TOP, r 8.2 at 110.0°, in the floor plate's underside pocket (diode ring widened to r 6.2-9.0): every crown lane is clamped where it enters the tower, before it runs up the stack."
- },
  "D_ACT_COL0_TVS": {
   "position_mm": [
    -8.18,

@@ -1,0 +1,9 @@
+Mfr Part Number,Manufacturer,Quantity,Customer Part Number,Description
+CRCW060362R0FKEA,Vishay,2,R_EXT_CAN_TERM_P+1 R34,"Vishay CRCW0603 thick-film resistor, 62, 1%, 0.1W, 75V; check stock"
+CRCW0805150RFKEA,Vishay,1,R_HALL_VIN R34,"Vishay CRCW0805 thick-film resistor, 150, 1%, 0.125W, 150V; check stock"
+TPS25940AQRVCTQ1,Texas Instruments,1,U_EXT_EFUSE R34,"Automotive eFuse, reverse blocking, adjustable OVP, WQFN-20 3x4; EXT_VIN protection; check origin + stock"
+CRCW0402750KFKED,Vishay,1,R_EFUSE_UV1 R34,"Vishay CRCW0402 thick-film resistor, 750k, 1%, 0.063W, 50V; check stock"
+CRCW0402150KFKED,Vishay,1,R_EFUSE_OV R34,"Vishay CRCW0402 thick-film resistor, 150k, 1%, 0.063W, 50V; check stock"
+CRCW040288K7FKED,Vishay,1,R_EFUSE_ILIM R34,"Vishay CRCW0402 thick-film resistor, 88.7k, 1%, 0.063W, 50V; check stock"
+ESD218B102ELSE6327XTSA1,Infineon,1,D_EXT_VIN_TVS cand1 R34,"ESD diode TSSLP-2-4; EXT_VIN contact ESD: need BIDIRECTIONAL, V_RWM 15-18 V, height <= 0.5 mm; check origin + stock + datasheet"
+"PESD15VS1UL,315",Nexperia,1,D_EXT_VIN_TVS cand2 R34,"ESD diode SOD882; EXT_VIN contact ESD: need BIDIRECTIONAL, V_RWM 15-18 V, height <= 0.5 mm; check origin + stock + datasheet; check wafer fab (Nexperia rule)"

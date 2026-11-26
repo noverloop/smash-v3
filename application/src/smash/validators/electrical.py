@@ -199,9 +199,28 @@ def check(d) -> dict:
             if other and other[0] in V and V[other[0]] > 0.5:
                 res.append((ref, other[0]))
         return res
+    def series_neighbour(net):
+        """Nets reached through one ≤ 1 kΩ series resistor (a pin-protection R
+        between an MCU pin and its bus): the bus's pull-ups serve the pin too."""
+        res = []
+        for ref, num in members.get(net, []):
+            c = pn_of.get(ref)
+            if c is None or not ref.startswith("R") or len(c.pins) != 2:
+                continue
+            from smash.parts._passives_util import parse_resistance_ohm
+            try:
+                ohm = parse_resistance_ohm(str(getattr(c, "value", "")))
+            except Exception:
+                ohm = None
+            if ohm is None or ohm > 1000:
+                continue
+            other = [pin_net.get((ref, str(p.num))) for p in c.pins if str(p.num) != num]
+            if other and other[0] and other[0] not in V:
+                res.append(other[0])
+        return res
     for net in members:
         if re.search(r"(^|_)(SCL|SDA)(_|$)", net) and len(members[net]) > 1:
-            if not pullups(net):
+            if not pullups(net) and not any(pullups(n) for n in series_neighbour(net)):
                 out.append(Finding("E2", net, "I2C line has no pull-up to a rail"))
 
     # E3 capacitor rating

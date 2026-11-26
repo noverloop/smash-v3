@@ -1,0 +1,12 @@
+line                 MPN                          |     MOUSER st lt price coo     |            FARNELL             |            DIGIKEY             | life
+D_ACT_WIRE_0+15 R33  BAS3005S-02LRH               |                        - |                        - |                        - | 
+D_ACT_WIRE alt R33   RB550ASA-30FHT2RB            |    8322   17w    0.82 Japan     |                        - |    5875   17w    0.39 Japan     | 
+D_ACT_WIRE alt2 R33  PMEG3005EL,315               |       0   53w    0.32 Malaysia  |       0 54.0w    0.39 Malaysia  |    9806   30w    0.20 Malaysia  | 
+U_ACTIVATE_DAC R33   MCP4725A0T-E/CH              |   50205    9w    1.13 Thailand  |  153186 14.0w    1.11 United St |   37961   20w    1.27 Thailand  | 
+J_DEV_USB R33        CX90B-16P                    |   33315     w    2.62 Korea, Re |     913 14.0w    2.80 South Kor |    2837   16w    2.98 South Kor | 
+R_ACTIVATE_FB2 R33   CRCW040227K4FKED             |       0   18w    0.10 Israel    |   18671 20.0w    0.02 Israel    |   81292   21w    0.11 Taiwan    | 
+R_DEV_INPROT_GA+1 R3 CRCW040210R0FKED             | 1074397   18w    0.09 Taiwan    | 1147778 16.0w    0.02 Israel    | 1689426   21w    0.10 Taiwan    | 
+C_DEV_INPROT_GATE R3 C0402C472K3RACTU             |   79040   24w    0.10 Mexico    |   16072 52.0w    0.03 Mexico    |  134745   17w    0.10 Mexico    | 
+C_DEV_TWR_PWR_SS+1 R C0603C154K5RACTU             |   70092   44w    0.18 Mexico    |     626 14.0w    0.06 Mexico    |   78166    8w    0.20 Mexico    | 
+
+Digi-Key rows not in the upload:

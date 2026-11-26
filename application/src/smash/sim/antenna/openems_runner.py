@@ -138,8 +138,10 @@ def run(model: dict, out_dir: pathlib.Path, threads: int = 0) -> dict:
                                    [e[0] for e in ex]))
     grid.SetLines("y", _mesh_lines(-rf - margin, rf + margin, -rf, rf, h, lam_min / 15,
                                    [e[1] for e in ex]))
+    # optional extra z lines (model["mesh_extra_z"]): resolve a sub-cell feature
+    # (e.g. a 0.18 mm CPW gap) instead of letting its edges snap to the grid
     grid.SetLines("z", _mesh_lines(z0 - 4 - margin, z1 + 4 + margin, z0 - 1, z1 + 1, h,
-                                   lam_min / 15, [e[2] for e in ex]))
+                                   lam_min / 15, [e[2] for e in ex] + list(model.get("mesh_extra_z", []))))
     nf2ff = FDTD.CreateNF2FFBox() if model.get("nf2ff", True) else None
 
     sim = out_dir / "sim"

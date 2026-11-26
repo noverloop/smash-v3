@@ -130,7 +130,7 @@ PACK = {"BAT_CELL1_POS", "BAT_CELL2_POS", "BAT_CELL3_POS", "BAT_RAW", "BAT_PROT"
 # dev board only: bench input → protection → meter → tower / flat feeds
 DEV_PACK = {"DEV_BENCH_IN", "DEV_INPROT_S", "DEV_BENCH", "DEV_FEED", "TWR_EXT_VIN"}
 DEV_P_LOW = {"DEV_VBUS", "DEV_3V3"}
-P1A = {"COMP_5V", "XV_5V", "EXT_VIN", "AWR_1V2", "AWR_1V3", "AWR_1V3_BK", "AWR_1V8", "AWR_1V8_BK",
+P1A = {"COMP_5V", "XV_5V", "EXT_VIN", "EXT_VIN_D", "AWR_1V2", "AWR_1V3", "AWR_1V3_BK", "AWR_1V8", "AWR_1V8_BK",
        "COMP_0V82", "COMP_0V9", "COMP_1V35", "COMP_1V8", "3V3", "CAM_VCORE_1V15"}
 P_LOW = {"3V3_AON", "TMR_VDD", "MAG_1V8", "COMP_1V8_AON", "COMP_2V8", "COMP_3V3", "LR_VBAT",
          "XV_LO_3V3", "CAM_VAA_2V8", "HALL_VIN", "WBA_VDD11", "WBA_VDDHPA", "PMIC_INTLDO",
