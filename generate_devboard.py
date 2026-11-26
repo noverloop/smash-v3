@@ -720,7 +720,7 @@ TILE_ORDER = ("aft_end_board", "activation_interface", "wakeup_board", "power_bo
               "companion_compute", "radar_module", "qpd_module", "camera_module")
 TILE_KEY_DEG = 191.25          # the sleeve key / lane gap on every tile (potting hole −56.25°)
 PROG_H_MM = 74.0               # programming-board strip under the tiles (full board width): USB-C on its left edge, socket at its right end, debug between
-CHANNEL_MM = 10.0              # the unrolled sleeve: ~104 lanes on the inner layers
+CHANNEL_MM = 12.5              # the unrolled sleeve: ~104 lanes at 0.12 mm pitch on the inner layers
 # 4 tabs on the strip's slot, none where the bus crosses it (the bus passes a
 # fully cut stretch of the slot); x relative to the board centre
 PROG_SLOT_TABS_X = (-45.0, -5.0, 40.0, 85.0)
@@ -1331,7 +1331,7 @@ def _tabs(cast_deg, key, n=3):
 
 
 LDS_STUB_R_MM = ROUT_MM[1] + 0.6      # stubs end just outside the cut line
-LDS_STUB_W_MM = 0.10                  # = the HDI min track (Default netclass)
+LDS_STUB_W_MM = 0.125                 # the 125 µm track class outside the BGA fields
 
 
 def add_lds_stubs(pcb) -> int:
@@ -1386,7 +1386,7 @@ def add_lds_stubs(pcb) -> int:
 # layer sits over a 0.1 mm-offset neighbour, not stacked on another track
 BUS_LAYERS = ("In2.Cu", "In3.Cu", "In4.Cu", "In5.Cu")
 BUS_SPILL = ("In1.Cu", "In6.Cu")         # a reused angle whose spans would touch
-BUS_STEP_MM, BUS_W_MM = 0.10, 0.10
+BUS_STEP_MM, BUS_W_MM = 0.12, 0.125     # 0.48 mm apart on a layer (4 layers), 0.24 on the overflow layers
 
 
 def add_lds_bus(pcb, lay) -> dict:

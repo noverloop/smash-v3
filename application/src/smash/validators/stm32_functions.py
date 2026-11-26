@@ -91,7 +91,7 @@ BUSES: dict[str, list[list[str]]] = {
 # chip ref → nets used as interrupt inputs (EXTI)
 INTERRUPTS: dict[str, list[str]] = {
     "U_MPU": ["MAG_DRDY", "IMU1_INT", "IMU2_INT", "IMU3_INT", "H3LIS_INT1", "AWR_DRDY",
-              "AWR_FAULT", "COMP_OUT_MPU", "WBA_HCI_IRQ", "TMP1_ALERT", "PMIC_PWR_OK"],
+              "AWR_FAULT", "COMP_OUT_MPU", "WBA_HCI_IRQ", "PMIC_PWR_OK", "GPIO_EXT_0"],
     "U_WBA": ["LR_IRQ", "LR_BUSY", "MAG_WAKE_N", "IR_WAKE"],
 }
 EXTI_PER_LINE = {"U_MPU": 2}          # MP25: EXTI1 + EXTI2 (DS14285 §3.21); others: 1

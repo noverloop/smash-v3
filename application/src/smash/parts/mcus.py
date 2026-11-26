@@ -611,16 +611,17 @@ def add_stm32mp255dal3(design, ref: str, **overrides) -> Chip:
                                 af_source_pn="STM32MP255FAK3"),
         footprint=Footprint(
             name=pn, package_class="VFBGA-361",
-            # Land 0.25 mm per ST AN5489 Rev 7 Fig. 20 ("PCB rule for 0.5 mm
-            # pitch package", 300 µm ball: 0.25 mm landing pad, one 90 µm
-            # track at 80 µm clearance between pads) — the vendor library's
-            # 0.298 mm land leaves no room for a track between balls.
-            pads=[dataclasses.replace(q, size_mm=(0.25, 0.25)) for q in pads_from_kicad_mod(fp_mod)],
+            # Land 0.20 mm NSMD (user, cost): the 0.30 mm gap between balls fits
+            # one 0.10 mm track at 0.10 mm clearance, so the whole panel stays
+            # at 100/100. 65 % of the 0.31 mm ball (DS Table 132); ST AN5489
+            # Fig. 20 shows 0.25 mm. Paste: 0.25 mm aperture / thin stencil.
+            pads=[dataclasses.replace(q, size_mm=(0.20, 0.20), solder_mask_expansion_mm=0.05)   # NSMD, mask Ø0.30
+                  for q in pads_from_kicad_mod(fp_mod)],
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),
             pitch_mm=0.5, size_mm=(10.0, 10.0), height_mm=1.16,
             model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
-            source="samacsys (land 0.25 mm per ST AN5489 Fig. 20)",
+            source="samacsys (land 0.20 mm NSMD: one 0.10 track between balls)",
         ),
         note=(
             "STM32MP255 SoC in the 10×10 VFBGA-361 (AL) package — A35 "
@@ -682,16 +683,17 @@ def add_stm32mp255fal3(design, ref: str, **overrides) -> Chip:
                                 af_source_pn="STM32MP255FAK3"),
         footprint=Footprint(
             name=pn, package_class="VFBGA-361",
-            # Land 0.25 mm per ST AN5489 Rev 7 Fig. 20 ("PCB rule for 0.5 mm
-            # pitch package", 300 µm ball: 0.25 mm landing pad, one 90 µm
-            # track at 80 µm clearance between pads) — the vendor library's
-            # 0.298 mm land leaves no room for a track between balls.
-            pads=[dataclasses.replace(q, size_mm=(0.25, 0.25)) for q in pads_from_kicad_mod(fp_mod)],
+            # Land 0.20 mm NSMD (user, cost): the 0.30 mm gap between balls fits
+            # one 0.10 mm track at 0.10 mm clearance, so the whole panel stays
+            # at 100/100. 65 % of the 0.31 mm ball (DS Table 132); ST AN5489
+            # Fig. 20 shows 0.25 mm. Paste: 0.25 mm aperture / thin stencil.
+            pads=[dataclasses.replace(q, size_mm=(0.20, 0.20), solder_mask_expansion_mm=0.05)   # NSMD, mask Ø0.30
+                  for q in pads_from_kicad_mod(fp_mod)],
             body_outline=outline_polygon(fp_mod, "F.Fab"),
             courtyard=outline_polygon(fp_mod, "F.CrtYd"),
             pitch_mm=0.5, size_mm=(10.0, 10.0), height_mm=1.16,
             model_3d_path=datasheet_ref(pn, f"{pn}.stp"),
-            source="samacsys (land 0.25 mm per ST AN5489 Fig. 20)",
+            source="samacsys (land 0.20 mm NSMD: one 0.10 track between balls)",
         ),
         note=(
             "STM32MP255 (F: secure boot + crypto) SoC in the 10×10 VFBGA-361 (AL) package — A35 "

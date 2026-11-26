@@ -81,21 +81,24 @@ radar / QPD), 39.7 mm with the camera nose.
   stays ≤ 1.75 mm (the compute bottom's 0.95 mm MPU/DDR decoupling sits within
   r 8.6). **The spacer is designed to 3.0 mm**: the parts as delivered still sit
   near the centre, over the compute decoupling — move them into the band.
-- **BGA escapes (MP25 on companion_compute, WBA55 on wakeup_board)** are
-  generated: every signal ball leaves its ball field — the outer rings on the
-  top layer (0.085 mm between balls, 0.12 mm stub just outside the
-  courtyard), the deeper ones through a via-in-pad microvia, a diagonal jog
-  on In1 and a staggered microvia onto In2. GND balls drop through
-  via-in-pad into In1; power balls get via-in-pad + a staggered microvia onto
-  In2, where each rail still needs its island and its buried drops to In4 /
-  the bottom-face decoupling. The MP25 uses a 0.25 mm NSMD land (ST AN5489
-  Fig. 20), which leaves room for one 0.085 mm track between balls; its
-  stencil aperture needs an area ratio ≥ 0.66 (a 0.08 mm stencil or step there,
-  or a slightly larger aperture than the land), and its via-in-pad microvias
-  leave a 0.05 mm annular ring. The WBA55
-  (Dpad 0.300 mm) and U545 (Dpad 0.280 mm) use their datasheet lands: their
-  escapes leave diagonally between balls or through the via-in-pad. Each ball takes the shortest route out to the courtyard; route
-  onward from the stubs.
+- **BGA escapes (MP25 on companion_compute, WBA55 on wakeup_board, U545 on
+  activation_interface)** are generated, with **no via in any ball pad**
+  (no VIPPO, nothing copper-filled), at **100 µm track / 100 µm clearance**
+  inside the ball fields: every ball leaves its ball field — the outer
+  rings on the top layer (one 0.10 mm track between two MP25 balls, 0.125 mm
+  stub just outside the courtyard); every other ball dog-bones — a short
+  top-layer stub to a laser microvia at the diagonal site between four balls
+  (F.Cu → In1). GND stops there on the In1 plane; signals and power jog back
+  on In1 to the spot under the ball and take a second, staggered microvia
+  onto In2 (never stacked), where signals escape and each power rail still
+  needs its island and its buried drops to In4 / the bottom-face decoupling.
+  One laser microvia everywhere: 0.10 mm drill / 0.20 mm land. Lands: U545
+  0.28 mm and WBA55 0.30 mm (their datasheet lands); **MP25 0.20 mm NSMD**
+  — the land that opens a 0.30 mm channel for a 0.10 mm track. That is 65 %
+  of its 0.31 mm ball (ST AN5489 shows 0.25 mm): tell the assembler, and
+  print it with a 0.25 mm paste aperture over the 0.20 mm land or a
+  ≤ 0.07 mm stencil there (area ratio ≥ 0.66). Each ball takes the
+  shortest route out to the courtyard; route onward from the stubs.
 - **Land patterns follow the manufacturers' recommendations** where the
   library footprint differed (`smash/parts/lands.py`, one datasheet reference
   per part): AWR1843 Ø0.40 NSMD balls (0.40 mm between balls), SOT23 FETs,
@@ -110,13 +113,12 @@ radar / QPD), 39.7 mm with the camera nose.
   their net class before fab.**
 - **Net classes** (`NET_CLASSES.md`, also loaded in every `.kicad_pro` under
   Board Setup → Net Classes, assigned per net): layer plan (In1 / In3 / In6
-  GND, In4 power), fab rules (100 µm clearance, tracks 0.12 mm preferred /
-  0.10 mm minimum; 0.085 mm at 0.075 mm clearance only inside the fine-pitch
-  BGA / CSP courtyards; microvias staggered,
-  never stacked and never on a buried via — both enforced by each project's
-  `.kicad_dru`), controlled-impedance widths on the outer layers (50 Ω
-  0.147 mm; DDR 55 Ω 0.12 mm; 100 Ω pairs 0.10 / 0.10 — closed-form targets,
-  have the fab tune them; the inner layers give ≈ 44 Ω at 0.10 mm, so keep
+  GND, In4 power), fab rules (100 µm clearance everywhere; tracks 0.125 mm
+  outside the BGA ball fields, 0.10 mm only inside them; BGA lands NSMD; ENIG;
+  microvias staggered, never stacked and never on a buried via — enforced by
+  each project's `.kicad_dru`), controlled-impedance widths on the outer layers (50 Ω
+  0.147 mm; DDR 55 Ω 0.125 mm; 100 Ω pairs 0.125 / 0.162 — closed-form targets,
+  have the fab tune them; the inner layers give ≈ 39 Ω at 0.125 mm, so keep
   impedance-controlled runs outside), DDR length matching (DQ/DM to DQS ±1.42 mm, A/C to
   CK ±3.55 mm, DQS to CK ±12.07 mm), RF / clock / high-impedance analog / HV
   (0.13 mm, 33 V) / pack-current classes. Inner copper is 18 µm: carry the

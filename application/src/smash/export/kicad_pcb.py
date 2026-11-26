@@ -114,21 +114,18 @@ def write_blank_drawing_sheet(pcb_path) -> None:
     # Default net class + DRC rules for the advanced-HDI buildup. KiCad keeps
     # net-class clearance in the PROJECT, not the .kicad_pcb — with this
     # absent KiCad falls back to its 0.2 mm default, so every pad shows a
-    # 0.2 mm "keepout" clearance ring (way past a tight courtyard). 0.075 mm
-    # is the board's actual clearance rule (the 75 um / NCAB-Advanced-HDI
-    # class the DDR route is built to); track/via match the buildup so DRC
-    # doesn't flag the 0.1 mm traces and 0.15 mm microvia drills.
+    # 0.2 mm "keepout" clearance ring (way past a tight courtyard). 100 µm
+    # track / 100 µm clearance is the board's rule everywhere; the via sizes
+    # match the buildup (0.10 mm laser microvias, 0.20 mm mechanical).
     pro.write_text(json.dumps({
         "board": {"design_settings": {"rules": {
-            "min_clearance": 0.075,
-            # 0.085 only in fine-pitch BGA escapes (never below 80 µm); ≥ 0.10
-            # elsewhere is a custom rule in the project's .kicad_dru
-            "min_track_width": 0.085,
+            "min_clearance": 0.10,                # 100 µm everywhere, BGA escapes included
+            "min_track_width": 0.10,
             "min_through_hole_diameter": 0.2,     # NCAB: mechanical 200 µm, resin filled
             "min_via_diameter": 0.45,
-            "min_microvia_diameter": 0.25,
-            "min_microvia_drill": 0.15,
-            "min_via_annular_width": 0.05,        # microvia 0.25 / 0.15; through/buried 0.10 in .kicad_dru
+            "min_microvia_diameter": 0.20,        # one laser microvia: 0.10 drill / 0.20 land
+            "min_microvia_drill": 0.10,
+            "min_via_annular_width": 0.05,        # microvia ring 0.05; through/buried 0.10 in .kicad_dru
             "min_hole_to_hole": 0.10,             # staggered microvias; mechanical 0.25 in .kicad_dru
             "min_hole_clearance": 0.10,           # laser holes; mechanical 0.20 in .kicad_dru
             "min_copper_edge_clearance": 0.20,    # NCAB advanced pattern-to-edge
@@ -138,12 +135,12 @@ def write_blank_drawing_sheet(pcb_path) -> None:
         "net_settings": {
             "classes": [{
                 "name": "Default",
-                "clearance": 0.075,
+                "clearance": 0.10,
                 "track_width": 0.1,
                 "via_diameter": 0.45,
                 "via_drill": 0.2,
-                "microvia_diameter": 0.25,
-                "microvia_drill": 0.15,
+                "microvia_diameter": 0.20,     # KiCad 10 checks this as the minimum
+                "microvia_drill": 0.10,
                 "diff_pair_gap": 0.15,
                 "diff_pair_width": 0.1,
             }],

@@ -57,7 +57,8 @@ def test_dru_rules_follow_the_fab_rules():
                      for i in range(36)) + "\t)\n)")
     assert N.fine_pitch_array_refs(blk) == ["U1"]
     dru = N.build_dru(blk)
-    assert "intersectsCourtyard('U1')" in dru and "track_width (min 0.10mm)" in dru
+    assert "intersectsCourtyard('U1')" in dru and "track_width (min 0.125mm)" in dru
+    assert N.ENFORCED_MIN == 0.10
     assert "Micro" in dru and "hole_to_hole" in dru          # no stacked microvias
     assert "HV_33V" in dru
-    assert N.CLASSES["Default"]["width"] == 0.12
+    assert N.CLASSES["Default"]["width"] == 0.125

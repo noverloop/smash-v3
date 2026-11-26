@@ -185,8 +185,9 @@ With the socket EMPTY and the flat tower switches off, current-limited bench (�
   BAT_RAW − BAT_PROT < 50 mV at a few hundred mA (not a 0.6 V diode drop).
 - MP25: probe drives PB13 **low** (BOOT0/BOOT2 → serial boot, FIRMWARE_RULES #6);
   console on TWR_CONS_TX/RX through the probe. Load TF-A over UART/USB.
-- TF-A: provision the PMIC NVM (FIRMWARE_RULES #1), enable BUCK6 1.35 V +
-  VREFDDR (#3), raise BUCK1 to 0.9 V; check COMP_1V35 and DDR3L_VREF (0.675 V).
+- TF-A: provision the PMIC NVM (FIRMWARE_RULES #1), enable BUCK6 1.35 V
+  (#3), raise BUCK1 to 0.9 V; check COMP_1V35 and DDR3L_VREF (0.675 V, the
+  local 1k/1k divider).
 - DDR training passes; write the SPI-NAND; release PB13 → BOOT high → boots from NAND.
 - I²C scans (pass = exactly these addresses):
   I²C2: BMM350 0x14, ISM330 (IMU1) 0x6A, MCP9808 0x1A, STPMIC25 0x33;

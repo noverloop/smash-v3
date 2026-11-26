@@ -728,10 +728,11 @@ def build_companion_compute(d: Design) -> None:
     # (2026-11-21) RF_SW_CTRL (PD4) removed: it drove the long-gone BGS12 LoRa
     # diversity switch (WLE5 era); today's BGS12s are steered by the WBA55 /
     # LR2021. PD4 is a spare GPIO.
-    _net(d, "GPIO_EXT_0").connect(mpu.pin("PB7"))
-    _net(d, "GPIO_EXT_1").connect(mpu.pin("PE12"))
-    _net(d, "GPIO_EXT_2").connect(mpu.pin("PB1"))
-    _net(d, "GPIO_EXT_3").connect(mpu.pin("PD8"))
+    # One direct MP25 GPIO at the crown (interrupt / trigger / sync for an
+    # external device); further external I/O goes on the crown's SYS_I2C
+    # (an expander on the customer side). PE12 = EXTI12 (free since the
+    # MCP9808 is polled); PB7 / PB1 / PD8 are spare.
+    _net(d, "GPIO_EXT_0").connect(mpu.pin("PE12"))
     # (nose status LEDs dropped — they crossed the companion↔flight sensor
     # joint, which is the land-budget bottleneck; status goes over CAN/BLE.)
 
@@ -739,7 +740,7 @@ def build_companion_compute(d: Design) -> None:
     # the STPMIC25 is the MP25's own PMIC (PMIC control wired in the power tree).
     # PE6 free: Q_ISO is enabled in hardware from REG_IN_MAIN (power_board).
     # PG10 / PF15 freed: eFuse BAT_PGOOD / BAT_IMON removed with the eFuse
-    _net(d, "TMP1_ALERT") .connect(mpu.pin("PB12"))   # thermal trip EXTI12
+    # MCP9808 temperature: polled over I2C2 (no ALERT line; PB12 spare)
     _net(d, "PMIC_PWR_OK").connect(mpu.pin("PI4"))
 
     # ── EXT_CAN client-extension gateway — FDCAN1 controller side ──────────
@@ -886,10 +887,11 @@ def build_companion_compute(d: Design) -> None:
 
     # Calibration + reference generation
     res_between(d, "DDR3L_ZQ", "GND", "240", ref="R_DDR_ZQ", board_tag=BTAG)
-    # (2026-11-22, user) VREF = STPMIC25 VREFDDR (pin 45, sink-source LDO fed
-    # internally from VOUT6 = COMP_1V35 → tracks VDDQ/2, ±1 %, 5 mA rms); was a
-    # 1k/1k divider (0.7 mA standing). FIRMWARE: enable REFDDR (REFDDR_MAIN_CR
-    # 0x64 EN) together with BUCK6. Local 100 nF at each VREF ball stays.
+    # VREF = VDDQ/2 from a local 1k/1k 1 % divider off COMP_1V35 (0.675 V ±0.5 %,
+    # 0.68 mA standing; Micron allows a divider for VREFCA/VREFDQ), next to the
+    # DRAM — no reference crosses the sleeve. 100 nF at each VREF ball.
+    res_between(d, "COMP_1V35", "DDR3L_VREF", "1k", ref="R_DDR_VREF_TOP", board_tag=BTAG)
+    res_between(d, "DDR3L_VREF", "GND", "1k", ref="R_DDR_VREF_BOT", board_tag=BTAG)
     cap_to_gnd(d, "DDR3L_VREF", "100nF", ref="C_DDR_VREFCA", board_tag=BTAG, pin=ddr.pin("VREFCA"))
     cap_to_gnd(d, "DDR3L_VREF", "100nF", ref="C_DDR_VREFDQ", board_tag=BTAG, pin=ddr.pin("VREFDQ"))
 
@@ -2375,12 +2377,9 @@ def build_activation_interface(d: Design) -> None:
         "TP_SWO":         "SWO",
         "TP_MP25_GND2":   "FLEX_GND",
         "TP_BOOT0":       "BOOT0",
-        # ── GPIO ── 4-to-16 sector-decoder address lines (NOT spares while
-        # the parachute-cutter rail is armed -- they select which restraint cuts)
+        # ── GPIO ── one direct MP25 GPIO (interrupt / trigger / sync);
+        # more external I/O goes over SYS_I2C
         "TP_GPIO_0":      "GPIO_EXT_0",
-        "TP_GPIO_1":      "GPIO_EXT_1",
-        "TP_GPIO_2":      "GPIO_EXT_2",
-        "TP_GPIO_3":      "GPIO_EXT_3",
         # ── (2026-11-21, user) dev-board programming + diagnostics ──
         # MP25 debug console (USART6 = a ROM-bootloader UART)
         "TP_CONS_TX":     "MP25_CONSOLE_TX",
@@ -3098,8 +3097,8 @@ def build_usb_nose(d: Design) -> None:
 # EXT_VIN by D_EXT_VIN_TVS (DF2S8.2FS); JUMP_PAD / VDD_SENSE / the cutter pads by
 # their series resistors.
 _ESD_LINES = {
-    "companion_compute": ("BOOT0", "COMP_SWDCLK", "COMP_SWDIO", "GPIO_EXT_0", "GPIO_EXT_1",
-                          "GPIO_EXT_2", "GPIO_EXT_3", "MP25_CONSOLE_RX", "MP25_CONSOLE_TX",
+    "companion_compute": ("BOOT0", "COMP_SWDCLK", "COMP_SWDIO", "GPIO_EXT_0",
+                          "MP25_CONSOLE_RX", "MP25_CONSOLE_TX",
                           "NRST", "SWO", "SYS_SPI_CS_FIN", "SYS_SPI_MISO", "SYS_SPI_MOSI",
                           "SYS_SPI_SCLK", "SYS_I2C_SDA", "SYS_I2C_SCL"),
     "activation_interface": ("FIN_HALL", "FIN_MCU_NRST", "FIN_MCU_SWCLK", "FIN_MCU_SWDIO"),
@@ -3729,15 +3728,8 @@ def build_power_board(d: Design) -> None:
     # rails are down — a PMIC-generated VIO could never be woken.
     _net(d, "3V3").connect(pmic.pin("VIO"))
     # VBUS stays floating per DS Table 3 "not used" column (USB power-source
-    # detect unused). (2026-11-22) VREFDDR (pin 45) now drives DDR3L_VREF
-    # (VOUT6/2 = 0.675 V) on the compute board, through the sleeve.
-    _net(d, "DDR3L_VREF").connect(pmic.pin("VREFDDR"))
-    # DS14278 recommended BOM: CVREF 1 µF (GRM155R61E105KA12D) at VREFDDR
-    _cv = add_capacitor_x7r_0402_kemet(d, ref="C_PMIC_VREFDDR", value="1uF", board_tag=BTAG,
-                                       manf_pn="GRM155R61E105KA12D", manf="Murata",
-                                       description="1 µF X5R 0402 25 V (PMIC VREFDDR output)")
-    _cv.decouples = [(pmic.ref, "45")]
-    _net(d, "DDR3L_VREF").connect(_cv.pin("1")); _net(d, "GND").connect(_cv.pin("2"))
+    # detect unused). VREFDDR (pin 45) unused → floating (DS14278 Table 3):
+    # the DDR3L VREF is a local divider on companion_compute.
 
     # Active BUCKs — (2026-11-21) RE-MAPPED to the STPMIC25A's FACTORY NVM
     # (DS14278 Table 1) and to each buck's output RANGE (Table "BUCKx output
@@ -3918,12 +3910,10 @@ def build_power_board(d: Design) -> None:
     _net(d, "GND")       .connect(tmp.pin("A2"))
     _net(d, "3V3")       .connect(tmp.pin("A1"))
     _net(d, "GND")       .connect(tmp.pin("A0"))
+    # ALERT (open-drain output) unused — the MP25 polls the temperature over
+    # I2C2; a 10 k pull-up to 3V3 keeps it defined (DS: never floating).
     _net(d, "TMP1_ALERT").connect(tmp.pin("ALERT"))
-    # TMP117 DS pin table: ALERT is open-drain and "requires a pullup
-    # resistor". COMP_3V3 = the reading MP25's IO domain (same rationale
-    # as the eFuse PGOOD/FLT pull-ups); the pin is 5.5 V-tolerant.
-    res_between(d, "COMP_3V3", "TMP1_ALERT", "10k",
-                ref="R_TMP1_ALERT_PU", board_tag=BTAG)
+    res_between(d, "3V3", "TMP1_ALERT", "10k", ref="R_TMP1_ALERT_PU", board_tag=BTAG)
     _net(d, "GND")       .connect(tmp.pin("EP"))    # DFN-8 exposed pad → GND
     cap_to_gnd(d, "3V3", "100nF", ref="C_TMP1",
                embedded_cap_absorbs=True, board_tag=BTAG, pin=tmp.pin("V+"))

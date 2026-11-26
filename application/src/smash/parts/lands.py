@@ -14,7 +14,7 @@ from __future__ import annotations
 import dataclasses
 
 
-def _set(fp, nums=None, *, size=None, x=None, y=None, shape=None):
+def _set(fp, nums=None, *, size=None, x=None, y=None, shape=None, mask=None):
     """Resize / move pads. nums None = every pad. x / y: a callable
     (old coordinate) -> new coordinate, or None to keep."""
     out = []
@@ -28,6 +28,8 @@ def _set(fp, nums=None, *, size=None, x=None, y=None, shape=None):
                 kw["position_mm"] = (x(px) if x else px, y(py) if y else py)
             if shape is not None:
                 kw["shape"] = shape
+            if mask is not None:                       # NSMD: mask opening = land + 2 × mask
+                kw["solder_mask_expansion_mm"] = mask
             p = dataclasses.replace(p, **kw)
         out.append(p)
     fp.pads = out
@@ -68,16 +70,17 @@ def _qfn_pins(fp, n_side, pitch, centre, pad_len, pad_w, ep=None, ep_num=None):
 # manf_pn -> (function(fp), datasheet reference)
 LANDS = {
     "AWR1843ARBGALPQ1": (
-        lambda fp: _set(fp, size=(0.40, 0.40)),
-        "TI AWR1843AOP DS, ALP0180A land pattern example: 180× Ø0.4 NSMD (preferred)"),
+        lambda fp: _set(fp, size=(0.40, 0.40), mask=0.05),
+        "TI AWR1843AOP DS, ALP0180A land pattern example: 180× Ø0.4 NSMD (preferred), "
+        "mask opening Ø0.5"),
     "STM32WBA55UGI7": (
-        lambda fp: _set(fp, size=(0.30, 0.30)),
+        lambda fp: _set(fp, size=(0.30, 0.30), mask=0.05),
         "ST STM32WBA55 DS Table 102 UFBGA59 recommended PCB design rules: Dpad 0.300, "
-        "Dsm 0.400"),
+        "Dsm 0.400 (NSMD)"),
     "STM32U545REI6Q": (
-        lambda fp: _set(fp, size=(0.28, 0.28)),
+        lambda fp: _set(fp, size=(0.28, 0.28), mask=0.045),
         "ST STM32U545 DS p.286 Table 147 UFBGA64 example PCB design rules: Dpad 0.280, "
-        "Dsm 0.370"),
+        "Dsm 0.370 (NSMD)"),
     "NX7002AK,215": (
         lambda fp: _set(fp, size=(0.70, 0.60), x=_rows_x(1.00)),
         "Nexperia NX7002AK DS Fig. 19 (sot023_fr): lands 0.6 × 0.7, rows 2.0 apart, pitch 1.9"),

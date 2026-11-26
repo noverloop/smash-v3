@@ -9,7 +9,7 @@ why, and where it comes from.
 |---|---|---|---|---|
 | 1 | PMIC (power_board) | Provision the STPMIC25 NVM once, on the bench: BUCK7, LDO2, LDO4 to rank 0 (unused rails); BUCK4 pull-down = fast. Lock the NVM afterwards. | Factory NVM turns BUCK7/LDO2/LDO4 on with no load; COMP_3V3 must discharge with VDDA18AON on power-down. | DS14278 Table 1, AN6198 |
 | 2 | Power-off (MP25 + WBA) | Every power-off goes MP25 → PMIC SWOFF over I²C. PWR_HOLD / QHOLD2 are released only after the PMIC is OFF. The WBA pack-undervoltage cutoff asks the MP25 to shut down; it never drops QMAIN while the PMIC is on. | A COMP_5V collapse drops VDD while VDDA18AON / VDDCORE are up: STM32MP25 DS §6.3.2 "damage could occur". | STM32MP25 DS §6.3.2 |
-| 3 | DDR (TF-A) | Before DDR init enable BUCK6 = 1.35 V **and** VREFDDR (both rank 0 by default). | DDR3L gets no VREF otherwise. | DS14278 Table 1 |
+| 3 | DDR (TF-A) | Before DDR init enable BUCK6 = 1.35 V (rank 0 by default). Leave the PMIC's VREFDDR off: the DDR3L VREF is a local 1k/1k divider from COMP_1V35. | DDR3L VREF follows VDDQ. | DS14278 Table 1 |
 | 4 | MP25 USB | Keep USB3DR and USBH disabled in the device tree (or measure LDO1 first). | VDDA18USB is on PMIC LDO1 (20 mA) with VDDA18AON; the HS PHY draws up to 18.5 mA. | DS14278 Table 9, MP25 DS |
 | 5 | MP25 EXTI | EXTI lines are shared per pin number (max 2 sources per line on the MP25); new interrupt pins must keep `stm32_functions.INTERRUPTS` within capacity. | Two EXTI controllers. | DS14285 §3.21 |
 | 6 | MP25 boot (probe) | Serial boot of a blank NAND: dev probe drives PB13 **low** (or S_DEV_MP25_BOOT) — BOOT0/BOOT2 high = serial-NAND boot. | BOOT[3:0]=0101 serial NAND, 0000 UART/USB. | DS14285 Table 5 |

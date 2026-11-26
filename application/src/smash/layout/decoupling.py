@@ -7,7 +7,7 @@ measured on the current (pre-layout) placement, pad centre to cap centre,
 so the table doubles as a checklist for the layout EE:
 
   * ≤ 220 nF (high-frequency)  → ≤ 1.5 mm from its pin, same face, or
-    directly under the BGA on the opposite face (via-in-pad);
+    directly under the BGA on the opposite face (dog-bone microvia);
   * 0.47 - 4.7 µF               → ≤ 3 mm;
   * ≥ 10 µF (bulk)              → ≤ 6 mm from the IC body.
 
